@@ -1,0 +1,99 @@
+<html>
+  <head>
+    <title>CoffeeScript & Canvas ABM Test</title>
+    <script src="../agentscript.js"></script>
+    <script src="../coffee-script.js"></script>
+    <script type="text/coffeescript">
+    class MyModel extends ABM.Model
+      u = ABM.util # static variable
+      setup: -> # called by Model ctor
+        
+        # globals
+        @nestColor = [255,255,0]  # yellow
+        @foodColor = [0,0,255]    # blue
+        # UI globals:
+        @population = 255
+        @maxPheromone = 35
+        @diffusionRate = .30
+        @evaporationRate = .01
+        @wiggleAngle = u.degToRad(30) # radians
+        
+        @setupPatches()
+        @setupAgents()
+      step: ->
+        @updateAgents()
+        @updatePatches()
+
+      setupPatches: ->
+        for p in @patches
+          p.isNest = false ; p.isFood = false 
+          # REMIND: agentsOwn etc; NL defaults to 0
+          p.foodPheromone = 0; p.nestPheromone = 0
+        (p.isNest=true;p.color=@nestColor) for p in @patchRect @patches.maxX-6,0,3,3
+        (p.isFood=true;p.color=@foodColor) for p in @patchRect @patches.minX+6,0,3,3
+        null
+      setupAgents: -> # a is agent
+        @agents.create @population, (a) => # fat arrow for @patches etc
+          a.shape = "bug"; a.size = 3
+          a.setXY @patches.maxX-6, 0
+          @resetAgent(a, false) # sets a.pheromone to max
+      resetAgent: (a, withFood) ->
+        a.carryingFood = withFood
+        a.color = if withFood then @nestColor else @foodColor
+        a.pheromone = @maxPheromone
+
+      updateAgents: ->
+        for a in @agents
+          if a.id < @ticks # gradually leave nest
+            @wiggleUphill a
+            @dropPheromone a
+        null # needed to avoid returning an absurd comprehension
+      wiggleUphill: (a) ->
+        if a.p.isOnEdge()
+          # a.rotate Math.PI 
+          a.rotate u.degToRad(180)
+        else
+          #nAhead = a.inCone a.p.n, Math.PI, 2
+          nAhead = a.inCone a.p.n, u.degToRad(180), 2
+          [p, max] = nAhead.maxOneOf ((n) => @targetPheromone(a, n)), true # => for @
+          a.face p if max > .001/@maxPheromone
+        a.rotate u.randomCentered(@wiggleAngle)
+        a.forward 1
+      targetPheromone: (a, p) -> if a.carryingFood then p.nestPheromone else p.foodPheromone
+      dropPheromone: (a) ->
+        if (not a.carryingFood and a.p.isFood) or (a.carryingFood and a.p.isNest)
+          @resetAgent a, not a.carryingFood
+        if a.carryingFood
+        then a.p.foodPheromone += 0.1*a.pheromone
+        else a.p.nestPheromone += 0.1*a.pheromone
+        a.pheromone *= 0.9
+      
+      updatePatches: ->
+        @patches.diffuse "nestPheromone", @diffusionRate
+        @patches.diffuse "foodPheromone", @diffusionRate
+        for p in @patches
+          p.foodPheromone *= (1 - @evaporationRate)
+          p.nestPheromone *= (1 - @evaporationRate)
+          p.foodPheromone = p.nestPheromone = 0 if p.isOnEdge()
+          if not (p.isNest or p.isFood) #  or p.isOnEdge()
+            if p.foodPheromone > p.nestPheromone
+            then p.scaleColor @foodColor, p.foodPheromone
+            else p.scaleColor @nestColor, p.nestPheromone
+        null
+
+      # utilities
+      patchRect: (x, y, dw, dh) ->
+        @patches.patchRect @patches.patch(x,y), dw, dh, true
+
+    # divName, patchSize, minX, maxX, minY, maxY, isTorus = true
+    #   NL Defaults: 13, -16, 16, -16, 16, true
+    # @APP is window.APP, @ = outer coffeescript wrapper context
+    @APP=new MyModel "layers", 6, -40, 40, -40, 40, false
+    </script>
+
+  </head>
+  <body onload="APP.start()">
+    <canvas id="testCanvas" >Your browser does not support HTML5 Canvas.</canvas>
+    <div id="layers"></div>
+  </body>
+</html>

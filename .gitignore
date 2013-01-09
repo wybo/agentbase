@@ -1,0 +1,5 @@
+# See: https://help.github.com/articles/ignoring-files
+notes
+tests
+.DS_Store
+.DS_Store?

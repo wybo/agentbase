@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NetLogo 0</title>
+    <script src="webgl-debug.js"></script>
+    <script src="glMatrix.js"></script>
+    <script src="glx.js"></script>
+    <script id="fragmentShader" type="x-shader/x-fragment">
+        #ifdef GL_ES
+        precision highp float;
+        #endif
+        varying vec4 color;
+        void main() {
+            gl_FragColor = color;
+        }
+    </script>
+    <script id="vertexShader" type="x-shader/x-vertex">
+        uniform mat4 mvMatrix;
+        uniform mat4 pMatrix;
+        uniform float z;
+        attribute vec2 aPosition;
+        attribute vec3 aColor;
+        varying vec4 color;
+        void main() {
+            gl_PointSize = 4.0;
+            gl_Position = pMatrix * mvMatrix * vec4(aPosition, z, 1);
+            color = vec4(aColor, 1);
+        }
+    </script>
+    <script>
+    APP=function() {        
+        //== Initialization:
+        var gl = glx.initGL("canvas", 1),
+            program = glx.initShaders(gl, "vertexShader", "fragmentShader",
+                ["aPosition", "aColor"], ["mvMatrix", "pMatrix", "z"]),
+            patches = {num:0, shape:[], patch:[], list:[], color:[1,0,0],
+                vertBuf:gl.createBuffer(), colorBuf:gl.createBuffer(), 
+                edgeVertBuf:gl.createBuffer()},
+            turtles = {num:0, shape:[], turtle:[], 
+                vertBuf:gl.createBuffer(), colorBuf:gl.createBuffer()},
+            look = {eye:[],at:[],up:[]};
+
+        function shapeAtHeading(shape, dx, dy, theta) {
+            shape = shape.slice(0); //don't modify input triangle
+            shape.forEach(function(v,i,a){
+                var x=v[0], y=v[1], x1, y1, c=Math.cos(theta), s=Math.sin(theta);
+                x1 = x*c - y*s + dx;
+                y1 = x*s + y*c + dy;
+                a[i] = [x1, y1]
+            });
+            return shape;
+        }
+        function defaultLook(n) {
+            look.eye = [0,-1,1.2*n/(2*Math.tan(Math.PI/8))];
+            look.at = [0,0,0];
+            look.up =[0,1,0];
+        }
+        // Returns patch at x,y (can be non-integer).
+        // Can pass vec2 from patchClamp
+        function patchAt(x,y) { // y=null => x = xy vec (from patchClamp)
+            if(y == null) {y=x[1]; x=x[0];}
+            return patches.patch[Math.round(y)][Math.round(x)];
+        }
+        // Keep turtles on patches (but not in patch centers)
+        function patchClamp(x,y) { 
+            if(x <= -.5) x += patches.num;
+            if(x >= patches.num-.5) x -= patches.num;
+            if(y <= -.5) y += patches.num;
+            if(y >= patches.num-.5) y -= patches.num;
+            return [x,y];
+        }
+        function scaleColor(max,val){
+            return patches.color.map(function(v){return v*val/max});
+        }
+        
+        function init() {
+            var pMatrix = mat4.perspective(45, glx.aspectRatio(gl), 0.001, 10000.0),
+                compass = [[0,1],[1,1],[1,0],[1,-1],[0,-1],[-1,-1],[-1,0],[-1,1]],
+                turtle, patch, verts, colors, boarder; // color, lines
+
+            patches.num = uiGetPatches();
+            turtles.num = uiGetTurtles();
+            patches.shape = [ [0, 0], [1, 0], [1, 1], [0, 1] ];
+            turtles.shape = [ [1, 0], [-1, .5], [-1, -.5] ];
+            boarder = [ [-.5, -.5], [patches.num-.5, -.5], 
+                [patches.num-.5, patches.num-.5], [-.5, patches.num-.5] ];
+            
+            patches.patch = [];
+            patches.list = [];
+            turtles.turtle = [];
+            verts = []; colors = [];
+            for (var i=0; i<patches.num; i++) {
+                patches.patch[i]=[];
+                for (var j=0; j<patches.num; j++) {
+                    patch = { //x=col,y=row
+                        x:j, y:i, color:[0,0,0], heat: 0, nextHeat: 0,
+                        verts: glx.quadToTriangles(patches.shape,j-.5,i-.5)
+                    };
+                    patches.patch[i][j] = patch;
+                    patches.list.push(patch);
+                    glx.pushVerts(patch.verts, verts)
+                    glx.pushN(patch.verts.length, patch.color, colors);
+                }
+            }
+            patches.list.forEach(function(p){
+                p.neighbors = [];
+                compass.forEach(function(v){
+                    p.neighbors.push(patchAt(patchClamp(p.x+v[0],p.y+v[1])));
+                })
+            });
+            
+            glx.initBuf(gl, patches.vertBuf, verts, "aPosition");
+            glx.initBuf(gl, patches.colorBuf, colors, "aColor");
+            
+            verts = []; colors = [];
+            for (var i=0; i<turtles.num; i++) {
+                turtle = {
+                    color: glx.randomColor(),
+                    x: glx.randomInt(patches.num),
+                    y: glx.randomInt(patches.num),
+                    heading: Math.random()*Math.PI*2
+                }
+                turtle.verts = shapeAtHeading(turtles.shape, turtle.x, turtle.y, turtle.heading)
+                turtles.turtle[i] = turtle;
+                glx.pushVerts(turtle.verts,verts)
+                glx.pushN(turtle.verts.length, turtle.color, colors);
+            }
+
+            glx.initBuf(gl, turtles.vertBuf, verts, "aPosition");
+            glx.initBuf(gl, turtles.colorBuf, colors, "aColor");
+            glx.initBuf(gl, patches.edgeVertBuf, boarder, "aPosition");
+
+            gl.clearColor(0, 0, 0, 1); // black background
+            defaultLook(patches.num);
+            glx.NLMouseNav(gl,look, display);
+            gl.uniformMatrix4fv(program.pMatrix, false, pMatrix);
+        }
+        function step () {
+            var verts = [], colors = [],
+                diffusionRate = uiGetDiffusionRate()/100,
+                turtleHeat = uiGetTurtleHeat()/100,
+                turtleSpeed = uiGetTurtleSpeed();
+            turtles.turtle.forEach(function(t){
+                var dx=turtleSpeed*Math.cos(t.heading),
+                    dy=turtleSpeed*Math.sin(t.heading),
+                    xy=patchClamp(t.x+dx,t.y+dy);
+                t.x = xy[0];
+                t.y = xy[1];
+                t.heading += Math.random()*Math.PI/4 - Math.random()*Math.PI/4;
+                t.verts = shapeAtHeading(turtles.shape, t.x, t.y, t.heading)
+                glx.pushVerts(t.verts, verts);
+                patchAt(t.x,t.y).heat = turtleHeat;
+            })
+            // patches.list.forEach(function(p){
+            //     var dh = p.heat*(1-diffusionRate);
+            //     p.nextHeat += p.heat-dh;
+            //     p.neighbors.forEach(function(n){
+            //         n.nextHeat += dh/8;
+            //     })
+            // });
+            patches.list.forEach(function(p){
+                var dh = p.heat*diffusionRate;
+                p.nextHeat += p.heat-dh;
+                p.neighbors.forEach(function(n){
+                    n.nextHeat += dh/8;
+                })
+            });
+            patches.list.forEach(function(p){
+                p.heat = p.nextHeat;
+                p.nextHeat = 0;
+                p.color = scaleColor(turtleHeat,p.heat);
+                glx.pushN(6, p.color, colors)
+            });
+            
+            glx.modBuf(gl, turtles.vertBuf, verts);
+            glx.modBuf(gl, patches.colorBuf, colors);
+        }
+        
+        //== Display:
+        function display() {
+            var laMatrix = mat4.lookAt(look.eye, look.at, look.up),
+                mvMatrix = mat4.identity([]);
+            
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            mat4.translate(mvMatrix,[-patches.num/2+.5, -patches.num/2+.5, 0]);
+            gl.uniformMatrix4fv(program.mvMatrix, false, 
+                mat4.multiply(laMatrix, mvMatrix));
+            
+            gl.uniform1f(program.z, 0);
+            glx.setBuf(gl, patches.vertBuf);
+            glx.setBuf(gl, patches.colorBuf);            
+            gl.drawArrays(gl.TRIANGLES, 0, patches.vertBuf.rows);
+            
+            gl.uniform1f(program.z, .5);
+            glx.setBuf(gl, turtles.vertBuf);
+            glx.setBuf(gl, turtles.colorBuf);            
+            gl.drawArrays(gl.TRIANGLES, 0, turtles.vertBuf.rows);
+
+            gl.uniform1f(program.z, .25);
+            glx.setBuf(gl, patches.edgeVertBuf);
+            gl.disableVertexAttribArray(program.aColor);
+            gl.vertexAttrib3fv(program.aColor,[1,1,1]);
+            gl.drawArrays(gl.LINE_LOOP, 0, patches.edgeVertBuf.rows);
+            gl.enableVertexAttribArray(program.aColor);
+
+            if(glx.animFrame % 120 == 0)
+                glx.printf("FPS: {0}", glx.ffixed(glx.animFrame*1000/glx.animTime, 1));
+        }
+
+        //== Main:
+        function tick() {
+            step();
+            display();
+        }
+        function main() {
+            init();
+            glx.animate(tick, gl.canvas);
+            //uiSetPause(true);
+        }
+
+        //== UI:
+        function uiGetPatches() {return glx.getHTML("numPatches",0);}
+        function uiGetTurtles() {return glx.getHTML("numTurtles",0);}
+        function uiGetDiffusionRate() {return glx.getHTML("diffusionRate",0);}
+        function uiGetTurtleHeat() {return glx.getHTML("turtleHeat",0);}
+        function uiGetTurtleSpeed() {return glx.getHTML("turtleSpeed",0);}
+        function uiTogglePause() {
+            glx.animPause = glx.toggleButton("Pause",["Stop", "Start"]);
+        }
+        function uiSetPause(animPause) {
+            if(glx.animPause != animPause) uiTogglePause();
+        }
+        //== Module Interface:
+        return {
+            dbg: function () {
+                glx.checkGlobals(); // on top to avoid these:
+                
+                ["gl", "patches", "turtles", "patchAt", "step", "display"
+                ].forEach(function(s){
+                    window[s] = eval(s);
+                });
+                
+                ["patches.vertBuf", "patches.colorBuf", "patches.edgeVertBuf",
+                "turtles.vertBuf", "turtles.colorBuf"
+                ].forEach(function(s){
+                    var v = eval(s);
+                    console.log(s+" rows: "+v.rows+" cols: "+v.cols)
+                });
+                
+                // http://www.khronos.org/opengles/sdk/docs/man/xhtml/glGet.xml
+                ["MAX_RENDERBUFFER_SIZE", "MAX_TEXTURE_IMAGE_UNITS", "MAX_TEXTURE_SIZE",
+                "MAX_VERTEX_ATTRIBS", "MAX_VERTEX_UNIFORM_VECTORS","VENDOR"
+                ].forEach(function(s){
+                    console.log(s+": "+gl.getParameter(gl[s]))
+                });
+            },
+            resize: function(){
+                glx.resizeCanvas(gl,1);
+                if(glx.animPause) display();
+            },
+            pause: uiTogglePause,
+            resetView: function(){
+                defaultLook(patches.num);
+                if(glx.animPause) display();
+            },
+            setColor: function(c){patches.color = eval(c);},
+            setup: function() {
+                uiSetPause(true);
+                init();
+                display();
+            },
+            main: main
+        }
+    };
+    </script>
+    <style type="text/css">
+        /* See http://css.maxdesign.com.au/floatutorial/tutorial0809.htm */
+        #left {float: left; width: 60%; margin: 0; padding: 0;}
+        #right {
+            float: right; width: 38%; margin: 0;
+            padding: 0 0 0 10px; border-left: 1px solid gray;
+        }
+        #bottom {clear: both;}
+        h2, h3 {margin: 0 0 4px 0; padding: 0; font-family: arial;}
+    </style>
+</head>
+<body onload="APP=APP(); APP.main() //stunt: defer eval & conserve globals!"
+      onresize="APP.resize()">
+    <div id="top">
+        <h2>WebGL NetLogo-Like 3G Demo</h2>
+    </div>
+    <div id="left">
+        <canvas id="canvas" style="width: 100%;">
+            Oops, your browser does not support the canvas element.
+        </canvas>
+    </div>
+    <div id="right">
+        <h3>Controls</h3>
+        To rotate, use mouse button and drag.<br>
+        To zoom, use mouse scrolling.<br>
+        <input type="button" name="Pause" value="Stop" onclick="APP.pause()">
+        <br>
+        Patches: <input type="range" min="50" step="25" max="250" value="100"
+            onchange="glx.setHTML('numPatches', this.value, 0);" />
+            <span id="numPatches">100</span>
+            <br>
+        Turtles: <input type="range" min="25" step="25" max="1000" value="25"
+            onchange="glx.setHTML('numTurtles', this.value, 0);" />
+            <span id="numTurtles">25</span>
+            <br>
+        <input type="button" name="Setup" value="Setup" onclick="APP.setup()">
+        <br>
+        Diffusion Rate: <input type="range" min="0" step="1" max="100" value="50"
+            onchange="glx.setHTML('diffusionRate', this.value, 0);" />
+            <span id="diffusionRate">50</span>%
+            <br>
+        Turtle Heat: <input type="range" min="0" step="1" max="100" value="50"
+            onchange="glx.setHTML('turtleHeat', this.value, 0);" />
+            <span id="turtleHeat">50</span>%
+            <br>
+        Turtle Speed: <input type="range" min="0" step="0.1" max="4.0" value="1.0"
+            onchange="glx.setHTML('turtleSpeed', this.value, 1);" />
+            <span id="turtleSpeed">1</span>px
+            <br>
+        <input type="button" name="ResetView" value="ResetView" onclick="APP.resetView()">
+        <select name="color" onchange="APP.setColor(this.value)">
+            <option value = "[1,0,0]" selected>Red</option>
+            <option value = "[0,1,0]">Green</option>
+            <option value = "[0,0,1]">Blue</option>
+            <option value = "[1,1,0]">Yellow</option>
+            <option value = "[1,0,1]">Violet</option>
+            <option value = "[0,1,1]">Aqua</option>
+        </select>
+    </div>
+    <div id="bottom">
+        <h3>Notes</h3>
+        <p>This is the first of two experiments looking at the use of openGL/WebGL
+        for NetLogo-like modeling. Our interest is two-fold:</p>
+
+        <ul>
+        <li>Pushing JavaScript to large scale computing</li>
+        <li>Migrating to greater GPU Shader Language</li>
+        </ul>
+
+        <p>For our experiment, we use a model based on NetLogo&#8217;s <a
+        href="http://ccl.northwestern.edu/netlogo/models/DiffusionGraphics">Diffusion
+        Graphics</a> sample model.</p>
+        
+         <p>This version of the experiment takes the most standard openGL approach
+        possible: GLSL Attribute buffers for most of the Shader interactions, and
+        JavaScript for all but the standard matrix pipeline computations. The only
+        sophistication is use of a &#8220;z&#8221; uniform to let all the 2D
+        objects have their own z plane.</p>
+        
+         <p>The program uses two high level JavaScript objects, patches and
+        turtles, which in turn contain arrays of individual patch and turtle
+        objects. Each turtle and patch contain its shape, x,y position and color.
+        Turtles also have a heading while the patches have a heat value. The higher
+        level patches and turtles object contain a count of their objects along
+        with the WebGL Attribute buffers they use.</p>
+        
+         <p>The program is not object oriented in the usual sense but typical
+        javascript. It is purposely simple so that most of it has a chance of
+        migrating to the shaders.</p>
+        
+         <p>Each frame does a LOT of processing in the JavaScript
+        &#8220;step&#8221; function:</p>
+
+        <ul>
+        <li>Re-creates each turtle triangle by its heading and x,y loc.</li>
+        <li>Drops heat onto the patch directly under it</li>
+        <li>Performs a 2-pass diffusion of the patch heat.  </li>
+        <li>The Diffusion Rate, Turtle Heat &amp; Speed sliders are read every step
+        so they can be changed during run-time. (use setup button to change patches
+        and turtles)</li>
+        </ul>
+
+        <p>In terms of computation, this involves:</p>
+
+        <ul>
+        <li>There are 15,625 patches, with 93,750 vertices and colors initially so
+        that&#8217;s a LOT of processing for JavaScript.</li>
+        <li>Each step uploads all the patch colors (1,125,000 bytes) and all turtle
+        triangles (24,000 bytes) by re-binding those two attribute buffers.</li>
+        <li>Upping the turtles to 1000 results in acceptable performance. Each step
+        re-calculates the turtles position and heading: 3,000 rotations and
+        translations as well as determining the patch they are over, transferring
+        heat to the patch.</li>
+        <li>The diffusion process performs two passes over the 15,625 patches, and
+        calculates the diffusion with the 8 neighbor patches, for a total of
+        140,625 operations.</li>
+        </ul>
+
+        <p>I&#8217;m seriously amazed how well it performs, given the large amount
+        of computation done by JavaScript and the relatively large GPU Attribute
+        changes each step.</p>
+
+        <p>The <a href="netlogo1.html">second model</a>  moves to much more computing done 
+        in the GPU.</p>
+    </div>
+</body>
+</html>

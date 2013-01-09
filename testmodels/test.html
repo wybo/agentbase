@@ -1,0 +1,38 @@
+<html>
+  <head>
+    <title>CoffeeScript & Canvas ABM Test</title>
+    <script src="../agentscript.js"></script>
+    <script src="../coffee-script.js"></script>
+    <script type="text/coffeescript">
+    class MyModel extends ABM.Model
+      u = ABM.util # static variables
+      PI = Math.PI
+      setup: -> # called by Model ctor
+        @refreshPatches = false
+        
+        # for p in @patches
+        #   p.color = u.randomGray()
+
+        @agents.create 10, (a) => # fat arrow for @patches etc
+          a.size = 2
+          a.setXY @patches.randomPt()... # splat: pt to 2 args
+        @links.create @agents[i], @agents[i+1] for i in [0..9] by 2
+
+      step: -> # stop: just one tick
+        for l in @links
+          l.end1.face l.end2
+          l.end2.face l.end1
+        @stop() # debug: stop after first animation
+
+    # divName, patchSize, minX, maxX, minY, maxY, isTorus = true
+    #   NL Defaults: 13, -16, 16, -16, 16, true
+    # @APP is window.APP, @ = outer coffeescript wrapper context
+    @APP=new MyModel "layers", 13, -16, 16, -16, 16, true
+    APP.setRootVars()
+    </script>
+  </head>
+  <body onload="APP.start()">
+    <canvas id="testCanvas" >Your browser does not support HTML5 Canvas.</canvas>
+    <div id="layers"></div>
+  </body>
+</html>

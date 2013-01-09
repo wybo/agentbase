@@ -1,0 +1,56 @@
+<html>
+  <head>
+    <title>CoffeeScript & Canvas ABM Test</title>
+    <script src="../agentscript.js"></script>
+    <script src="../coffee-script.js"></script>
+    <script type="text/coffeescript">
+    class MyModel extends ABM.Model
+      u = ABM.util # static variables
+      PI = Math.PI
+      setup: -> # called by Model ctor
+        @refreshPatches = false
+        @population = 25
+        
+        for p in @patches
+          p.color = u.randomGray()
+
+        @agents.create @population, (a) => # fat arrow for @patches etc
+          a.size = 2
+          a.setXY @patches.randomPt()... # splat: pt to 2 args
+
+      step: -> # stop: just one tick
+        for a in @agents
+          # inRadius: (o, d, meToo=false)
+          # neighborhood = @agents.inRadius a, 25, false # exclude me
+          # neighborhood = @agents.inRadius a, 25, true # me too
+          # neighborhood = @patches.inRadius a.p, 10, false # exclude me
+          # neighborhood = @patches.inRadius a.p, 10, true # me too
+          # neighborhood = @patches.inRadius a, 10 # includes my patch, can't exclude a from ps
+          # inCone: (o, heading, cone, radius, meToo=false)
+          neighborhood = @patches.inCone a.p, a.heading, u.degToRad(180), 20, true # me too
+          # neighborhood = @agents.inCone a, a.heading, u.degToRad(30), 20, true # me too
+          # neighborhood = a.inCone a.p.n, u.degToRad(120), 2
+          # neighborhood = a.inCone a.p.n, u.degToRad(180), 1
+          
+          # neighborhood = a.p.n.inCone a.p, a.heading, u.degToRad(90), 20, true # me too
+          c = u.randomColor()
+          console.log "a: #{a.toString()} n: #{neighborhood.length}"
+          for n in neighborhood
+            n.color = c
+            # u.print "    n: #{n.toString()}"
+          # a.hidden = true
+        @stop()
+
+    # divName, patchSize, minX, maxX, minY, maxY, isTorus = true
+    #   NL Defaults: 13, -16, 16, -16, 16, true, true
+    # @APP is window.APP, @ = outer coffeescript wrapper context
+    @APP=new MyModel "layers", 4, -64, 64, -64, 64, true
+    APP.setRootVars()
+    </script>
+
+  </head>
+  <body onload="APP.start()">
+    <canvas id="testCanvas" >Your browser does not support HTML5 Canvas.</canvas>
+    <div id="layers"></div>
+  </body>
+</html>

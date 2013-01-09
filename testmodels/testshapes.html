@@ -1,0 +1,51 @@
+<html>
+  <head>
+    <title>CoffeeScript & Canvas ABM Test</title>
+    <script src="../agentscript.js"></script>
+    <script src="../coffee-script.js"></script>
+    <script type="text/coffeescript">
+    class MyModel extends ABM.Model
+      u = ABM.util # utilities; static variable
+      setup: -> # called by Model ctor
+        @refreshPatches = false
+        
+        console.log "initial shapes: ", ABM.shapes.names()
+        ABM.shapes.add "test", true, (c) -> # bowtie/hourglass
+          ABM.shapes.poly c, [[-.5,-.5],[.5,.5],[-.5,.5],[.5,-.5]]
+        console.log "new shapes: ", ABM.shapes.names()
+        
+        @agents.create 25, @initAgent
+        for p in @patches
+          p.color = u.randomGray()
+          p.color = [255,0,0] if p.x is 0
+          p.color = [255,255,0] if p.y is 0
+
+        if @debug then for s in ABM.shapes.names()
+          b = @agents.breed(s); console.log "#{b.length} #{s}"
+        @links.create @agents[0], @agents.slice(1, @agents.length), @initLink
+      initAgent: (a) ->
+        a.size = 3
+        a.shape = u.oneOf ABM.shapes.names()
+        a.breed = a.shape
+        (a.penSize *= 5; a.color = [255,0,0]) if a.id is 0
+      initLink: (l) ->
+        l.color = l.end2.color
+      step: ->
+        for a in @agents
+          a.penDown = true if a is @agents[0]
+          a.stamp() if (@ticks % 100) is 0
+          a.rotate u.randomCentered(u.degToRad(40))
+          a.forward 1
+
+    # divName, patchSize, minX, maxX, minY, maxY, isTorus = true
+    #   NL Defaults: 13, -16, 16, -16, 16, true
+    # @APP is window.APP, @ = outer coffeescript wrapper context
+    @APP=new MyModel "layers", 10, -25, 25, -20, 20, true
+    </script>
+
+  </head>
+  <body onload="APP.start()">
+    <canvas id="canvas" >Your browser does not support HTML5 Canvas.</canvas>
+    <div id="layers"></div>
+  </body>
+</html>

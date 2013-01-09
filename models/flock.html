@@ -1,0 +1,76 @@
+<html>
+  <head>
+    <title>CoffeeScript & Canvas ABM Test</title>
+    <script src="../agentscript.js"></script>
+    <script src="../coffee-script.js"></script>
+    <script type="text/coffeescript">
+    class MyModel extends ABM.Model
+      u = ABM.util # utilities; static variable
+      setup: -> # called by Model ctor
+        @refreshPatches = false
+        
+        @population = 500     # agents
+        @vision = 3.0         # patches
+        @minSeparation = 0.75 # patches
+        @maxTurn = 3.0        # degrees
+        @maxTurn = u.degToRad(@maxTurn) # radians
+        
+        p.color = u.randomGray 0, 100 for p in @patches
+        @agents.create @population, (a) => # fat arrow for @patches
+          a.size = 1.5
+          a.setXY @patches.randomPt()...
+      step: ->
+        @flock(a) for a in @agents
+        @reportFlockVectorSize() if @ticks % 10 is 0
+
+      flock: (a) -> # a is agent
+        flockmates = @agents.inRadius a, @vision # 36fps w/o inRadius, 15fps w/
+        if flockmates.length isnt 0
+          # REMIND: return agentset: [nearest,d] = flockmates.minOneOf ...etc
+          # REMIND: inRadius might remember distances so that we don't recalc distances
+          [nearestNeighbor, d] = u.minOneOf flockmates, ((f) -> f.distance a), true
+          if d < @minSeparation
+            @separate a, nearestNeighbor
+          else
+            @align a, flockmates
+            @cohere a, flockmates
+        a.forward .5 # move partial patch for smooth animation.
+
+      separate: (a, nearest) ->
+        h = nearest.towards a; @turnTowards a, h
+      align: (a, flockmates) ->
+        @turnTowards a, @averageHeading(flockmates)
+      cohere: (a, flockmates) ->
+        @turnTowards a, @averageHeadingTowards(a, flockmates)
+        
+      turnTowards: (a, heading) ->
+        turn = u.subtractRads heading, a.heading # angle from h to a
+        turn = u.clamp turn, -@maxTurn, @maxTurn # limit the turn
+        a.rotate turn
+      averageHeading: (flockmates) ->
+        dx = (Math.sin f.heading for f in flockmates).reduce (x,y) -> x+y
+        dy = (Math.cos f.heading for f in flockmates).reduce (x,y) -> x+y
+        @safeAtan dy, dx
+      averageHeadingTowards: (a, flockmates) ->
+        dx = (Math.sin f.towards a for f in flockmates).reduce (x,y) -> x+y
+        dy = (Math.cos f.towards a for f in flockmates).reduce (x,y) -> x+y
+        @safeAtan dy, dx
+      safeAtan: (x,y) -> if x is 0 and y is 0 then 0 else Math.atan y/x # atan ok if x 0
+      
+      reportFlockVectorSize: ->
+        dx = (Math.sin a.heading for a in @agents).reduce (x,y) -> x+y
+        dy = (Math.cos a.heading for a in @agents).reduce (x,y) -> x+y
+        alignment = Math.sqrt(dx*dx + dy*dy)/@population
+
+    # divName, patchSize, minX, maxX, minY, maxY, isTorus = true
+    #   NL Defaults: 13, -16, 16, -16, 16, true
+    # @APP is window.APP, @ = outer coffeescript wrapper context
+    @APP=new MyModel "layers", 15, -16, 16, -16, 16
+    </script>
+
+  </head>
+  <body onload="APP.start()">
+    <canvas id="canvas" >Your browser does not support HTML5 Canvas.</canvas>
+    <div id="layers"></div>
+  </body>
+</html>

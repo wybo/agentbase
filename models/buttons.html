@@ -1,0 +1,57 @@
+<html>
+  <head>
+    <title>CoffeeScript & Canvas ABM Test</title>
+    <script src="../agentscript.js"></script>
+    <script src="../coffee-script.js"></script>
+    <script type="text/coffeescript">
+    class MyModel extends ABM.Model
+      u = ABM.util # utilities; static variable
+      setup: -> # called by Model ctor
+        @refreshPatches = false # for static patches
+        
+        # globals
+        @buttons = 200
+        @cluster = 0
+        
+        @agents.create @buttons, (a) => # fat arrow for @patches etc
+          a.size = 1.5
+          a.shape = "circle"
+          a.setXY @patches.randomPt()...
+
+      step: ->
+        b1 = @agents.oneOf()
+        b2 = @agents.other(b1).oneOf()
+        
+        @links.create b1, b2, (l) -> l.thickness = .25
+        foo = @links.nodes()
+        
+        g = @graphOf b1
+        c = u.minOneOf(g, "id").color
+        node.color = c for node in g
+        @cluster = Math.max @cluster, g.length
+        
+        if @cluster is @buttons then @stop()
+        
+      graphOf: (node) ->
+        a.marked = false for a in @agents
+        @markNeighbors node
+        a for a in @agents when a.marked
+      markNeighbors: (node) ->
+        node.marked = true
+        unMarked = (n for n in node.linkNeighbors() when not n.marked)
+        @markNeighbors n for n in unMarked
+
+
+    # divName, patchSize, minX, maxX, minY, maxY, isTorus = true
+    #   NL Defaults: 13, -16, 16, -16, 16, true
+    # @APP is window.APP, @ = outer coffeescript wrapper context
+    @APP=new MyModel "layers", 13, -16, 16, -16, 16
+    APP.setRootVars()
+    </script>
+
+  </head>
+  <body onload="APP.start()">
+    <canvas id="testCanvas" >Your browser does not support HTML5 Canvas.</canvas>
+    <div id="layers"></div>
+  </body>
+</html>
