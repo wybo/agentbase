@@ -21,6 +21,25 @@ See the template.html and models/*.html files for example models.  The individua
 .coffee files are documented via Jeremy Ashkenas's
 [docco](http://jashkenas.github.com/docco/) in the docs/ dir.
 
+
+#### Documentation
+
+Currently the documentation is hosted directly on github via the [htmlpreview](https://github.com/htmlpreview/htmlpreview.github.com) project using the docco generated html found in the doc/ directory.  One exception it the template.html file in the top level directory.
+
+[**util.coffee**](http://htmlpreview.github.com/?https://raw.github.com/backspaces/agentscript/master/docs/util.html): is the base module for all of the miscellaneous functions used by the rest of the project.
+
+[**shapes.coffee**](http://htmlpreview.github.com/?https://raw.github.com/backspaces/agentscript/master/docs/shapes.html): is a simple agent shapes module containing the default shapes and a few functions for getting the named shapes and adding your own shapes.
+
+[**agentset.coffee**](http://htmlpreview.github.com/?https://raw.github.com/backspaces/agentscript/master/docs/agentset.html) is the core array subclass used by patches, agents, and links.
+
+[**agentsets.coffee**](http://htmlpreview.github.com/?https://raw.github.com/backspaces/agentscript/master/docs/agentsets.html) contains the three subclasses of AgentSet: Patches, Agents, and Links along with the three classes they manage: Patch, Agent, and Link.
+
+[**model.coffee**](http://htmlpreview.github.com/?https://raw.github.com/backspaces/agentscript/master/docs/model.html) is the top level integration for all the agentsets and is subclassed by all user models.
+
+[**template.html**](http://htmlpreview.github.com/?https://raw.github.com/backspaces/agentscript/master/template.html) is a trivial subclass of Model showing the basic structure how you build your own models.  In addition, the models/dir contains 10 simple models used in teaching NetLogo.
+
+
+
 #### Files
 
     LICENSE             GPLv3 License
