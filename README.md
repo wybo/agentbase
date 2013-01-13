@@ -19,8 +19,7 @@ them on change, creating agentscript.js.
 
 See the template.html and models/*.html files for example models.  The individual
 .coffee files are documented via Jeremy Ashkenas's
-[docco](http://jashkenas.github.com/docco/) in the docs/ dir.
-
+[docco](http://jashkenas.github.com/docco/) in the docs/ dir using the method suggested [here](https://github.com/jashkenas/coffee-script/wiki/[HowTo]-Compiling-and-Setting-Up-Build-Tools).
 
 #### Documentation
 
@@ -38,7 +37,29 @@ Currently the documentation is hosted directly on github via the [htmlpreview](h
 
 [**template.html**](http://htmlpreview.github.com/?https://raw.github.com/backspaces/agentscript/master/template.html) is a trivial subclass of Model showing the basic structure how you build your own models.  In addition, the models/dir contains 10 simple models used in teaching NetLogo.
 
+#### Sample Models
 
+The models/ dir contains tiny models used to test the system and offer examples to get started with.  These also use the htmlpreview project to view directly on github.
+
+[**ants.html**](http://htmlpreview.github.com/?https://github.com/backspaces/agentscript/blob/master/models/ants.html) Ant foraging with nest and food pheromone diffusion. 
+
+[**buttons.html**](http://htmlpreview.github.com/?https://github.com/backspaces/agentscript/blob/master/models/buttons.html) Stuart Kauffman's example of randomly connecting pairs of buttons in a pile resulting in a tipping point.
+
+[**diffusion.html**](http://htmlpreview.github.com/?https://github.com/backspaces/agentscript/blob/master/models/diffusion.html) Agents randomly flying on a patch grid dropping a color which is diffused over the grid.
+
+[**fire.html**](http://htmlpreview.github.com/?https://github.com/backspaces/agentscript/blob/master/models/fire.html) A CA based spread of fire showing burn behavior.
+
+[**flock.html**](http://htmlpreview.github.com/?https://github.com/backspaces/agentscript/blob/master/models/flock.html) The classic "boids" model where agents use three simple rules resulting in realistic flocking.
+
+[**gridpath.html**](http://htmlpreview.github.com/?https://github.com/backspaces/agentscript/blob/master/models/gridpath.html) One of Knuth's great puzzles on the probability of all Manhattan  traversals diagonally traversing a grid.
+
+[**linktravel.html**](http://htmlpreview.github.com/?https://github.com/backspaces/agentscript/blob/master/models/linktravel.html) Agents traversing a graph of nodes and links.
+
+[**nbody.html**](http://htmlpreview.github.com/?https://github.com/backspaces/agentscript/blob/master/models/nbody.html) Nonlinear gravitation of n bodies.
+
+[**prefattach.html**](http://htmlpreview.github.com/?https://github.com/backspaces/agentscript/blob/master/models/prefattach.html) Example of a dynamic graph with new links preferentially attaching to nodes with most links.  This results in a power-law distribution.
+
+[**tspga.html**](http://htmlpreview.github.com/?https://github.com/backspaces/agentscript/blob/master/models/tspga.html) A Traveling Sales Person solution via a Genetic Algorithm showing the rapid conversion of stochastic methods.
 
 #### Files
 
@@ -65,7 +86,8 @@ Currently the documentation is hosted directly on github via the [htmlpreview](h
 
 #### License
 
-Copyright 2012-2013, Owen Densmore, RedFish LLC http://agentscript.org/<br>
+Copyright Owen Densmore, RedfishGroup LLC, 2012, 2013<br>
+http://agentscript.org/<br>
 AgentScript may be freely distributed under the GPLv3 license:
 
 AgentScript is free software: you can redistribute it and/or modify

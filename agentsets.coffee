@@ -157,7 +157,19 @@ class ABM.Patches extends ABM.AgentSet
 
 # ### Agent & Agents
 
+# Class Agent instances represent the dynamic, behavioral element of ABM.
+#
+# * x,y: position on the patch grid, in patch coordinates, default: 0,0
+# * color: the color of the agent, default: ABM.util.randomColor
+# * shape: the ABM.shape of the agent, default: ABM.agents.defaultShape
+# * heading: direction of the agent, in radians, from x-axis
+# * size: size of agent, in patch coords, default: 1
+# * p: patch at current x,y location
+# * penDown: true if patch pin is drawing
+# * penSize: size in patch coords of the pen, default: 1 pixel
+# * breed: string represented the type of agent. Ex: wolf, rabbit.
 class ABM.Agent
+  # Constructor: set instance variables to defaults
   constructor: ->
     @breed = "default"
     @x = @y = 0
@@ -168,9 +180,15 @@ class ABM.Agent
     @p = ABM.patches.patch @x, @y
     @penDown = false
     @penSize = ABM.patches.bits2Patches(1)
+  #  Set agent color to `c` scaled by `s`. Usage: see patch.scaleColor
   scaleColor: (c, s) -> @color = u.scaleColor c, s
+  
+  # Return a string representation of the agent.
   toString: ->
     "{id:#{@id} xy:#{u.aToFixed [@x,@y]} c:#{@color} h: #{@heading.toFixed 2}}"
+  
+  # Place the agent at the given x,y (floats) in patch coords
+  # using patch topology (isTorus)
   setXY: (x, y) ->
     [x0, y0] = [@x, @y] if @penDown
     [@x, @y] = ABM.patches.coord x, y
@@ -182,10 +200,20 @@ class ABM.Agent
       # drawing.moveTo x0, y0; drawing.lineTo @x, @y
       drawing.moveTo x0, y0; drawing.lineTo x, y # REMIND: euclidean
       drawing.stroke()
+  
+  # Place the agent at the given patch/agent location,
+  # using patch topology (isTorus)
   moveTo: (a) -> @setXY a.x, a.y
+  
+  # Move forward (along heading) d units (patch coords),
+  # using patch topology (isTorus)
   forward: (d) ->
     @setXY @x + d*Math.cos(@heading), @y + d*Math.sin(@heading)
+  
+  # Change current heading by rad radians which can be + (left) or - (right)
   rotate: (rad) -> @heading = u.wrap @heading + rad, 0, Math.PI*2 # returns new h
+  
+  # Draw the agent.
   draw: (ctx) ->
     shape = ABM.shapes[@shape]
     ctx.save()
@@ -197,44 +225,78 @@ class ABM.Agent
     ctx.closePath()
     ctx.fill()
     ctx.restore()
-      
+  
+  # Draw the agent on the drawing layer, leaving perminant image.
   stamp: -> @draw ABM.drawing
-  distanceXY: (x,y) -> # distance from me to x,y (may want sqDist too)
+  
+  # Return distance in patch coords from me to x,y 
+  # using patch topology (isTorus)
+  distanceXY: (x,y) ->
     if ABM.patches.isTorus
     then u.torusDistance @x, @y, x, y, ABM.patches.numX, ABM.patches.numY
     else u.distance @x, @y, x, y
+
+  # Return distance in patch coords from me to given agent/patch
+  # using patch topology (isTorus)
   distance: (o) -> # o any object w/ x,y, patch or agent
     @distanceXY o.x, o.y
+  
+  # Return the closest torus topology point of given x,y relative to myself.
+  # See util.torusPt.
   torusPtXY: (x, y) ->
     u.torusPt @x, @y, x, y, ABM.patches.numX, ABM.patches.numY
+
+  # Return the closest torus topology point of given agent/patch relative to myself.
+  # See util.torusPt.
   torusPt: (o) ->
     @torusPtXY o.x, o.y
+
+  # Set my heading towards given agent/patch using patch topology (isTorus)
   face: (o) -> @heading = @towards o
+
+  # Return heading towards x,y using patch topology (isTorus)
   towardsXY: (x, y) ->
     if ABM.patches.isTorus
     then u.torusRadsToward @x, @y, x, y, ABM.patches.numX, ABM.patches.numY
     else u.radsToward @x, @y, x, y
+
+  # Return heading towards given agent/patch using patch topology (isTorus)
   towards: (o) -> @towardsXY o.x, o.y
+  
   # patchRect: (dx, dy, meToo = false) -> ABM.patches.patchRect @p, dx, dy, meToo
+  
+  # Return the members of the given agentset that are within radius distance
+  # from me, and within cone radians of my heading using patch topology (isTorus)
   inCone: (aset, cone, radius, meToo=false) -> 
     # aset.inCone @, @heading, cone, radius, meToo=false # REMIND: @p vs @?
     aset.inCone @p, @heading, cone, radius, meToo=false # REMIND: @p vs @?
 
+  # Remove myself from the model.  Includes removing myself from the agents agentset
+  # and removing any links I may have.
   die: ->
     # console.log @,   remove @
     ABM.agents.remove @
     # fails: modifies links: l.die() for l in links when l.end1 is @ or l.end2 is @
     unlink = (l for l in ABM.links when l.end1 is @ or l.end2 is @)
     l.die() for l in unlink
-  copy: (a) -> # copy all of my values to a (except id)
-    a[k] = v for own k, v of @ when k isnt "id" and k isnt "shape" #and k isnt "breed"
-    # should have default shape of breed
+  
+  # Copy all of my values, except ID, to a.  Used by `hatch`
+  copy: (a) ->
+    a[k] = v for own k, v of @ when k isnt "id" and k isnt "shape" #and k isnt "breed" (shape of breed too?)
+
+  # Factory: create num new agents here, with an optional initialization procedure.
   hatch: (num = 1, init = ->) ->
     ABM.agents.create num, (a) => # fat arrow so that @ = this agent
       @copy a; init(a); a
-  links: -> # return all links linked to me
+
+  # Return all links linked to me
+  links: ->
     l for l in ABM.links when (l.end1 is @) or (l.end2 is @) # asSet?
+  
+  # Return other end of link from me
   otherEnd: (l) -> if l.end1 is @ then l.end2 else l.end1
+  
+  # Return all agents linked to me.
   linkNeighbors: -> # return all agents linked to me
     ABM.agents.asSet (@otherEnd l for l in @links())
   
