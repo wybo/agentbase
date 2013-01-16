@@ -49,7 +49,8 @@ class ABM.Patch
     @y is ABM.patches.minY or @y is ABM.patches.maxY
   
   # Factory: Create num new agents on this patch.
-  # Initialize init(agent) for each new agent, default none.
+  # The optional init proc is called on each of the newly created agents.<br>
+  # NOTE: init must be applied after object inserted in agent set
   sprout: (num = 1, init = ->) ->
     ABM.agents.create num, (a) => # fat arrow so that @ = this patch
       a.setXY @x, @y; init(a); a
@@ -158,18 +159,18 @@ class ABM.Patches extends ABM.AgentSet
 # ### Agent & Agents
 
 # Class Agent instances represent the dynamic, behavioral element of ABM.
-#
-# * x,y: position on the patch grid, in patch coordinates, default: 0,0
-# * color: the color of the agent, default: ABM.util.randomColor
-# * shape: the ABM.shape of the agent, default: ABM.agents.defaultShape
-# * heading: direction of the agent, in radians, from x-axis
-# * size: size of agent, in patch coords, default: 1
-# * p: patch at current x,y location
-# * penDown: true if patch pin is drawing
-# * penSize: size in patch coords of the pen, default: 1 pixel
-# * breed: string represented the type of agent. Ex: wolf, rabbit.
 class ABM.Agent
   # Constructor: set instance variables to defaults
+  #
+  # * x,y: position on the patch grid, in patch coordinates, default: 0,0
+  # * color: the color of the agent, default: ABM.util.randomColor
+  # * shape: the ABM.shape name of the agent, default: ABM.agents.defaultShape
+  # * heading: direction of the agent, in radians, from x-axis
+  # * size: size of agent, in patch coords, default: 1
+  # * p: patch at current x,y location
+  # * penDown: true if agent pen is drawing
+  # * penSize: size in patch coords of the pen, default: 1 pixel
+  # * breed: string represented the type of agent. Ex: wolf, rabbit.
   constructor: ->
     @breed = "default"
     @x = @y = 0
@@ -197,7 +198,6 @@ class ABM.Agent
       drawing = ABM.drawing
       drawing.strokeStyle = u.colorStr @color; drawing.lineWidth = @penSize
       drawing.beginPath()
-      # drawing.moveTo x0, y0; drawing.lineTo @x, @y
       drawing.moveTo x0, y0; drawing.lineTo x, y # REMIND: euclidean
       drawing.stroke()
   
@@ -213,7 +213,13 @@ class ABM.Agent
   # Change current heading by rad radians which can be + (left) or - (right)
   rotate: (rad) -> @heading = u.wrap @heading + rad, 0, Math.PI*2 # returns new h
   
-  # Draw the agent.
+  # Draw the agent: Around ctx save/restore pair
+  #
+  # * Get the agent shape object: procedure & rotate flag
+  # * Set agent transform, assuming patch coordinate transform in place
+  # * Rotate shape by heading if rotate flag set on shape
+  # * Call the shape draw with our ctx, closing the path
+  # * Fill with agent color
   draw: (ctx) ->
     shape = ABM.shapes[@shape]
     ctx.save()
@@ -246,8 +252,8 @@ class ABM.Agent
   torusPtXY: (x, y) ->
     u.torusPt @x, @y, x, y, ABM.patches.numX, ABM.patches.numY
 
-  # Return the closest torus topology point of given agent/patch relative to myself.
-  # See util.torusPt.
+  # Return the closest torus topology point of given agent/patch 
+  # relative to myself. See util.torusPt.
   torusPt: (o) ->
     @torusPtXY o.x, o.y
 
@@ -263,28 +269,27 @@ class ABM.Agent
   # Return heading towards given agent/patch using patch topology (isTorus)
   towards: (o) -> @towardsXY o.x, o.y
   
-  # patchRect: (dx, dy, meToo = false) -> ABM.patches.patchRect @p, dx, dy, meToo
+  # Return a rectangle of patches centered on this agent's patch<br>
+  # See patches.patchRect
+  patchRect: (dx, dy, meToo = false) -> ABM.patches.patchRect @p, dx, dy, meToo
   
   # Return the members of the given agentset that are within radius distance
   # from me, and within cone radians of my heading using patch topology (isTorus)
   inCone: (aset, cone, radius, meToo=false) -> 
-    # aset.inCone @, @heading, cone, radius, meToo=false # REMIND: @p vs @?
     aset.inCone @p, @heading, cone, radius, meToo=false # REMIND: @p vs @?
 
-  # Remove myself from the model.  Includes removing myself from the agents agentset
-  # and removing any links I may have.
+  # Remove myself from the model.  Includes removing myself from the agents
+  # agentset and removing any links I may have.
   die: ->
-    # console.log @,   remove @
     ABM.agents.remove @
-    # fails: modifies links: l.die() for l in links when l.end1 is @ or l.end2 is @
-    unlink = (l for l in ABM.links when l.end1 is @ or l.end2 is @)
-    l.die() for l in unlink
+    l.die() for l in @links()
   
   # Copy all of my values, except ID, to a.  Used by `hatch`
-  copy: (a) ->
-    a[k] = v for own k, v of @ when k isnt "id" and k isnt "shape" #and k isnt "breed" (shape of breed too?)
+  copy: (a) -> a[k] = v for own k, v of @ when k isnt "id"
 
-  # Factory: create num new agents here, with an optional initialization procedure.
+  # Factory: create num new agents here
+  # The optional init proc is called on each of the newly created agents.<br>
+  # NOTE: init must be applied after object inserted in agent set
   hatch: (num = 1, init = ->) ->
     ABM.agents.create num, (a) => # fat arrow so that @ = this agent
       @copy a; init(a); a
@@ -301,26 +306,56 @@ class ABM.Agent
     ABM.agents.asSet (@otherEnd l for l in @links())
   
 
+# Class Agents is a subclass of AgentSet which stores instances of Agent.
+
 class ABM.Agents extends ABM.AgentSet
+  # Constructor creates the AgentSet instance and installs
+  # variables shared by all the Agents.  This can be used to
+  # minimize Agent variables by using a "default".  Here for example
+  # we provide a default shape for agents.
   constructor: ->
     super()
     @defaultShape = "default"
+
+  # Change the default shape.  The new shape is simply
+  # a name of one of the ABM.shapes objects.
   setDefaultShape: (@defaultShape) ->
+
+  # Factory: create num new agents stored in this agentset.
+  # The optional init proc is called on each of the newly created agents.<br>
+  # NOTE: init must be applied after object inserted in agent set
   create: (num, init = ->) -> # returns list too
-    # NOTE: init must be applied after object inserted in agent set
-    # doInit = (a) -> init(a); a # call init and return agent
-    # doInit @add new Agent for i in [1..num]
     ((o) -> init(o); o) @add new ABM.Agent for i in [1..num] by 1 # too tricky?
-  # clear: -> a.die() for a in @
+
+  # Remove all agents from set via agent.die()
+  # Note call in reverse order to optimize list restructuring.
+  clear: -> @last().die() while @any() # tricky, each die modifies list
+
+  # Return the subset of this set with the given breed value.
   breed: (breed) -> @asSet @getWithProp "breed", breed
 
 # ### Link and Links
 
+# Class Link connects two agent endpoints for graph modeling.
 class ABM.Link
+  # Constructor initializes instance variables:
+  #
+  # * end1, end2: two agents being connected
+  # * color: defaults to light gray
+  # * thickness: the thickness of the line connecting the ends<br>
+  #   Defaults to 2 pixels in patch coordinates.
+  #
+  # Note the thickness uses the bits2Patches utility.  You can
+  # convert a link thickness to 3 pixels by multiplying the 
+  # default: l.thickness *= 3/2
   constructor: (@end1, @end2) ->
     @breed = "default"
     @color = [130, 130, 130] #u.randomColor()
     @thickness = ABM.patches.bits2Patches(2)
+  
+  # Draw a line between the two endpoints.  Draws "around" the
+  # torus if appropriate using two lines. As with Agent.draw,
+  # is called with patch coordinate transform installed.
   draw: (ctx) ->
     ctx.save()
     ctx.strokeStyle = u.colorStr @color
@@ -340,27 +375,62 @@ class ABM.Link
     ctx.closePath()
     ctx.stroke()
     ctx.restore()
+  
+  # Remove this link from the agent set
   die: ->
     ABM.links.remove @ # REMIND: remove from ends too
+  
+  # Return the two endpoints of this link
   bothEnds: -> ABM.links.asSet [@end1, @end2]
+  
+  # Return the distance between the endpoints with the current topology.
   length: -> @end1.distance @end2
-  # otherEnd: (a) -> if @end1 is a then @end2 else @end1
+  
+  # Return the other end of the link, given an endpoint agent.
+  # Assumes the given input *is* one of the link endpoint pairs!
+  otherEnd: (a) -> if @end1 is a then @end2 else @end1
+
+# Class Links is a subclass of AgentSet which stores instances of Link.
 
 class ABM.Links extends ABM.AgentSet
+  # Constructor simply creates an unmodified AgentSet
   constructor: ->
     super()
+  
+  # Factory: Add 1 or more links from the from agent to
+  # the to agent(s) which can be a single agent or an array
+  # of agents.
+  # The optional init proc is called on each of the newly created links.<br>
+  # NOTE: init must be applied after object inserted in agent set
   create: (from, to, init = ->) -> # returns list too
     to = [to] if not to.length?
     ((o) -> init(o); o) @add new ABM.Link from, a for a in to # too tricky?
-  # clear: -> a.die() for a in @
-  clear: -> @last().die() while @any()
+  
+  # Remove all links from set via link.die()
+  # Note call in reverse order to optimize list restructuring.
+  clear: -> @last().die() while @any() # tricky, each die modifies list
+
+  # Return the subset of this set with the given breed value.
   breed: (breed) -> @getWithProp "breed", breed
+
+  # Return all the nodes in this agentset, with duplicates
+  # included.  If 4 links have the same endpoint, it will
+  # appear 4 times.
   allEnds: -> # all link ends, w/ dups
     n = @asSet []
     n.push l.bothEnds()... for l in @
     n
+
+  # Returns all the nodes in this agentset sorted by ID and with
+  # duplicates removed.
   nodes: -> # allEnds without dups
     @allEnds().sortById().uniq()
+  
+  # Circle Layout: position the agents in the list in an equally
+  # spaced circle of the given radius, with the initial agent
+  # at the given start angle (default to pi/2 or "up") and in the
+  # +1 or -1 direction (counder clockwise or clockwise) 
+  # defaulting to -1 (clockwise).
   layoutCircle: (list, radius, startAngle = Math.PI/2, direction = -1) ->
     dTheta = 2*Math.PI/list.length
     for a, i in list

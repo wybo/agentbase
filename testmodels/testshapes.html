@@ -20,27 +20,33 @@
           p.color = [255,0,0] if p.x is 0
           p.color = [255,255,0] if p.y is 0
 
-        if @debug then for s in ABM.shapes.names()
+        for s in ABM.shapes.names()
           b = @agents.breed(s); console.log "#{b.length} #{s}"
         @links.create @agents[0], @agents.slice(1, @agents.length), @initLink
       initAgent: (a) ->
         a.size = 3
         a.shape = u.oneOf ABM.shapes.names()
         a.breed = a.shape
-        (a.penSize *= 5; a.color = [255,0,0]) if a.id is 0
+        (a.penDown = true; a.penSize *= 5; a.color = [255,0,0]) if a.id is 0
       initLink: (l) ->
         l.color = l.end2.color
       step: ->
         for a in @agents
-          a.penDown = true if a is @agents[0]
-          a.stamp() if (@ticks % 100) is 0
+          # a.stamp() if (@ticks % 100) is 0
           a.rotate u.randomCentered(u.degToRad(40))
           a.forward 1
+        if (@ticks % 50) is 0
+          @agents.oneOf().stamp()
+          if @agents.length > 2
+            @agents.last().die()
+          else
+            @stop()
 
     # divName, patchSize, minX, maxX, minY, maxY, isTorus = true
     #   NL Defaults: 13, -16, 16, -16, 16, true
     # @APP is window.APP, @ = outer coffeescript wrapper context
     @APP=new MyModel "layers", 10, -25, 25, -20, 20, true
+    @APP.setRootVars()
     </script>
 
   </head>

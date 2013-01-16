@@ -80,7 +80,10 @@ class ABM.AgentSet extends Array
   #     AS.remove(AS[3]) # [{id:0,x:0,y:1}, {id:1,x:8,y:0},
   #                         {id:2,x:6,y:4}, {id:4,x:1,y:1}] 
   remove: (o) ->
-    @splice i, 1 if (i = @indexOfID o.id) isnt -1
+    if o is @last()
+      @.length--
+    else
+      @splice i, 1 if (i = @indexOfID o.id) isnt -1
     @
 
   # Remove adjacent duplicates, by reference, in a sorted agentset.

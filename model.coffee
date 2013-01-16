@@ -89,6 +89,7 @@ class ABM.Model
     ABM.root.app = @
     ABM.root.co = @contexts #ctx object/hash
     ABM.root.ca = @layers   # ctx array
+    null
   
   # observer:
   asSet: (a) -> # turns an array into an agent set

@@ -621,8 +621,12 @@
 
     AgentSet.prototype.remove = function(o) {
       var i;
-      if ((i = this.indexOfID(o.id)) !== -1) {
-        this.splice(i, 1);
+      if (o === this.last()) {
+        this.length--;
+      } else {
+        if ((i = this.indexOfID(o.id)) !== -1) {
+          this.splice(i, 1);
+        }
       }
       return this;
     };
@@ -1271,6 +1275,13 @@
       return this.towardsXY(o.x, o.y);
     };
 
+    Agent.prototype.patchRect = function(dx, dy, meToo) {
+      if (meToo == null) {
+        meToo = false;
+      }
+      return ABM.patches.patchRect(this.p, dx, dy, meToo);
+    };
+
     Agent.prototype.inCone = function(aset, cone, radius, meToo) {
       if (meToo == null) {
         meToo = false;
@@ -1279,23 +1290,12 @@
     };
 
     Agent.prototype.die = function() {
-      var l, unlink, _j, _len1, _results;
+      var l, _j, _len1, _ref1, _results;
       ABM.agents.remove(this);
-      unlink = (function() {
-        var _j, _len1, _ref1, _results;
-        _ref1 = ABM.links;
-        _results = [];
-        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-          l = _ref1[_j];
-          if (l.end1 === this || l.end2 === this) {
-            _results.push(l);
-          }
-        }
-        return _results;
-      }).call(this);
+      _ref1 = this.links();
       _results = [];
-      for (_j = 0, _len1 = unlink.length; _j < _len1; _j++) {
-        l = unlink[_j];
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        l = _ref1[_j];
         _results.push(l.die());
       }
       return _results;
@@ -1307,7 +1307,7 @@
       for (k in this) {
         if (!__hasProp.call(this, k)) continue;
         v = this[k];
-        if (k !== "id" && k !== "shape") {
+        if (k !== "id") {
           _results.push(a[k] = v);
         }
       }
@@ -1396,6 +1396,15 @@
       return _results;
     };
 
+    Agents.prototype.clear = function() {
+      var _results;
+      _results = [];
+      while (this.any()) {
+        _results.push(this.last().die());
+      }
+      return _results;
+    };
+
     Agents.prototype.breed = function(breed) {
       return this.asSet(this.getWithProp("breed", breed));
     };
@@ -1447,6 +1456,14 @@
 
     Link.prototype.length = function() {
       return this.end1.distance(this.end2);
+    };
+
+    Link.prototype.otherEnd = function(a) {
+      if (this.end1 === a) {
+        return this.end2;
+      } else {
+        return this.end1;
+      }
     };
 
     return Link;
@@ -1697,7 +1714,8 @@
       ABM.root.u = ABM.util;
       ABM.root.app = this;
       ABM.root.co = this.contexts;
-      return ABM.root.ca = this.layers;
+      ABM.root.ca = this.layers;
+      return null;
     };
 
     Model.prototype.asSet = function(a) {
