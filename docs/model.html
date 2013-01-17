@@ -55,7 +55,7 @@ using a singleton naming convension: foo = new Foo(...)</p>             </td>   
     <span class="nv">animTicks = </span><span class="nx">@ticks</span><span class="o">-</span><span class="nx">@startTick</span>
     <span class="k">if</span> <span class="nx">@showFPS</span> <span class="o">and</span> <span class="p">(</span><span class="nx">animTicks</span> <span class="o">%</span> <span class="mi">100</span><span class="p">)</span> <span class="o">is</span> <span class="mi">0</span> <span class="o">and</span> <span class="nx">animTicks</span> <span class="o">isnt</span> <span class="mi">0</span>
       <span class="nv">fps = </span><span class="nb">Math</span><span class="p">.</span><span class="nx">round</span> <span class="p">(</span><span class="nx">animTicks</span><span class="o">*</span><span class="mi">1000</span><span class="o">/</span><span class="p">(</span><span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">()</span><span class="o">-</span><span class="nx">@startMS</span><span class="p">))</span>
-      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">&quot;</span><span class="si">#{</span><span class="nx">animTicks</span><span class="si">}</span><span class="s">: </span><span class="si">#{</span><span class="nx">fps</span><span class="si">}</span><span class="s">&quot;</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">&quot;fps: </span><span class="si">#{</span><span class="nx">fps</span><span class="si">}</span><span class="s"> at </span><span class="si">#{</span><span class="nx">animTicks</span><span class="si">}</span><span class="s"> ticks&quot;</span>
     <span class="nx">@ticks</span><span class="o">++</span></pre></div>             </td>           </tr>                               <tr id="section-17">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-17">&#182;</a>               </div>               <p>Two very primitive versions of NL's <code>breed</code> commands.</p>
 
 <pre><code>@linkBreeds "spokes rims"
@@ -86,7 +86,8 @@ even.shuffle().getProp("id") # [6, 0, 4, 2, 8]
 </code></pre>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">asSet: </span><span class="nf">(a) -&gt;</span> <span class="c1"># turns an array into an agent set</span>
     <span class="nx">ABM</span><span class="p">.</span><span class="nx">AgentSet</span><span class="p">.</span><span class="nx">asSet</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-20">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-20">&#182;</a>               </div>               <p>A simple debug aid which places short names in the global name space.
 Note we avoid using the actual name, such as "patches" because this
-can cause our modules to mistakenly depend on a global name.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">setRootVars: </span><span class="o">-&gt;</span>
+can cause our modules to mistakenly depend on a global name.
+See <a href="http://goo.gl/1i7bd">CoffeeConsole</a> Chrome extension too.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">setRootVars: </span><span class="o">-&gt;</span>
     <span class="nv">ABM.root.ps = </span><span class="nx">@patches</span>
     <span class="nv">ABM.root.as = </span><span class="nx">@agents</span>
     <span class="nv">ABM.root.ls = </span><span class="nx">@links</span>
@@ -94,8 +95,8 @@ can cause our modules to mistakenly depend on a global name.</p>             </t
     <span class="nv">ABM.root.u = </span><span class="nx">ABM</span><span class="p">.</span><span class="nx">util</span>
     <span class="nv">ABM.root.app = </span><span class="nx">@</span>
     <span class="nv">ABM.root.cx = </span><span class="nx">@contexts</span> <span class="c1">#ctx object/hash</span>
-    <span class="nv">ABM.root.log = </span><span class="nf">(o) -&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="nx">o</span>
-    <span class="nv">ABM.root.loga = </span><span class="nf">(array) -&gt;</span> <span class="nx">log</span> <span class="nx">a</span> <span class="k">for</span> <span class="nx">a</span> <span class="k">in</span> <span class="nx">array</span>
+    <span class="nv">ABM.root.cl = </span><span class="nf">(o) -&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="nx">o</span>
+    <span class="nv">ABM.root.cla = </span><span class="nf">(array) -&gt;</span> <span class="nx">log</span> <span class="nx">a</span> <span class="k">for</span> <span class="nx">a</span> <span class="k">in</span> <span class="nx">array</span>
     <span class="kc">null</span>
   
 

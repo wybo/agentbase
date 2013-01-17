@@ -11,20 +11,6 @@
 
   ABM.root = this;
 
-  this.log = function(o) {
-    return console.log(o);
-  };
-
-  this.loga = function(array) {
-    var a, _i, _len, _results;
-    _results = [];
-    for (_i = 0, _len = array.length; _i < _len; _i++) {
-      a = array[_i];
-      _results.push(log(a));
-    }
-    return _results;
-  };
-
   (function() {
     var vendor, _i, _len, _ref;
     this.requestAnimFrame = this.requestAnimationFrame || null;
@@ -1551,10 +1537,13 @@
 
   ABM.Model = (function() {
 
-    function Model(div, pSize, pMinX, pMaxX, pMinY, pMaxY, isTorus) {
-      var ctx, i, k, v, _j, _len1, _ref1, _ref2;
+    function Model(div, pSize, pMinX, pMaxX, pMinY, pMaxY, isTorus, topLeft) {
+      var ctx, i, k, layers, v, _j, _len1, _ref1;
       if (isTorus == null) {
         isTorus = true;
+      }
+      if (topLeft == null) {
+        topLeft = [10, 10];
       }
       this.animate = __bind(this.animate, this);
 
@@ -1562,50 +1551,40 @@
       this.patches = ABM.patches = new ABM.Patches(pSize, pMinX, pMaxX, pMinY, pMaxY, isTorus);
       this.agents = ABM.agents = new ABM.Agents;
       this.links = ABM.links = new ABM.Links;
-      this.debug = true;
-      this.ticks = 1;
-      this.refreshLinks = this.refreshAgents = this.refreshPatches = true;
-      this.layers = (function() {
+      layers = (function() {
         var _j, _results;
         _results = [];
         for (i = _j = 0; _j <= 3; i = ++_j) {
-          _results.push(u.createLayer(div, 10, 10, this.patches.bitWidth(), this.patches.bitHeight(), i, "2d"));
+          _results.push(u.createLayer.apply(u, [div].concat(__slice.call(topLeft), [this.patches.bitWidth()], [this.patches.bitHeight()], [i], ["2d"])));
         }
         return _results;
       }).call(this);
-      _ref1 = this.layers;
-      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-        ctx = _ref1[_j];
+      this.drawing = ABM.drawing = layers[1];
+      for (_j = 0, _len1 = layers.length; _j < _len1; _j++) {
+        ctx = layers[_j];
         ctx.save();
         ctx.scale(this.patches.size, -this.patches.size);
         ctx.translate(-(this.patches.minX - .5), -(this.patches.maxY + .5));
       }
-      this.drawing = ABM.drawing = this.layers[1];
       this.contexts = {
-        patches: this.layers[0],
-        drawing: this.layers[1],
-        agents: this.layers[2],
-        links: this.layers[3]
+        patches: layers[0],
+        drawing: layers[1],
+        agents: layers[2],
+        links: layers[3]
       };
-      _ref2 = this.contexts;
-      for (k in _ref2) {
-        v = _ref2[k];
+      _ref1 = this.contexts;
+      for (k in _ref1) {
+        v = _ref1[k];
         v.agentSetName = k;
       }
+      this.showFPS = true;
+      this.ticks = 1;
+      this.refreshLinks = this.refreshAgents = this.refreshPatches = true;
       this.setup();
     }
 
     Model.prototype.agentSetName = function(aset) {
-      if (aset === this.patches) {
-        return "patches";
-      } else if (aset === this.agents) {
-        return "agents";
-      } else if (aset === this.links) {
-        return "links";
-      } else if (aset === this.drawing) {
-        return "drawing";
-      }
-      return null;
+      return aset.constructor.name.toLowerCase();
     };
 
     Model.prototype.setTextParams = function(agentSetName, domFont, align, baseline) {
@@ -1655,9 +1634,9 @@
     Model.prototype.tick = function() {
       var animTicks, fps;
       animTicks = this.ticks - this.startTick;
-      if (this.debug && (animTicks % 100) === 0 && animTicks !== 0) {
+      if (this.showFPS && (animTicks % 100) === 0 && animTicks !== 0) {
         fps = Math.round(animTicks * 1000 / (Date.now() - this.startMS));
-        console.log("" + animTicks + ": " + fps);
+        console.log("fps: " + fps + " at " + animTicks + " ticks");
       }
       return this.ticks++;
     };
@@ -1696,14 +1675,18 @@
 
     Model.prototype.draw = function() {
       if (this.refreshPatches || this.ticks === 1) {
-        this.patches.draw(this.layers[0]);
+        this.patches.draw(this.contexts.patches);
       }
       if (this.refreshLinks || this.ticks === 1) {
-        this.links.draw(this.layers[2]);
+        this.links.draw(this.contexts.links);
       }
       if (this.refreshAgents || this.ticks === 1) {
-        return this.agents.draw(this.layers[3]);
+        return this.agents.draw(this.contexts.agents);
       }
+    };
+
+    Model.prototype.asSet = function(a) {
+      return ABM.AgentSet.asSet(a);
     };
 
     Model.prototype.setRootVars = function() {
@@ -1713,13 +1696,20 @@
       ABM.root.dr = this.drawing;
       ABM.root.u = ABM.util;
       ABM.root.app = this;
-      ABM.root.co = this.contexts;
-      ABM.root.ca = this.layers;
+      ABM.root.cx = this.contexts;
+      ABM.root.cl = function(o) {
+        return console.log(o);
+      };
+      ABM.root.cla = function(array) {
+        var a, _j, _len1, _results;
+        _results = [];
+        for (_j = 0, _len1 = array.length; _j < _len1; _j++) {
+          a = array[_j];
+          _results.push(log(a));
+        }
+        return _results;
+      };
       return null;
-    };
-
-    Model.prototype.asSet = function(a) {
-      return ABM.AgentSet.asSet(a);
     };
 
     return Model;

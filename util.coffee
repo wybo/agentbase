@@ -8,10 +8,6 @@
 @ABM={}
 # Keep copy of global object in ABM
 ABM.root = @
-# Less typing for debugging in console
-@log = (o) -> console.log o
-@loga = (array) -> log a for a in array
-# See [CoffeeConsole](http://goo.gl/1i7bd) Chrome extension too.
 
 # Global shim for not-yet-standard requestAnimationFrame
 do -> 

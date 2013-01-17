@@ -8,10 +8,6 @@
 @ABM={}
 # Keep copy of global object in ABM
 ABM.root = @
-# Less typing for debugging in console
-@log = (o) -> console.log o
-@loga = (array) -> log a for a in array
-# See [CoffeeConsole](http://goo.gl/1i7bd) Chrome extension too.
 
 # Global shim for not-yet-standard requestAnimationFrame
 do -> 
@@ -1245,7 +1241,7 @@ class ABM.Model
     animTicks = @ticks-@startTick
     if @showFPS and (animTicks % 100) is 0 and animTicks isnt 0
       fps = Math.round (animTicks*1000/(Date.now()-@startMS))
-      console.log "#{animTicks}: #{fps}"
+      console.log "fps: #{fps} at #{animTicks} ticks"
     @ticks++
 
   # Two very primitive versions of NL's `breed` commands.
@@ -1285,6 +1281,7 @@ class ABM.Model
   # A simple debug aid which places short names in the global name space.
   # Note we avoid using the actual name, such as "patches" because this
   # can cause our modules to mistakenly depend on a global name.
+  # See [CoffeeConsole](http://goo.gl/1i7bd) Chrome extension too.
   setRootVars: ->
     ABM.root.ps = @patches
     ABM.root.as = @agents
@@ -1293,7 +1290,7 @@ class ABM.Model
     ABM.root.u = ABM.util
     ABM.root.app = @
     ABM.root.cx = @contexts #ctx object/hash
-    ABM.root.log = (o) -> console.log o
-    ABM.root.loga = (array) -> log a for a in array
+    ABM.root.cl = (o) -> console.log o
+    ABM.root.cla = (array) -> log a for a in array
     null
   
