@@ -332,7 +332,7 @@ ABM.util =
   # See [reference](http://goo.gl/AvEAq) for details.
   canvasTextParams: (ctx, font, align = "center", baseline = "middle") -> 
     ctx.font = font; ctx.textAlign = align; ctx.textBaseline = baseline
-  # 2D: Store the default color and xy offset for text labels for agent sets.
+  # 2D: Store the default color and xy offset for text labels for agentsets.
   # This is simply using the ctx object for convenient storage.
   canvasLabelParams: (ctx, color, xy) -> # patches/agents defaults
     ctx.labelColor = color; ctx.labelXY = xy
@@ -1156,6 +1156,8 @@ class ABM.Links extends ABM.AgentSet
       a.forward radius
       
 # Class Model is the control center for our AgentSets: Patches, Agents and Links.
+# Creating new models is done by subclassing class Model and overriding two 
+# virtual/abstract methods: `setup()` and `step()`
 
 # The usual alias for **ABM.util**.
 u = ABM.util
@@ -1163,46 +1165,71 @@ u = ABM.util
 # ### Class Model
 
 class ABM.Model
-  constructor: (div, pSize, pMinX, pMaxX, pMinY, pMaxY, isTorus=true) ->
+  # Constructor: 
+  #
+  # * create agentsets, install them and ourselves in ABM global namespace
+  # * create layers/contexts, install drawing layer in ABM global namespace
+  # * setup patch coord transforms for each layer context
+  # * intialize various instance variables
+  # * call `setup` abstract method
+  constructor: (div, pSize, pMinX, pMaxX, pMinY, pMaxY, isTorus=true, topLeft=[10,10]) ->
     ABM.model = @
     @patches = ABM.patches = new ABM.Patches pSize, pMinX, pMaxX, pMinY, pMaxY, isTorus
     @agents = ABM.agents = new ABM.Agents
     @links = ABM.links = new ABM.Links
-    @debug = true # mainly fps in console
-    @ticks = 1
-    @refreshLinks = @refreshAgents = @refreshPatches = true
-    @layers = for i in [0..3] # multi-line array comprehension
-      u.createLayer div, 10, 10, @patches.bitWidth(), @patches.bitHeight(), i, "2d"
-    for ctx in @layers # install permenant (no ctx.restore) patch coordinates
+    
+    # Create 4 2D canvas contexts layered on top of each other.
+    layers = for i in [0..3] # multi-line array comprehension
+      u.createLayer div, topLeft..., @patches.bitWidth(), @patches.bitHeight(), i, "2d"
+    # One of the layers is used for drawing only, not an agentset:
+    @drawing = ABM.drawing = layers[1]
+
+    # Initialize a patch coord transform for each layer.<br>
+    # Note: this is permanent .. there is no ctx.restore() call.<br>
+    # To use the original canvas 2D transform temporarily:
+    #
+    #     ctx.save()
+    #     ctx.setTransform(1, 0, 0, 1, 0, 0) # reset to identity
+    #       <draw in native coord system>
+    #     ctx.restore() # restore back to patch coord system
+    for ctx in layers # install permenant (no ctx.restore) patch coordinates
       ctx.save()
       ctx.scale @patches.size, -@patches.size
       ctx.translate -(@patches.minX-.5), -(@patches.maxY+.5); 
-    @drawing = ABM.drawing = @layers[1]
-    @contexts = # remind: make layers local?
-      patches: @layers[0]
-      drawing: @layers[1]
-      agents: @layers[2]
-      links: @layers[3]
+    # Create instance variable object with names for each layer
+    @contexts =
+      patches: layers[0]
+      drawing: layers[1]
+      agents:  layers[2]
+      links:   layers[3]
+    # Set a variable in each context with its name 
     v.agentSetName = k for k,v of @contexts
+    
+    # Initialize instance variables
+    @showFPS = true # show fps in console
+    @ticks = 1 # initial tick/frame
+    @refreshLinks = @refreshAgents = @refreshPatches = true # drawing flags
+
+    # Call the models setup function.
     @setup()
 
-  agentSetName: (aset) ->
-    if aset is @patches then return "patches"
-    else if aset is @agents then return "agents"
-    else if aset is @links then return "links"
-    else if aset is @drawing then return "drawing"
-    null # Catch errors, return null
-    
+  # Return string name for agentset.  Note this depends on our
+  # using a singleton naming convension: foo = new Foo(...)
+  agentSetName: (aset) -> aset.constructor.name.toLowerCase()
+  # Set the text parameters for an agentset's context.  See ABM.util
   setTextParams: (agentSetName, domFont, align="center", baseline="middle") ->
     agentSetName = @agentSetName(agentSetName) if typeof agentSetName isnt "string"
     u.canvasTextParams @contexts[agentSetName], domFont, align, baseline
+  # Set the label parameters for an agentset's context.  See ABM.util
   setLabelParams: (agentSetName, color, xy) ->
     agentSetName = @agentSetName(agentSetName) if typeof agentSetName isnt "string"
     u.canvasLabelParams @contexts[agentSetName], color, xy
-    
+  
+  # The two abstract methods overridden by subclasses
   setup: ->
   step: ->
-    
+  
+  # The animation routines. start/stop animation, increment ticks.
   start: ->
     @startMS = Date.now()
     @startTick = @ticks
@@ -1216,11 +1243,21 @@ class ABM.Model
     requestAnimFrame @animate unless @animStop
   tick: ->
     animTicks = @ticks-@startTick
-    if @debug and (animTicks % 100) is 0 and animTicks isnt 0
+    if @showFPS and (animTicks % 100) is 0 and animTicks isnt 0
       fps = Math.round (animTicks*1000/(Date.now()-@startMS))
       console.log "#{animTicks}: #{fps}"
     @ticks++
 
+  # Two very primitive versions of NL's `breed` commands.
+  #
+  #     @linkBreeds "spokes rims"
+  #     @agentBreeds "embers fires"
+  #
+  # will create dynamic methods: <br>
+  # @spokes() and @rims() which return links with
+  # their breed set to either "spokes" or "rims", and <br>
+  # @embers() and @fires()
+  # which return agents with their breeds set to "embers" or "fires"
   linkBreeds: (s) ->
     for b in s.split(" ")
       @[b] = do(b) =>
@@ -1229,25 +1266,34 @@ class ABM.Model
     for b in s.split(" ")
       @[b] = do(b) =>
        -> @agents.breed(b)
-  # setDefaultBreedShape: (breed, shape) ->
-  #   @[breed].defaultShape = shape
-    
+
+  # call the agentset draw methods if either the first call or
+  # their "refresh" flags are set.  The latter are simple optimizations
+  # to avoid redrawing the same scene.
   draw: ->
-    @patches.draw @layers[0] if @refreshPatches or @ticks is 1
-    @links.draw @layers[2]   if @refreshLinks or @ticks is 1
-    @agents.draw @layers[3]  if @refreshAgents or @ticks is 1
+    @patches.draw @contexts.patches  if @refreshPatches or @ticks is 1
+    @links.draw   @contexts.links    if @refreshLinks   or @ticks is 1
+    @agents.draw  @contexts.agents   if @refreshAgents  or @ticks is 1
   
-  setRootVars: -> # for debugging, avoid std names, confuses existing code
+  # Utility for models to create agentsets from arrays.  Ex:
+  #
+  #     even = @asSet (a for a in @agents when a.id % 2 is 0)
+  #     even.shuffle().getProp("id") # [6, 0, 4, 2, 8]
+  asSet: (a) -> # turns an array into an agent set
+    ABM.AgentSet.asSet(a)
+
+  # A simple debug aid which places short names in the global name space.
+  # Note we avoid using the actual name, such as "patches" because this
+  # can cause our modules to mistakenly depend on a global name.
+  setRootVars: ->
     ABM.root.ps = @patches
     ABM.root.as = @agents
     ABM.root.ls = @links
     ABM.root.dr = @drawing
     ABM.root.u = ABM.util
     ABM.root.app = @
-    ABM.root.co = @contexts #ctx object/hash
-    ABM.root.ca = @layers   # ctx array
+    ABM.root.cx = @contexts #ctx object/hash
+    ABM.root.log = (o) -> console.log o
+    ABM.root.loga = (array) -> log a for a in array
     null
   
-  # observer:
-  asSet: (a) -> # turns an array into an agent set
-    ABM.AgentSet.asSet(a)

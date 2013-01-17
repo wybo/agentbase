@@ -332,7 +332,7 @@ ABM.util =
   # See [reference](http://goo.gl/AvEAq) for details.
   canvasTextParams: (ctx, font, align = "center", baseline = "middle") -> 
     ctx.font = font; ctx.textAlign = align; ctx.textBaseline = baseline
-  # 2D: Store the default color and xy offset for text labels for agent sets.
+  # 2D: Store the default color and xy offset for text labels for agentsets.
   # This is simply using the ctx object for convenient storage.
   canvasLabelParams: (ctx, color, xy) -> # patches/agents defaults
     ctx.labelColor = color; ctx.labelXY = xy
