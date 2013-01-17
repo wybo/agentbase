@@ -1569,8 +1569,8 @@
       this.contexts = {
         patches: layers[0],
         drawing: layers[1],
-        agents: layers[2],
-        links: layers[3]
+        links: layers[2],
+        agents: layers[3]
       };
       _ref1 = this.contexts;
       for (k in _ref1) {

@@ -43,8 +43,8 @@ class ABM.Model
     @contexts =
       patches: layers[0]
       drawing: layers[1]
-      agents:  layers[2]
-      links:   layers[3]
+      links:   layers[2]
+      agents:  layers[3]
     # Set a variable in each context with its name 
     v.agentSetName = k for k,v of @contexts
     

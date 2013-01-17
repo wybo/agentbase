@@ -32,7 +32,7 @@
           a.color = u.scaleColor a.color, .8
           if 100 > Math.max a.color...
             a.p.color = a.color
-            a.p.draw @layers[0] # REMIND: @ctxFor @patches
+            a.p.draw @contexts.patches
             a.die()
       step: ->
         if not @agents.any() then @stop()

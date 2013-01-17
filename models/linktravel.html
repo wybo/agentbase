@@ -32,6 +32,7 @@
           n = @nodes().oneOf()
           n.hatch 1, (a) =>
             a.breed = "drivers"
+            a.shape = "default"
             a.fromNode = a.toNode = n.linkNeighbors().oneOf()
             a.face a.toNode
             a.size = 1.5
