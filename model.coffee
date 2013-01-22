@@ -136,8 +136,8 @@ class ABM.Model
     ABM.root.dr = @drawing
     ABM.root.u = ABM.util
     ABM.root.app = @
-    ABM.root.cx = @contexts #ctx object/hash
+    ABM.root.cx = @contexts
     ABM.root.cl = (o) -> console.log o
-    ABM.root.cla = (array) -> log a for a in array
+    ABM.root.cla = (array) -> console.log a for a in array
     null
   

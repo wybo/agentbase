@@ -33,13 +33,13 @@ Currently the documentation is hosted directly on github via the [htmlpreview](h
 
 [**agentsets.coffee**](http://htmlpreview.github.com/?https://raw.github.com/backspaces/agentscript/master/docs/agentsets.html) contains the three subclasses of AgentSet: Patches, Agents, and Links along with the three classes they manage: Patch, Agent, and Link.
 
-[**model.coffee**](http://htmlpreview.github.com/?https://raw.github.com/backspaces/agentscript/master/docs/model.html) is the top level integration for all the agentsets and is subclassed by all user models.
+[**model.coffee**](http://htmlpreview.github.com/?https://raw.github.com/backspaces/agentscript/master/docs/model.html) is the top level integration for all the agentsets and is subclassed by all user models. 
 
-[**template.html**](http://htmlpreview.github.com/?https://raw.github.com/backspaces/agentscript/master/template.html) is a trivial subclass of Model showing the basic structure how you build your own models.  In addition, the models/dir contains 10 simple models used in teaching NetLogo.
+[**template.html**](http://htmlpreview.github.com/?https://raw.github.com/backspaces/agentscript/master/docs/template.html) is a trivial subclass of Model showing the basic structure how you build your own models.  In addition, the models/ directory contains 10 simple models used in teaching NetLogo. You can [run the model here.](http://htmlpreview.github.com/?https://raw.github.com/backspaces/agentscript/master/template.html) 
 
 #### Sample Models
 
-The models/ dir contains tiny models used to test the system and offer examples to get started with.  These also use the htmlpreview project to view directly on github.
+The models/ directory contains tiny models used to test the system and offer examples to get started with.  These also use the htmlpreview project to view directly on github.
 
 [**ants.html**](http://htmlpreview.github.com/?https://github.com/backspaces/agentscript/blob/master/models/ants.html) Ant foraging with nest and food pheromone diffusion. 
 
@@ -60,6 +60,31 @@ The models/ dir contains tiny models used to test the system and offer examples 
 [**prefattach.html**](http://htmlpreview.github.com/?https://github.com/backspaces/agentscript/blob/master/models/prefattach.html) Example of a dynamic graph with new links preferentially attaching to nodes with most links.  This results in a power-law distribution.
 
 [**tspga.html**](http://htmlpreview.github.com/?https://github.com/backspaces/agentscript/blob/master/models/tspga.html) A Traveling Sales Person solution via a Genetic Algorithm showing the rapid conversion of stochastic methods.
+
+#### Sample Models Format
+
+Our example models use CoffeeScript directly within the browser via `text/coffeescript` [script tags](http://coffeescript.org/#scripts):
+
+    <html>
+      <head>
+        <title>AgentScript Model</title>
+        <script src="agentscript.js"></script>
+        <script src="coffee-script.js"></script>
+        <script type="text/coffeescript">
+        class MyModel extends ABM.Model
+              ...
+        APP=new MyModel "layers", 13, -16, 16, -16, 16
+              ...
+        </script>
+      </head>
+      <body onload="ABM.model.start()">
+        <div id="layers"></div>
+      </body>
+    </html>
+
+You may see this by running a sample model, then use the browser's View Page Source.  (Google "view page source `<`my browser`>`")
+
+Similarly, the models will print to the "javascript console" while they run. (Google "view javascript console `<`my browser`>`")
 
 #### Files
 

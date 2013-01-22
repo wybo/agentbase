@@ -1705,7 +1705,7 @@
         _results = [];
         for (_j = 0, _len1 = array.length; _j < _len1; _j++) {
           a = array[_j];
-          _results.push(log(a));
+          _results.push(console.log(a));
         }
         return _results;
       };

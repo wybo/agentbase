@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>CoffeeScript & Canvas ABM Test</title>
+    <title>AgentScript Model</title>
     <script src="../agentscript.js"></script>
     <script src="../coffee-script.js"></script>
     <script type="text/coffeescript">
@@ -32,11 +32,11 @@
     # divName, patchSize, minX, maxX, minY, maxY, isTorus = true
     #   NL Defaults: 13, -16, 16, -16, 16, true
     # @APP is window.APP, @ = outer coffeescript wrapper context
-    @APP=new MyModel "layers", 5, -45, 45, -45, 45, false
+    APP=new MyModel "layers", 5, -45, 45, -45, 45, false
     </script>
 
   </head>
-  <body onload="APP.start()">
+  <body onload="ABM.model.start()">
     <canvas id="testCanvas">Your browser does not support HTML5 Canvas.</canvas>
     <div id="layers"></div>
   </body>
