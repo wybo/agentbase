@@ -81,9 +81,9 @@
           @refreshPatches = true
         else
           @refreshPatches = false
-        # Stop the animation at 1000. Restart by `APP.start()` in console.
+        # Stop the animation at 1000. Restart by `ABM.model.start()` in console.
         if @ticks is 1000
-          log "..stopping, restart by APP.start()"
+          log "..stopping, restart by ABM.model.start()"
           @stop()
 
       # Three of our own methods to manage agents & patches

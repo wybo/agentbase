@@ -7,7 +7,7 @@ u = ABM.util
 
 # ### Class Model
 
-class ABM.Model
+class ABM.Model 
   # Constructor: 
   #
   # * create agentsets, install them and ourselves in ABM global namespace
@@ -40,7 +40,7 @@ class ABM.Model
       ctx.scale @patches.size, -@patches.size
       ctx.translate -(@patches.minX-.5), -(@patches.maxY+.5); 
     # Create instance variable object with names for each layer
-    @contexts =
+    @contexts = ABM.contexts =
       patches: layers[0]
       drawing: layers[1]
       links:   layers[2]

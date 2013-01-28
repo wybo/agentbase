@@ -1114,6 +1114,60 @@
       return rect;
     };
 
+    Patches.prototype.importDrawing = function(imageSrc) {
+      var img,
+        _this = this;
+      img = new Image();
+      img.onload = function() {
+        var ctx;
+        ctx = ABM.drawing;
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.drawImage(img, 0, 0, ctx.canvas.width, ctx.canvas.height);
+        return ctx.restore();
+      };
+      return img.src = imageSrc;
+    };
+
+    Patches.prototype.importColors = function(imageSrc) {
+      var can, ctx, height, img, width,
+        _this = this;
+      width = this.numX;
+      height = this.numY;
+      can = document.createElement('canvas');
+      can.width = width;
+      can.height = height;
+      ctx = can.getContext("2d");
+      img = new Image();
+      img.onload = function() {
+        var c, data, i, j, p, x, y, _j, _len1, _results;
+        if (img.width !== width || img.height !== height) {
+          ctx.drawImage(img, 0, 0, width, height);
+        } else {
+          ctx.drawImage(img, 0, 0);
+        }
+        data = ctx.getImageData(0, 0, width, height).data;
+        _results = [];
+        for (_j = 0, _len1 = _this.length; _j < _len1; _j++) {
+          p = _this[_j];
+          x = p.id % width;
+          y = height - 1 - Math.floor(p.id / width);
+          i = (x + y * width) * 4;
+          c = p.color;
+          _results.push((function() {
+            var _k, _results1;
+            _results1 = [];
+            for (j = _k = 0; _k <= 2; j = ++_k) {
+              _results1.push(c[j] = data[i + j]);
+            }
+            return _results1;
+          })());
+        }
+        return _results;
+      };
+      return img.src = imageSrc;
+    };
+
     Patches.prototype.diffuse = function(v, rate, c) {
       var dv, dv8, n, nn, p, _j, _k, _l, _len1, _len2, _len3, _len4, _m, _ref1;
       if (c == null) {
@@ -1566,7 +1620,7 @@
         ctx.scale(this.patches.size, -this.patches.size);
         ctx.translate(-(this.patches.minX - .5), -(this.patches.maxY + .5));
       }
-      this.contexts = {
+      this.contexts = ABM.contexts = {
         patches: layers[0],
         drawing: layers[1],
         links: layers[2],

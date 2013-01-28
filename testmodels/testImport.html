@@ -12,21 +12,16 @@
         
         # for p in @patches
         #   p.color = u.randomGray()
-
-        @agents.create 10, (a) => # fat arrow for @patches etc
-          a.size = 2
-          a.setXY @patches.randomPt()... # splat: pt to 2 args
-        @links.create @agents[i], @agents[i+1] for i in [0..9] by 2
+        
+        @patches.importDrawing "redfish512.png"
+        # @patches.importColors "redfish512.png"
 
       step: -> # stop: just one tick
-        for l in @links
-          l.end1.face l.end2
-          l.end2.face l.end1
         @stop() # debug: stop after first animation
 
     # divName, patchSize, minX, maxX, minY, maxY, isTorus = true, topLeft=[10,10]
     #   NL Defaults: 13, -16, 16, -16, 16
-    APP=new MyModel "layers", 13, -16, 16, -16, 16, true
+    APP=new MyModel "layers", 4, -45, 45, -45, 45, true
     APP.setRootVars()
     </script>
   </head>

@@ -136,6 +136,48 @@ class ABM.Patches extends ABM.AgentSet
           rect.push (pnext) if (meToo or p isnt pnext)
     rect
   
+  # Draws, or "imports" an image URL into the drawing layer.
+  # The image is scaled to fit the drawing layer.
+  #
+  # This is an async load, see this
+  # [new Image()](http://javascript.mfields.org/2011/creating-an-image-in-javascript/)
+  # tutorial.  We draw the image into the drawing layer as
+  # soon as the onload callback executes.
+  # The "fat arrow" insures the callback executes within the importDrawing context.
+  importDrawing: (imageSrc) ->
+    img = new Image()
+    img.onload = => # fat arrow, this context
+      ctx = ABM.drawing
+      ctx.save() # revert to native 2D transform
+      ctx.setTransform 1, 0, 0, 1, 0, 0
+      ctx.drawImage img, 0, 0, ctx.canvas.width, ctx.canvas.height
+      ctx.restore() # restore patch transform
+    img.src = imageSrc
+  
+  # Draws, or "imports" an image URL into the patches as their color property.
+  # The drawing is scaled to the number of x,y patches, thus one pixel
+  # per patch.  The colors are then transferred to the patches.
+  importColors: (imageSrc) ->
+    width = @numX; height = @numY
+    can = document.createElement 'canvas'
+    can.width = width; can.height = height
+    ctx = can.getContext "2d" 
+    
+    img = new Image()
+    img.onload = => # fat arrow, this context
+      if img.width isnt width or img.height isnt height
+        ctx.drawImage img, 0, 0, width, height
+      else
+        ctx.drawImage img, 0, 0
+      data = ctx.getImageData(0, 0, width, height).data
+      for p in @
+        x = p.id % width
+        y = height - 1 - Math.floor(p.id / width)
+        i = (x + y*width)*4
+        c = p.color
+        c[j] = data[i+j] for j in [0..2]
+    img.src = imageSrc
+  
   # Diffuse the value of patch variable `p.v` by distributing `rate` percent
   # of each patch's value of `v` to its neighbors. If a color `c` is given,
   # scale the patch's color to be `p.v` of `c`. If the patch has
