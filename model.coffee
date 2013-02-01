@@ -52,10 +52,19 @@ class ABM.Model
     @showFPS = true # show fps in console
     @ticks = 1 # initial tick/frame
     @refreshLinks = @refreshAgents = @refreshPatches = true # drawing flags
+    @fastPatches = false
 
     # Call the models setup function.
     @setup()
 
+  # Draw patches using scaled image of colors. Note anti-aliasing may occur
+  # if browser does not support imageSmoothingEnabled or equivalent.
+  setFastPatches: (fast=true) ->
+    @contexts.patches.imageSmoothingEnabled = false
+    @contexts.patches.mozImageSmoothingEnabled = false
+    @contexts.patches.webkitImageSmoothingEnabled = false
+    @patches.drawWithPixels = true
+    
   # Return string name for agentset.  Note this depends on our
   # using a singleton naming convension: foo = new Foo(...)
   agentSetName: (aset) -> aset.constructor.name.toLowerCase()

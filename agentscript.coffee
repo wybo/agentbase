@@ -780,9 +780,8 @@ class ABM.Patch
 #
 # * size: pixel h/w of each patch.
 # * minX/maxX: min/max x coord, each patch being a unit square.
-# * numX: total number of patches in x direction, width of grid
 # * minY/maxY: min/max y coord.
-# * numY: total number of patches in y direction, height of grid.
+# * numX/numY: total patches in x/y direction, width/height of grid.
 # * isTorus: topology of patches, see **ABM.util**.
 class ABM.Patches extends ABM.AgentSet
   # Constructor: set variables, fill patch neighbor variables, n & n4.
@@ -796,6 +795,13 @@ class ABM.Patches extends ABM.AgentSet
     for p in @
       p.n = @asOrderedSet @patchRect p, 1, 1
       p.n4 = @asOrderedSet (n for n in p.n when n.x is p.x or n.y is p.y)
+    can = document.createElement 'canvas'  # small pixel grid for patch colors
+    can.width = @numX; can.height = @numY
+    @pixelsCtx = can.getContext "2d"
+    @drawWithPixels = false
+
+  draw: (ctx) ->
+    if @drawWithPixels then @drawScaledPixels ctx else super ctx
 
 # #### Patch grid coord system utilities:
 
@@ -867,29 +873,46 @@ class ABM.Patches extends ABM.AgentSet
       ctx.restore() # restore patch transform
     img.src = imageSrc
   
+  # Utility function for pixel manipulation.  Given a patch ID, returns the 
+  # native canvas x,y from top,left and the index i into the pixel data.
+  idToPixels: (id) ->
+    x = id % @numX
+    y = @numY - 1 - Math.floor(id / @numX)
+    i = (x + y*@numX)*4
+    [x,y,i]
+    
   # Draws, or "imports" an image URL into the patches as their color property.
   # The drawing is scaled to the number of x,y patches, thus one pixel
   # per patch.  The colors are then transferred to the patches.
   importColors: (imageSrc) ->
-    width = @numX; height = @numY
-    can = document.createElement 'canvas'
-    can.width = width; can.height = height
-    ctx = can.getContext "2d" 
-    
     img = new Image()
     img.onload = => # fat arrow, this context
-      if img.width isnt width or img.height isnt height
-        ctx.drawImage img, 0, 0, width, height
+      if img.width isnt @numX or img.height isnt @numY
+        @pixelsCtx.drawImage img, 0, 0, @numX, @numY
       else
-        ctx.drawImage img, 0, 0
-      data = ctx.getImageData(0, 0, width, height).data
+        @pixelsCtx.drawImage img, 0, 0
+      data = @pixelsCtx.getImageData(0, 0, @numX, @numY).data
       for p in @
-        x = p.id % width
-        y = height - 1 - Math.floor(p.id / width)
-        i = (x + y*width)*4
+        [x,y,i] = @idToPixels p.id
         c = p.color
         c[j] = data[i+j] for j in [0..2]
     img.src = imageSrc
+  
+  # Draw the patches via pixel manipulation rather than 2D drawRect.
+  drawScaledPixels: (ctx) ->
+    image = @pixelsCtx.getImageData(0, 0, @numX, @numY)
+    data = image.data
+    for p in @
+      [x,y,i] = @idToPixels p.id
+      c = p.color
+      data[i+j] = c[j] for j in [0..2]
+      data[i+3] = 255
+    @pixelsCtx.putImageData(image, 0, 0)
+    ctx.save() # revert to native 2D transform
+    ctx.setTransform 1, 0, 0, 1, 0, 0
+    ctx.drawImage @pixelsCtx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height
+    ctx.restore() # restore patch transform
+      
   
   # Diffuse the value of patch variable `p.v` by distributing `rate` percent
   # of each patch's value of `v` to its neighbors. If a color `c` is given,
@@ -1247,10 +1270,19 @@ class ABM.Model
     @showFPS = true # show fps in console
     @ticks = 1 # initial tick/frame
     @refreshLinks = @refreshAgents = @refreshPatches = true # drawing flags
+    @fastPatches = false
 
     # Call the models setup function.
     @setup()
 
+  # Draw patches using scaled image of colors. Note anti-aliasing may occur
+  # if browser does not support imageSmoothingEnabled or equivalent.
+  setFastPatches: (fast=true) ->
+    @contexts.patches.imageSmoothingEnabled = false
+    @contexts.patches.mozImageSmoothingEnabled = false
+    @contexts.patches.webkitImageSmoothingEnabled = false
+    @patches.drawWithPixels = true
+    
   # Return string name for agentset.  Note this depends on our
   # using a singleton naming convension: foo = new Foo(...)
   agentSetName: (aset) -> aset.constructor.name.toLowerCase()

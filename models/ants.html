@@ -8,6 +8,8 @@
       u = ABM.util # static variable
       setup: -> # called by Model ctor
         
+        @setFastPatches()
+        
         # globals
         @nestColor = [255,255,0]  # yellow
         @foodColor = [0,0,255]    # blue

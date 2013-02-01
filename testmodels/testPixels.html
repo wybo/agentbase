@@ -8,20 +8,15 @@
       u = ABM.util # static variables
       PI = Math.PI
       setup: -> # called by Model ctor
-        @refreshPatches = false
+        @setFastPatches()
         
-        # for p in @patches
-        #   p.color = u.randomGray()
-        
-        # @patches.importDrawing "redfish512.png"
-        @patches.importColors "redfish512.png"
-
       step: -> # stop: just one tick
-        @stop() # debug: stop after first animation
+        p.color = u.randomGray() for p in @patches
+        #@stop() if @ticks is 101
 
     # divName, patchSize, minX, maxX, minY, maxY, isTorus = true, topLeft=[10,10]
     #   NL Defaults: 13, -16, 16, -16, 16
-    APP=new MyModel "layers", 4, -45, 45, -45, 45, true
+    APP=new MyModel "layers", 4, -64, 64, -64, 64, true
     APP.setRootVars()
     </script>
   </head>

@@ -1014,7 +1014,7 @@
     __extends(Patches, _super);
 
     function Patches(size, minX, maxX, minY, maxY, isTorus) {
-      var n, p, x, y, _j, _k, _l, _len1;
+      var can, n, p, x, y, _j, _k, _l, _len1;
       this.size = size;
       this.minX = minX;
       this.maxX = maxX;
@@ -1045,7 +1045,20 @@
           return _results;
         })());
       }
+      can = document.createElement('canvas');
+      can.width = this.numX;
+      can.height = this.numY;
+      this.pixelsCtx = can.getContext("2d");
+      this.drawWithPixels = false;
     }
+
+    Patches.prototype.draw = function(ctx) {
+      if (this.drawWithPixels) {
+        return this.drawScaledPixels(ctx);
+      } else {
+        return Patches.__super__.draw.call(this, ctx);
+      }
+    };
 
     Patches.prototype.patchXY = function(x, y) {
       return this[x - this.minX + this.numX * (y - this.minY)];
@@ -1129,30 +1142,30 @@
       return img.src = imageSrc;
     };
 
+    Patches.prototype.idToPixels = function(id) {
+      var i, x, y;
+      x = id % this.numX;
+      y = this.numY - 1 - Math.floor(id / this.numX);
+      i = (x + y * this.numX) * 4;
+      return [x, y, i];
+    };
+
     Patches.prototype.importColors = function(imageSrc) {
-      var can, ctx, height, img, width,
+      var img,
         _this = this;
-      width = this.numX;
-      height = this.numY;
-      can = document.createElement('canvas');
-      can.width = width;
-      can.height = height;
-      ctx = can.getContext("2d");
       img = new Image();
       img.onload = function() {
-        var c, data, i, j, p, x, y, _j, _len1, _results;
-        if (img.width !== width || img.height !== height) {
-          ctx.drawImage(img, 0, 0, width, height);
+        var c, data, i, j, p, x, y, _j, _len1, _ref1, _results;
+        if (img.width !== _this.numX || img.height !== _this.numY) {
+          _this.pixelsCtx.drawImage(img, 0, 0, _this.numX, _this.numY);
         } else {
-          ctx.drawImage(img, 0, 0);
+          _this.pixelsCtx.drawImage(img, 0, 0);
         }
-        data = ctx.getImageData(0, 0, width, height).data;
+        data = _this.pixelsCtx.getImageData(0, 0, _this.numX, _this.numY).data;
         _results = [];
         for (_j = 0, _len1 = _this.length; _j < _len1; _j++) {
           p = _this[_j];
-          x = p.id % width;
-          y = height - 1 - Math.floor(p.id / width);
-          i = (x + y * width) * 4;
+          _ref1 = _this.idToPixels(p.id), x = _ref1[0], y = _ref1[1], i = _ref1[2];
           c = p.color;
           _results.push((function() {
             var _k, _results1;
@@ -1166,6 +1179,26 @@
         return _results;
       };
       return img.src = imageSrc;
+    };
+
+    Patches.prototype.drawScaledPixels = function(ctx) {
+      var c, data, i, image, j, p, x, y, _j, _k, _len1, _ref1;
+      image = this.pixelsCtx.getImageData(0, 0, this.numX, this.numY);
+      data = image.data;
+      for (_j = 0, _len1 = this.length; _j < _len1; _j++) {
+        p = this[_j];
+        _ref1 = this.idToPixels(p.id), x = _ref1[0], y = _ref1[1], i = _ref1[2];
+        c = p.color;
+        for (j = _k = 0; _k <= 2; j = ++_k) {
+          data[i + j] = c[j];
+        }
+        data[i + 3] = 255;
+      }
+      this.pixelsCtx.putImageData(image, 0, 0);
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.drawImage(this.pixelsCtx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height);
+      return ctx.restore();
     };
 
     Patches.prototype.diffuse = function(v, rate, c) {
@@ -1634,8 +1667,19 @@
       this.showFPS = true;
       this.ticks = 1;
       this.refreshLinks = this.refreshAgents = this.refreshPatches = true;
+      this.fastPatches = false;
       this.setup();
     }
+
+    Model.prototype.setFastPatches = function(fast) {
+      if (fast == null) {
+        fast = true;
+      }
+      this.contexts.patches.imageSmoothingEnabled = false;
+      this.contexts.patches.mozImageSmoothingEnabled = false;
+      this.contexts.patches.webkitImageSmoothingEnabled = false;
+      return this.patches.drawWithPixels = true;
+    };
 
     Model.prototype.agentSetName = function(aset) {
       return aset.constructor.name.toLowerCase();
