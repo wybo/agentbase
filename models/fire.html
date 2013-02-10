@@ -7,9 +7,16 @@
     class MyModel extends ABM.Model
       u = ABM.util # static variable
       setup: -> # called by Model ctor
-        @refreshPatches = false
         @agents.setDefaultShape "square"
         @agentBreeds "embers fires"
+        
+        @refreshPatches = false # <1fps->50-55fps, no surprise, app optimized for this 
+        # No optimizations: 50-55fps
+        # @setFastPatches() # 50-55fps .. not used, refresh off
+        # @setCacheAgentsHere() # 50-55fps, not needed * overhead
+        # @setAgentStaticColors() # fps, not large part of performance
+        # None of the optimizations particularly useful, other than refresh
+        # If refresh on, fastPatches is in the 50+fps range.
         
         @density = 60 # percent
         @burnedTrees = 0
@@ -25,11 +32,11 @@
         p.sprout 1, (a) -> 
           a.breed = "fires"
           a.color = [255, 0, 0]
-        p.color = [0, 0, 0]
+        p.color = [0, 0, 0] # in original model but apparently not needed, refresh off.
         @burnedTrees++
       fadeEmbers: ->
         for a in @embers()
-          a.color = u.scaleColor a.color, .8
+          a.scaleColor a.color, .8
           if 100 > Math.max a.color...
             a.p.color = a.color
             a.p.draw @contexts.patches

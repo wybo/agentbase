@@ -8,7 +8,12 @@
       u = ABM.util # static variable
       setup: -> # called by Model ctor
         
-        @setFastPatches()
+        # No optimizations: 10fps
+        @setFastPatches() # 24fps
+        # @setCacheAgentsHere() # 9-10fps, not needed * overhead
+        @setAgentStaticColors() # 10fps, not large part of performance
+        # two: 27fps, now static colors larger percent of faster patches.
+        
         
         # globals
         @nestColor = [255,255,0]  # yellow
@@ -36,12 +41,14 @@
         null
       setupAgents: -> # a is agent
         @agents.create @population, (a) => # fat arrow for @patches etc
-          a.shape = "bug"; a.size = 3
+          a.shape = "bug"
+          a.size = 3
           a.setXY @patches.maxX-6, 0
           @resetAgent(a, false) # sets a.pheromone to max
       resetAgent: (a, withFood) ->
         a.carryingFood = withFood
         a.color = if withFood then @nestColor else @foodColor
+        a.colorStr = u.colorStr a.color if @agents.staticColors
         a.pheromone = @maxPheromone
 
       updateAgents: ->
@@ -55,13 +62,19 @@
           # a.rotate Math.PI 
           a.rotate u.degToRad(180)
         else
-          #nAhead = a.inCone a.p.n, Math.PI, 2
+          # nAhead = a.inCone a.p.n, Math.PI, 2
           nAhead = a.inCone a.p.n, u.degToRad(180), 2
+          # nAhead = a.p.n.inCone a.p, a.heading, u.degToRad(180), 2
+          # nAhead = ABM.patches.inCone a.p, a.heading, u.degToRad(180), 2
           [p, max] = nAhead.maxOneOf ((n) => @targetPheromone(a, n)), true # => for @
           a.face p if max > .001/@maxPheromone
+          # p = nAhead.maxOneOf ((n) => @targetPheromone(a, n)) # => for @
+          # max = @targetPheromone(a, p)
+          # a.face p if max > .001/@maxPheromone
         a.rotate u.randomCentered(@wiggleAngle)
         a.forward 1
-      targetPheromone: (a, p) -> if a.carryingFood then p.nestPheromone else p.foodPheromone
+      targetPheromone: (a, p) -> 
+        if a.carryingFood then p.nestPheromone else p.foodPheromone
       dropPheromone: (a) ->
         if (not a.carryingFood and a.p.isFood) or (a.carryingFood and a.p.isNest)
           @resetAgent a, not a.carryingFood

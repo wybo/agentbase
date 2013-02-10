@@ -7,7 +7,14 @@
     class MyModel extends ABM.Model
       u = ABM.util # utilities; static variable
       setup: -> # called by Model ctor
-        @refreshPatches = false
+      
+        @refreshPatches = false # <3fps->4fps agents larger part of drawing 
+        # No optimizations: 4fps
+        # @setFastPatches() # 4fps same as refresh off
+        @setCacheAgentsHere() # 17fps, big help for inRadius
+        @setAgentStaticColors() # 3fps, not large part of performance
+        # w/ refresh off and two optimizations, 22-23fps
+        
         
         @population = 500     # agents
         @vision = 3.0         # patches
@@ -19,15 +26,15 @@
         @agents.create @population, (a) => # fat arrow for @patches
           a.size = 1.5
           a.setXY @patches.randomPt()...
+
+        # @setCacheAgentsHere()
       step: ->
         @flock(a) for a in @agents
         @reportFlockVectorSize() if @ticks % 10 is 0
 
       flock: (a) -> # a is agent
-        flockmates = @agents.inRadius a, @vision # 36fps w/o inRadius, 15fps w/
+        flockmates = @agents.inRadius a, @vision
         if flockmates.length isnt 0
-          # REMIND: return agentset: [nearest,d] = flockmates.minOneOf ...etc
-          # REMIND: inRadius might remember distances so that we don't recalc distances
           [nearestNeighbor, d] = u.minOneOf flockmates, ((f) -> f.distance a), true
           if d < @minSeparation
             @separate a, nearestNeighbor

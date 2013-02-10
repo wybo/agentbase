@@ -26,7 +26,7 @@
           # neighborhood = @patches.inRadius a.p, 10, false # exclude me
           # neighborhood = @patches.inRadius a.p, 10, true # me too
           # neighborhood = @patches.inRadius a, 10 # includes my patch, can't exclude a from ps
-          # inCone: (o, heading, cone, radius, meToo=false)
+          # # inCone: (o, heading, cone, radius, meToo=false)
           neighborhood = @patches.inCone a.p, a.heading, u.degToRad(180), 20, true # me too
           # neighborhood = @agents.inCone a, a.heading, u.degToRad(30), 20, true # me too
           # neighborhood = a.inCone a.p.n, u.degToRad(120), 2

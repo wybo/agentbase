@@ -73,7 +73,9 @@ ABM.util =
   randomGray: (min = 64, max = 192) -> r=@randomInt2(min,max); [r,r,r]
   # Return new color by scaling each value of an RGB array.
   # Note [r,g,b] must be ints
-  scaleColor: (color, s) -> (@clamp(Math.round(c*s),0,255) for c in color)
+  scaleColor: (max, s, color = []) -> 
+    color[i] = @clamp(Math.round(c*s),0,255) for c, i in max
+    color
   # Return HTML color as used by canvas element.  Can include Alpha
   colorStr: (c) -> if c.length is 3 then "rgb(#{c})" else "rgba(#{c})"
   # Compare two colors.  Alas, there is no array.Equal operator.
@@ -109,6 +111,12 @@ ABM.util =
       o = @oneOf(array)
       r.push o unless o in r
     r
+  # Remove an item from an array. Error if item not in array.
+  removeItem: (array, item) ->
+    array.splice i, 1 if (i = array.indexOf item) isnt -1
+    @error "removeItem: item not found" if i < 0
+    i
+    
   # Randomize the elements of array.  Clever! See [cookbook](http://goo.gl/TT2SY)
   shuffle: (array) -> array.sort -> 0.5 - Math.random()
 

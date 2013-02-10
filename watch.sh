@@ -8,5 +8,6 @@ files="\
   model.coffee \
 "
 
+cat $files > agentscript.coffee
 
 coffee -wj agentscript.js -c $files &

@@ -116,14 +116,16 @@
       r = this.randomInt2(min, max);
       return [r, r, r];
     },
-    scaleColor: function(color, s) {
-      var c, _i, _len, _results;
-      _results = [];
-      for (_i = 0, _len = color.length; _i < _len; _i++) {
-        c = color[_i];
-        _results.push(this.clamp(Math.round(c * s), 0, 255));
+    scaleColor: function(max, s, color) {
+      var c, i, _i, _len;
+      if (color == null) {
+        color = [];
       }
-      return _results;
+      for (i = _i = 0, _len = max.length; _i < _len; i = ++_i) {
+        c = max[i];
+        color[i] = this.clamp(Math.round(c * s), 0, 255);
+      }
+      return color;
     },
     colorStr: function(c) {
       if (c.length === 3) {
@@ -187,6 +189,16 @@
         }
       }
       return r;
+    },
+    removeItem: function(array, item) {
+      var i;
+      if ((i = array.indexOf(item)) !== -1) {
+        array.splice(i, 1);
+      }
+      if (i < 0) {
+        this.error("removeItem: item not found");
+      }
+      return i;
     },
     shuffle: function(array) {
       return array.sort(function() {
@@ -584,12 +596,12 @@
 
     __extends(AgentSet, _super);
 
-    AgentSet.asSet = function(a) {
-      if (a.prototype != null) {
-        a.prototype = ABM.AgentSet.prototype;
-      } else {
-        a.__proto__ = ABM.AgentSet.prototype;
+    AgentSet.asSet = function(a, setType) {
+      var _ref;
+      if (setType == null) {
+        setType = ABM.AgentSet;
       }
+      a.__proto__ = (_ref = setType.prototype) != null ? _ref : setType.constructor.prototype;
       return a;
     };
 
@@ -950,7 +962,7 @@
     };
 
     Patch.prototype.scaleColor = function(c, s) {
-      return this.color = u.scaleColor(c, s);
+      return u.scaleColor(c, s, this.color);
     };
 
     Patch.prototype.draw = function(ctx) {
@@ -968,15 +980,19 @@
     };
 
     Patch.prototype.agentsHere = function() {
-      var a, _j, _len1, _results;
-      _results = [];
-      for (_j = 0, _len1 = agents.length; _j < _len1; _j++) {
-        a = agents[_j];
-        if (a.p === this) {
-          _results.push(a);
+      var a, _ref1;
+      return (_ref1 = this.agents) != null ? _ref1 : (function() {
+        var _j, _len1, _ref2, _results;
+        _ref2 = ABM.agents;
+        _results = [];
+        for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+          a = _ref2[_j];
+          if (a.p === this) {
+            _results.push(a);
+          }
         }
-      }
-      return _results;
+        return _results;
+      }).call(this);
     };
 
     Patch.prototype.isOnEdge = function() {
@@ -996,13 +1012,6 @@
         init(a);
         return a;
       });
-    };
-
-    Patch.prototype.patchRect = function(dx, dy, meToo) {
-      if (meToo == null) {
-        meToo = false;
-      }
-      return ABM.patches.patchRect(this, dx, dy, meToo = false);
     };
 
     return Patch;
@@ -1031,8 +1040,8 @@
       }
       for (_l = 0, _len1 = this.length; _l < _len1; _l++) {
         p = this[_l];
-        p.n = this.asOrderedSet(this.patchRect(p, 1, 1));
-        p.n4 = this.asOrderedSet((function() {
+        p.n = this.patchRect(p, 1, 1);
+        p.n4 = this.asSet((function() {
           var _len2, _m, _ref1, _results;
           _ref1 = p.n;
           _results = [];
@@ -1117,14 +1126,32 @@
       for (y = _j = _ref1 = p.y - dy, _ref2 = p.y + dy; _j <= _ref2; y = _j += 1) {
         for (x = _k = _ref3 = p.x - dx, _ref4 = p.x + dx; _k <= _ref4; x = _k += 1) {
           if (this.isTorus || ((this.minX <= x && x <= this.maxX) && (this.minY <= y && y <= this.maxY))) {
-            pnext = this.patch(x, y);
+            if (this.isTorus) {
+              if (x < this.minX) {
+                x += this.numX;
+              }
+              if (x > this.maxX) {
+                x -= this.numX;
+              }
+              if (y < this.minY) {
+                y += this.numY;
+              }
+              if (y > this.maxY) {
+                y -= this.numY;
+              }
+            }
+            pnext = this.patchXY(x, y);
+            if (!(pnext != null)) {
+              u.error("patchRect: x,y out of bounds, see console.log");
+              console.log("  x " + x + " y " + y + " p.x " + p.x + " p.y " + p.y + " dx " + dx + " dy " + dy + " minX " + this.minX + " minY " + this.minY);
+            }
             if (meToo || p !== pnext) {
               rect.push(pnext);
             }
           }
         }
       }
-      return rect;
+      return this.asSet(rect);
     };
 
     Patches.prototype.importDrawing = function(imageSrc) {
@@ -1146,8 +1173,7 @@
       var i, x, y;
       x = id % this.numX;
       y = this.numY - 1 - Math.floor(id / this.numX);
-      i = (x + y * this.numX) * 4;
-      return [x, y, i];
+      return i = (x + y * this.numX) * 4;
     };
 
     Patches.prototype.importColors = function(imageSrc) {
@@ -1155,39 +1181,33 @@
         _this = this;
       img = new Image();
       img.onload = function() {
-        var c, data, i, j, p, x, y, _j, _len1, _ref1, _results;
+        var c, data, i, j, p, _j, _k, _len1;
         if (img.width !== _this.numX || img.height !== _this.numY) {
           _this.pixelsCtx.drawImage(img, 0, 0, _this.numX, _this.numY);
         } else {
           _this.pixelsCtx.drawImage(img, 0, 0);
         }
         data = _this.pixelsCtx.getImageData(0, 0, _this.numX, _this.numY).data;
-        _results = [];
         for (_j = 0, _len1 = _this.length; _j < _len1; _j++) {
           p = _this[_j];
-          _ref1 = _this.idToPixels(p.id), x = _ref1[0], y = _ref1[1], i = _ref1[2];
+          i = _this.idToPixels(p.id);
           c = p.color;
-          _results.push((function() {
-            var _k, _results1;
-            _results1 = [];
-            for (j = _k = 0; _k <= 2; j = ++_k) {
-              _results1.push(c[j] = data[i + j]);
-            }
-            return _results1;
-          })());
+          for (j = _k = 0; _k <= 2; j = ++_k) {
+            c[j] = data[i + j];
+          }
         }
-        return _results;
+        return null;
       };
       return img.src = imageSrc;
     };
 
     Patches.prototype.drawScaledPixels = function(ctx) {
-      var c, data, i, image, j, p, x, y, _j, _k, _len1, _ref1;
+      var c, data, i, image, j, p, _j, _k, _len1;
       image = this.pixelsCtx.getImageData(0, 0, this.numX, this.numY);
       data = image.data;
       for (_j = 0, _len1 = this.length; _j < _len1; _j++) {
         p = this[_j];
-        _ref1 = this.idToPixels(p.id), x = _ref1[0], y = _ref1[1], i = _ref1[2];
+        i = this.idToPixels(p.id);
         c = p.color;
         for (j = _k = 0; _k <= 2; j = ++_k) {
           data[i + j] = c[j];
@@ -1249,12 +1269,15 @@
       this.size = 1;
       this.shape = ABM.agents.defaultShape;
       this.p = ABM.patches.patch(this.x, this.y);
+      if (this.p.agents != null) {
+        this.p.agents.push(this);
+      }
       this.penDown = false;
       this.penSize = ABM.patches.bits2Patches(1);
     }
 
     Agent.prototype.scaleColor = function(c, s) {
-      return this.color = u.scaleColor(c, s);
+      return u.scaleColor(c, s, this.color);
     };
 
     Agent.prototype.toString = function() {
@@ -1262,12 +1285,17 @@
     };
 
     Agent.prototype.setXY = function(x, y) {
-      var drawing, x0, y0, _ref1, _ref2;
+      var drawing, p, x0, y0, _ref1, _ref2;
       if (this.penDown) {
         _ref1 = [this.x, this.y], x0 = _ref1[0], y0 = _ref1[1];
       }
       _ref2 = ABM.patches.coord(x, y), this.x = _ref2[0], this.y = _ref2[1];
+      p = this.p;
       this.p = ABM.patches.patch(this.x, this.y);
+      if ((p.agents != null) && p !== this.p) {
+        u.removeItem(p.agents, this);
+        this.p.agents.push(this);
+      }
       if (this.penDown) {
         drawing = ABM.drawing;
         drawing.strokeStyle = u.colorStr(this.color);
@@ -1295,7 +1323,10 @@
       var shape;
       shape = ABM.shapes[this.shape];
       ctx.save();
-      ctx.fillStyle = u.colorStr(this.color);
+      if (ABM.agents.staticColors && !(this.colorStr != null)) {
+        this.colorStr = u.colorStr(this.color);
+      }
+      ctx.fillStyle = this.colorStr || u.colorStr(this.color);
       ctx.translate(this.x, this.y);
       ctx.scale(this.size, this.size);
       if (shape.rotate) {
@@ -1348,43 +1379,15 @@
       return this.towardsXY(o.x, o.y);
     };
 
-    Agent.prototype.patchRect = function(dx, dy, meToo) {
-      if (meToo == null) {
-        meToo = false;
-      }
-      return ABM.patches.patchRect(this.p, dx, dy, meToo);
-    };
-
-    Agent.prototype.inCone = function(aset, cone, radius, meToo) {
-      if (meToo == null) {
-        meToo = false;
-      }
-      return aset.inCone(this.p, this.heading, cone, radius, meToo = false);
-    };
-
     Agent.prototype.die = function() {
-      var l, _j, _len1, _ref1, _results;
+      var l, _j, _len1, _ref1;
       ABM.agents.remove(this);
       _ref1 = this.links();
-      _results = [];
       for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
         l = _ref1[_j];
-        _results.push(l.die());
+        l.die();
       }
-      return _results;
-    };
-
-    Agent.prototype.copy = function(a) {
-      var k, v, _results;
-      _results = [];
-      for (k in this) {
-        if (!__hasProp.call(this, k)) continue;
-        v = this[k];
-        if (k !== "id") {
-          _results.push(a[k] = v);
-        }
-      }
-      return _results;
+      return null;
     };
 
     Agent.prototype.hatch = function(num, init) {
@@ -1396,10 +1399,25 @@
         init = function() {};
       }
       return ABM.agents.create(num, function(a) {
-        _this.copy(a);
+        var k, v;
+        a.setXY(_this.x, _this.y);
+        for (k in _this) {
+          if (!__hasProp.call(_this, k)) continue;
+          v = _this[k];
+          if (k !== "id") {
+            a[k] = v;
+          }
+        }
         init(a);
         return a;
       });
+    };
+
+    Agent.prototype.inCone = function(aset, cone, radius, meToo) {
+      if (meToo == null) {
+        meToo = false;
+      }
+      return aset.inCone(this.p, this.heading, cone, radius, meToo);
     };
 
     Agent.prototype.links = function() {
@@ -1448,10 +1466,15 @@
     function Agents() {
       Agents.__super__.constructor.call(this);
       this.defaultShape = "default";
+      this.staticColors = false;
     }
 
     Agents.prototype.setDefaultShape = function(defaultShape) {
       this.defaultShape = defaultShape;
+    };
+
+    Agents.prototype.setStaticColors = function(staticColors) {
+      this.staticColors = staticColors;
     };
 
     Agents.prototype.create = function(num, init) {
@@ -1470,16 +1493,55 @@
     };
 
     Agents.prototype.clear = function() {
-      var _results;
-      _results = [];
       while (this.any()) {
-        _results.push(this.last().die());
+        this.last().die();
       }
-      return _results;
+      return null;
     };
 
     Agents.prototype.breed = function(breed) {
       return this.asSet(this.getWithProp("breed", breed));
+    };
+
+    Agents.prototype.agentsInPatches = function(patches) {
+      var p, rect, _j, _len1;
+      rect = [];
+      for (_j = 0, _len1 = patches.length; _j < _len1; _j++) {
+        p = patches[_j];
+        rect.push.apply(rect, p.agentsHere());
+      }
+      return this.asSet(rect);
+    };
+
+    Agents.prototype.agentRect = function(a, dx, dy, meToo) {
+      var rect;
+      if (meToo == null) {
+        meToo = false;
+      }
+      rect = ABM.patches.patchRect(a.p, dx, dy, true);
+      rect = this.agentsInPatches(rect);
+      if (!meToo) {
+        u.removeItem(rect, a);
+      }
+      return rect;
+    };
+
+    Agents.prototype.inCone = function(a, heading, cone, radius, meToo) {
+      var as;
+      if (meToo == null) {
+        meToo = false;
+      }
+      as = this.agentRect(a, radius, radius, true);
+      return as.inCone(a, heading, cone, radius, meToo);
+    };
+
+    Agents.prototype.inRadius = function(a, radius, meToo) {
+      var as;
+      if (meToo == null) {
+        meToo = false;
+      }
+      as = this.agentRect(a, radius, radius, true);
+      return as.inRadius(a, radius, meToo);
     };
 
     return Agents;
@@ -1571,12 +1633,10 @@
     };
 
     Links.prototype.clear = function() {
-      var _results;
-      _results = [];
       while (this.any()) {
-        _results.push(this.last().die());
+        this.last().die();
       }
-      return _results;
+      return null;
     };
 
     Links.prototype.breed = function(breed) {
@@ -1598,7 +1658,7 @@
     };
 
     Links.prototype.layoutCircle = function(list, radius, startAngle, direction) {
-      var a, dTheta, i, _j, _len1, _results;
+      var a, dTheta, i, _j, _len1;
       if (startAngle == null) {
         startAngle = Math.PI / 2;
       }
@@ -1606,14 +1666,13 @@
         direction = -1;
       }
       dTheta = 2 * Math.PI / list.length;
-      _results = [];
       for (i = _j = 0, _len1 = list.length; _j < _len1; i = ++_j) {
         a = list[i];
         a.setXY(0, 0);
         a.heading = startAngle + direction * dTheta * i;
-        _results.push(a.forward(radius));
+        a.forward(radius);
       }
-      return _results;
+      return null;
     };
 
     return Links;
@@ -1675,10 +1734,38 @@
       if (fast == null) {
         fast = true;
       }
-      this.contexts.patches.imageSmoothingEnabled = false;
-      this.contexts.patches.mozImageSmoothingEnabled = false;
-      this.contexts.patches.webkitImageSmoothingEnabled = false;
-      return this.patches.drawWithPixels = true;
+      this.contexts.patches.imageSmoothingEnabled = !fast;
+      this.contexts.patches.mozImageSmoothingEnabled = !fast;
+      this.contexts.patches.webkitImageSmoothingEnabled = !fast;
+      return this.patches.drawWithPixels = fast;
+    };
+
+    Model.prototype.setCacheAgentsHere = function(useCache) {
+      var a, p, _j, _k, _len1, _len2, _ref1, _ref2, _results;
+      if (useCache == null) {
+        useCache = true;
+      }
+      if (useCache) {
+        _ref1 = this.patches;
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+          p = _ref1[_j];
+          p.agents = [];
+        }
+        _ref2 = this.agents;
+        _results = [];
+        for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+          a = _ref2[_k];
+          _results.push(a.p.agents.push(a));
+        }
+        return _results;
+      }
+    };
+
+    Model.prototype.setAgentStaticColors = function(staticColors) {
+      if (staticColors == null) {
+        staticColors = true;
+      }
+      return this.agents.setStaticColors(staticColors);
     };
 
     Model.prototype.agentSetName = function(aset) {
@@ -1709,7 +1796,12 @@
 
     Model.prototype.step = function() {};
 
+    Model.prototype.startup = function() {};
+
     Model.prototype.start = function() {
+      if (this.ticks === 1) {
+        this.startup();
+      }
       this.startMS = Date.now();
       this.startTick = this.ticks;
       this.animStop = false;
@@ -1718,6 +1810,18 @@
 
     Model.prototype.stop = function() {
       return this.animStop = true;
+    };
+
+    Model.prototype.draw = function() {
+      if (this.refreshPatches || this.ticks === 1) {
+        this.patches.draw(this.contexts.patches);
+      }
+      if (this.refreshLinks || this.ticks === 1) {
+        this.links.draw(this.contexts.links);
+      }
+      if (this.refreshAgents || this.ticks === 1) {
+        return this.agents.draw(this.contexts.agents);
+      }
     };
 
     Model.prototype.animate = function() {
@@ -1740,47 +1844,33 @@
     };
 
     Model.prototype.linkBreeds = function(s) {
-      var b, _j, _len1, _ref1, _results,
+      var b, _j, _len1, _ref1,
         _this = this;
       _ref1 = s.split(" ");
-      _results = [];
       for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
         b = _ref1[_j];
-        _results.push(this[b] = (function(b) {
+        this[b] = (function(b) {
           return function() {
             return this.links.breed(b);
           };
-        })(b));
+        })(b);
       }
-      return _results;
+      return null;
     };
 
     Model.prototype.agentBreeds = function(s) {
-      var b, _j, _len1, _ref1, _results,
+      var b, _j, _len1, _ref1,
         _this = this;
       _ref1 = s.split(" ");
-      _results = [];
       for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
         b = _ref1[_j];
-        _results.push(this[b] = (function(b) {
+        this[b] = (function(b) {
           return function() {
             return this.agents.breed(b);
           };
-        })(b));
+        })(b);
       }
-      return _results;
-    };
-
-    Model.prototype.draw = function() {
-      if (this.refreshPatches || this.ticks === 1) {
-        this.patches.draw(this.contexts.patches);
-      }
-      if (this.refreshLinks || this.ticks === 1) {
-        this.links.draw(this.contexts.links);
-      }
-      if (this.refreshAgents || this.ticks === 1) {
-        return this.agents.draw(this.contexts.agents);
-      }
+      return null;
     };
 
     Model.prototype.asSet = function(a) {

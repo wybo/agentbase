@@ -7,10 +7,14 @@
     class MyModel extends ABM.Model
       u = ABM.util # utilities; static variable
       setup: -> # called by Model ctor
-        @refreshPatches = false # for static patches
-        @refreshAgents = false # for static agents
         @agentBreeds "nodes travelers"
         
+        # no optimizations: 44fps
+        @refreshPatches = false # for static patches
+        @refreshAgents = false # for static agents
+        # setFastPatches, setCacheAgentsHere, setAgentStaticColors would not apply
+        # both: 57+fps (max)
+
         # globals
         @nodeCount = 50
         @travelersCount = 100

@@ -73,7 +73,9 @@ ABM.util =
   randomGray: (min = 64, max = 192) -> r=@randomInt2(min,max); [r,r,r]
   # Return new color by scaling each value of an RGB array.
   # Note [r,g,b] must be ints
-  scaleColor: (color, s) -> (@clamp(Math.round(c*s),0,255) for c in color)
+  scaleColor: (max, s, color = []) -> 
+    color[i] = @clamp(Math.round(c*s),0,255) for c, i in max
+    color
   # Return HTML color as used by canvas element.  Can include Alpha
   colorStr: (c) -> if c.length is 3 then "rgb(#{c})" else "rgba(#{c})"
   # Compare two colors.  Alas, there is no array.Equal operator.
@@ -109,6 +111,12 @@ ABM.util =
       o = @oneOf(array)
       r.push o unless o in r
     r
+  # Remove an item from an array. Error if item not in array.
+  removeItem: (array, item) ->
+    array.splice i, 1 if (i = array.indexOf item) isnt -1
+    @error "removeItem: item not found" if i < 0
+    i
+    
   # Randomize the elements of array.  Clever! See [cookbook](http://goo.gl/TT2SY)
   shuffle: (array) -> array.sort -> 0.5 - Math.random()
 
@@ -458,10 +466,11 @@ class ABM.AgentSet extends Array
   #     evens = (a for a in ABM.agents when a.id % 2 is 0)
   #     ABM.AgentSet.asSet(evens)
   #     randomEven = evens.oneOf()
-  @asSet: (a) ->
-    if a.prototype?
-    then a.prototype = ABM.AgentSet.prototype
-    else a.__proto__ = ABM.AgentSet.prototype
+  @asSet: (a, setType = ABM.AgentSet) ->
+    # if a.prototype?
+    # then a.prototype = setType.prototype
+    # else a.__proto__ = setType.prototype
+    a.__proto__ = setType.prototype ? setType.constructor.prototype # setType.__proto__
     a
 
   # In the examples below, we'll use an array of primitive agent objects
@@ -534,7 +543,7 @@ class ABM.AgentSet extends Array
 
   # The static `ABM.AgentSet.asSet` as a method.
   # Used by agentset methods creating new agentsets.
-  asSet: (a) -> ABM.AgentSet.asSet(a)
+  asSet: (a) -> ABM.AgentSet.asSet a # , @
 
   # Similar to above but sorted via `id`.
   asOrderedSet: (a) -> @asSet(a).sortById()
@@ -739,7 +748,7 @@ class ABM.Patch
   #
   #     p.scaleColor p.color, .8 # reduce patch color by .8
   #     p.scaleColor @foodColor, p.foodPheromone # ants model
-  scaleColor: (c, s) -> @color = u.scaleColor c, s
+  scaleColor: (c, s) -> u.scaleColor c, s, @color
   
   # Draw the patch and its text label if there is one.
   draw: (ctx) ->
@@ -754,7 +763,9 @@ class ABM.Patch
       ctx.restore()
   
   # Return an array of the agents on this patch.
-  agentsHere: -> (a for a in agents when a.p is @) #REMIND: keep array per patch
+  # See model.setCacheAgentsHere for optimization.
+  agentsHere: ->
+    @agents ? (a for a in ABM.agents when a.p is @)
   
   # Returns true if this patch is on the edge of the grid.
   isOnEdge: ->
@@ -767,12 +778,6 @@ class ABM.Patch
   sprout: (num = 1, init = ->) ->
     ABM.agents.create num, (a) => # fat arrow so that @ = this patch
       a.setXY @x, @y; init(a); a
-  
-  # Return a rectangle of patches centered on this patch,
-  # dx, dy units to the right/left and up/down. Exclude this
-  # patch unless meToo is true, default false.
-  patchRect: (dx, dy, meToo=false) ->
-    ABM.patches.patchRect @, dx, dy, meToo=false
   
 
 # Class Patches is a singleton 2D matrix of Patch instances, each patch 
@@ -793,12 +798,13 @@ class ABM.Patches extends ABM.AgentSet
       for x in [minX..maxX] by 1
         @add new ABM.Patch x, y
     for p in @
-      p.n = @asOrderedSet @patchRect p, 1, 1
-      p.n4 = @asOrderedSet (n for n in p.n when n.x is p.x or n.y is p.y)
+      p.n =  @patchRect p, 1, 1 # p.n =  p.patchRect 1, 1
+      p.n4 = @asSet (n for n in p.n when n.x is p.x or n.y is p.y)
     can = document.createElement 'canvas'  # small pixel grid for patch colors
     can.width = @numX; can.height = @numY
     @pixelsCtx = can.getContext "2d"
     @drawWithPixels = false
+    # @cacheAgentsHere = false
 
   draw: (ctx) ->
     if @drawWithPixels then @drawScaledPixels ctx else super ctx
@@ -843,18 +849,26 @@ class ABM.Patches extends ABM.AgentSet
 
 # #### Patch utilities
 
-  # Return a rectangle of patches centered on given patch `p`,
-  # dx, dy units to the right/left and up/down. Exclude `p`
-  # unless meToo is true, default false.
+  # Return an array of patches in a rectangle centered on the given 
+  # patch `p`, dx, dy units to the right/left and up/down. 
+  # Exclude `p` unless meToo is true, default false.
   patchRect: (p, dx, dy, meToo=false) ->
-    rect = [];
+    rect = []; # REMIND: could optimize w/ a loop for the all inside patches case
     for y in [p.y-dy..p.y+dy] by 1 # by 1: perf: avoid bidir JS for loop
       for x in [p.x-dx..p.x+dx] by 1
         if @isTorus or (@minX<=x<=@maxX and @minY<=y<=@maxY)
-          pnext = @patch x, y
-          rect.push (pnext) if (meToo or p isnt pnext)
-    rect
+          if @isTorus
+            x+=@numX if x<@minX; x-=@numX if x>@maxX
+            y+=@numY if y<@minY; y-=@numY if y>@maxY
+          pnext = @patchXY x, y # much faster than coord()
+          if not pnext?
+            u.error "patchRect: x,y out of bounds, see console.log"
+            console.log "  x #{x} y #{y} p.x #{p.x} p.y #{p.y} dx #{dx} dy #{dy} minX #{@minX} minY #{@minY}"
+          rect.push pnext if (meToo or p isnt pnext)
+    @asSet rect
+
   
+
   # Draws, or "imports" an image URL into the drawing layer.
   # The image is scaled to fit the drawing layer.
   #
@@ -879,7 +893,6 @@ class ABM.Patches extends ABM.AgentSet
     x = id % @numX
     y = @numY - 1 - Math.floor(id / @numX)
     i = (x + y*@numX)*4
-    [x,y,i]
     
   # Draws, or "imports" an image URL into the patches as their color property.
   # The drawing is scaled to the number of x,y patches, thus one pixel
@@ -893,9 +906,10 @@ class ABM.Patches extends ABM.AgentSet
         @pixelsCtx.drawImage img, 0, 0
       data = @pixelsCtx.getImageData(0, 0, @numX, @numY).data
       for p in @
-        [x,y,i] = @idToPixels p.id
+        i = @idToPixels p.id
         c = p.color
         c[j] = data[i+j] for j in [0..2]
+      null # avoid CS return of array
     img.src = imageSrc
   
   # Draw the patches via pixel manipulation rather than 2D drawRect.
@@ -903,9 +917,9 @@ class ABM.Patches extends ABM.AgentSet
     image = @pixelsCtx.getImageData(0, 0, @numX, @numY)
     data = image.data
     for p in @
-      [x,y,i] = @idToPixels p.id
+      i = @idToPixels p.id
       c = p.color
-      data[i+j] = c[j] for j in [0..2]
+      data[i+j] = c[j] for j in [0..2] 
       data[i+3] = 255
     @pixelsCtx.putImageData(image, 0, 0)
     ctx.save() # revert to native 2D transform
@@ -913,7 +927,6 @@ class ABM.Patches extends ABM.AgentSet
     ctx.drawImage @pixelsCtx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height
     ctx.restore() # restore patch transform
       
-  
   # Diffuse the value of patch variable `p.v` by distributing `rate` percent
   # of each patch's value of `v` to its neighbors. If a color `c` is given,
   # scale the patch's color to be `p.v` of `c`. If the patch has
@@ -931,7 +944,7 @@ class ABM.Patches extends ABM.AgentSet
     for p in @
       p[v] = p._diffuseNext
       p._diffuseNext = 0
-      p.scaleColor c, p[v] if c # p.color = u.scaleColor c, p[v] if c
+      p.scaleColor c, p[v] if c
     null # avoid returning copy of @  
 
 # ### Agent & Agents
@@ -957,10 +970,12 @@ class ABM.Agent
     @size = 1
     @shape = ABM.agents.defaultShape
     @p = ABM.patches.patch @x, @y
+    @p.agents.push @ if @p.agents? # ABM.patches.cacheAgentsHere
     @penDown = false
     @penSize = ABM.patches.bits2Patches(1)
+
   #  Set agent color to `c` scaled by `s`. Usage: see patch.scaleColor
-  scaleColor: (c, s) -> @color = u.scaleColor c, s
+  scaleColor: (c, s) -> u.scaleColor c, s, @color
   
   # Return a string representation of the agent.
   toString: ->
@@ -968,10 +983,14 @@ class ABM.Agent
   
   # Place the agent at the given x,y (floats) in patch coords
   # using patch topology (isTorus)
-  setXY: (x, y) ->
+  setXY: (x, y) -> # REMIND GC problem, 2 arrays
     [x0, y0] = [@x, @y] if @penDown
     [@x, @y] = ABM.patches.coord x, y
+    p = @p
     @p = ABM.patches.patch @x, @y
+    if p.agents? and p isnt @p # ABM.patches.cacheAgentsHere 
+      u.removeItem p.agents, @
+      @p.agents.push @
     if @penDown
       drawing = ABM.drawing
       drawing.strokeStyle = u.colorStr @color; drawing.lineWidth = @penSize
@@ -1001,7 +1020,8 @@ class ABM.Agent
   draw: (ctx) ->
     shape = ABM.shapes[@shape]
     ctx.save()
-    ctx.fillStyle = u.colorStr @color
+    @colorStr = u.colorStr @color if ABM.agents.staticColors and not @colorStr?
+    ctx.fillStyle = @colorStr or u.colorStr @color
     ctx.translate @x, @y; ctx.scale @size, @size;
     ctx.rotate @heading if shape.rotate
     ctx.beginPath()
@@ -1019,7 +1039,7 @@ class ABM.Agent
     if ABM.patches.isTorus
     then u.torusDistance @x, @y, x, y, ABM.patches.numX, ABM.patches.numY
     else u.distance @x, @y, x, y
-
+  
   # Return distance in patch coords from me to given agent/patch
   # using patch topology (isTorus)
   distance: (o) -> # o any object w/ x,y, patch or agent
@@ -1047,31 +1067,27 @@ class ABM.Agent
   # Return heading towards given agent/patch using patch topology (isTorus)
   towards: (o) -> @towardsXY o.x, o.y
   
-  # Return a rectangle of patches centered on this agent's patch<br>
-  # See patches.patchRect
-  patchRect: (dx, dy, meToo = false) -> ABM.patches.patchRect @p, dx, dy, meToo
-  
-  # Return the members of the given agentset that are within radius distance
-  # from me, and within cone radians of my heading using patch topology (isTorus)
-  inCone: (aset, cone, radius, meToo=false) -> 
-    aset.inCone @p, @heading, cone, radius, meToo=false # REMIND: @p vs @?
-
   # Remove myself from the model.  Includes removing myself from the agents
   # agentset and removing any links I may have.
   die: ->
     ABM.agents.remove @
     l.die() for l in @links()
-  
-  # Copy all of my values, except ID, to a.  Used by `hatch`
-  copy: (a) -> a[k] = v for own k, v of @ when k isnt "id"
+    null
 
   # Factory: create num new agents here
   # The optional init proc is called on each of the newly created agents.<br>
   # NOTE: init must be applied after object inserted in agent set
   hatch: (num = 1, init = ->) ->
     ABM.agents.create num, (a) => # fat arrow so that @ = this agent
-      @copy a; init(a); a
+      a.setXY @x, @y # for side effects like patches.agentsHere
+      a[k] = v for own k, v of @ when k isnt "id"    
+      init(a); a
 
+  # Return the members of the given agentset that are within radius distance 
+  # from me, and within cone radians of my heading using patch topology (isTorus)
+  inCone: (aset, cone, radius, meToo=false) -> 
+    aset.inCone @p, @heading, cone, radius, meToo # REMIND: @p vs @?
+  
   # Return all links linked to me
   links: ->
     l for l in ABM.links when (l.end1 is @) or (l.end2 is @) # asSet?
@@ -1094,10 +1110,14 @@ class ABM.Agents extends ABM.AgentSet
   constructor: ->
     super()
     @defaultShape = "default"
+    @staticColors = false
 
   # Change the default shape.  The new shape is simply
   # a name of one of the ABM.shapes objects.
   setDefaultShape: (@defaultShape) ->
+  
+  # Performance: tell draw to reuse existing color string
+  setStaticColors: (@staticColors) ->
 
   # Factory: create num new agents stored in this agentset.
   # The optional init proc is called on each of the newly created agents.<br>
@@ -1107,10 +1127,37 @@ class ABM.Agents extends ABM.AgentSet
 
   # Remove all agents from set via agent.die()
   # Note call in reverse order to optimize list restructuring.
-  clear: -> @last().die() while @any() # tricky, each die modifies list
+  clear: -> @last().die() while @any(); null # tricky, each die modifies list
 
   # Return the subset of this set with the given breed value.
   breed: (breed) -> @asSet @getWithProp "breed", breed
+  
+  # Return an agentset of agents within the patch array
+  agentsInPatches: (patches) ->
+    rect = []
+    rect.push p.agentsHere()... for p in patches
+    @asSet rect
+  
+  # Return an agentset of agents within the patchRect
+  agentRect: (a, dx, dy, meToo=false) ->
+    rect = ABM.patches.patchRect a.p, dx, dy, true
+    rect = @agentsInPatches rect
+    u.removeItem rect, a if not meToo
+    rect
+  
+  # Return the members of this agentset that are within radius distance
+  # from me, and within cone radians of my heading using patch topology (isTorus)<br>
+  # See agentset.inCone
+  inCone: (a, heading, cone, radius, meToo=false) -> # heading? .. so p ok?
+    as = @agentRect a, radius, radius, true
+    as.inCone a, heading, cone, radius, meToo
+  
+  # Return the members of this agentset that are with radius distance
+  # from me, using patch topology (isTorus)<br>
+  # See agentset.inRadius
+  inRadius: (a, radius, meToo=false)->
+    as = @agentRect a, radius, radius, true
+    as.inRadius a, radius, meToo
 
 # ### Link and Links
 
@@ -1186,7 +1233,7 @@ class ABM.Links extends ABM.AgentSet
   
   # Remove all links from set via link.die()
   # Note call in reverse order to optimize list restructuring.
-  clear: -> @last().die() while @any() # tricky, each die modifies list
+  clear: -> @last().die() while @any(); null # tricky, each die modifies list
 
   # Return the subset of this set with the given breed value.
   breed: (breed) -> @getWithProp "breed", breed
@@ -1215,6 +1262,7 @@ class ABM.Links extends ABM.AgentSet
       a.setXY 0, 0
       a.heading = startAngle + direction*dTheta*i
       a.forward radius
+    null
       
 # Class Model is the control center for our AgentSets: Patches, Agents and Links.
 # Creating new models is done by subclassing class Model and overriding two 
@@ -1267,7 +1315,7 @@ class ABM.Model
     v.agentSetName = k for k,v of @contexts
     
     # Initialize instance variables
-    @showFPS = true # show fps in console
+    @showFPS = true # show fps in console. generally use chrome fps instead
     @ticks = 1 # initial tick/frame
     @refreshLinks = @refreshAgents = @refreshPatches = true # drawing flags
     @fastPatches = false
@@ -1275,14 +1323,35 @@ class ABM.Model
     # Call the models setup function.
     @setup()
 
+#### Optimizations:
+
+  # Modelers "tune" their model by adjusting flags:
+  #
+  #      @refreshLinks = @refreshAgents = @refreshPatches
+  #
+  # and by the following methods:
+
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
   # if browser does not support imageSmoothingEnabled or equivalent.
   setFastPatches: (fast=true) ->
-    @contexts.patches.imageSmoothingEnabled = false
-    @contexts.patches.mozImageSmoothingEnabled = false
-    @contexts.patches.webkitImageSmoothingEnabled = false
-    @patches.drawWithPixels = true
-    
+    @contexts.patches.imageSmoothingEnabled = not fast
+    @contexts.patches.mozImageSmoothingEnabled = not fast
+    @contexts.patches.webkitImageSmoothingEnabled = not fast
+    @patches.drawWithPixels = fast
+
+  # Have patches cache the agents currently on them.
+  # Optimizes p.agentsHere method
+  setCacheAgentsHere: (useCache=true) ->
+    if useCache
+      p.agents = [] for p in @patches
+      a.p.agents.push a for a in @agents
+  
+  # Ask agents to cache their color strings.
+  # This is a temporary optimization and will likely change.
+  setAgentStaticColors: (staticColors=true) ->
+    @agents.setStaticColors(staticColors)
+
+#### Text Utilities:
   # Return string name for agentset.  Note this depends on our
   # using a singleton naming convension: foo = new Foo(...)
   agentSetName: (aset) -> aset.constructor.name.toLowerCase()
@@ -1295,22 +1364,51 @@ class ABM.Model
     agentSetName = @agentSetName(agentSetName) if typeof agentSetName isnt "string"
     u.canvasLabelParams @contexts[agentSetName], color, xy
   
-  # The two abstract methods overridden by subclasses
-  setup: ->
-  step: ->
-  
-  # The animation routines. start/stop animation, increment ticks.
+#### User Model Creation
+# A user's model is made by subclassing Model and over-riding these
+# two abstract methods. `super` need not be called.
+
+  # Initialize your model here
+  setup: -> # called at the end of model creation
+  # Update/step your model here
+  step: -> # called each step of the animation
+
+#### Animation. 
+# These will be called for you by Model. start/stop animation, increment ticks.
+
+# A hook for the first run of the model.
+# Similar to setup/step but `super` should be called in case
+# AgentScript needs to do something here.
+  startup: -> # called on first tick.  Used for optimization late binding.
+
+# Initializes the animation and starts the animation by calling `animate`
   start: ->
+    if @ticks is 1
+      @startup()
     @startMS = Date.now()
     @startTick = @ticks
     @animStop = false
     @animate()
+
+# stops the animation at the end of the next call to `animate`
   stop: -> @animStop = true
+
+# call the agentset draw methods if either the first call or
+# their "refresh" flags are set.  The latter are simple optimizations
+# to avoid redrawing the same static scene.
+  draw: ->
+    @patches.draw @contexts.patches  if @refreshPatches or @ticks is 1
+    @links.draw   @contexts.links    if @refreshLinks   or @ticks is 1
+    @agents.draw  @contexts.agents   if @refreshAgents  or @ticks is 1
+
+# Runs the three methods used to increment the model and queues the next call to itself.
   animate: => # note fat arrow, animate bound to "this"
     @step()
     @draw()
     @tick() # Note: NL difference, called here not in user's step()
     requestAnimFrame @animate unless @animStop
+# Updates the `ticks` counter and prints out the fps every 100 steps
+# if the `showFPS` flag is set.
   tick: ->
     animTicks = @ticks-@startTick
     if @showFPS and (animTicks % 100) is 0 and animTicks isnt 0
@@ -1318,32 +1416,34 @@ class ABM.Model
       console.log "fps: #{fps} at #{animTicks} ticks"
     @ticks++
 
-  # Two very primitive versions of NL's `breed` commands.
-  #
-  #     @linkBreeds "spokes rims"
-  #     @agentBreeds "embers fires"
-  #
-  # will create dynamic methods: <br>
-  # @spokes() and @rims() which return links with
-  # their breed set to either "spokes" or "rims", and <br>
-  # @embers() and @fires()
-  # which return agents with their breeds set to "embers" or "fires"
+#### Breeds
+# Two very primitive versions of NL's `breed` commands.
+#
+#     @agentBreeds "embers fires"
+#     @linkBreeds "spokes rims"
+#
+# will create 4 dynamic methods: 
+#
+#     @embers() and @fires()
+#
+# which return agents with their breeds set to "embers" or "fires", and
+#
+#     @spokes() and @rims() 
+#
+# which return links with their breed set to either "spokes" or "rims"
+#
+
   linkBreeds: (s) ->
     for b in s.split(" ")
       @[b] = do(b) =>
        -> @links.breed(b)
+    null
   agentBreeds: (s) ->
     for b in s.split(" ")
       @[b] = do(b) =>
        -> @agents.breed(b)
+    null
 
-  # call the agentset draw methods if either the first call or
-  # their "refresh" flags are set.  The latter are simple optimizations
-  # to avoid redrawing the same scene.
-  draw: ->
-    @patches.draw @contexts.patches  if @refreshPatches or @ticks is 1
-    @links.draw   @contexts.links    if @refreshLinks   or @ticks is 1
-    @agents.draw  @contexts.agents   if @refreshAgents  or @ticks is 1
   
   # Utility for models to create agentsets from arrays.  Ex:
   #

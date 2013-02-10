@@ -49,7 +49,7 @@ class ABM.Model
     v.agentSetName = k for k,v of @contexts
     
     # Initialize instance variables
-    @showFPS = true # show fps in console
+    @showFPS = true # show fps in console. generally use chrome fps instead
     @ticks = 1 # initial tick/frame
     @refreshLinks = @refreshAgents = @refreshPatches = true # drawing flags
     @fastPatches = false
@@ -57,14 +57,35 @@ class ABM.Model
     # Call the models setup function.
     @setup()
 
+#### Optimizations:
+
+  # Modelers "tune" their model by adjusting flags:
+  #
+  #      @refreshLinks = @refreshAgents = @refreshPatches
+  #
+  # and by the following methods:
+
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
   # if browser does not support imageSmoothingEnabled or equivalent.
   setFastPatches: (fast=true) ->
-    @contexts.patches.imageSmoothingEnabled = false
-    @contexts.patches.mozImageSmoothingEnabled = false
-    @contexts.patches.webkitImageSmoothingEnabled = false
-    @patches.drawWithPixels = true
-    
+    @contexts.patches.imageSmoothingEnabled = not fast
+    @contexts.patches.mozImageSmoothingEnabled = not fast
+    @contexts.patches.webkitImageSmoothingEnabled = not fast
+    @patches.drawWithPixels = fast
+
+  # Have patches cache the agents currently on them.
+  # Optimizes p.agentsHere method
+  setCacheAgentsHere: (useCache=true) ->
+    if useCache
+      p.agents = [] for p in @patches
+      a.p.agents.push a for a in @agents
+  
+  # Ask agents to cache their color strings.
+  # This is a temporary optimization and will likely change.
+  setAgentStaticColors: (staticColors=true) ->
+    @agents.setStaticColors(staticColors)
+
+#### Text Utilities:
   # Return string name for agentset.  Note this depends on our
   # using a singleton naming convension: foo = new Foo(...)
   agentSetName: (aset) -> aset.constructor.name.toLowerCase()
@@ -77,22 +98,51 @@ class ABM.Model
     agentSetName = @agentSetName(agentSetName) if typeof agentSetName isnt "string"
     u.canvasLabelParams @contexts[agentSetName], color, xy
   
-  # The two abstract methods overridden by subclasses
-  setup: ->
-  step: ->
-  
-  # The animation routines. start/stop animation, increment ticks.
+#### User Model Creation
+# A user's model is made by subclassing Model and over-riding these
+# two abstract methods. `super` need not be called.
+
+  # Initialize your model here
+  setup: -> # called at the end of model creation
+  # Update/step your model here
+  step: -> # called each step of the animation
+
+#### Animation. 
+# These will be called for you by Model. start/stop animation, increment ticks.
+
+# A hook for the first run of the model.
+# Similar to setup/step but `super` should be called in case
+# AgentScript needs to do something here.
+  startup: -> # called on first tick.  Used for optimization late binding.
+
+# Initializes the animation and starts the animation by calling `animate`
   start: ->
+    if @ticks is 1
+      @startup()
     @startMS = Date.now()
     @startTick = @ticks
     @animStop = false
     @animate()
+
+# stops the animation at the end of the next call to `animate`
   stop: -> @animStop = true
+
+# call the agentset draw methods if either the first call or
+# their "refresh" flags are set.  The latter are simple optimizations
+# to avoid redrawing the same static scene.
+  draw: ->
+    @patches.draw @contexts.patches  if @refreshPatches or @ticks is 1
+    @links.draw   @contexts.links    if @refreshLinks   or @ticks is 1
+    @agents.draw  @contexts.agents   if @refreshAgents  or @ticks is 1
+
+# Runs the three methods used to increment the model and queues the next call to itself.
   animate: => # note fat arrow, animate bound to "this"
     @step()
     @draw()
     @tick() # Note: NL difference, called here not in user's step()
     requestAnimFrame @animate unless @animStop
+# Updates the `ticks` counter and prints out the fps every 100 steps
+# if the `showFPS` flag is set.
   tick: ->
     animTicks = @ticks-@startTick
     if @showFPS and (animTicks % 100) is 0 and animTicks isnt 0
@@ -100,32 +150,34 @@ class ABM.Model
       console.log "fps: #{fps} at #{animTicks} ticks"
     @ticks++
 
-  # Two very primitive versions of NL's `breed` commands.
-  #
-  #     @linkBreeds "spokes rims"
-  #     @agentBreeds "embers fires"
-  #
-  # will create dynamic methods: <br>
-  # @spokes() and @rims() which return links with
-  # their breed set to either "spokes" or "rims", and <br>
-  # @embers() and @fires()
-  # which return agents with their breeds set to "embers" or "fires"
+#### Breeds
+# Two very primitive versions of NL's `breed` commands.
+#
+#     @agentBreeds "embers fires"
+#     @linkBreeds "spokes rims"
+#
+# will create 4 dynamic methods: 
+#
+#     @embers() and @fires()
+#
+# which return agents with their breeds set to "embers" or "fires", and
+#
+#     @spokes() and @rims() 
+#
+# which return links with their breed set to either "spokes" or "rims"
+#
+
   linkBreeds: (s) ->
     for b in s.split(" ")
       @[b] = do(b) =>
        -> @links.breed(b)
+    null
   agentBreeds: (s) ->
     for b in s.split(" ")
       @[b] = do(b) =>
        -> @agents.breed(b)
+    null
 
-  # call the agentset draw methods if either the first call or
-  # their "refresh" flags are set.  The latter are simple optimizations
-  # to avoid redrawing the same scene.
-  draw: ->
-    @patches.draw @contexts.patches  if @refreshPatches or @ticks is 1
-    @links.draw   @contexts.links    if @refreshLinks   or @ticks is 1
-    @agents.draw  @contexts.agents   if @refreshAgents  or @ticks is 1
   
   # Utility for models to create agentsets from arrays.  Ex:
   #

@@ -8,6 +8,13 @@
       u = ABM.util # static variable
       setup: -> # called by Model ctor
 
+        # No optimizations: 30fps
+        @setFastPatches() # 57+fps
+        # @setCacheAgentsHere() # 28-9fps, not needed * overhead
+        @setAgentStaticColors() # 30fps, not large part of performance
+        # two: 57+fps, fast patches get us to max
+        
+
         # globals
         @population = 100
         @diffusionRate = .70

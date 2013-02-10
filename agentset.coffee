@@ -38,10 +38,11 @@ class ABM.AgentSet extends Array
   #     evens = (a for a in ABM.agents when a.id % 2 is 0)
   #     ABM.AgentSet.asSet(evens)
   #     randomEven = evens.oneOf()
-  @asSet: (a) ->
-    if a.prototype?
-    then a.prototype = ABM.AgentSet.prototype
-    else a.__proto__ = ABM.AgentSet.prototype
+  @asSet: (a, setType = ABM.AgentSet) ->
+    # if a.prototype?
+    # then a.prototype = setType.prototype
+    # else a.__proto__ = setType.prototype
+    a.__proto__ = setType.prototype ? setType.constructor.prototype # setType.__proto__
     a
 
   # In the examples below, we'll use an array of primitive agent objects
@@ -114,7 +115,7 @@ class ABM.AgentSet extends Array
 
   # The static `ABM.AgentSet.asSet` as a method.
   # Used by agentset methods creating new agentsets.
-  asSet: (a) -> ABM.AgentSet.asSet(a)
+  asSet: (a) -> ABM.AgentSet.asSet a # , @
 
   # Similar to above but sorted via `id`.
   asOrderedSet: (a) -> @asSet(a).sortById()
