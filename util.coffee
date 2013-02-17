@@ -68,9 +68,14 @@ ABM.util =
 
 # ### Color and Angle Operations
 
-  # Return a random RGB or gray color.
-  randomColor: -> [@randomInt(256), @randomInt(256), @randomInt(256)]
-  randomGray: (min = 64, max = 192) -> r=@randomInt2(min,max); [r,r,r]
+  # Return a random RGB or gray color. Array passed to minimize garbage collection
+  randomColor: (color = []) -> 
+    color[i] = @randomInt(256) for i in [0..2]
+    color 
+  randomGray: (color = [], min = 64, max = 192) -> 
+    r=@randomInt2 min,max
+    color[i] = r for i in [0..2]
+    color
   # Return new color by scaling each value of an RGB array.
   # Note [r,g,b] must be ints
   scaleColor: (max, s, color = []) -> 

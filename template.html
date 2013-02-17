@@ -19,6 +19,10 @@
     #     APP=new MyModel "layers", 13, -16, 16, -16, 16
     #
     # below, which passes all its arguments to `Model`
+    
+    # Tell patches neighbors not needed for this simple model.
+    # considerable space saving if not needed
+    ABM.Patches::needNeighbors = false
     class MyModel extends ABM.Model
       # Static private variables, useful for "aliases" w/o adding to global namespace
       u = ABM.util
@@ -39,6 +43,9 @@
         @startCircle = true  # initialize agents randomly or in circle
         @debug = true # turn on/off use of setRootVars() below
         
+        # set the default agent size (conserves space)
+        @agents.setDefaultSize(1.5)
+
         # The patch grid will have been setup for us.  Here we initialize
         # patch variables, either built-in ones or any new patch variables
         # our model needs. In this case, we set the built-in color to a
@@ -52,7 +59,6 @@
         # and layout the agents randomly or in a circle depending
         # on our modeel's `startCircle` variable.
         for a in @agents.create @population
-          a.size = @size
           a.shape = u.oneOf ABM.shapes.names() # random shapes
           if @startCircle
             a.forward @patches.maxX/2 # start in circle
@@ -96,7 +102,8 @@
         a.forward @speed
       updatePatches: (p) -> # p is patch
         # Update patch colors to be a random gray.
-        p.color = u.randomGray()
+        # p.color = u.randomGray()
+        u.randomGray(p.color)
       reportInfo: ->
         # Report the average heading, in radians and degrees
         headings = @agents.getProp "heading"

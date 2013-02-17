@@ -7,26 +7,33 @@
     class MyModel extends ABM.Model
       u = ABM.util # utilities; static variable
       setup: -> # called by Model ctor
-        @refreshAgents = false # for static patches
+        @refreshAgents = false # for static agents
         
         # globals
         @prob = 1
         
+        # defaults
+        @agents.setDefaultShape("circle")
+        @agents.setDefaultColor([210,0,0])
+        @agents.setDefaultSize(.4)
+        @agents.setDefaultPen(2.5, true)
+        @agents.setDefaultHeading(0) # override promotion to random angle
+
         for p in @patches
-          p.color = u.randomGray(160, 190)
+          p.color = u.randomGray [], 160, 190
           p.occupied = false
+        @drawGrid [0,0,0]
         @walker = @agents.create(1)[0]
-        @walker.color = [210,0,0]
-        @walker.shape = "circle"
-        @walker.size = .4
+        # @walker.color = [210,0,0]
+        # @walker.shape = "circle"
+        # @walker.size = .4
         @walker.setXY 0, 0
         @walker.stamp()
         @walker.p.occupied = true
-        @walker.penDown = true
-        @walker.penSize *= 2.5
+        # @walker.penDown = true
+        # @walker.penSize *= 2.5
         @setTextParams @patches, "9px sans-serif", "right", "bottom"
         @setLabelParams @patches, [255,255,255], [12,12]
-        @drawGrid [0,0,0]
       step: ->
         @floodFill()
         p = @asSet (n for n in @walker.p.n4 when n.ok)

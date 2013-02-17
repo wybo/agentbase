@@ -68,9 +68,14 @@ ABM.util =
 
 # ### Color and Angle Operations
 
-  # Return a random RGB or gray color.
-  randomColor: -> [@randomInt(256), @randomInt(256), @randomInt(256)]
-  randomGray: (min = 64, max = 192) -> r=@randomInt2(min,max); [r,r,r]
+  # Return a random RGB or gray color. Array passed to minimize garbage collection
+  randomColor: (color = []) -> 
+    color[i] = @randomInt(256) for i in [0..2]
+    color 
+  randomGray: (color = [], min = 64, max = 192) -> 
+    r=@randomInt2 min,max
+    color[i] = r for i in [0..2]
+    color
   # Return new color by scaling each value of an RGB array.
   # Note [r,g,b] must be ints
   scaleColor: (max, s, color = []) -> 
@@ -497,7 +502,7 @@ class ABM.AgentSet extends Array
   # By "agent" we mean an instance of `Patch`, `Agent` and `Link`.
   add: (o) ->
     o.id = @ID++
-    o.hidden = false
+    # o.hidden = false
     @push o; o
 
   # Remove an agent from the agentset, returning the agentset.
@@ -589,7 +594,7 @@ class ABM.AgentSet extends Array
   #     max = AS.maxProp "y"  # 4
   maxProp: (prop) -> Math.max @getProp(prop)...
   minProp: (prop) -> Math.min @getProp(prop)...
-
+  
 # ### Array Utilities, often from ABM.util
 
   # Randomize the agentset
@@ -730,15 +735,28 @@ u = ABM.util
 
 # Class Patch instances represent a rectangle on a grid with::
 #
-# * id, hidden: installed by Patches agentset
+# * id: installed by Patches agentset
 # * x,y: the x,y position within the grid
 # * color: the color of the patch as an RGBA array, A optional.
 # * label: text for the patch
 # * n/n4: adjacent neighbors: n: 8 patches, n4: N,E,S,W patches.
 class ABM.Patch
-  # new Patch: set x,y,color. Neighbors set by Patches constructor.
-  constructor: (@x, @y, @color = [0,0,0]) ->
-    @n = null; @n4 = null #neighbors filled by Patches ctr
+  # Class variable defaults, "promoted" to instance variables if needed
+  # when unique per instance rather than shared.
+  # This approach results in considerable space effeciency when appropriate.
+  
+  # Not all patches need their neighbor patches, thus we use a default
+  # of none.  n and n4 are promoted by the ABM.Patches agent set if needed.
+  n: null
+  n4: null
+  # Default color starts as black, can be set to different default value
+  # by setDefault methods
+  color: [0,0,0]
+  # Default patch is visible.  Generally false but can be changed to true if
+  # appropriate by setDefault methods
+  hidden: false
+  # new Patch: set x,y. Neighbors set by Patches constructor if needed.
+  constructor: (@x, @y) ->
 
   # Return a string representation of the patch.
   toString: ->
@@ -748,7 +766,11 @@ class ABM.Patch
   #
   #     p.scaleColor p.color, .8 # reduce patch color by .8
   #     p.scaleColor @foodColor, p.foodPheromone # ants model
-  scaleColor: (c, s) -> u.scaleColor c, s, @color
+  #
+  # Promotes color if currently using the default.
+  scaleColor: (c, s) -> 
+    @color = u.clone @color if not @.hasOwnProperty("color")
+    u.scaleColor c, s, @color
   
   # Draw the patch and its text label if there is one.
   draw: (ctx) ->
@@ -789,6 +811,8 @@ class ABM.Patch
 # * numX/numY: total patches in x/y direction, width/height of grid.
 # * isTorus: topology of patches, see **ABM.util**.
 class ABM.Patches extends ABM.AgentSet
+  # Class variable controlling promotion of patch neighborhoods.
+  needNeighbors: true # set false for massive projects not using neighbors
   # Constructor: set variables, fill patch neighbor variables, n & n4.
   constructor: (@size, @minX, @maxX, @minY, @maxY, @isTorus = true) ->
     super()
@@ -797,17 +821,23 @@ class ABM.Patches extends ABM.AgentSet
     for y in [minY..maxY] by 1
       for x in [minX..maxX] by 1
         @add new ABM.Patch x, y
-    for p in @
-      p.n =  @patchRect p, 1, 1 # p.n =  p.patchRect 1, 1
-      p.n4 = @asSet (n for n in p.n when n.x is p.x or n.y is p.y)
+    @setNeighbors() if @needNeighbors
     can = document.createElement 'canvas'  # small pixel grid for patch colors
     can.width = @numX; can.height = @numY
     @pixelsCtx = can.getContext "2d"
     @drawWithPixels = false
-    # @cacheAgentsHere = false
-
+  setNeighbors: () -> 
+    for p in @
+      p.n =  @patchRect p, 1, 1 # p.n =  p.patchRect 1, 1
+      p.n4 = @asSet (n for n in p.n when n.x is p.x or n.y is p.y)
+    
   draw: (ctx) ->
     if @drawWithPixels then @drawScaledPixels ctx else super ctx
+  
+  # Set the default color for new Patch instances.
+  # Note coffeescript :: which refers to the Patch prototype.
+  # This is the usual way to modify class variables.
+  setDefaultColor: (color) -> ABM.Patch::color = color
 
 # #### Patch grid coord system utilities:
 
@@ -907,8 +937,7 @@ class ABM.Patches extends ABM.AgentSet
       data = @pixelsCtx.getImageData(0, 0, @numX, @numY).data
       for p in @
         i = @idToPixels p.id
-        c = p.color
-        c[j] = data[i+j] for j in [0..2]
+        p.color = (data[i+j] for j in [0..2])
       null # avoid CS return of array
     img.src = imageSrc
   
@@ -951,7 +980,7 @@ class ABM.Patches extends ABM.AgentSet
 
 # Class Agent instances represent the dynamic, behavioral element of ABM.
 class ABM.Agent
-  # Constructor: set instance variables to defaults
+  # Constructor & Class Variables:
   #
   # * x,y: position on the patch grid, in patch coordinates, default: 0,0
   # * color: the color of the agent, default: ABM.util.randomColor
@@ -962,20 +991,27 @@ class ABM.Agent
   # * penDown: true if agent pen is drawing
   # * penSize: size in patch coords of the pen, default: 1 pixel
   # * breed: string represented the type of agent. Ex: wolf, rabbit.
+
+  # Default class variables, promoted to instances when needed
+  color: null  # default color, overrides random color if set
+  shape: "default"
+  breed: "default"
+  hidden: false
+  size: 1
+  penDown: false
+  penSize: 1
+  heading: null
   constructor: ->
-    @breed = "default"
     @x = @y = 0
-    @color = u.randomColor()
-    @heading = u.randomFloat(Math.PI*2) # deg in radians from +x axis REMIND wrap?
-    @size = 1
-    @shape = ABM.agents.defaultShape
+    @color = u.randomColor() if not @color? # promote color if default not set
+    @heading = u.randomFloat(Math.PI*2) if not @heading? 
     @p = ABM.patches.patch @x, @y
     @p.agents.push @ if @p.agents? # ABM.patches.cacheAgentsHere
-    @penDown = false
-    @penSize = ABM.patches.bits2Patches(1)
 
   #  Set agent color to `c` scaled by `s`. Usage: see patch.scaleColor
-  scaleColor: (c, s) -> u.scaleColor c, s, @color
+  scaleColor: (c, s) -> 
+    @color = u.clone @color if not @.hasOwnProperty("color")
+    u.scaleColor c, s, @color
   
   # Return a string representation of the agent.
   toString: ->
@@ -993,7 +1029,8 @@ class ABM.Agent
       @p.agents.push @
     if @penDown
       drawing = ABM.drawing
-      drawing.strokeStyle = u.colorStr @color; drawing.lineWidth = @penSize
+      drawing.strokeStyle = u.colorStr @color
+      drawing.lineWidth = ABM.patches.bits2Patches @penSize
       drawing.beginPath()
       drawing.moveTo x0, y0; drawing.lineTo x, y # REMIND: euclidean
       drawing.stroke()
@@ -1025,7 +1062,7 @@ class ABM.Agent
     ctx.translate @x, @y; ctx.scale @size, @size;
     ctx.rotate @heading if shape.rotate
     ctx.beginPath()
-    shape.draw(ctx)
+    shape.draw ctx
     ctx.closePath()
     ctx.fill()
     ctx.restore()
@@ -1109,12 +1146,17 @@ class ABM.Agents extends ABM.AgentSet
   # we provide a default shape for agents.
   constructor: ->
     super()
-    @defaultShape = "default"
     @staticColors = false
 
-  # Change the default shape.  The new shape is simply
-  # a name of one of the ABM.shapes objects.
-  setDefaultShape: (@defaultShape) ->
+  # Methods to change the default Agent class variables.
+  setDefaultColor:  (color) -> ABM.Agent::color = color
+  setDefaultShape:  (shape) -> ABM.Agent::shape = shape
+  setDefaultSize:   (size)  -> ABM.Agent::size = size
+  setDefaultHeading:(heading)-> ABM.Agent::heading = heading
+  setDefaultHidden: (hidden)-> ABM.Agent::hidden = hidden
+  setDefaultPen:   (size, down=false) -> 
+    ABM.Agent::penSize = size
+    ABM.Agent::penDown = down
   
   # Performance: tell draw to reuse existing color string
   setStaticColors: (@staticColors) ->
@@ -1390,10 +1432,10 @@ class ABM.Model
     @animStop = false
     @animate()
 
-# stops the animation at the end of the next call to `animate`
+# Stop the animation at the end of the next call to `animate`
   stop: -> @animStop = true
 
-# call the agentset draw methods if either the first call or
+# Call the agentset draw methods if either the first draw call or
 # their "refresh" flags are set.  The latter are simple optimizations
 # to avoid redrawing the same static scene.
   draw: ->
@@ -1458,8 +1500,11 @@ class ABM.Model
   # See [CoffeeConsole](http://goo.gl/1i7bd) Chrome extension too.
   setRootVars: ->
     ABM.root.ps = @patches
+    ABM.root.p0 = @patches[0]
     ABM.root.as = @agents
+    ABM.root.a0 = @agents[0]
     ABM.root.ls = @links
+    ABM.root.l0 = @links[0]
     ABM.root.dr = @drawing
     ABM.root.u = ABM.util
     ABM.root.app = @

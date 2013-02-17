@@ -1,0 +1,387 @@
+<html>
+  <head>
+    <title>AgentScript Model:Solar PAnel 2.0</title>
+    <script src="../agentscript.js"></script>
+    <script src="../coffee-script.js"></script>
+    <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.0/themes/base/jquery-ui.css" type="text/css" media="all" />
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.0/jquery-ui.min.js"></script>
+    <script src="http://lab.concord.org/vendor/d3/d3.v2.js"></script>
+    <script src="http://lab.concord.org/lab/lab.grapher.js"></script>
+    <script type="text/coffeescript">
+    class SolarPanelModel extends ABM.Model
+      u = ABM.util # static variable
+
+      setup: -> # called by Model ctor
+
+        # allow access to this model from window.SolarPanelModel
+        window.SolarPanelModel = this
+        @refreshPatches = false
+        @agents.setDefaultShape "arrow"
+        @agentBreeds "photons"
+
+        # globals
+        @angle = 30
+        @lightBeam = true
+        @lastAngle = @angle
+        @stepSize = 1
+
+        # Solar Panel
+        @panelHeight = 20     # height of solar panel above bottom of model
+        @panelWidth = 50      # width of solar panel
+        @panelThickness = 1
+
+        # x and y position of Solar Panel center
+        @panelX = 0
+        @panelY = @patches.minY + @panelHeight
+
+        # Distance from the Solar Panel center to either of the top corners.
+        @panelDist = u.distance(@panelX, @panelY, @patches.maxX , @patches.maxY)
+
+        # Create Solar Panel patches
+        @panelColor = [255,255,0]  # yellow
+        @panelPatches = @patches.patchRect @patches.patch(@panelX, @panelY), @panelWidth/2, 0, true
+        p.color = @panelColor for p in @panelPatches
+
+        @t2 = 1
+        @hitCount = 0
+        @missCount = 0
+        @percentHit = 0
+
+      setAngle: (val) ->
+        @angle = val
+
+      getAngle : ->
+        @angle
+
+      setLightBeam: (val) ->
+        @lightBeam = val
+
+      getLightBeam : ->
+        @lightBeam
+
+      getPercentHit : ->
+        @percentHit
+
+      makePhoton: ->
+        @agents.create 1, (a) =>
+          a.breed = "photons"
+          a.size = 5
+          a.color = u.randomColor()
+          a.penDown = false
+          # the photon starts off-screen, by definition, so it must be hidden.
+          a.hidden = true
+          #  q is random ten times the range of the width
+          q = u.randomInt(1 + 10 * @panelWidth)
+          # z is a random number beteen width/2 and -width/2, in steps of 0.1 turtle steps
+          z = 0.1 * (q - 5 * @panelWidth)
+          # x and y are where photon is but possibly offscreen so hide
+          angleR = u.degToRad 90 - @angle
+          cosAngleR = Math.cos(angleR)
+          sinAngleR = Math.sin(angleR)
+          x = @panelDist * cosAngleR - z * sinAngleR
+          y = @panelDist * sinAngleR + z * cosAngleR + @panelY
+          heading = u.degToRad -90 - @angle
+          
+          a.setXY x, y
+          # a.x = x
+          # a.y = y
+          
+          a.heading = heading
+
+      insideXY: (x, y) ->
+        x < @patches.maxX && x > @patches.minX && y < @patches.maxY && y > @patches.minY
+
+      inside: (a) ->
+        a.x < @patches.maxX && a.x > @patches.minX && a.y < @patches.maxY && a.y > @patches.minY
+
+      movePhotons: ->
+        for a in @photons()
+          if a
+            dx = @stepSize * Math.cos(a.heading)
+            dy = @stepSize * Math.sin(a.heading)
+            x = a.x + dx
+            y = a.y + dy
+            
+            a.setXY x, y
+            # There seems to be a bug in setXY(), if I comment out the following
+            # two lines the x,y position is *not* set correctly.
+            # a.x = x
+            # a.y = y
+            
+            inside = @insideXY(x,y)
+            if !a.hidden && !inside
+              @missCount++
+              a.die()
+            if inside
+              a.hidden = false
+              a.penDown = true
+            if a.p && a.p.color == @panelColor
+              @hitCount++
+              a.die()
+
+      resetModel: ->
+        debugger
+        @agents.clear()
+        u.clearCanvas(@contexts.drawing)
+        @draw()
+        @hitCount = 0
+        @missCount = 0
+        @percentHit = 0
+
+      #
+      # Main Model Loop
+      #
+      step: ->
+        @makePhoton() if @lightBeam
+        l = @photons().length
+        @movePhotons()
+        if @missCount > 0
+          @percentHit = 100 * @hitCount / (@missCount + @hitCount)
+        else
+          @percentHit = 100 if @angle == 0
+        if @lastAngle != @angle
+          @lastAngle = @angle
+          @resetModel()
+
+    # divName, patchSize, minX, maxX, minY, maxY, isTorus = false, topLeft=[10,10]
+    #   NL Defaults: 13, -16, 16, -16, 16
+    APP=new SolarPanelModel "layers", 3, -100, 100, -50, 50, true # no torus
+    </script>
+
+    <style type="text/css">
+      body { font: 13px sans-serif; }
+      #content {
+        margin: 0em;
+        padding: 0em; }
+      p { font-size: 1.5em;
+        margin-left: 1.0em }
+      ul {
+        list-style-type: none;
+        margin: 0.3em 0em;
+        padding-left: 0em;
+        width: 100%; }
+        ul li {
+          display: table-cell;
+          vertical-align: middle;
+          margin: 0em;
+          padding: 0em 0.3em 0em 0.3em; }
+
+      #model {
+        display: table-cell;
+        margin: 0em 0.5em 0em 0.5em;
+        width: 620px;
+        height: 310px; }
+      #layers {
+        margin: 0em;
+        padding: 0em; }
+      #playback-controls {
+        font-size: 1.1em;
+        display: inline-block;
+        width: 100% ;
+        background-color: #f8f8f8; }
+      #playback-controls li, button, span {
+        font-size: 1.1em; }
+      #controls {
+        display: table-cell;
+        vertical-align: top;
+        margin: 0em 0.5em 0em 0.5em;
+        padding: 0em;
+        font-size: 1.0em; }
+      #controls label, span {
+        font-size: 1.0em;
+        vertical-align: top; }
+      #controls button {
+        font-size: 1.0em;
+        vertical-align: middle; }
+      #controls input {
+        font-size: 1.0em;
+        vertical-align: middle; }
+      #controls .output {
+        font-size: 1.0em;
+        vertical-align: middle; }
+      #controls span.digits3 {
+        font-size: 1.0em;
+        margin: 0em;
+        padding-right: 0.5em;
+        text-align: left;
+        width: 4em;
+        vertical-align: top; }
+      #controls span.slider-units {
+        font-size: 90%;
+        font-style: italic; }
+      #chart {
+        display: inline-block;
+        position: relative;
+        width: 300px;
+        height: 230px;
+        margin: 0.1em 1em 1em 0em;
+        background-color: #ddf2ff;
+        border: solid 1px #6CC0FF;
+        border-radius: 0.25em; }
+      #chart.plot {
+        background-color: #f8f8fe; }
+      text.title {
+        font-size: 1.6em; }
+      text.axis {
+        font-size: 1.1em; }
+      circle, .line {
+        fill: none;
+        stroke: steelblue;
+        stroke-width: 2px; }
+      circle {
+        fill: white;
+        fill-opacity: 0.2;
+        cursor: move; }
+        circle.selected {
+          fill: #ff7f0e;
+          stroke: #ff7f0e; }
+        circle:hover {
+          fill: #ff7f0e;
+          stroke: #707f0e; }
+        circle.selected:hover {
+          fill: #ff7f0e;
+          stroke: #ff7f0e; }
+    </style>
+  </head>
+  <body onload="ABM.model.start(); setupControls();">
+    <div id="content">
+      <div id="model">
+        <canvas id="canvas" >Your browser does not support HTML5 Canvas.</canvas>
+        <div id="layers"></div>
+      </div>
+      <div id="controls">
+        <div id='chart'></div>
+        <ul>
+          <li class="output">
+            <label for="angle-slider">Angle:</label>
+            <span id="angle-output" class="output digits3"></span>
+          </li>
+          <li>
+            <span class="slider-units">-90 <input id="angle-slider" type="range" min="-90" max="90" step="15"/> 90</span>
+          </li>
+        </ul>
+        <ul>
+          <li>
+            <label for="light-beam-checkbox" class="output">Light Beam:</label>
+            <input id="light-beam-checkbox" type="checkbox"></input>
+          </li>
+          <li>
+            <label for="percent-hit-output" class="output">Percent Hit:</label>
+            <span id="percent-hit-output" class="output digits3"></span>
+          </li>
+        </ul>
+      </div>
+      <div id="playback-controls">
+        <ul>
+          <li>
+            <button id="reset-button">Reset</button>
+          </li>
+          <li>
+            <button id="play-button">Play</button>
+          </li>
+          <li>
+            <button id="step-button">Step</button>
+          </li>
+          <li>
+            <button id="stop-button">Stop</button>
+          </li>
+          <li>
+            Model Ticks: <span id="tick-counter"></span>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <script>
+      var angleSlider = document.getElementById("angle-slider"),
+          angleOutput = document.getElementById("angle-output"),
+          percentHitOutput = document.getElementById("percent-hit-output"),
+          lightBeamCheckBox = document.getElementById("light-beam-checkbox"),
+          resetButton = document.getElementById("reset-button"),
+          playButton = document.getElementById("play-button"),
+          stopButton = document.getElementById("stop-button"),
+          stepButton = document.getElementById("step-button"),
+          tickCounter = document.getElementById("tick-counter"),
+          percentHitFormatter = d3.format("3f"),
+          countFormatter = d3.format("3f"),
+          ticks = 0,
+          graph,
+          graphOptions,
+          pageStart = true;
+
+      function setupControls() {
+        angleSlider.value = SolarPanelModel.getAngle();
+        lightBeamCheckBox.checked =  SolarPanelModel.getLightBeam();
+      }
+
+      angleSlider.onchange = function() {
+        SolarPanelModel.setAngle(+angleSlider.value)
+      }
+
+      lightBeamCheckBox.onclick = function(e) {
+        SolarPanelModel.setLightBeam(lightBeamCheckBox.checked)
+      }
+
+      // model player controls
+
+      resetButton.onclick = function() {
+        SolarPanelModel.setup();
+      }
+
+      playButton.onclick = function() {
+        SolarPanelModel.start();
+      }
+
+      stopButton.onclick = function() {
+        SolarPanelModel.stop();
+      }
+
+      stepButton.onclick = function() {
+        SolarPanelModel.stop();
+        SolarPanelModel.animate();
+        updateTickCounter();
+      }
+
+      function updateTickCounter() {
+        ticks = SolarPanelModel.ticks;
+        tickCounter.textContent = ticks;
+      }
+
+      graphOptions = {
+        title:  "Percent Hit",
+        xlabel: "Time (ticks)",
+        ylabel: "%",
+        xmax:   2000,
+        xmin:   0,
+        ymax:   100,
+        ymin:   0,
+        xTicCount: 4,
+        xFormatter: "3.3r",
+        sample: 1
+      };
+
+      graph = Lab.grapher.realTimeGraph('#chart', graphOptions);
+
+      d3.timer(function(elapsed) {
+        if (typeof SolarPanelModel !== "undefined") {
+          var percentHit = SolarPanelModel.getPercentHit(),
+              lightBeam = SolarPanelModel.getLightBeam(),
+              angle = SolarPanelModel.getAngle();
+          if (pageStart) {
+            pageStart = false
+            // SolarPanelModel.stop();
+            updateTickCounter();
+            setupControls();
+          }
+          percentHitOutput.textContent = percentHitFormatter(percentHit);
+          angleOutput.textContent = countFormatter(angle);
+          if (!SolarPanelModel.animStop) {
+            graph.add_points([percentHit]);
+            updateTickCounter();
+          }
+        }
+      });
+
+    </script>
+  </body>
+</html>

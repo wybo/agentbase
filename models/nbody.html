@@ -4,6 +4,8 @@
     <script src="../agentscript.js"></script>
     <script src="../coffee-script.js"></script>
     <script type="text/coffeescript">
+    
+    ABM.Patches::needNeighbors = false
     class MyModel extends ABM.Model
       u = ABM.util # utilities; static variable
       setup: -> # called by Model ctor
@@ -12,11 +14,14 @@
         # globals
         @population = 4
         @sun = true
-        @agents.setDefaultShape "circle"
         @v0max = 1
         @gravExp = -2
         
-        window.foo = @patches.nOf(@population)
+        # defaults
+        @agents.setDefaultShape("circle")
+        @agents.setDefaultHeading(0) # override promotion to random angle
+
+        # window.foo = @patches.nOf(@population)
         for p in @patches.nOf(@population)
           p.sprout 1, (a) =>
             if @sun and a.id is 0
@@ -25,8 +30,10 @@
               a.mass = 10 + u.randomInt(1000)
               a.vx = @v0max * (1 - u.randomFloat(2))
               a.vy = @v0max * (1 - u.randomFloat(2))
-              a.penDown = true
+              # a.penDown = true
             a.size = 3 * u.log10(a.mass)
+
+        @agents.setDefaultPen(1, true)
       step: ->
         for a in @agents
           for a1 in @agents.other(a)

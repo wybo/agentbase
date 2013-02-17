@@ -6,6 +6,7 @@
     <script type="text/coffeescript">
     class MyModel extends ABM.Model
       u = ABM.util # static variable
+      
       setup: -> # called by Model ctor
         @agents.setDefaultShape "square"
         @agentBreeds "embers fires"
@@ -22,6 +23,9 @@
         @burnedTrees = 0
         @initialTrees = 0
         
+        # defaults
+        @agents.setDefaultHeading(0) # override promotion to random angle
+
         for p in @patches when u.randomInt(100) < @density
           p.color = [0, 255, 0]
         @ignite p for p in @patches when p.x is @patches.minX
@@ -32,7 +36,7 @@
         p.sprout 1, (a) -> 
           a.breed = "fires"
           a.color = [255, 0, 0]
-        p.color = [0, 0, 0] # in original model but apparently not needed, refresh off.
+        p.color = [0, 0, 0] # in original model but apparently not needed, refresh off?
         @burnedTrees++
       fadeEmbers: ->
         for a in @embers()

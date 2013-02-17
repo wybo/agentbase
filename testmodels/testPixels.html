@@ -7,16 +7,23 @@
     class MyModel extends ABM.Model
       u = ABM.util # static variables
       PI = Math.PI
+      ABM.Patches::needNeighbors = false # space effeciency test
       setup: -> # called by Model ctor
+        @refreshPatches = true # improves 14->20
         @setFastPatches()
+        p.color = u.randomGray() for p in @patches # promote colors for step
         
+      # draw: -> # headless
       step: -> # stop: just one tick
-        p.color = u.randomGray() for p in @patches
-        #@stop() if @ticks is 101
+        u.randomGray p.color for p in @patches
+        @stop() if @ticks is 101
 
     # divName, patchSize, minX, maxX, minY, maxY, isTorus = true, topLeft=[10,10]
     #   NL Defaults: 13, -16, 16, -16, 16
-    APP=new MyModel "layers", 4, -64, 64, -64, 64, true
+    # APP=new MyModel "layers", 4, -64, 64, -64, 64, true
+    APP=new MyModel "layers", 1, 0, 320-1, 0, 240-1, true
+    # APP=new MyModel "layers", 1, 0, 640-1, 0, 480-1, true
+    # APP=new MyModel "layers", 1, 0, 1024-1, 0, 768-1, true
     APP.setRootVars()
     </script>
   </head>

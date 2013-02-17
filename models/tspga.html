@@ -4,6 +4,8 @@
     <script src="../agentscript.js"></script>
     <script src="../coffee-script.js"></script>
     <script type="text/coffeescript">
+    
+    ABM.Patches::needNeighbors = false
     class MyModel extends ABM.Model
       u = ABM.util # utilities; static variable
       setup: -> # called by Model ctor
@@ -24,7 +26,13 @@
         @bestTourLength = 0
         @bestTourTick = 0
         
-        p.color = [250, 250, 0] for p in @patches
+        # defaults
+        @agents.setDefaultShape("circle")
+        @agents.setDefaultColor([255,0,0])
+        @agents.setDefaultHeading(0) # override promotion to random angle
+        @patches.setDefaultColor [250, 250, 0]
+
+        # p.color = [250, 250, 0] for p in @patches
         
         @setupNode a for a in @agents.create @nodeCount
         
@@ -34,8 +42,8 @@
         @agents.create @travelersCount, (a) => @setupTraveler(a)
 
       setupNode: (a) ->
-        a.color = [255,0,0]
-        a.shape = "circle"
+        # a.color = [255,0,0]
+        # a.shape = "circle"
         a.breed = "nodes"
         a.setXY @patches.randomPt()...
         a.setXY @patches.randomPt()... while @nodes().inRadius(a, 2).any()

@@ -4,6 +4,8 @@
     <script src="../agentscript.js"></script>
     <script src="../coffee-script.js"></script>
     <script type="text/coffeescript">
+    
+    ABM.Patches::needNeighbors = false
     class MyModel extends ABM.Model
       u = ABM.util # utilities; static variable
       setup: -> # called by Model ctor
@@ -11,8 +13,10 @@
         
         # globals
         @circleLayout = true
-        @agents.setDefaultShape "circle"
         @hist = []
+        
+        # defaults
+        @agents.setDefaultShape "circle"
         
         @agents.create 1; @makeNode @agents[0]
       step: ->

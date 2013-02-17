@@ -14,6 +14,9 @@
         @setAgentStaticColors() # 10fps, not large part of performance
         # two: 27fps, now static colors larger percent of faster patches.
         
+        # defaults
+        @agents.setDefaultShape("bug")
+        @agents.setDefaultSize(3)
         
         # globals
         @nestColor = [255,255,0]  # yellow
@@ -41,8 +44,8 @@
         null
       setupAgents: -> # a is agent
         @agents.create @population, (a) => # fat arrow for @patches etc
-          a.shape = "bug"
-          a.size = 3
+          #a.shape = "bug"
+          #a.size = 3
           a.setXY @patches.maxX-6, 0
           @resetAgent(a, false) # sets a.pheromone to max
       resetAgent: (a, withFood) ->

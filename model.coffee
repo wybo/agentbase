@@ -124,10 +124,10 @@ class ABM.Model
     @animStop = false
     @animate()
 
-# stops the animation at the end of the next call to `animate`
+# Stop the animation at the end of the next call to `animate`
   stop: -> @animStop = true
 
-# call the agentset draw methods if either the first call or
+# Call the agentset draw methods if either the first draw call or
 # their "refresh" flags are set.  The latter are simple optimizations
 # to avoid redrawing the same static scene.
   draw: ->
@@ -192,8 +192,11 @@ class ABM.Model
   # See [CoffeeConsole](http://goo.gl/1i7bd) Chrome extension too.
   setRootVars: ->
     ABM.root.ps = @patches
+    ABM.root.p0 = @patches[0]
     ABM.root.as = @agents
+    ABM.root.a0 = @agents[0]
     ABM.root.ls = @links
+    ABM.root.l0 = @links[0]
     ABM.root.dr = @drawing
     ABM.root.u = ABM.util
     ABM.root.app = @

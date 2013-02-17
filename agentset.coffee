@@ -69,7 +69,7 @@ class ABM.AgentSet extends Array
   # By "agent" we mean an instance of `Patch`, `Agent` and `Link`.
   add: (o) ->
     o.id = @ID++
-    o.hidden = false
+    # o.hidden = false
     @push o; o
 
   # Remove an agent from the agentset, returning the agentset.
@@ -161,7 +161,7 @@ class ABM.AgentSet extends Array
   #     max = AS.maxProp "y"  # 4
   maxProp: (prop) -> Math.max @getProp(prop)...
   minProp: (prop) -> Math.min @getProp(prop)...
-
+  
 # ### Array Utilities, often from ABM.util
 
   # Randomize the agentset

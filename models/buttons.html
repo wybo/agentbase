@@ -4,6 +4,8 @@
     <script src="../agentscript.js"></script>
     <script src="../coffee-script.js"></script>
     <script type="text/coffeescript">
+
+    ABM.Patches::needNeighbors = false
     class MyModel extends ABM.Model
       u = ABM.util # utilities; static variable
       setup: -> # called by Model ctor
@@ -13,9 +15,15 @@
         @buttons = 200
         @cluster = 0
         
+        # defaults
+        @agents.setDefaultShape("circle")
+        @agents.setDefaultSize(1.5)
+        @agents.setDefaultHeading(0) # override promotion to random angle
+        
+        
         @agents.create @buttons, (a) => # fat arrow for @patches etc
-          a.size = 1.5
-          a.shape = "circle"
+          # a.size = 1.5
+          # a.shape = "circle"
           a.setXY @patches.randomPt()...
 
       step: ->
@@ -23,7 +31,7 @@
         b2 = @agents.other(b1).oneOf()
         
         @links.create b1, b2, (l) -> l.thickness = .25
-        foo = @links.nodes()
+        # foo = @links.nodes()
         
         g = @graphOf b1
         c = u.minOneOf(g, "id").color

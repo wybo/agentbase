@@ -102,11 +102,21 @@
         return _results;
       })()).join(s)) + "]";
     },
-    randomColor: function() {
-      return [this.randomInt(256), this.randomInt(256), this.randomInt(256)];
+    randomColor: function(color) {
+      var i, _i;
+      if (color == null) {
+        color = [];
+      }
+      for (i = _i = 0; _i <= 2; i = ++_i) {
+        color[i] = this.randomInt(256);
+      }
+      return color;
     },
-    randomGray: function(min, max) {
-      var r;
+    randomGray: function(color, min, max) {
+      var i, r, _i;
+      if (color == null) {
+        color = [];
+      }
       if (min == null) {
         min = 64;
       }
@@ -114,7 +124,10 @@
         max = 192;
       }
       r = this.randomInt2(min, max);
-      return [r, r, r];
+      for (i = _i = 0; _i <= 2; i = ++_i) {
+        color[i] = r;
+      }
+      return color;
     },
     scaleColor: function(max, s, color) {
       var c, i, _i, _len;
@@ -612,7 +625,6 @@
 
     AgentSet.prototype.add = function(o) {
       o.id = this.ID++;
-      o.hidden = false;
       this.push(o);
       return o;
     };
@@ -949,12 +961,17 @@
 
   ABM.Patch = (function() {
 
-    function Patch(x, y, color) {
+    Patch.prototype.n = null;
+
+    Patch.prototype.n4 = null;
+
+    Patch.prototype.color = [0, 0, 0];
+
+    Patch.prototype.hidden = false;
+
+    function Patch(x, y) {
       this.x = x;
       this.y = y;
-      this.color = color != null ? color : [0, 0, 0];
-      this.n = null;
-      this.n4 = null;
     }
 
     Patch.prototype.toString = function() {
@@ -962,6 +979,9 @@
     };
 
     Patch.prototype.scaleColor = function(c, s) {
+      if (!this.hasOwnProperty("color")) {
+        this.color = u.clone(this.color);
+      }
       return u.scaleColor(c, s, this.color);
     };
 
@@ -1022,8 +1042,10 @@
 
     __extends(Patches, _super);
 
+    Patches.prototype.needNeighbors = true;
+
     function Patches(size, minX, maxX, minY, maxY, isTorus) {
-      var can, n, p, x, y, _j, _k, _l, _len1;
+      var can, x, y, _j, _k;
       this.size = size;
       this.minX = minX;
       this.maxX = maxX;
@@ -1038,21 +1060,8 @@
           this.add(new ABM.Patch(x, y));
         }
       }
-      for (_l = 0, _len1 = this.length; _l < _len1; _l++) {
-        p = this[_l];
-        p.n = this.patchRect(p, 1, 1);
-        p.n4 = this.asSet((function() {
-          var _len2, _m, _ref1, _results;
-          _ref1 = p.n;
-          _results = [];
-          for (_m = 0, _len2 = _ref1.length; _m < _len2; _m++) {
-            n = _ref1[_m];
-            if (n.x === p.x || n.y === p.y) {
-              _results.push(n);
-            }
-          }
-          return _results;
-        })());
+      if (this.needNeighbors) {
+        this.setNeighbors();
       }
       can = document.createElement('canvas');
       can.width = this.numX;
@@ -1061,12 +1070,38 @@
       this.drawWithPixels = false;
     }
 
+    Patches.prototype.setNeighbors = function() {
+      var n, p, _j, _len1, _results;
+      _results = [];
+      for (_j = 0, _len1 = this.length; _j < _len1; _j++) {
+        p = this[_j];
+        p.n = this.patchRect(p, 1, 1);
+        _results.push(p.n4 = this.asSet((function() {
+          var _k, _len2, _ref1, _results1;
+          _ref1 = p.n;
+          _results1 = [];
+          for (_k = 0, _len2 = _ref1.length; _k < _len2; _k++) {
+            n = _ref1[_k];
+            if (n.x === p.x || n.y === p.y) {
+              _results1.push(n);
+            }
+          }
+          return _results1;
+        })()));
+      }
+      return _results;
+    };
+
     Patches.prototype.draw = function(ctx) {
       if (this.drawWithPixels) {
         return this.drawScaledPixels(ctx);
       } else {
         return Patches.__super__.draw.call(this, ctx);
       }
+    };
+
+    Patches.prototype.setDefaultColor = function(color) {
+      return ABM.Patch.prototype.color = color;
     };
 
     Patches.prototype.patchXY = function(x, y) {
@@ -1181,7 +1216,7 @@
         _this = this;
       img = new Image();
       img.onload = function() {
-        var c, data, i, j, p, _j, _k, _len1;
+        var data, i, j, p, _j, _len1;
         if (img.width !== _this.numX || img.height !== _this.numY) {
           _this.pixelsCtx.drawImage(img, 0, 0, _this.numX, _this.numY);
         } else {
@@ -1191,10 +1226,14 @@
         for (_j = 0, _len1 = _this.length; _j < _len1; _j++) {
           p = _this[_j];
           i = _this.idToPixels(p.id);
-          c = p.color;
-          for (j = _k = 0; _k <= 2; j = ++_k) {
-            c[j] = data[i + j];
-          }
+          p.color = (function() {
+            var _k, _results;
+            _results = [];
+            for (j = _k = 0; _k <= 2; j = ++_k) {
+              _results.push(data[i + j]);
+            }
+            return _results;
+          })();
         }
         return null;
       };
@@ -1261,22 +1300,40 @@
 
   ABM.Agent = (function() {
 
+    Agent.prototype.color = null;
+
+    Agent.prototype.shape = "default";
+
+    Agent.prototype.breed = "default";
+
+    Agent.prototype.hidden = false;
+
+    Agent.prototype.size = 1;
+
+    Agent.prototype.penDown = false;
+
+    Agent.prototype.penSize = 1;
+
+    Agent.prototype.heading = null;
+
     function Agent() {
-      this.breed = "default";
       this.x = this.y = 0;
-      this.color = u.randomColor();
-      this.heading = u.randomFloat(Math.PI * 2);
-      this.size = 1;
-      this.shape = ABM.agents.defaultShape;
+      if (!(this.color != null)) {
+        this.color = u.randomColor();
+      }
+      if (!(this.heading != null)) {
+        this.heading = u.randomFloat(Math.PI * 2);
+      }
       this.p = ABM.patches.patch(this.x, this.y);
       if (this.p.agents != null) {
         this.p.agents.push(this);
       }
-      this.penDown = false;
-      this.penSize = ABM.patches.bits2Patches(1);
     }
 
     Agent.prototype.scaleColor = function(c, s) {
+      if (!this.hasOwnProperty("color")) {
+        this.color = u.clone(this.color);
+      }
       return u.scaleColor(c, s, this.color);
     };
 
@@ -1299,7 +1356,7 @@
       if (this.penDown) {
         drawing = ABM.drawing;
         drawing.strokeStyle = u.colorStr(this.color);
-        drawing.lineWidth = this.penSize;
+        drawing.lineWidth = ABM.patches.bits2Patches(this.penSize);
         drawing.beginPath();
         drawing.moveTo(x0, y0);
         drawing.lineTo(x, y);
@@ -1465,12 +1522,35 @@
 
     function Agents() {
       Agents.__super__.constructor.call(this);
-      this.defaultShape = "default";
       this.staticColors = false;
     }
 
-    Agents.prototype.setDefaultShape = function(defaultShape) {
-      this.defaultShape = defaultShape;
+    Agents.prototype.setDefaultColor = function(color) {
+      return ABM.Agent.prototype.color = color;
+    };
+
+    Agents.prototype.setDefaultShape = function(shape) {
+      return ABM.Agent.prototype.shape = shape;
+    };
+
+    Agents.prototype.setDefaultSize = function(size) {
+      return ABM.Agent.prototype.size = size;
+    };
+
+    Agents.prototype.setDefaultHeading = function(heading) {
+      return ABM.Agent.prototype.heading = heading;
+    };
+
+    Agents.prototype.setDefaultHidden = function(hidden) {
+      return ABM.Agent.prototype.hidden = hidden;
+    };
+
+    Agents.prototype.setDefaultPen = function(size, down) {
+      if (down == null) {
+        down = false;
+      }
+      ABM.Agent.prototype.penSize = size;
+      return ABM.Agent.prototype.penDown = down;
     };
 
     Agents.prototype.setStaticColors = function(staticColors) {
@@ -1879,8 +1959,11 @@
 
     Model.prototype.setRootVars = function() {
       ABM.root.ps = this.patches;
+      ABM.root.p0 = this.patches[0];
       ABM.root.as = this.agents;
+      ABM.root.a0 = this.agents[0];
       ABM.root.ls = this.links;
+      ABM.root.l0 = this.links[0];
       ABM.root.dr = this.drawing;
       ABM.root.u = ABM.util;
       ABM.root.app = this;

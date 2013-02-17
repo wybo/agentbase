@@ -20,8 +20,12 @@
         @diffusionRate = .70
         @coolingRate = .10
         
-        @agents.create @population, (a) => # fat arrow for @patches etc
-          a.size = 1.5
+        # defaults
+        @agents.setDefaultSize(1.5)
+
+        @agents.create @population
+        # @agents.create @population, (a) => # fat arrow for @patches etc
+        #   a.size = 1.5
         for p in @patches
           p.heat = 0
       step: ->
