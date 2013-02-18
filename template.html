@@ -20,9 +20,6 @@
     #
     # below, which passes all its arguments to `Model`
     
-    # Tell patches neighbors not needed for this simple model.
-    # considerable space saving if not needed
-    ABM.Patches::needNeighbors = false
     class MyModel extends ABM.Model
       # Static private variables, useful for "aliases" w/o adding to global namespace
       u = ABM.util
@@ -118,14 +115,14 @@ average heading of agents:
     # constructor arguments:
     #
     #     divName, patchSize, minX, maxX, minY, maxY,
-    #     isTorus = true, topLeft=[10,10]
+    #     isTorus = true, neighbors = true
     #
     # Note: Netlogo defaults 13, -16, 16, -16, 16 <br>
     # for patchSize, minX, maxX, minY, maxY
     #
     # We do not strictly need to set the new model to a local variable,
     # class Model sets it to `ABM.model`. We do so here for convenience.
-    APP = new MyModel "layers", 13, -16, 16, -16, 16
+    APP = new MyModel "layers", 13, -16, 16, -16, 16, true, false
     # Finally set some debugging aids in the global namespace.
     # Here @APP is window.APP, see CoffeeScript
     # [lexical scoping](http://jashkenas.github.com/coffee-script/#lexical_scope)

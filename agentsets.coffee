@@ -16,16 +16,19 @@ u = ABM.util
 class ABM.Patch
   # Class variable defaults, "promoted" to instance variables if needed
   # when unique per instance rather than shared.
-  # This approach results in considerable space effeciency when appropriate.
+  # This approach yields considerable space effeciency when appropriate.
   
   # Not all patches need their neighbor patches, thus we use a default
-  # of none.  n and n4 are promoted by the ABM.Patches agent set if needed.
+  # of none.  n and n4 are promoted by the ABM.Patches agent set 
+  # constructor if the constructor variable "neighbors" is true,
+  # the default. This is only important in very large patch sets
+  # and should be handled with care!
   n: null
   n4: null
   # Default color starts as black, can be set to different default value
-  # by setDefault methods
+  # by setDefault methods in ABM.Patches
   color: [0,0,0]
-  # Default patch is visible.  Generally false but can be changed to true if
+  # Default patch is visible but can be changed to true if
   # appropriate by setDefault methods
   hidden: false
   # new Patch: set x,y. Neighbors set by Patches constructor if needed.
@@ -85,16 +88,19 @@ class ABM.Patch
 # * isTorus: topology of patches, see **ABM.util**.
 class ABM.Patches extends ABM.AgentSet
   # Class variable controlling promotion of patch neighborhoods.
-  needNeighbors: true # set false for massive projects not using neighbors
+  # needNeighbors: true # set false for massive projects not using neighbors
   # Constructor: set variables, fill patch neighbor variables, n & n4.
-  constructor: (@size, @minX, @maxX, @minY, @maxY, @isTorus = true) ->
+  constructor: (
+    @size, @minX, @maxX, @minY, @maxY,
+    @isTorus=true, neighbors=true
+  ) ->
     super()
     @numX = @maxX-@minX+1
     @numY = @maxY-@minY+1
     for y in [minY..maxY] by 1
       for x in [minX..maxX] by 1
         @add new ABM.Patch x, y
-    @setNeighbors() if @needNeighbors
+    @setNeighbors() if neighbors
     can = document.createElement 'canvas'  # small pixel grid for patch colors
     can.width = @numX; can.height = @numY
     @pixelsCtx = can.getContext "2d"
@@ -399,7 +405,7 @@ class ABM.Agent
     aset.inCone @p, @heading, cone, radius, meToo # REMIND: @p vs @?
   
   # Return all links linked to me
-  links: ->
+  links: -> # REMIND: cache
     l for l in ABM.links when (l.end1 is @) or (l.end2 is @) # asSet?
   
   # Return other end of link from me
@@ -445,7 +451,7 @@ class ABM.Agents extends ABM.AgentSet
   clear: -> @last().die() while @any(); null # tricky, each die modifies list
 
   # Return the subset of this set with the given breed value.
-  breed: (breed) -> @asSet @getWithProp "breed", breed
+  breed: (breed) -> @getWithProp "breed", breed
   
   # Return an agentset of agents within the patch array
   agentsInPatches: (patches) ->
@@ -488,10 +494,14 @@ class ABM.Link
   # Note the thickness uses the bits2Patches utility.  You can
   # convert a link thickness to 3 pixels by multiplying the 
   # default: l.thickness *= 3/2
+  breed: "default"
+  color: [130, 130, 130]
+  thickness: 2
+  hidden: false
   constructor: (@end1, @end2) ->
-    @breed = "default"
-    @color = [130, 130, 130] #u.randomColor()
-    @thickness = ABM.patches.bits2Patches(2)
+    # @breed = "default"
+    # @color = [130, 130, 130] #u.randomColor()
+    # @thickness = ABM.patches.bits2Patches(2)
   
   # Draw a line between the two endpoints.  Draws "around" the
   # torus if appropriate using two lines. As with Agent.draw,
@@ -499,7 +509,7 @@ class ABM.Link
   draw: (ctx) ->
     ctx.save()
     ctx.strokeStyle = u.colorStr @color
-    ctx.lineWidth = @thickness
+    ctx.lineWidth = ABM.patches.bits2Patches @thickness
     ctx.beginPath()
     if !ABM.patches.isTorus
       ctx.moveTo @end1.x, @end1.y
@@ -537,6 +547,11 @@ class ABM.Links extends ABM.AgentSet
   constructor: ->
     super()
   
+  # Methods to change the default Agent class variables.
+  setDefaultColor:     (color)      -> ABM.Link::color = color
+  setDefaultThickness: (thickness)  -> ABM.Link::thickness = thickness
+  setDefaultHidden:    (hidden)     -> ABM.Link::hidden = hidden
+
   # Factory: Add 1 or more links from the from agent to
   # the to agent(s) which can be a single agent or an array
   # of agents.

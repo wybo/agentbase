@@ -19,7 +19,7 @@
       step: -> # stop: just one tick
         @stop() # debug: stop after first animation
 
-    # divName, patchSize, minX, maxX, minY, maxY, isTorus = true, topLeft=[10,10]
+    # div, patchSize, minX, maxX, minY, maxY, isTorus=true, neighbors=true
     #   NL Defaults: 13, -16, 16, -16, 16
     APP=new MyModel "layers", 4, -45, 45, -45, 45, true
     APP.setRootVars()

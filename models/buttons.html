@@ -5,7 +5,6 @@
     <script src="../coffee-script.js"></script>
     <script type="text/coffeescript">
 
-    ABM.Patches::needNeighbors = false
     class MyModel extends ABM.Model
       u = ABM.util # utilities; static variable
       setup: -> # called by Model ctor
@@ -16,9 +15,10 @@
         @cluster = 0
         
         # defaults
-        @agents.setDefaultShape("circle")
-        @agents.setDefaultSize(1.5)
-        @agents.setDefaultHeading(0) # override promotion to random angle
+        @agents.setDefaultShape "circle"
+        @agents.setDefaultSize 1.5
+        @agents.setDefaultHeading 0 # override promotion to random angle
+        @links.setDefaultThickness 2.5
         
         
         @agents.create @buttons, (a) => # fat arrow for @patches etc
@@ -30,8 +30,7 @@
         b1 = @agents.oneOf()
         b2 = @agents.other(b1).oneOf()
         
-        @links.create b1, b2, (l) -> l.thickness = .25
-        # foo = @links.nodes()
+        @links.create b1, b2
         
         g = @graphOf b1
         c = u.minOneOf(g, "id").color
@@ -50,9 +49,9 @@
         @markNeighbors n for n in unMarked
 
 
-    # divName, patchSize, minX, maxX, minY, maxY, isTorus = true, topLeft=[10,10]
+    # div, patchSize, minX, maxX, minY, maxY, isTorus=true, neighbors=true
     #   NL Defaults: 13, -16, 16, -16, 16
-    APP=new MyModel "layers", 13, -16, 16, -16, 16
+    APP=new MyModel "layers", 13, -16, 16, -16, 16, false, false
     APP.setRootVars()
     </script>
 

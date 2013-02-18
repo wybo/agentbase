@@ -5,7 +5,6 @@
     <script src="../coffee-script.js"></script>
     <script type="text/coffeescript">
     
-    ABM.Patches::needNeighbors = false
     class MyModel extends ABM.Model
       u = ABM.util # utilities; static variable
       setup: -> # called by Model ctor
@@ -27,10 +26,11 @@
         @bestTourTick = 0
         
         # defaults
-        @agents.setDefaultShape("circle")
-        @agents.setDefaultColor([255,0,0])
-        @agents.setDefaultHeading(0) # override promotion to random angle
         @patches.setDefaultColor [250, 250, 0]
+        @agents.setDefaultShape "circle"
+        @agents.setDefaultColor [255,0,0]
+        @agents.setDefaultHeading 0 # override promotion to random angle
+        @links.setDefaultColor [255,0,0]
 
         # p.color = [250, 250, 0] for p in @patches
         
@@ -61,7 +61,7 @@
         @links.clear()
         @links.create nodeList[0], nodeList.last()
         @links.create nodeList[i], nodeList[i-1] for i in [1...nodeList.length]
-        @links.setProp "color", [255,0,0]
+        # @links.setProp "color", [255,0,0]
       lengthFromNodes: (nodeList) ->
         len = nodeList[0].distance(nodeList.last())
         len += nodeList[i].distance(nodeList[i-1]) for i in [1...nodeList.length]
@@ -96,10 +96,11 @@
       reportNewTour: (a) ->
         console.log "new best tour at tick #{@ticks}: #{a.tourLength} by traveler #{a.id}"
         
-    # divName, patchSize, minX, maxX, minY, maxY, isTorus = true, topLeft=[10,10]
+    # div, patchSize, minX, maxX, minY, maxY, isTorus=true, neighbors=true
     #   NL Defaults: 13, -16, 16, -16, 16
-    APP=new MyModel "layers", 16, -14, 14, -14, 14, false
+    APP=new MyModel "layers", 16, -14, 14, -14, 14, false, false
     APP.setRootVars()
+    
     </script>
 
   </head>

@@ -1042,9 +1042,7 @@
 
     __extends(Patches, _super);
 
-    Patches.prototype.needNeighbors = true;
-
-    function Patches(size, minX, maxX, minY, maxY, isTorus) {
+    function Patches(size, minX, maxX, minY, maxY, isTorus, neighbors) {
       var can, x, y, _j, _k;
       this.size = size;
       this.minX = minX;
@@ -1052,6 +1050,9 @@
       this.minY = minY;
       this.maxY = maxY;
       this.isTorus = isTorus != null ? isTorus : true;
+      if (neighbors == null) {
+        neighbors = true;
+      }
       Patches.__super__.constructor.call(this);
       this.numX = this.maxX - this.minX + 1;
       this.numY = this.maxY - this.minY + 1;
@@ -1060,7 +1061,7 @@
           this.add(new ABM.Patch(x, y));
         }
       }
-      if (this.needNeighbors) {
+      if (neighbors) {
         this.setNeighbors();
       }
       can = document.createElement('canvas');
@@ -1580,7 +1581,7 @@
     };
 
     Agents.prototype.breed = function(breed) {
-      return this.asSet(this.getWithProp("breed", breed));
+      return this.getWithProp("breed", breed);
     };
 
     Agents.prototype.agentsInPatches = function(patches) {
@@ -1630,18 +1631,23 @@
 
   ABM.Link = (function() {
 
+    Link.prototype.breed = "default";
+
+    Link.prototype.color = [130, 130, 130];
+
+    Link.prototype.thickness = 2;
+
+    Link.prototype.hidden = false;
+
     function Link(end1, end2) {
       this.end1 = end1;
       this.end2 = end2;
-      this.breed = "default";
-      this.color = [130, 130, 130];
-      this.thickness = ABM.patches.bits2Patches(2);
     }
 
     Link.prototype.draw = function(ctx) {
       ctx.save();
       ctx.strokeStyle = u.colorStr(this.color);
-      ctx.lineWidth = this.thickness;
+      ctx.lineWidth = ABM.patches.bits2Patches(this.thickness);
       ctx.beginPath();
       if (!ABM.patches.isTorus) {
         ctx.moveTo(this.end1.x, this.end1.y);
@@ -1692,6 +1698,18 @@
     function Links() {
       Links.__super__.constructor.call(this);
     }
+
+    Links.prototype.setDefaultColor = function(color) {
+      return ABM.Link.prototype.color = color;
+    };
+
+    Links.prototype.setDefaultThickness = function(thickness) {
+      return ABM.Link.prototype.thickness = thickness;
+    };
+
+    Links.prototype.setDefaultHidden = function(hidden) {
+      return ABM.Link.prototype.hidden = hidden;
+    };
 
     Links.prototype.create = function(from, to, init) {
       var a, _j, _len1, _results;
@@ -1763,25 +1781,27 @@
 
   ABM.Model = (function() {
 
-    function Model(div, pSize, pMinX, pMaxX, pMinY, pMaxY, isTorus, topLeft) {
+    Model.prototype.topLeft = [10, 10];
+
+    function Model(div, px, minX, maxX, minY, maxY, torus, neighbors) {
       var ctx, i, k, layers, v, _j, _len1, _ref1;
-      if (isTorus == null) {
-        isTorus = true;
+      if (torus == null) {
+        torus = true;
       }
-      if (topLeft == null) {
-        topLeft = [10, 10];
+      if (neighbors == null) {
+        neighbors = true;
       }
       this.animate = __bind(this.animate, this);
 
       ABM.model = this;
-      this.patches = ABM.patches = new ABM.Patches(pSize, pMinX, pMaxX, pMinY, pMaxY, isTorus);
+      this.patches = ABM.patches = new ABM.Patches(px, minX, maxX, minY, maxY, torus, neighbors);
       this.agents = ABM.agents = new ABM.Agents;
       this.links = ABM.links = new ABM.Links;
       layers = (function() {
         var _j, _results;
         _results = [];
         for (i = _j = 0; _j <= 3; i = ++_j) {
-          _results.push(u.createLayer.apply(u, [div].concat(__slice.call(topLeft), [this.patches.bitWidth()], [this.patches.bitHeight()], [i], ["2d"])));
+          _results.push(u.createLayer.apply(u, [div].concat(__slice.call(this.topLeft), [this.patches.bitWidth()], [this.patches.bitHeight()], [i], ["2d"])));
         }
         return _results;
       }).call(this);

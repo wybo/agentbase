@@ -5,7 +5,6 @@
     <script src="../coffee-script.js"></script>
     <script type="text/coffeescript">
     
-    ABM.Patches::needNeighbors = false
     class MyModel extends ABM.Model
       u = ABM.util # utilities; static variable
       setup: -> # called by Model ctor
@@ -33,9 +32,10 @@
       findPartner: ->
         @links.oneOf().bothEnds().oneOf() # or @links.allEnds().oneOf()
 
-    # divName, patchSize, minX, maxX, minY, maxY, isTorus = true, topLeft=[10,10]
+    # div, patchSize, minX, maxX, minY, maxY, isTorus=true, neighbors=true
     #   NL Defaults: 13, -16, 16, -16, 16
-    APP=new MyModel "layers", 5, -45, 45, -45, 45, false
+    APP=new MyModel "layers", 5, -45, 45, -45, 45, false, false
+    
     </script>
 
   </head>

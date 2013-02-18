@@ -5,7 +5,6 @@
     <script src="../coffee-script.js"></script>
     <script type="text/coffeescript">
     
-    ABM.Patches::needNeighbors = false
     class MyModel extends ABM.Model
       u = ABM.util # utilities; static variable
       setup: -> # called by Model ctor
@@ -49,9 +48,9 @@
         null
         
 
-    # divName, patchSize, minX, maxX, minY, maxY, isTorus = true, topLeft=[10,10]
+    # div, patchSize, minX, maxX, minY, maxY, isTorus=true, neighbors=true
     #   NL Defaults: 13, -16, 16, -16, 16
-    APP=new MyModel "layers", 2, -110, 110, -100, 100, false
+    APP=new MyModel "layers", 2, -110, 110, -100, 100, false, false
     APP.setRootVars()
     
     </script>

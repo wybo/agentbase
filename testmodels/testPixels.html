@@ -4,10 +4,10 @@
     <script src="../agentscript.js"></script>
     <script src="../coffee-script.js"></script>
     <script type="text/coffeescript">
+    
     class MyModel extends ABM.Model
       u = ABM.util # static variables
       PI = Math.PI
-      ABM.Patches::needNeighbors = false # space effeciency test
       setup: -> # called by Model ctor
         @refreshPatches = true # improves 14->20
         @setFastPatches()
@@ -18,13 +18,14 @@
         u.randomGray p.color for p in @patches
         @stop() if @ticks is 101
 
-    # divName, patchSize, minX, maxX, minY, maxY, isTorus = true, topLeft=[10,10]
+    # div, patchSize, minX, maxX, minY, maxY, isTorus=true, neighbors=true
     #   NL Defaults: 13, -16, 16, -16, 16
-    # APP=new MyModel "layers", 4, -64, 64, -64, 64, true
-    APP=new MyModel "layers", 1, 0, 320-1, 0, 240-1, true
-    # APP=new MyModel "layers", 1, 0, 640-1, 0, 480-1, true
-    # APP=new MyModel "layers", 1, 0, 1024-1, 0, 768-1, true
+    # APP=new MyModel "layers", 4, -64, 64, -64, 64, false, false
+    APP=new MyModel "layers", 1, 0, 320-1, 0, 240-1, false, false
+    # APP=new MyModel "layers", 1, 0, 640-1, 0, 480-1, false, false
+    # APP=new MyModel "layers", 1, 0, 1024-1, 0, 768-1, false, false
     APP.setRootVars()
+    
     </script>
   </head>
   <body onload="ABM.model.start()">
