@@ -85,6 +85,13 @@ ABM.util =
   colorStr: (c) -> if c.length is 3 then "rgb(#{c})" else "rgba(#{c})"
   # Compare two colors.  Alas, there is no array.Equal operator.
   colorsEqual: (c1, c2) -> c1.toString() is c2.toString()
+  # Return little/big endian-ness of hardware. 
+  # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq)
+  isLittleEndian: ->
+    d8 = new Uint8ClampedArray 4
+    d32 = new Uint32Array d8.buffer
+    d32[0] = 0x01020304
+    d8[0] is 4
   # Convert between degrees and radians.  We/Math package use radians.
   degToRad: (degrees) -> degrees * Math.PI / 180
   radToDeg: (radians) -> radians * 180 / Math.PI
@@ -814,12 +821,9 @@ class ABM.Patch
 # * numX/numY: total patches in x/y direction, width/height of grid.
 # * isTorus: topology of patches, see **ABM.util**.
 class ABM.Patches extends ABM.AgentSet
-  # Class variable controlling promotion of patch neighborhoods.
-  # needNeighbors: true # set false for massive projects not using neighbors
   # Constructor: set variables, fill patch neighbor variables, n & n4.
   constructor: (
-    @size, @minX, @maxX, @minY, @maxY,
-    @isTorus=true, neighbors=true
+    @size, @minX, @maxX, @minY, @maxY, @isTorus=true, neighbors=true
   ) ->
     super()
     @numX = @maxX-@minX+1
@@ -828,15 +832,30 @@ class ABM.Patches extends ABM.AgentSet
       for x in [minX..maxX] by 1
         @add new ABM.Patch x, y
     @setNeighbors() if neighbors
-    can = document.createElement 'canvas'  # small pixel grid for patch colors
-    can.width = @numX; can.height = @numY
-    @pixelsCtx = can.getContext "2d"
-    @drawWithPixels = false
+    @setPixels() 
+    @drawWithPixels = @size is 1 #false
+  
+  # Install neighborhoods in patches
   setNeighbors: () -> 
     for p in @
       p.n =  @patchRect p, 1, 1 # p.n =  p.patchRect 1, 1
       p.n4 = @asSet (n for n in p.n when n.x is p.x or n.y is p.y)
-    
+
+  # Setup pixels used for `drawScaledPixels` and `importColors`
+  setPixels: () ->
+    if @size is 1
+      @pixelsCtx = ABM.contexts.patches
+    else
+      can = document.createElement 'canvas'  # small pixel grid for patch colors
+      can.width = @numX; can.height = @numY
+      @pixelsCtx = can.getContext "2d"
+    @pixelsImageData = @pixelsCtx.getImageData(0, 0, @numX, @numY)
+    @pixelsData = @pixelsImageData.data
+    if @pixelsData instanceof Uint8Array # Check for typed arrays
+      @pixelsData32 = new Uint32Array @pixelsData.buffer
+      @pixelsAreLittleEndian = u.isLittleEndian()
+  
+  # If using scaled pixels, use pixel manipulation below, or use default.
   draw: (ctx) ->
     if @drawWithPixels then @drawScaledPixels ctx else super ctx
   
@@ -903,8 +922,6 @@ class ABM.Patches extends ABM.AgentSet
           rect.push pnext if (meToo or p isnt pnext)
     @asSet rect
 
-  
-
   # Draws, or "imports" an image URL into the drawing layer.
   # The image is scaled to fit the drawing layer.
   #
@@ -923,12 +940,10 @@ class ABM.Patches extends ABM.AgentSet
       ctx.restore() # restore patch transform
     img.src = imageSrc
   
-  # Utility function for pixel manipulation.  Given a patch ID, returns the 
-  # native canvas x,y from top,left and the index i into the pixel data.
-  idToPixels: (id) ->
-    x = id % @numX
-    y = @numY - 1 - Math.floor(id / @numX)
-    i = (x + y*@numX)*4
+  # Utility function for pixel manipulation.  Given a patch, returns the 
+  # native canvas index i into the pixel data.
+  pixelIndex: (p) ->
+    ( (p.x-@minX) + (@maxY-p.y)*@numX )*4
     
   # Draws, or "imports" an image URL into the patches as their color property.
   # The drawing is scaled to the number of x,y patches, thus one pixel
@@ -942,25 +957,50 @@ class ABM.Patches extends ABM.AgentSet
         @pixelsCtx.drawImage img, 0, 0
       data = @pixelsCtx.getImageData(0, 0, @numX, @numY).data
       for p in @
-        i = @idToPixels p.id
+        i = @pixelIndex p
         p.color = (data[i+j] for j in [0..2])
       null # avoid CS return of array
     img.src = imageSrc
   
   # Draw the patches via pixel manipulation rather than 2D drawRect.
-  drawScaledPixels: (ctx) ->
-    image = @pixelsCtx.getImageData(0, 0, @numX, @numY)
-    data = image.data
+  # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq)
+  drawScaledPixels: (ctx) -> 
+    if @pixelsData32?
+      @drawScaledPixels32 ctx
+    else
+      @drawScaledPixels8 ctx
+  drawScaledPixels8: (ctx) ->
+    data = @pixelsData
+    minX=@minX; numX=@numX; maxY=@maxY
     for p in @
-      i = @idToPixels p.id
+      i = ( (p.x-minX) + (maxY-p.y)*numX )*4
       c = p.color
       data[i+j] = c[j] for j in [0..2] 
       data[i+3] = 255
-    @pixelsCtx.putImageData(image, 0, 0)
-    ctx.save() # revert to native 2D transform
-    ctx.setTransform 1, 0, 0, 1, 0, 0
+    @pixelsCtx.putImageData(@pixelsImageData, 0, 0)
+    return if @size is 1
     ctx.drawImage @pixelsCtx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height
-    ctx.restore() # restore patch transform
+  drawScaledPixels32: (ctx) ->
+    data = @pixelsData32
+    minX=@minX; numX=@numX; maxY=@maxY
+    for p in @
+      i = (p.x-minX) + (maxY-p.y)*numX
+      c = p.color
+      if @pixelsAreLittleEndian
+        data[i] = 
+          (255  << 24) |  # alpha
+          (c[2] << 16) |  # blue
+          (c[1] << 8)  |  # green
+          c[0];           # red
+      else
+        data[i] = 
+          (c[0] << 24) |  # red
+          (c[1] << 16) |  # green
+          (c[2] << 8)  |  # blue
+          255;            # alpha
+    @pixelsCtx.putImageData(@pixelsImageData, 0, 0)
+    return if @size is 1
+    ctx.drawImage @pixelsCtx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height
       
   # Diffuse the value of patch variable `p.v` by distributing `rate` percent
   # of each patch's value of `v` to its neighbors. If a color `c` is given,
@@ -1340,18 +1380,14 @@ class ABM.Model
   # * call `setup` abstract method
   topLeft: [10,10] # layers placed with top left at this location.
   constructor: (
-    div, px, minX, maxX, minY, maxY,
+    div, size, minX, maxX, minY, maxY,
     torus=true, neighbors=true
   ) ->
     ABM.model = @
-    @patches = ABM.patches = \
-      new ABM.Patches px,minX,maxX,minY,maxY,torus,neighbors
-    @agents = ABM.agents = new ABM.Agents
-    @links = ABM.links = new ABM.Links
     
     # Create 4 2D canvas contexts layered on top of each other.
     layers = for i in [0..3] # multi-line array comprehension
-      u.createLayer div, @topLeft..., @patches.bitWidth(), @patches.bitHeight(), i, "2d"
+      u.createLayer div, @topLeft..., size*(maxX-minX+1), size*(maxY-minY+1), i, "2d"
     # One of the layers is used for drawing only, not an agentset:
     @drawing = ABM.drawing = layers[1]
 
@@ -1365,8 +1401,8 @@ class ABM.Model
     #     ctx.restore() # restore back to patch coord system
     for ctx in layers # install permenant (no ctx.restore) patch coordinates
       ctx.save()
-      ctx.scale @patches.size, -@patches.size
-      ctx.translate -(@patches.minX-.5), -(@patches.maxY+.5); 
+      ctx.scale size, -size
+      ctx.translate -(minX-.5), -(maxY+.5); 
     # Create instance variable object with names for each layer
     @contexts = ABM.contexts =
       patches: layers[0]
@@ -1376,12 +1412,18 @@ class ABM.Model
     # Set a variable in each context with its name 
     v.agentSetName = k for k,v of @contexts
     
+    # Initialize agentsets.
+    @patches = ABM.patches = \
+      new ABM.Patches size,minX,maxX,minY,maxY,torus,neighbors
+    @agents = ABM.agents = new ABM.Agents
+    @links = ABM.links = new ABM.Links
+
     # Initialize instance variables
     @showFPS = true # show fps in console. generally use chrome fps instead
     @ticks = 1 # initial tick/frame
     @refreshLinks = @refreshAgents = @refreshPatches = true # drawing flags
     @fastPatches = false
-
+    
     # Call the models setup function.
     @setup()
 
@@ -1396,9 +1438,12 @@ class ABM.Model
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
   # if browser does not support imageSmoothingEnabled or equivalent.
   setFastPatches: (fast=true) ->
-    @contexts.patches.imageSmoothingEnabled = not fast
-    @contexts.patches.mozImageSmoothingEnabled = not fast
-    @contexts.patches.webkitImageSmoothingEnabled = not fast
+    ctx = @contexts.patches
+    ctx.imageSmoothingEnabled = not fast
+    ctx.mozImageSmoothingEnabled = not fast
+    ctx.webkitImageSmoothingEnabled = not fast
+    ctx.save() # revert to native 2D transform
+    ctx.setTransform 1, 0, 0, 1, 0, 0
     @patches.drawWithPixels = fast
 
   # Have patches cache the agents currently on them.

@@ -150,6 +150,13 @@
     colorsEqual: function(c1, c2) {
       return c1.toString() === c2.toString();
     },
+    isLittleEndian: function() {
+      var d32, d8;
+      d8 = new Uint8ClampedArray(4);
+      d32 = new Uint32Array(d8.buffer);
+      d32[0] = 0x01020304;
+      return d8[0] === 4;
+    },
     degToRad: function(degrees) {
       return degrees * Math.PI / 180;
     },
@@ -1043,7 +1050,7 @@
     __extends(Patches, _super);
 
     function Patches(size, minX, maxX, minY, maxY, isTorus, neighbors) {
-      var can, x, y, _j, _k;
+      var x, y, _j, _k;
       this.size = size;
       this.minX = minX;
       this.maxX = maxX;
@@ -1064,11 +1071,8 @@
       if (neighbors) {
         this.setNeighbors();
       }
-      can = document.createElement('canvas');
-      can.width = this.numX;
-      can.height = this.numY;
-      this.pixelsCtx = can.getContext("2d");
-      this.drawWithPixels = false;
+      this.setPixels();
+      this.drawWithPixels = this.size === 1;
     }
 
     Patches.prototype.setNeighbors = function() {
@@ -1091,6 +1095,24 @@
         })()));
       }
       return _results;
+    };
+
+    Patches.prototype.setPixels = function() {
+      var can;
+      if (this.size === 1) {
+        this.pixelsCtx = ABM.contexts.patches;
+      } else {
+        can = document.createElement('canvas');
+        can.width = this.numX;
+        can.height = this.numY;
+        this.pixelsCtx = can.getContext("2d");
+      }
+      this.pixelsImageData = this.pixelsCtx.getImageData(0, 0, this.numX, this.numY);
+      this.pixelsData = this.pixelsImageData.data;
+      if (this.pixelsData instanceof Uint8Array) {
+        this.pixelsData32 = new Uint32Array(this.pixelsData.buffer);
+        return this.pixelsAreLittleEndian = u.isLittleEndian();
+      }
     };
 
     Patches.prototype.draw = function(ctx) {
@@ -1205,11 +1227,8 @@
       return img.src = imageSrc;
     };
 
-    Patches.prototype.idToPixels = function(id) {
-      var i, x, y;
-      x = id % this.numX;
-      y = this.numY - 1 - Math.floor(id / this.numX);
-      return i = (x + y * this.numX) * 4;
+    Patches.prototype.pixelIndex = function(p) {
+      return ((p.x - this.minX) + (this.maxY - p.y) * this.numX) * 4;
     };
 
     Patches.prototype.importColors = function(imageSrc) {
@@ -1226,7 +1245,7 @@
         data = _this.pixelsCtx.getImageData(0, 0, _this.numX, _this.numY).data;
         for (_j = 0, _len1 = _this.length; _j < _len1; _j++) {
           p = _this[_j];
-          i = _this.idToPixels(p.id);
+          i = _this.pixelIndex(p);
           p.color = (function() {
             var _k, _results;
             _results = [];
@@ -1242,23 +1261,56 @@
     };
 
     Patches.prototype.drawScaledPixels = function(ctx) {
-      var c, data, i, image, j, p, _j, _k, _len1;
-      image = this.pixelsCtx.getImageData(0, 0, this.numX, this.numY);
-      data = image.data;
+      if (this.pixelsData32 != null) {
+        return this.drawScaledPixels32(ctx);
+      } else {
+        return this.drawScaledPixels8(ctx);
+      }
+    };
+
+    Patches.prototype.drawScaledPixels8 = function(ctx) {
+      var c, data, i, j, maxY, minX, numX, p, _j, _k, _len1;
+      data = this.pixelsData;
+      minX = this.minX;
+      numX = this.numX;
+      maxY = this.maxY;
       for (_j = 0, _len1 = this.length; _j < _len1; _j++) {
         p = this[_j];
-        i = this.idToPixels(p.id);
+        i = ((p.x - minX) + (maxY - p.y) * numX) * 4;
         c = p.color;
         for (j = _k = 0; _k <= 2; j = ++_k) {
           data[i + j] = c[j];
         }
         data[i + 3] = 255;
       }
-      this.pixelsCtx.putImageData(image, 0, 0);
-      ctx.save();
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.drawImage(this.pixelsCtx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height);
-      return ctx.restore();
+      this.pixelsCtx.putImageData(this.pixelsImageData, 0, 0);
+      if (this.size === 1) {
+        return;
+      }
+      return ctx.drawImage(this.pixelsCtx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height);
+    };
+
+    Patches.prototype.drawScaledPixels32 = function(ctx) {
+      var c, data, i, maxY, minX, numX, p, _j, _len1;
+      data = this.pixelsData32;
+      minX = this.minX;
+      numX = this.numX;
+      maxY = this.maxY;
+      for (_j = 0, _len1 = this.length; _j < _len1; _j++) {
+        p = this[_j];
+        i = (p.x - minX) + (maxY - p.y) * numX;
+        c = p.color;
+        if (this.pixelsAreLittleEndian) {
+          data[i] = (255 << 24) | (c[2] << 16) | (c[1] << 8) | c[0];
+        } else {
+          data[i] = (c[0] << 24) | (c[1] << 16) | (c[2] << 8) | 255;
+        }
+      }
+      this.pixelsCtx.putImageData(this.pixelsImageData, 0, 0);
+      if (this.size === 1) {
+        return;
+      }
+      return ctx.drawImage(this.pixelsCtx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height);
     };
 
     Patches.prototype.diffuse = function(v, rate, c) {
@@ -1783,7 +1835,7 @@
 
     Model.prototype.topLeft = [10, 10];
 
-    function Model(div, px, minX, maxX, minY, maxY, torus, neighbors) {
+    function Model(div, size, minX, maxX, minY, maxY, torus, neighbors) {
       var ctx, i, k, layers, v, _j, _len1, _ref1;
       if (torus == null) {
         torus = true;
@@ -1794,14 +1846,11 @@
       this.animate = __bind(this.animate, this);
 
       ABM.model = this;
-      this.patches = ABM.patches = new ABM.Patches(px, minX, maxX, minY, maxY, torus, neighbors);
-      this.agents = ABM.agents = new ABM.Agents;
-      this.links = ABM.links = new ABM.Links;
       layers = (function() {
         var _j, _results;
         _results = [];
         for (i = _j = 0; _j <= 3; i = ++_j) {
-          _results.push(u.createLayer.apply(u, [div].concat(__slice.call(this.topLeft), [this.patches.bitWidth()], [this.patches.bitHeight()], [i], ["2d"])));
+          _results.push(u.createLayer.apply(u, [div].concat(__slice.call(this.topLeft), [size * (maxX - minX + 1)], [size * (maxY - minY + 1)], [i], ["2d"])));
         }
         return _results;
       }).call(this);
@@ -1809,8 +1858,8 @@
       for (_j = 0, _len1 = layers.length; _j < _len1; _j++) {
         ctx = layers[_j];
         ctx.save();
-        ctx.scale(this.patches.size, -this.patches.size);
-        ctx.translate(-(this.patches.minX - .5), -(this.patches.maxY + .5));
+        ctx.scale(size, -size);
+        ctx.translate(-(minX - .5), -(maxY + .5));
       }
       this.contexts = ABM.contexts = {
         patches: layers[0],
@@ -1823,6 +1872,9 @@
         v = _ref1[k];
         v.agentSetName = k;
       }
+      this.patches = ABM.patches = new ABM.Patches(size, minX, maxX, minY, maxY, torus, neighbors);
+      this.agents = ABM.agents = new ABM.Agents;
+      this.links = ABM.links = new ABM.Links;
       this.showFPS = true;
       this.ticks = 1;
       this.refreshLinks = this.refreshAgents = this.refreshPatches = true;
@@ -1831,12 +1883,16 @@
     }
 
     Model.prototype.setFastPatches = function(fast) {
+      var ctx;
       if (fast == null) {
         fast = true;
       }
-      this.contexts.patches.imageSmoothingEnabled = !fast;
-      this.contexts.patches.mozImageSmoothingEnabled = !fast;
-      this.contexts.patches.webkitImageSmoothingEnabled = !fast;
+      ctx = this.contexts.patches;
+      ctx.imageSmoothingEnabled = !fast;
+      ctx.mozImageSmoothingEnabled = !fast;
+      ctx.webkitImageSmoothingEnabled = !fast;
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
       return this.patches.drawWithPixels = fast;
     };
 

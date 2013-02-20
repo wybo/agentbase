@@ -24,6 +24,7 @@
         @bestTourNodes = []
         @bestTourLength = 0
         @bestTourTick = 0
+        @stopTickDifference = 500
         
         # defaults
         @patches.setDefaultColor [250, 250, 0]
@@ -56,6 +57,10 @@
       step: ->
         @makeTour a for a in @travelers()
         @installBestTour()
+        if (@ticks - @bestTourTick) is @stopTickDifference
+          console.log "Stopping at tick #{@ticks} after no change in #{@stopTickDifference} ticks"
+          console.log "Best tour: #{@bestTourLength} at tick #{@bestTourTick}"
+          @stop()
       
       createTourLinks: (nodeList) ->
         @links.clear()

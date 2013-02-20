@@ -9,6 +9,7 @@
       u = ABM.util # utilities; static variable
       setup: -> # called by Model ctor
         @refreshPatches = false # for static patches
+        @refreshLinks = false # for static links .. drown as created
         
         # globals
         @buttons = 200
@@ -18,7 +19,7 @@
         @agents.setDefaultShape "circle"
         @agents.setDefaultSize 1.5
         @agents.setDefaultHeading 0 # override promotion to random angle
-        @links.setDefaultThickness 2.5
+        @links.setDefaultThickness .5 # 2.5
         
         
         @agents.create @buttons, (a) => # fat arrow for @patches etc
@@ -30,14 +31,19 @@
         b1 = @agents.oneOf()
         b2 = @agents.other(b1).oneOf()
         
-        @links.create b1, b2
+        @links.create b1, b2, (l) ->
+          l.draw ABM.contexts.links
         
         g = @graphOf b1
         c = u.minOneOf(g, "id").color
         node.color = c for node in g
+        if g.length > @cluster
+          console.log "New largest cluster: size: #{g.length} tick: #{@ticks}"
         @cluster = Math.max @cluster, g.length
         
-        if @cluster is @buttons then @stop()
+        if @cluster is @buttons
+          console.log "Completed at tick #{@ticks}:  Cluster size #{@cluster} Links: #{@links.length}"
+          @stop()
         
       graphOf: (node) ->
         a.marked = false for a in @agents

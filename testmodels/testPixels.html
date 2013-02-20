@@ -10,20 +10,27 @@
       PI = Math.PI
       setup: -> # called by Model ctor
         @refreshPatches = true # improves 14->20
-        @setFastPatches()
-        p.color = u.randomGray() for p in @patches # promote colors for step
+        @setFastPatches() if @patches.size > 1
+        
+        for p in @patches
+          p.color = [] # new Uint8Array 4
+          # p.color32 = new Int32Array p.color.buffer
+        u.randomGray p.color for p in @patches
+        # p.color32 = u.randomInt 0xffffffff for p in @patches
         
       # draw: -> # headless
       step: -> # stop: just one tick
         u.randomGray p.color for p in @patches
-        @stop() if @ticks is 101
+        # p.color32 = u.randomInt 0xffffffff for p in @patches
+        @stop() if @ticks is 501
 
     # div, patchSize, minX, maxX, minY, maxY, isTorus=true, neighbors=true
     #   NL Defaults: 13, -16, 16, -16, 16
     # APP=new MyModel "layers", 4, -64, 64, -64, 64, false, false
-    APP=new MyModel "layers", 1, 0, 320-1, 0, 240-1, false, false
-    # APP=new MyModel "layers", 1, 0, 640-1, 0, 480-1, false, false
-    # APP=new MyModel "layers", 1, 0, 1024-1, 0, 768-1, false, false
+    # APP=new MyModel "layers", 1, 1, 320, 1, 240, false, false
+    # APP=new MyModel "layers", 1, 1, 640-1, 1, 480, false, false
+    APP=new MyModel "layers", 2, 1, 640-1, 1, 480, false, false
+    # APP=new MyModel "layers", 1, 1, 1024-1, 1, 768, false, false
     APP.setRootVars()
     
     </script>

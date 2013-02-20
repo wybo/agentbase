@@ -13,9 +13,11 @@
         # globals
         @circleLayout = true
         @hist = []
+        @stopTick = 400
         
         # defaults
         @agents.setDefaultShape "circle"
+        @links.setDefaultThickness .75 # Easier to see thiner link
         
         @agents.create 1; @makeNode @agents[0]
       step: ->
@@ -23,7 +25,8 @@
         a.size = Math.sqrt a.linkNeighbors().length for a in @agents
         @links.layoutCircle @agents, @patches.maxX * 0.9
         @hist = u.histOf @agents, 1, (a) -> a.linkNeighbors().length
-        if @ticks % 25 is 0 then console.log @hist
+        console.log "Tick: #{@ticks} Histogram: [#{@hist}]" if @ticks % 25 is 0
+        (console.log "Stopping at stopTick: #{@ticks}"; @stop()) if @ticks is @stopTick
 
       makeNode: (toNode) ->
         @agents.create 1, (a) =>

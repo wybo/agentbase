@@ -85,6 +85,13 @@ ABM.util =
   colorStr: (c) -> if c.length is 3 then "rgb(#{c})" else "rgba(#{c})"
   # Compare two colors.  Alas, there is no array.Equal operator.
   colorsEqual: (c1, c2) -> c1.toString() is c2.toString()
+  # Return little/big endian-ness of hardware. 
+  # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq)
+  isLittleEndian: ->
+    d8 = new Uint8ClampedArray 4
+    d32 = new Uint32Array d8.buffer
+    d32[0] = 0x01020304
+    d8[0] is 4
   # Convert between degrees and radians.  We/Math package use radians.
   degToRad: (degrees) -> degrees * Math.PI / 180
   radToDeg: (radians) -> radians * 180 / Math.PI

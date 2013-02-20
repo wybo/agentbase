@@ -17,18 +17,14 @@ class ABM.Model
   # * call `setup` abstract method
   topLeft: [10,10] # layers placed with top left at this location.
   constructor: (
-    div, px, minX, maxX, minY, maxY,
+    div, size, minX, maxX, minY, maxY,
     torus=true, neighbors=true
   ) ->
     ABM.model = @
-    @patches = ABM.patches = \
-      new ABM.Patches px,minX,maxX,minY,maxY,torus,neighbors
-    @agents = ABM.agents = new ABM.Agents
-    @links = ABM.links = new ABM.Links
     
     # Create 4 2D canvas contexts layered on top of each other.
     layers = for i in [0..3] # multi-line array comprehension
-      u.createLayer div, @topLeft..., @patches.bitWidth(), @patches.bitHeight(), i, "2d"
+      u.createLayer div, @topLeft..., size*(maxX-minX+1), size*(maxY-minY+1), i, "2d"
     # One of the layers is used for drawing only, not an agentset:
     @drawing = ABM.drawing = layers[1]
 
@@ -42,8 +38,8 @@ class ABM.Model
     #     ctx.restore() # restore back to patch coord system
     for ctx in layers # install permenant (no ctx.restore) patch coordinates
       ctx.save()
-      ctx.scale @patches.size, -@patches.size
-      ctx.translate -(@patches.minX-.5), -(@patches.maxY+.5); 
+      ctx.scale size, -size
+      ctx.translate -(minX-.5), -(maxY+.5); 
     # Create instance variable object with names for each layer
     @contexts = ABM.contexts =
       patches: layers[0]
@@ -53,12 +49,18 @@ class ABM.Model
     # Set a variable in each context with its name 
     v.agentSetName = k for k,v of @contexts
     
+    # Initialize agentsets.
+    @patches = ABM.patches = \
+      new ABM.Patches size,minX,maxX,minY,maxY,torus,neighbors
+    @agents = ABM.agents = new ABM.Agents
+    @links = ABM.links = new ABM.Links
+
     # Initialize instance variables
     @showFPS = true # show fps in console. generally use chrome fps instead
     @ticks = 1 # initial tick/frame
     @refreshLinks = @refreshAgents = @refreshPatches = true # drawing flags
     @fastPatches = false
-
+    
     # Call the models setup function.
     @setup()
 
@@ -73,9 +75,12 @@ class ABM.Model
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
   # if browser does not support imageSmoothingEnabled or equivalent.
   setFastPatches: (fast=true) ->
-    @contexts.patches.imageSmoothingEnabled = not fast
-    @contexts.patches.mozImageSmoothingEnabled = not fast
-    @contexts.patches.webkitImageSmoothingEnabled = not fast
+    ctx = @contexts.patches
+    ctx.imageSmoothingEnabled = not fast
+    ctx.mozImageSmoothingEnabled = not fast
+    ctx.webkitImageSmoothingEnabled = not fast
+    ctx.save() # revert to native 2D transform
+    ctx.setTransform 1, 0, 0, 1, 0, 0
     @patches.drawWithPixels = fast
 
   # Have patches cache the agents currently on them.
