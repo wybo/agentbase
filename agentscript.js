@@ -1970,8 +1970,10 @@
         _ref2 = this.agents;
         for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
           a = _ref2[_k];
-          if (a.hasOwnProperty("color" || a.hasOwnProperty("shape" || a.hasOwnProperty("size")))) {
-            a.sprite = ABM.shapes.shapeToCtx(a.shape, a.color, a.size * this.patches.size);
+          if (!a.hasOwnProperty("sprite")) {
+            if (a.hasOwnProperty("color" || a.hasOwnProperty("shape" || a.hasOwnProperty("size")))) {
+              a.sprite = ABM.shapes.shapeToCtx(a.shape, a.color, a.size * this.patches.size);
+            }
           }
         }
       }
@@ -1988,7 +1990,7 @@
       return this.patches.drawWithPixels = true;
     };
 
-    Model.prototype.setSpriteAgents = function() {
+    Model.prototype.setAgentsUseSprites = function() {
       return this.agents.setUseSprites(true);
     };
 
@@ -2148,7 +2150,6 @@
       ABM.root.u = ABM.util;
       ABM.root.app = this;
       ABM.root.cx = this.contexts;
-      ABM.root.mx = this;
       ABM.root.cl = function(o) {
         return console.log(o);
       };

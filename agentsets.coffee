@@ -486,7 +486,7 @@ class ABM.Agents extends ABM.AgentSet
   
   # Performance: tell draw to reuse existing color string
   setStaticColors: (@staticColors) ->
-    
+  # Use sprites rather than drawing
   setUseSprites: (@useSprites) ->      
 
   # Factory: create num new agents stored in this agentset.
@@ -505,7 +505,7 @@ class ABM.Agents extends ABM.AgentSet
   # Return an agentset of agents within the patch array
   agentsInPatches: (patches) ->
     array = []
-    array.push p.agentsHere()... for p in patches
+    array.push p.agentsHere()... for p in patches # concat measured slower
     @asSet array
   
   # Return an agentset of agents within the patchRect
@@ -539,10 +539,6 @@ class ABM.Link
   # * color: defaults to light gray
   # * thickness: the thickness of the line connecting the ends<br>
   #   Defaults to 2 pixels in patch coordinates.
-  #
-  # Note the thickness uses the bits2Patches utility.  You can
-  # convert a link thickness to 3 pixels by multiplying the 
-  # default: l.thickness *= 3/2
   breed: "default"
   color: [130, 130, 130]
   thickness: 2

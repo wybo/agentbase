@@ -67,7 +67,7 @@ class ABM.Model
     # Postprocesssing after setup
     if @agents.useSprites
       @agents.setDefaultSprite() if ABM.Agent::color?
-      for a in @agents
+      for a in @agents when not a.hasOwnProperty "sprite"
         if a.hasOwnProperty "color" or a.hasOwnProperty "shape" or a.hasOwnProperty "size"
           a.sprite = ABM.shapes.shapeToCtx a.shape, a.color, a.size*@patches.size
     
@@ -92,7 +92,7 @@ class ABM.Model
     @patches.drawWithPixels = true
 
   # Have agents use images (sprites) rather than drawing for agents.
-  setSpriteAgents: () ->
+  setAgentsUseSprites: () ->
     @agents.setUseSprites(true)
     
   # Have patches cache the agents currently on them.
@@ -230,7 +230,6 @@ class ABM.Model
     ABM.root.u = ABM.util
     ABM.root.app = @
     ABM.root.cx = @contexts
-    ABM.root.mx = @
     ABM.root.cl = (o) -> console.log o
     ABM.root.cla = (array) -> console.log a for a in array
     null

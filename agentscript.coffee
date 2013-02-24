@@ -1276,7 +1276,7 @@ class ABM.Agents extends ABM.AgentSet
   
   # Performance: tell draw to reuse existing color string
   setStaticColors: (@staticColors) ->
-    
+  # Use sprites rather than drawing
   setUseSprites: (@useSprites) ->      
 
   # Factory: create num new agents stored in this agentset.
@@ -1295,7 +1295,7 @@ class ABM.Agents extends ABM.AgentSet
   # Return an agentset of agents within the patch array
   agentsInPatches: (patches) ->
     array = []
-    array.push p.agentsHere()... for p in patches
+    array.push p.agentsHere()... for p in patches # concat measured slower
     @asSet array
   
   # Return an agentset of agents within the patchRect
@@ -1329,10 +1329,6 @@ class ABM.Link
   # * color: defaults to light gray
   # * thickness: the thickness of the line connecting the ends<br>
   #   Defaults to 2 pixels in patch coordinates.
-  #
-  # Note the thickness uses the bits2Patches utility.  You can
-  # convert a link thickness to 3 pixels by multiplying the 
-  # default: l.thickness *= 3/2
   breed: "default"
   color: [130, 130, 130]
   thickness: 2
@@ -1499,7 +1495,7 @@ class ABM.Model
     # Postprocesssing after setup
     if @agents.useSprites
       @agents.setDefaultSprite() if ABM.Agent::color?
-      for a in @agents
+      for a in @agents when not a.hasOwnProperty "sprite"
         if a.hasOwnProperty "color" or a.hasOwnProperty "shape" or a.hasOwnProperty "size"
           a.sprite = ABM.shapes.shapeToCtx a.shape, a.color, a.size*@patches.size
     
@@ -1524,7 +1520,7 @@ class ABM.Model
     @patches.drawWithPixels = true
 
   # Have agents use images (sprites) rather than drawing for agents.
-  setSpriteAgents: () ->
+  setAgentsUseSprites: () ->
     @agents.setUseSprites(true)
     
   # Have patches cache the agents currently on them.
@@ -1662,7 +1658,6 @@ class ABM.Model
     ABM.root.u = ABM.util
     ABM.root.app = @
     ABM.root.cx = @contexts
-    ABM.root.mx = @
     ABM.root.cl = (o) -> console.log o
     ABM.root.cla = (array) -> console.log a for a in array
     null
