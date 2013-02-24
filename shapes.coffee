@@ -1,6 +1,8 @@
 # A *very* simple shapes module for drawing
 # [NetLogo-like](http://ccl.northwestern.edu/netlogo/docs/) agents.
-ABM.shapes = s = # s shorthand below for ABM.shapes
+u = ABM.util # alias for util module
+
+ABM.shapes = s = # s alias below for ABM.shapes
   # Each shape is a named object with two members: 
   # a boolean "rotate" and a drawing procedure.
   # The shape is used in the following context with a color set
@@ -79,4 +81,21 @@ ABM.shapes = s = # s shorthand below for ABM.shapes
     for p, i in a 
       if i is 0 then c.moveTo p[0], p[1] else c.lineTo p[0], p[1]
     null
+  
+  # Create an image ctx of a shape by drawing it into a small canvas.
+  # Used to implement agent sprites.
+  shapeToCtx: (name, color, scale) ->
+    shape = @[name]
+    can = document.createElement 'canvas'
+    can.width = can.height = scale
+    ctx = can.getContext "2d"
+    ctx.scale scale, scale
+    ctx.translate .5, .5
+    ctx.fillStyle = u.colorStr color
+    ctx.beginPath()
+    shape.draw ctx
+    ctx.closePath()
+    ctx.fill()
+    ctx
+    
 

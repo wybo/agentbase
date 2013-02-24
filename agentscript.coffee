@@ -99,6 +99,7 @@ ABM.util =
   subtractRads: (rad1, rad2) ->
     dr = rad1-rad2; PI = Math.PI
     dr += 2*PI if dr <= -PI; dr -= 2*PI if dr > PI; dr
+  
 
 # ### Array Operations
 
@@ -297,7 +298,7 @@ ABM.util =
       return true if @inCone heading, cone, radius, x1, y1, p[0], p[1]
     false
     
-# ### Canvas Operations
+# ### Canvas/Context Operations
   
   # Return a "layer" 2D/3D rendering context within the specified HTML `<div>`,
   # with the given width/height positioned absolutely at top/left within the div,
@@ -314,7 +315,7 @@ ABM.util =
     document.getElementById(div).appendChild(can)
     can.ctx
   # Clear the 2D/3D layer to be transparent. Note this [discussion](http://goo.gl/qekXS).
-  clearCanvas: (ctx) ->
+  clearCtx: (ctx) ->
     if ctx.save? # test for 2D ctx
       ctx.save()
       ctx.setTransform 1, 0, 0, 1, 0, 0
@@ -324,19 +325,21 @@ ABM.util =
       ctx.clearColor 0, 0, 0, 0 # transparent!
       ctx.clear ctx.COLOR_BUFFER_BIT | ctx.DEPTH_BUFFER_BIT
   # Fill the 2D/3D layer with the given color
-  fillCanvas: (ctx, color) ->
-    if ctx.save? # test for 2D ctx
+  fillCtx: (ctx, color) ->
+    if ctx.fillStyle? # test for 2D ctx
       ctx.save()
       ctx.setTransform 1, 0, 0, 1, 0, 0
       ctx.fillStyle = @colorStr(color)
       ctx.fillRect 0, 0, ctx.canvas.width, ctx.canvas.height
       ctx.restore()
+      console.log "fillCtx: 2d"
     else # 3D
+      console.log "fillCtx: 2d"
       ctx.clearColor color..., 1 # alpha = 1 unless color is rgba
       ctx.clear ctx.COLOR_BUFFER_BIT | ctx.DEPTH_BUFFER_BIT
   # 2D: Draw string of the given color at the xy location.
   # Note that this will follow the existing transform.
-  canvasDrawText: (ctx, string, xy, color = [0,0,0]) -> 
+  ctxDrawText: (ctx, string, xy, color = [0,0,0]) -> 
     ctx.fillStyle = @colorStr color
     ctx.fillText(string, xy[0], xy[1])
   # 2D: Set the canvas text align and baseline drawing parameters
@@ -346,19 +349,55 @@ ABM.util =
   # * baseline is top hanging middle alphabetic ideographic bottom
   #
   # See [reference](http://goo.gl/AvEAq) for details.
-  canvasTextParams: (ctx, font, align = "center", baseline = "middle") -> 
+  ctxTextParams: (ctx, font, align = "center", baseline = "middle") -> 
     ctx.font = font; ctx.textAlign = align; ctx.textBaseline = baseline
   # 2D: Store the default color and xy offset for text labels for agentsets.
   # This is simply using the ctx object for convenient storage.
-  canvasLabelParams: (ctx, color, xy) -> # patches/agents defaults
+  ctxLabelParams: (ctx, color, xy) -> # patches/agents defaults
     ctx.labelColor = color; ctx.labelXY = xy
 
-  
+  # Import an image, executing function f on completion
+  importImage: (imageSrc, f=(img)->) ->
+    img = new Image()
+    img.onload = -> f(img)
+    img.src = imageSrc
+    img
+  # Convert an image to a context
+  imageToCtx: (image) ->
+    canvas = document.createElement "canvas"
+    canvas.width = image.width
+    canvas.height = image.height
+    ctx = canvas.getContext "2d"
+    ctx.drawImage image, 0, 0
+    ctx # note: ctx.canvas gives the canvas created above.
+  # Convert a context to an image
+  ctxToImage: (ctx) ->
+    image = new Image()
+    image.src = ctx.canvas.toDataURL "image/png"
+    image
+  # Convert a ctx to an imageData object
+  ctxToImageData: (ctx) -> ctx.getImageData 0, 0, ctx.canvas.width, ctx.canvas.height
 
-      
+  # Canvas versions of above
+  canvasToImage: (canvas) -> ctxToImage(canvas.getContext "2d")
+  canvasToImageData: (canvas) -> ctxToImageData(canvas.getContext "2d")
+  imageToCanvas: (image) -> imageToCtx(image).canvas
+  
+  # Draw an image centered at x, y w/ image size dx, dy.
+  # See [this tutorial](http://goo.gl/VUlhY).
+  drawCenteredImage: (ctx, img, rad, x, y, dx, dy) -> # presume save/restore surrounds this
+    ctx.translate x, y # translate to center
+    ctx.rotate rad
+    ctx.drawImage img, -dx/2, -dy/2
+    
+    
+    
+  
 # A *very* simple shapes module for drawing
 # [NetLogo-like](http://ccl.northwestern.edu/netlogo/docs/) agents.
-ABM.shapes = s = # s shorthand below for ABM.shapes
+u = ABM.util # alias for util module
+
+ABM.shapes = s = # s alias below for ABM.shapes
   # Each shape is a named object with two members: 
   # a boolean "rotate" and a drawing procedure.
   # The shape is used in the following context with a color set
@@ -437,6 +476,23 @@ ABM.shapes = s = # s shorthand below for ABM.shapes
     for p, i in a 
       if i is 0 then c.moveTo p[0], p[1] else c.lineTo p[0], p[1]
     null
+  
+  # Create an image ctx of a shape by drawing it into a small canvas.
+  # Used to implement agent sprites.
+  shapeToCtx: (name, color, scale) ->
+    shape = @[name]
+    can = document.createElement 'canvas'
+    can.width = can.height = scale
+    ctx = can.getContext "2d"
+    ctx.scale scale, scale
+    ctx.translate .5, .5
+    ctx.fillStyle = u.colorStr color
+    ctx.beginPath()
+    shape.draw ctx
+    ctx.closePath()
+    ctx.fill()
+    ctx
+    
 
 # **AgentSet** is a subclass of `Array` and is the base class for
 # `Patches`, `Agents`, and `Links`.  Its subclasses are also a factory
@@ -463,8 +519,8 @@ ABM.shapes = s = # s shorthand below for ABM.shapes
 
 # The usual alias for **ABM.util**. These are equivalent:
 #
-#      ABM.util.clearCanvas(ctx)
-#      u.clearCanvas(ctx)
+#      ABM.util.clearCtx(ctx)
+#      u.clearCtx(ctx)
 u = ABM.util
 
 class ABM.AgentSet extends Array 
@@ -670,7 +726,7 @@ class ABM.AgentSet extends Array
   # Clears the graphics context (transparent), then
   # calls each agent's draw(ctx) method.
   draw: (ctx) ->
-    u.clearCanvas(ctx)
+    u.clearCtx(ctx)
     o.draw(ctx) for o in @ when not o.hidden; null
 
 # ### Topology
@@ -759,6 +815,7 @@ class ABM.Patch
   # and should be handled with care!
   n: null
   n4: null
+  cachedRects: null
   # Default color starts as black, can be set to different default value
   # by setDefault methods in ABM.Patches
   color: [0,0,0]
@@ -791,7 +848,7 @@ class ABM.Patch
       ctx.save()
       ctx.translate @x, @y # bug: fonts don't scale for size < 1
       ctx.scale 1/ABM.patches.size, -1/ABM.patches.size
-      u.canvasDrawText ctx, @label, [x,y], ctx.labelColor
+      u.ctxDrawText ctx, @label, [x,y], ctx.labelColor
       ctx.restore()
   
   # Return an array of the agents on this patch.
@@ -908,6 +965,8 @@ class ABM.Patches extends ABM.AgentSet
   # patch `p`, dx, dy units to the right/left and up/down. 
   # Exclude `p` unless meToo is true, default false.
   patchRect: (p, dx, dy, meToo=false) ->
+    if p.pRect? and p.pRect.radius is dx and p.pRect.radius is dy
+      return p.pRect
     rect = []; # REMIND: could optimize w/ a loop for the all inside patches case
     for y in [p.y-dy..p.y+dy] by 1 # by 1: perf: avoid bidir JS for loop
       for x in [p.x-dx..p.x+dx] by 1
@@ -931,14 +990,12 @@ class ABM.Patches extends ABM.AgentSet
   # soon as the onload callback executes.
   # The "fat arrow" insures the callback executes within the importDrawing context.
   importDrawing: (imageSrc) ->
-    img = new Image()
-    img.onload = => # fat arrow, this context
+    u.importImage imageSrc, (img) ->
       ctx = ABM.drawing
       ctx.save() # revert to native 2D transform
       ctx.setTransform 1, 0, 0, 1, 0, 0
       ctx.drawImage img, 0, 0, ctx.canvas.width, ctx.canvas.height
       ctx.restore() # restore patch transform
-    img.src = imageSrc
   
   # Utility function for pixel manipulation.  Given a patch, returns the 
   # native canvas index i into the pixel data.
@@ -949,8 +1006,7 @@ class ABM.Patches extends ABM.AgentSet
   # The drawing is scaled to the number of x,y patches, thus one pixel
   # per patch.  The colors are then transferred to the patches.
   importColors: (imageSrc) ->
-    img = new Image()
-    img.onload = => # fat arrow, this context
+    u.importImage imageSrc, (img) => # fat arrow, this context
       if img.width isnt @numX or img.height isnt @numY
         @pixelsCtx.drawImage img, 0, 0, @numX, @numY
       else
@@ -960,7 +1016,6 @@ class ABM.Patches extends ABM.AgentSet
         i = @pixelIndex p
         p.color = (data[i+j] for j in [0..2])
       null # avoid CS return of array
-    img.src = imageSrc
   
   # Draw the patches via pixel manipulation rather than 2D drawRect.
   # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq)
@@ -969,6 +1024,7 @@ class ABM.Patches extends ABM.AgentSet
       @drawScaledPixels32 ctx
     else
       @drawScaledPixels8 ctx
+  # The 8-bit version for drawScaledPixels.  Used for systems w/o typed arrays
   drawScaledPixels8: (ctx) ->
     data = @pixelsData
     minX=@minX; numX=@numX; maxY=@maxY
@@ -980,6 +1036,7 @@ class ABM.Patches extends ABM.AgentSet
     @pixelsCtx.putImageData(@pixelsImageData, 0, 0)
     return if @size is 1
     ctx.drawImage @pixelsCtx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height
+  # The 32-bit version of drawScaledPixels, with both little and big endian hardware.
   drawScaledPixels32: (ctx) ->
     data = @pixelsData32
     minX=@minX; numX=@numX; maxY=@maxY
@@ -1020,7 +1077,7 @@ class ABM.Patches extends ABM.AgentSet
       p[v] = p._diffuseNext
       p._diffuseNext = 0
       p.scaleColor c, p[v] if c
-    null # avoid returning copy of @  
+    null # avoid returning copy of @
 
 # ### Agent & Agents
 
@@ -1047,6 +1104,7 @@ class ABM.Agent
   penDown: false
   penSize: 1
   heading: null
+  sprite: null
   constructor: ->
     @x = @y = 0
     @color = u.randomColor() if not @color? # promote color if default not set
@@ -1103,14 +1161,21 @@ class ABM.Agent
   draw: (ctx) ->
     shape = ABM.shapes[@shape]
     ctx.save()
-    @colorStr = u.colorStr @color if ABM.agents.staticColors and not @colorStr?
-    ctx.fillStyle = @colorStr or u.colorStr @color
-    ctx.translate @x, @y; ctx.scale @size, @size;
-    ctx.rotate @heading if shape.rotate
-    ctx.beginPath()
-    shape.draw ctx
-    ctx.closePath()
-    ctx.fill()
+    if @sprite?
+      ctx.translate @x, @y # see tutorial: http://goo.gl/VUlhY
+      ctx.rotate @heading if shape.rotate
+      ctx.scale 1/ABM.patches.size, -1/ABM.patches.size # convert back to pixel scale
+      ctx.drawImage @sprite.canvas, -@sprite.canvas.width/2, -@sprite.canvas.height/2
+    else
+      ctx.translate @x, @y
+      ctx.scale @size, @size
+      ctx.rotate @heading if shape.rotate
+      @colorStr = u.colorStr @color if ABM.agents.staticColors and not @colorStr?
+      ctx.fillStyle = @colorStr or u.colorStr @color
+      ctx.beginPath()
+      shape.draw ctx
+      ctx.closePath()
+      ctx.fill()
     ctx.restore()
   
   # Draw the agent on the drawing layer, leaving perminant image.
@@ -1193,19 +1258,26 @@ class ABM.Agents extends ABM.AgentSet
   constructor: ->
     super()
     @staticColors = false
+    @useSprites = false
 
   # Methods to change the default Agent class variables.
-  setDefaultColor:  (color) -> ABM.Agent::color = color
-  setDefaultShape:  (shape) -> ABM.Agent::shape = shape
-  setDefaultSize:   (size)  -> ABM.Agent::size = size
+  setDefaultColor:  (color) -> ABM.Agent::color = color#; @setDefaultSprite()
+  setDefaultShape:  (shape) -> ABM.Agent::shape = shape#; @setDefaultSprite()
+  setDefaultSize:   (size)  -> ABM.Agent::size = size#; @setDefaultSprite()
   setDefaultHeading:(heading)-> ABM.Agent::heading = heading
   setDefaultHidden: (hidden)-> ABM.Agent::hidden = hidden
+  setDefaultSprite: () -> 
+    if ABM.Agent::color?
+      ABM.Agent::sprite = ABM.shapes.shapeToCtx \
+        ABM.Agent::shape, ABM.Agent::color, ABM.Agent::size*ABM.patches.size
   setDefaultPen:   (size, down=false) -> 
     ABM.Agent::penSize = size
     ABM.Agent::penDown = down
   
   # Performance: tell draw to reuse existing color string
   setStaticColors: (@staticColors) ->
+    
+  setUseSprites: (@useSprites) ->      
 
   # Factory: create num new agents stored in this agentset.
   # The optional init proc is called on each of the newly created agents.<br>
@@ -1222,9 +1294,9 @@ class ABM.Agents extends ABM.AgentSet
   
   # Return an agentset of agents within the patch array
   agentsInPatches: (patches) ->
-    rect = []
-    rect.push p.agentsHere()... for p in patches
-    @asSet rect
+    array = []
+    array.push p.agentsHere()... for p in patches
+    @asSet array
   
   # Return an agentset of agents within the patchRect
   agentRect: (a, dx, dy, meToo=false) ->
@@ -1266,9 +1338,6 @@ class ABM.Link
   thickness: 2
   hidden: false
   constructor: (@end1, @end2) ->
-    # @breed = "default"
-    # @color = [130, 130, 130] #u.randomColor()
-    # @thickness = ABM.patches.bits2Patches(2)
   
   # Draw a line between the two endpoints.  Draws "around" the
   # torus if appropriate using two lines. As with Agent.draw,
@@ -1314,7 +1383,7 @@ class ABM.Links extends ABM.AgentSet
   constructor: ->
     super()
   
-  # Methods to change the default Agent class variables.
+  # Methods to change the default Link class variables.
   setDefaultColor:     (color)      -> ABM.Link::color = color
   setDefaultThickness: (thickness)  -> ABM.Link::thickness = thickness
   setDefaultHidden:    (hidden)     -> ABM.Link::hidden = hidden
@@ -1426,6 +1495,14 @@ class ABM.Model
     
     # Call the models setup function.
     @setup()
+    
+    # Postprocesssing after setup
+    if @agents.useSprites
+      @agents.setDefaultSprite() if ABM.Agent::color?
+      for a in @agents
+        if a.hasOwnProperty "color" or a.hasOwnProperty "shape" or a.hasOwnProperty "size"
+          a.sprite = ABM.shapes.shapeToCtx a.shape, a.color, a.size*@patches.size
+    
 
 #### Optimizations:
 
@@ -1437,26 +1514,37 @@ class ABM.Model
 
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
   # if browser does not support imageSmoothingEnabled or equivalent.
-  setFastPatches: (fast=true) ->
+  setFastPatches: () ->
     ctx = @contexts.patches
-    ctx.imageSmoothingEnabled = not fast
-    ctx.mozImageSmoothingEnabled = not fast
-    ctx.webkitImageSmoothingEnabled = not fast
+    ctx.imageSmoothingEnabled = false
+    ctx.mozImageSmoothingEnabled = false
+    ctx.webkitImageSmoothingEnabled = false
     ctx.save() # revert to native 2D transform
     ctx.setTransform 1, 0, 0, 1, 0, 0
-    @patches.drawWithPixels = fast
+    @patches.drawWithPixels = true
 
+  # Have agents use images (sprites) rather than drawing for agents.
+  setSpriteAgents: () ->
+    @agents.setUseSprites(true)
+    
   # Have patches cache the agents currently on them.
   # Optimizes p.agentsHere method
-  setCacheAgentsHere: (useCache=true) ->
-    if useCache
-      p.agents = [] for p in @patches
-      a.p.agents.push a for a in @agents
+  setCacheAgentsHere: () ->
+    p.agents = [] for p in @patches
+    a.p.agents.push a for a in @agents
+  
+  # Have patches cache the given patchRect.
+  # Optimizes patchRect, inRadius and inCone
+  setCachePatchRects: (radius, meToo=false) ->
+    for p in @patches
+      p.pRect = @patches.patchRect p, radius, radius, meToo
+      p.pRect.radius = radius
+      p.pRect.meToo = meToo
   
   # Ask agents to cache their color strings.
   # This is a temporary optimization and will likely change.
-  setAgentStaticColors: (staticColors=true) ->
-    @agents.setStaticColors(staticColors)
+  setAgentStaticColors: () ->
+    @agents.setStaticColors(true)
 
 #### Text Utilities:
   # Return string name for agentset.  Note this depends on our
@@ -1465,11 +1553,11 @@ class ABM.Model
   # Set the text parameters for an agentset's context.  See ABM.util
   setTextParams: (agentSetName, domFont, align="center", baseline="middle") ->
     agentSetName = @agentSetName(agentSetName) if typeof agentSetName isnt "string"
-    u.canvasTextParams @contexts[agentSetName], domFont, align, baseline
+    u.ctxTextParams @contexts[agentSetName], domFont, align, baseline
   # Set the label parameters for an agentset's context.  See ABM.util
   setLabelParams: (agentSetName, color, xy) ->
     agentSetName = @agentSetName(agentSetName) if typeof agentSetName isnt "string"
-    u.canvasLabelParams @contexts[agentSetName], color, xy
+    u.ctxLabelParams @contexts[agentSetName], color, xy
   
 #### User Model Creation
 # A user's model is made by subclassing Model and over-riding these
@@ -1483,7 +1571,7 @@ class ABM.Model
 #### Animation. 
 # These will be called for you by Model. start/stop animation, increment ticks.
 
-# A hook for the first run of the model.
+# A (possibly temporary) hook for the first run of the model.
 # Similar to setup/step but `super` should be called in case
 # AgentScript needs to do something here.
   startup: -> # called on first tick.  Used for optimization late binding.
@@ -1574,6 +1662,7 @@ class ABM.Model
     ABM.root.u = ABM.util
     ABM.root.app = @
     ABM.root.cx = @contexts
+    ABM.root.mx = @
     ABM.root.cl = (o) -> console.log o
     ABM.root.cla = (array) -> console.log a for a in array
     null

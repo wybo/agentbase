@@ -9,29 +9,32 @@
       u = ABM.util # utilities; static variable
       setup: -> # called by Model ctor
       
+        @population = 500     # agents
+        @vision = 3.0         # patches
+        @minSeparation = 0.75 # patches
+        @maxTurn = 3.0        # degrees
+        @maxTurn = u.degToRad(@maxTurn) # radians
+      
         @refreshPatches = false # <3fps->4fps agents larger part of drawing 
         # No optimizations: 4fps
         # @setFastPatches() # 4fps same as refresh off
         @setCacheAgentsHere() # 17fps, big help for inRadius
         @setAgentStaticColors() # 3fps, not large part of performance
         # w/ refresh off and two optimizations, 22-23fps
-        
-        
-        @population = 500     # agents
-        @vision = 3.0         # patches
-        @minSeparation = 0.75 # patches
-        @maxTurn = 3.0        # degrees
-        @maxTurn = u.degToRad(@maxTurn) # radians
+        @setCachePatchRects @vision, true # 22/23 -> 24; only +1+
+        @setSpriteAgents() # 24 -> 36
         
         # defaults
         @agents.setDefaultSize(1.5)
+        # @agents.setDefaultColor([255,0,0]) # slightly faster! ->38/39 ??
 
-        p.color = u.randomGray [], 0, 100 for p in @patches # REMIND move array to end
+        p.color = u.randomGray [], 0, 100 for p in @patches # REMIND move array to end?
         @agents.create @population, (a) => # fat arrow for @patches
           #a.size = 1.5
           a.setXY @patches.randomPt()...
 
         # @setCacheAgentsHere()
+      # draw: -> # headless .. max fps
       step: ->
         @flock(a) for a in @agents
         @reportFlockVectorSize() if @ticks % 10 is 0

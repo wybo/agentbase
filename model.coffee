@@ -63,6 +63,14 @@ class ABM.Model
     
     # Call the models setup function.
     @setup()
+    
+    # Postprocesssing after setup
+    if @agents.useSprites
+      @agents.setDefaultSprite() if ABM.Agent::color?
+      for a in @agents
+        if a.hasOwnProperty "color" or a.hasOwnProperty "shape" or a.hasOwnProperty "size"
+          a.sprite = ABM.shapes.shapeToCtx a.shape, a.color, a.size*@patches.size
+    
 
 #### Optimizations:
 
@@ -74,26 +82,37 @@ class ABM.Model
 
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
   # if browser does not support imageSmoothingEnabled or equivalent.
-  setFastPatches: (fast=true) ->
+  setFastPatches: () ->
     ctx = @contexts.patches
-    ctx.imageSmoothingEnabled = not fast
-    ctx.mozImageSmoothingEnabled = not fast
-    ctx.webkitImageSmoothingEnabled = not fast
+    ctx.imageSmoothingEnabled = false
+    ctx.mozImageSmoothingEnabled = false
+    ctx.webkitImageSmoothingEnabled = false
     ctx.save() # revert to native 2D transform
     ctx.setTransform 1, 0, 0, 1, 0, 0
-    @patches.drawWithPixels = fast
+    @patches.drawWithPixels = true
 
+  # Have agents use images (sprites) rather than drawing for agents.
+  setSpriteAgents: () ->
+    @agents.setUseSprites(true)
+    
   # Have patches cache the agents currently on them.
   # Optimizes p.agentsHere method
-  setCacheAgentsHere: (useCache=true) ->
-    if useCache
-      p.agents = [] for p in @patches
-      a.p.agents.push a for a in @agents
+  setCacheAgentsHere: () ->
+    p.agents = [] for p in @patches
+    a.p.agents.push a for a in @agents
+  
+  # Have patches cache the given patchRect.
+  # Optimizes patchRect, inRadius and inCone
+  setCachePatchRects: (radius, meToo=false) ->
+    for p in @patches
+      p.pRect = @patches.patchRect p, radius, radius, meToo
+      p.pRect.radius = radius
+      p.pRect.meToo = meToo
   
   # Ask agents to cache their color strings.
   # This is a temporary optimization and will likely change.
-  setAgentStaticColors: (staticColors=true) ->
-    @agents.setStaticColors(staticColors)
+  setAgentStaticColors: () ->
+    @agents.setStaticColors(true)
 
 #### Text Utilities:
   # Return string name for agentset.  Note this depends on our
@@ -102,11 +121,11 @@ class ABM.Model
   # Set the text parameters for an agentset's context.  See ABM.util
   setTextParams: (agentSetName, domFont, align="center", baseline="middle") ->
     agentSetName = @agentSetName(agentSetName) if typeof agentSetName isnt "string"
-    u.canvasTextParams @contexts[agentSetName], domFont, align, baseline
+    u.ctxTextParams @contexts[agentSetName], domFont, align, baseline
   # Set the label parameters for an agentset's context.  See ABM.util
   setLabelParams: (agentSetName, color, xy) ->
     agentSetName = @agentSetName(agentSetName) if typeof agentSetName isnt "string"
-    u.canvasLabelParams @contexts[agentSetName], color, xy
+    u.ctxLabelParams @contexts[agentSetName], color, xy
   
 #### User Model Creation
 # A user's model is made by subclassing Model and over-riding these
@@ -120,7 +139,7 @@ class ABM.Model
 #### Animation. 
 # These will be called for you by Model. start/stop animation, increment ticks.
 
-# A hook for the first run of the model.
+# A (possibly temporary) hook for the first run of the model.
 # Similar to setup/step but `super` should be called in case
 # AgentScript needs to do something here.
   startup: -> # called on first tick.  Used for optimization late binding.
@@ -211,6 +230,7 @@ class ABM.Model
     ABM.root.u = ABM.util
     ABM.root.app = @
     ABM.root.cx = @contexts
+    ABM.root.mx = @
     ABM.root.cl = (o) -> console.log o
     ABM.root.cla = (array) -> console.log a for a in array
     null

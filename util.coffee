@@ -99,6 +99,7 @@ ABM.util =
   subtractRads: (rad1, rad2) ->
     dr = rad1-rad2; PI = Math.PI
     dr += 2*PI if dr <= -PI; dr -= 2*PI if dr > PI; dr
+  
 
 # ### Array Operations
 
@@ -297,7 +298,7 @@ ABM.util =
       return true if @inCone heading, cone, radius, x1, y1, p[0], p[1]
     false
     
-# ### Canvas Operations
+# ### Canvas/Context Operations
   
   # Return a "layer" 2D/3D rendering context within the specified HTML `<div>`,
   # with the given width/height positioned absolutely at top/left within the div,
@@ -314,7 +315,7 @@ ABM.util =
     document.getElementById(div).appendChild(can)
     can.ctx
   # Clear the 2D/3D layer to be transparent. Note this [discussion](http://goo.gl/qekXS).
-  clearCanvas: (ctx) ->
+  clearCtx: (ctx) ->
     if ctx.save? # test for 2D ctx
       ctx.save()
       ctx.setTransform 1, 0, 0, 1, 0, 0
@@ -324,19 +325,21 @@ ABM.util =
       ctx.clearColor 0, 0, 0, 0 # transparent!
       ctx.clear ctx.COLOR_BUFFER_BIT | ctx.DEPTH_BUFFER_BIT
   # Fill the 2D/3D layer with the given color
-  fillCanvas: (ctx, color) ->
-    if ctx.save? # test for 2D ctx
+  fillCtx: (ctx, color) ->
+    if ctx.fillStyle? # test for 2D ctx
       ctx.save()
       ctx.setTransform 1, 0, 0, 1, 0, 0
       ctx.fillStyle = @colorStr(color)
       ctx.fillRect 0, 0, ctx.canvas.width, ctx.canvas.height
       ctx.restore()
+      console.log "fillCtx: 2d"
     else # 3D
+      console.log "fillCtx: 2d"
       ctx.clearColor color..., 1 # alpha = 1 unless color is rgba
       ctx.clear ctx.COLOR_BUFFER_BIT | ctx.DEPTH_BUFFER_BIT
   # 2D: Draw string of the given color at the xy location.
   # Note that this will follow the existing transform.
-  canvasDrawText: (ctx, string, xy, color = [0,0,0]) -> 
+  ctxDrawText: (ctx, string, xy, color = [0,0,0]) -> 
     ctx.fillStyle = @colorStr color
     ctx.fillText(string, xy[0], xy[1])
   # 2D: Set the canvas text align and baseline drawing parameters
@@ -346,13 +349,47 @@ ABM.util =
   # * baseline is top hanging middle alphabetic ideographic bottom
   #
   # See [reference](http://goo.gl/AvEAq) for details.
-  canvasTextParams: (ctx, font, align = "center", baseline = "middle") -> 
+  ctxTextParams: (ctx, font, align = "center", baseline = "middle") -> 
     ctx.font = font; ctx.textAlign = align; ctx.textBaseline = baseline
   # 2D: Store the default color and xy offset for text labels for agentsets.
   # This is simply using the ctx object for convenient storage.
-  canvasLabelParams: (ctx, color, xy) -> # patches/agents defaults
+  ctxLabelParams: (ctx, color, xy) -> # patches/agents defaults
     ctx.labelColor = color; ctx.labelXY = xy
 
-  
+  # Import an image, executing function f on completion
+  importImage: (imageSrc, f=(img)->) ->
+    img = new Image()
+    img.onload = -> f(img)
+    img.src = imageSrc
+    img
+  # Convert an image to a context
+  imageToCtx: (image) ->
+    canvas = document.createElement "canvas"
+    canvas.width = image.width
+    canvas.height = image.height
+    ctx = canvas.getContext "2d"
+    ctx.drawImage image, 0, 0
+    ctx # note: ctx.canvas gives the canvas created above.
+  # Convert a context to an image
+  ctxToImage: (ctx) ->
+    image = new Image()
+    image.src = ctx.canvas.toDataURL "image/png"
+    image
+  # Convert a ctx to an imageData object
+  ctxToImageData: (ctx) -> ctx.getImageData 0, 0, ctx.canvas.width, ctx.canvas.height
 
-      
+  # Canvas versions of above
+  canvasToImage: (canvas) -> ctxToImage(canvas.getContext "2d")
+  canvasToImageData: (canvas) -> ctxToImageData(canvas.getContext "2d")
+  imageToCanvas: (image) -> imageToCtx(image).canvas
+  
+  # Draw an image centered at x, y w/ image size dx, dy.
+  # See [this tutorial](http://goo.gl/VUlhY).
+  drawCenteredImage: (ctx, img, rad, x, y, dx, dy) -> # presume save/restore surrounds this
+    ctx.translate x, y # translate to center
+    ctx.rotate rad
+    ctx.drawImage img, -dx/2, -dy/2
+    
+    
+    
+  

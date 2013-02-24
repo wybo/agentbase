@@ -23,8 +23,8 @@
 
 # The usual alias for **ABM.util**. These are equivalent:
 #
-#      ABM.util.clearCanvas(ctx)
-#      u.clearCanvas(ctx)
+#      ABM.util.clearCtx(ctx)
+#      u.clearCtx(ctx)
 u = ABM.util
 
 class ABM.AgentSet extends Array 
@@ -230,7 +230,7 @@ class ABM.AgentSet extends Array
   # Clears the graphics context (transparent), then
   # calls each agent's draw(ctx) method.
   draw: (ctx) ->
-    u.clearCanvas(ctx)
+    u.clearCtx(ctx)
     o.draw(ctx) for o in @ when not o.hidden; null
 
 # ### Topology
