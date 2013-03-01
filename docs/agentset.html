@@ -67,6 +67,7 @@ array is unsorted, simply call <code>sortById</code> first, see <code>sortById</
       <span class="nx">@</span><span class="p">.</span><span class="nx">length</span><span class="o">--</span>
     <span class="k">else</span>
       <span class="nx">@splice</span> <span class="nx">i</span><span class="p">,</span> <span class="mi">1</span> <span class="k">if</span> <span class="p">(</span><span class="nv">i = </span><span class="nx">@indexOfID</span> <span class="nx">o</span><span class="p">.</span><span class="nx">id</span><span class="p">)</span> <span class="o">isnt</span> <span class="o">-</span><span class="mi">1</span>
+      <span class="nx">u</span><span class="p">.</span><span class="nx">error</span> <span class="s">&quot;remove: indexOfID not in list&quot;</span> <span class="k">if</span> <span class="nx">i</span> <span class="o">is</span> <span class="o">-</span><span class="mi">1</span>
     <span class="nx">@</span></pre></div>             </td>           </tr>                               <tr id="section-12">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-12">&#182;</a>               </div>               <p>Remove adjacent duplicates, by reference, in a sorted agentset.
 Use <code>sortById</code> first if agentset not sorted.</p>
 

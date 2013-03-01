@@ -96,10 +96,17 @@ class ABM.Model
     @agents.setUseSprites(true)
     
   # Have patches cache the agents currently on them.
-  # Optimizes p.agentsHere method
+  # Optimizes Patch p.agentsHere method
   setCacheAgentsHere: () ->
     p.agents = [] for p in @patches
     a.p.agents.push a for a in @agents
+  
+  # Have agents cache the links with them as a node.
+  # Optimizes Agent a.myLinks method
+  setCacheMyLinks: () ->
+    @links.cacheAgentLinks = true
+    a.links = [] for a in @agents # not needed if called b4 any agents & links made
+    (l.end1.links.push l; l.end2.links.push l) for l in @links
   
   # Have patches cache the given patchRect.
   # Optimizes patchRect, inRadius and inCone

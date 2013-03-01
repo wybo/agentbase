@@ -85,6 +85,7 @@ class ABM.AgentSet extends Array
       @.length--
     else
       @splice i, 1 if (i = @indexOfID o.id) isnt -1
+      u.error "remove: indexOfID not in list" if i is -1
     @
 
   # Remove adjacent duplicates, by reference, in a sorted agentset.

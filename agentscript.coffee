@@ -581,6 +581,7 @@ class ABM.AgentSet extends Array
       @.length--
     else
       @splice i, 1 if (i = @indexOfID o.id) isnt -1
+      u.error "remove: indexOfID not in list" if i is -1
     @
 
   # Remove adjacent duplicates, by reference, in a sorted agentset.
@@ -1105,12 +1106,14 @@ class ABM.Agent
   penSize: 1
   heading: null
   sprite: null
+  links: null
   constructor: ->
     @x = @y = 0
     @color = u.randomColor() if not @color? # promote color if default not set
     @heading = u.randomFloat(Math.PI*2) if not @heading? 
     @p = ABM.patches.patch @x, @y
     @p.agents.push @ if @p.agents? # ABM.patches.cacheAgentsHere
+    @links = [] if ABM.links.cacheAgentLinks
 
   #  Set agent color to `c` scaled by `s`. Usage: see patch.scaleColor
   scaleColor: (c, s) -> 
@@ -1219,7 +1222,8 @@ class ABM.Agent
   # agentset and removing any links I may have.
   die: ->
     ABM.agents.remove @
-    l.die() for l in @links()
+    l.die() for l in @myLinks()
+    u.removeItem @p.agents, @ if @p.agents?
     null
 
   # Factory: create num new agents here
@@ -1237,15 +1241,15 @@ class ABM.Agent
     aset.inCone @p, @heading, cone, radius, meToo # REMIND: @p vs @?
   
   # Return all links linked to me
-  links: -> # REMIND: cache
-    l for l in ABM.links when (l.end1 is @) or (l.end2 is @) # asSet?
+  myLinks: ->
+    @links ? (l for l in ABM.links when (l.end1 is @) or (l.end2 is @)) # asSet?
   
   # Return other end of link from me
   otherEnd: (l) -> if l.end1 is @ then l.end2 else l.end1
   
   # Return all agents linked to me.
   linkNeighbors: -> # return all agents linked to me
-    ABM.agents.asSet (@otherEnd l for l in @links())
+    ABM.agents.asSet (@otherEnd l for l in @myLinks())
   
 
 # Class Agents is a subclass of AgentSet which stores instances of Agent.
@@ -1334,6 +1338,10 @@ class ABM.Link
   thickness: 2
   hidden: false
   constructor: (@end1, @end2) ->
+    if ABM.links.cacheAgentLinks
+      @end1.links.push @
+      @end2.links.push @
+      
   
   # Draw a line between the two endpoints.  Draws "around" the
   # torus if appropriate using two lines. As with Agent.draw,
@@ -1360,7 +1368,9 @@ class ABM.Link
   
   # Remove this link from the agent set
   die: ->
-    ABM.links.remove @ # REMIND: remove from ends too
+    ABM.links.remove @
+    u.removeItem @end1.links, @ if @end1.links?
+    u.removeItem @end2.links, @ if @end2.links?
   
   # Return the two endpoints of this link
   bothEnds: -> ABM.links.asSet [@end1, @end2]
@@ -1378,6 +1388,7 @@ class ABM.Links extends ABM.AgentSet
   # Constructor simply creates an unmodified AgentSet
   constructor: ->
     super()
+    @cacheAgentLinks = false
   
   # Methods to change the default Link class variables.
   setDefaultColor:     (color)      -> ABM.Link::color = color
@@ -1524,10 +1535,17 @@ class ABM.Model
     @agents.setUseSprites(true)
     
   # Have patches cache the agents currently on them.
-  # Optimizes p.agentsHere method
+  # Optimizes Patch p.agentsHere method
   setCacheAgentsHere: () ->
     p.agents = [] for p in @patches
     a.p.agents.push a for a in @agents
+  
+  # Have agents cache the links with them as a node.
+  # Optimizes Agent a.myLinks method
+  setCacheMyLinks: () ->
+    @links.cacheAgentLinks = true
+    a.links = [] for a in @agents # not needed if called b4 any agents & links made
+    (l.end1.links.push l; l.end2.links.push l) for l in @links
   
   # Have patches cache the given patchRect.
   # Optimizes patchRect, inRadius and inCone

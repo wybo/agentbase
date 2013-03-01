@@ -14,6 +14,9 @@
           ABM.shapes.poly c, [[-.5,-.5],[.5,.5],[-.5,.5],[.5,-.5]]
         console.log "new shapes: ", ABM.shapes.names()
         
+        @setCacheAgentsHere()
+        @setCacheMyLinks()
+        
         @agents.create 25, @initAgent
         for p in @patches
           p.color = u.randomGray()
@@ -39,6 +42,8 @@
           @agents.oneOf().stamp()
           if @agents.length > 2
             @agents.last().die()
+            pas=0; pas+=p.agents.length for p in ps
+            console.log "patch.agents: #{pas}, agents: #{as.length}, same = #{pas is as.length}"
           else
             @stop()
 
