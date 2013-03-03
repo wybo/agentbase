@@ -1613,6 +1613,14 @@
       return aset.inCone(this.p, this.heading, cone, radius, meToo);
     };
 
+    Agent.prototype.otherEnd = function(l) {
+      if (l.end1 === this) {
+        return l.end2;
+      } else {
+        return l.end1;
+      }
+    };
+
     Agent.prototype.myLinks = function() {
       var l, _ref1;
       return (_ref1 = this.links) != null ? _ref1 : (function() {
@@ -1629,14 +1637,6 @@
       }).call(this);
     };
 
-    Agent.prototype.otherEnd = function(l) {
-      if (l.end1 === this) {
-        return l.end2;
-      } else {
-        return l.end1;
-      }
-    };
-
     Agent.prototype.linkNeighbors = function() {
       var l;
       return ABM.agents.asSet((function() {
@@ -1649,6 +1649,58 @@
         }
         return _results;
       }).call(this));
+    };
+
+    Agent.prototype.myInLinks = function() {
+      var l, _j, _len1, _ref1, _results;
+      _ref1 = this.myLinks();
+      _results = [];
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        l = _ref1[_j];
+        if (l.end2 === this) {
+          _results.push(l);
+        }
+      }
+      return _results;
+    };
+
+    Agent.prototype.myInLinkNeighbors = function() {
+      var l, _j, _len1, _ref1, _results;
+      _ref1 = this.myLinks();
+      _results = [];
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        l = _ref1[_j];
+        if (l.end2 === this) {
+          _results.push(l.end1);
+        }
+      }
+      return _results;
+    };
+
+    Agent.prototype.myOutLinks = function() {
+      var l, _j, _len1, _ref1, _results;
+      _ref1 = this.myLinks();
+      _results = [];
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        l = _ref1[_j];
+        if (l.end1 === this) {
+          _results.push(l);
+        }
+      }
+      return _results;
+    };
+
+    Agent.prototype.myInLinkNeighbors = function() {
+      var l, _j, _len1, _ref1, _results;
+      _ref1 = this.myLinks();
+      _results = [];
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        l = _ref1[_j];
+        if (l.end1 === this) {
+          _results.push(l.end2);
+        }
+      }
+      return _results;
     };
 
     return Agent;

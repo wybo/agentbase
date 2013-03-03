@@ -449,16 +449,32 @@ class ABM.Agent
   inCone: (aset, cone, radius, meToo=false) -> 
     aset.inCone @p, @heading, cone, radius, meToo # REMIND: @p vs @?
   
+  # Return other end of link from me
+  otherEnd: (l) -> if l.end1 is @ then l.end2 else l.end1
+
   # Return all links linked to me
   myLinks: ->
     @links ? (l for l in ABM.links when (l.end1 is @) or (l.end2 is @)) # asSet?
   
-  # Return other end of link from me
-  otherEnd: (l) -> if l.end1 is @ then l.end2 else l.end1
-  
   # Return all agents linked to me.
   linkNeighbors: -> # return all agents linked to me
     ABM.agents.asSet (@otherEnd l for l in @myLinks())
+  
+  # Return links where I am the "to" agent in links.create
+  myInLinks: ->
+    l for l in @myLinks() when l.end2 is @
+
+  # Return other end of myInLinks
+  myInLinkNeighbors: ->
+    l.end1 for l in @myLinks() when l.end2 is @
+    
+  # Return links where I am the "from" agent in links.create
+  myOutLinks: ->
+    l for l in @myLinks() when l.end1 is @
+  
+  # Return other end of myOutinks
+  myInLinkNeighbors: ->
+    l.end2 for l in @myLinks() when l.end1 is @
   
 
 # Class Agents is a subclass of AgentSet which stores instances of Agent.
@@ -607,10 +623,10 @@ class ABM.Links extends ABM.AgentSet
   # Factory: Add 1 or more links from the from agent to
   # the to agent(s) which can be a single agent or an array
   # of agents.
-  # The optional init proc is called on each of the newly created links.<br>
-  # NOTE: init must be applied after object inserted in agent set
+  # The optional init proc is called on each of the newly created links.
   create: (from, to, init = ->) -> # returns list too
     to = [to] if not to.length?
+    # NOTE: init must be applied after object inserted in agent set
     ((o) -> init(o); o) @add new ABM.Link from, a for a in to # too tricky?
   
   # Remove all links from set via link.die()

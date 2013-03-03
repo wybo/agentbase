@@ -26,6 +26,12 @@
         for s in ABM.shapes.names()
           b = @agents.breed(s); console.log "#{b.length} #{s}"
         @links.create @agents[0], @agents.slice(1, @agents.length), @initLink
+        
+        for a in @agents
+          l = a.myLinks()
+          lin = a.myInLinks()
+          lout = a.myOutLinks()
+          console.log "id: #{a.id} links: #{l.length} in:#{lin.length} out:#{lout.length}"
       initAgent: (a) ->
         a.size = 3
         a.shape = u.oneOf ABM.shapes.names()

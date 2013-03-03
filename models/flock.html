@@ -9,6 +9,7 @@
       u = ABM.util # utilities; static variable
       setup: -> # called by Model ctor
       
+        # @population = 800     # agents
         @population = 500     # agents
         @vision = 3.0         # patches
         @minSeparation = 0.75 # patches
@@ -29,6 +30,7 @@
         # @agents.setDefaultColor([255,0,0]) # slightly faster! ->38/39 ??
 
         p.color = u.randomGray [], 0, 100 for p in @patches # REMIND move array to end?
+        # p.color = u.randomGray([], 100, 200) for p in @patches # REMIND move array to end?
         @agents.create @population, (a) => # fat arrow for @patches
           #a.size = 1.5
           a.setXY @patches.randomPt()...
@@ -37,6 +39,7 @@
       step: ->
         @flock(a) for a in @agents
         @reportFlockVectorSize() if @ticks % 10 is 0
+        # @stop() if @ticks is 100
 
       flock: (a) -> # a is agent
         flockmates = @agents.inRadius a, @vision
@@ -78,6 +81,7 @@
     # div, patchSize, minX, maxX, minY, maxY, isTorus=true, neighbors=true
     #   NL Defaults: 13, -16, 16, -16, 16
     APP=new MyModel "layers", 15, -16, 16, -16, 16, true, false
+    # APP=new MyModel "layers", 16, 0, 78, 0, 40, true, false
     </script>
 
   </head>
