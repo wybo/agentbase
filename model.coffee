@@ -82,7 +82,7 @@ class ABM.Model
 
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
   # if browser does not support imageSmoothingEnabled or equivalent.
-  setFastPatches: () ->
+  setFastPatches: ->
     ctx = @contexts.patches
     ctx.imageSmoothingEnabled = false
     ctx.mozImageSmoothingEnabled = false
@@ -92,18 +92,18 @@ class ABM.Model
     @patches.drawWithPixels = true
 
   # Have agents use images (sprites) rather than drawing for agents.
-  setAgentsUseSprites: () ->
+  setAgentsUseSprites: ->
     @agents.setUseSprites(true)
     
   # Have patches cache the agents currently on them.
   # Optimizes Patch p.agentsHere method
-  setCacheAgentsHere: () ->
+  setCacheAgentsHere: ->
     p.agents = [] for p in @patches
     a.p.agents.push a for a in @agents
   
   # Have agents cache the links with them as a node.
   # Optimizes Agent a.myLinks method
-  setCacheMyLinks: () ->
+  setCacheMyLinks: ->
     @links.cacheAgentLinks = true
     a.links = [] for a in @agents # not needed if called b4 any agents & links made
     (l.end1.links.push l; l.end2.links.push l) for l in @links
@@ -118,7 +118,7 @@ class ABM.Model
   
   # Ask agents to cache their color strings.
   # This is a temporary optimization and will likely change.
-  setAgentStaticColors: () ->
+  setAgentStaticColors: ->
     @agents.setStaticColors(true)
 
 #### Text Utilities:

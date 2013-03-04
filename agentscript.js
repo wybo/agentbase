@@ -1638,17 +1638,14 @@
     };
 
     Agent.prototype.linkNeighbors = function() {
-      var l;
-      return ABM.agents.asSet((function() {
-        var _j, _len1, _ref1, _results;
-        _ref1 = this.myLinks();
-        _results = [];
-        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-          l = _ref1[_j];
-          _results.push(this.otherEnd(l));
-        }
-        return _results;
-      }).call(this));
+      var l, _j, _len1, _ref1, _results;
+      _ref1 = this.myLinks();
+      _results = [];
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        l = _ref1[_j];
+        _results.push(this.otherEnd(l));
+      }
+      return _results;
     };
 
     Agent.prototype.myInLinks = function() {
@@ -1883,7 +1880,7 @@
     };
 
     Link.prototype.bothEnds = function() {
-      return ABM.links.asSet([this.end1, this.end2]);
+      return [this.end1, this.end2];
     };
 
     Link.prototype.length = function() {
@@ -1958,7 +1955,7 @@
       n = this.asSet([]);
       for (_j = 0, _len1 = this.length; _j < _len1; _j++) {
         l = this[_j];
-        n.push.apply(n, l.bothEnds());
+        n.push(l.end1, l.end2);
       }
       return n;
     };

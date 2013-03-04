@@ -122,7 +122,7 @@ class ABM.AgentSet extends Array
   asOrderedSet: (a) -> @asSet(a).sortById()
 
   # Return string representative of agentset.
-  toString: ()-> "["+(a.toString() for a in @).join(", ")+"]"
+  toString: -> "["+(a.toString() for a in @).join(", ")+"]"
 
 # ### Property Utilities
 # Property access, also useful for debugging<br>

@@ -618,7 +618,7 @@ class ABM.AgentSet extends Array
   asOrderedSet: (a) -> @asSet(a).sortById()
 
   # Return string representative of agentset.
-  toString: ()-> "["+(a.toString() for a in @).join(", ")+"]"
+  toString: -> "["+(a.toString() for a in @).join(", ")+"]"
 
 # ### Property Utilities
 # Property access, also useful for debugging<br>
@@ -894,13 +894,13 @@ class ABM.Patches extends ABM.AgentSet
     @drawWithPixels = @size is 1 #false
   
   # Install neighborhoods in patches
-  setNeighbors: () -> 
+  setNeighbors: -> 
     for p in @
       p.n =  @patchRect p, 1, 1 # p.n =  p.patchRect 1, 1
       p.n4 = @asSet (n for n in p.n when n.x is p.x or n.y is p.y)
 
   # Setup pixels used for `drawScaledPixels` and `importColors`
-  setPixels: () ->
+  setPixels: ->
     if @size is 1
       @pixelsCtx = ABM.contexts.patches
     else
@@ -1245,11 +1245,11 @@ class ABM.Agent
 
   # Return all links linked to me
   myLinks: ->
-    @links ? (l for l in ABM.links when (l.end1 is @) or (l.end2 is @)) # asSet?
+    @links ? (l for l in ABM.links when (l.end1 is @) or (l.end2 is @))
   
   # Return all agents linked to me.
   linkNeighbors: -> # return all agents linked to me
-    ABM.agents.asSet (@otherEnd l for l in @myLinks())
+    @otherEnd l for l in @myLinks()
   
   # Return links where I am the "to" agent in links.create
   myInLinks: ->
@@ -1266,7 +1266,6 @@ class ABM.Agent
   # Return other end of myOutinks
   myInLinkNeighbors: ->
     l.end2 for l in @myLinks() when l.end1 is @
-  
 
 # Class Agents is a subclass of AgentSet which stores instances of Agent.
 
@@ -1286,7 +1285,7 @@ class ABM.Agents extends ABM.AgentSet
   setDefaultSize:   (size)  -> ABM.Agent::size = size#; @setDefaultSprite()
   setDefaultHeading:(heading)-> ABM.Agent::heading = heading
   setDefaultHidden: (hidden)-> ABM.Agent::hidden = hidden
-  setDefaultSprite: () -> 
+  setDefaultSprite: -> 
     if ABM.Agent::color?
       ABM.Agent::sprite = ABM.shapes.shapeToCtx \
         ABM.Agent::shape, ABM.Agent::color, ABM.Agent::size*ABM.patches.size
@@ -1389,7 +1388,7 @@ class ABM.Link
     u.removeItem @end2.links, @ if @end2.links?
   
   # Return the two endpoints of this link
-  bothEnds: -> ABM.links.asSet [@end1, @end2]
+  bothEnds: -> [@end1, @end2]
   
   # Return the distance between the endpoints with the current topology.
   length: -> @end1.distance @end2
@@ -1432,7 +1431,7 @@ class ABM.Links extends ABM.AgentSet
   # appear 4 times.
   allEnds: -> # all link ends, w/ dups
     n = @asSet []
-    n.push l.bothEnds()... for l in @
+    n.push l.end1, l.end2 for l in @
     n
 
   # Returns all the nodes in this agentset sorted by ID and with
@@ -1537,7 +1536,7 @@ class ABM.Model
 
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
   # if browser does not support imageSmoothingEnabled or equivalent.
-  setFastPatches: () ->
+  setFastPatches: ->
     ctx = @contexts.patches
     ctx.imageSmoothingEnabled = false
     ctx.mozImageSmoothingEnabled = false
@@ -1547,18 +1546,18 @@ class ABM.Model
     @patches.drawWithPixels = true
 
   # Have agents use images (sprites) rather than drawing for agents.
-  setAgentsUseSprites: () ->
+  setAgentsUseSprites: ->
     @agents.setUseSprites(true)
     
   # Have patches cache the agents currently on them.
   # Optimizes Patch p.agentsHere method
-  setCacheAgentsHere: () ->
+  setCacheAgentsHere: ->
     p.agents = [] for p in @patches
     a.p.agents.push a for a in @agents
   
   # Have agents cache the links with them as a node.
   # Optimizes Agent a.myLinks method
-  setCacheMyLinks: () ->
+  setCacheMyLinks: ->
     @links.cacheAgentLinks = true
     a.links = [] for a in @agents # not needed if called b4 any agents & links made
     (l.end1.links.push l; l.end2.links.push l) for l in @links
@@ -1573,7 +1572,7 @@ class ABM.Model
   
   # Ask agents to cache their color strings.
   # This is a temporary optimization and will likely change.
-  setAgentStaticColors: () ->
+  setAgentStaticColors: ->
     @agents.setStaticColors(true)
 
 #### Text Utilities:
