@@ -1256,7 +1256,7 @@ class ABM.Agent
     l for l in @myLinks() when l.end2 is @
 
   # Return other end of myInLinks
-  myInLinkNeighbors: ->
+  inLinkNeighbors: ->
     l.end1 for l in @myLinks() when l.end2 is @
     
   # Return links where I am the "from" agent in links.create
@@ -1264,7 +1264,7 @@ class ABM.Agent
     l for l in @myLinks() when l.end1 is @
   
   # Return other end of myOutinks
-  myInLinkNeighbors: ->
+  outLinkNeighbors: ->
     l.end2 for l in @myLinks() when l.end1 is @
 
 # Class Agents is a subclass of AgentSet which stores instances of Agent.

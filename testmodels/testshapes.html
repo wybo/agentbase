@@ -29,9 +29,13 @@
         
         for a in @agents
           l = a.myLinks()
+          ln = a.linkNeighbors()
           lin = a.myInLinks()
           lout = a.myOutLinks()
+          nin = a.inLinkNeighbors()
+          nout = a.outLinkNeighbors()
           console.log "id: #{a.id} links: #{l.length} in:#{lin.length} out:#{lout.length}"
+          console.log "  linkNeighbors: #{ln.length} inNeighbors:#{nin.length} outNeighbors:#{nout.length}"
       initAgent: (a) ->
         a.size = 3
         a.shape = u.oneOf ABM.shapes.names()

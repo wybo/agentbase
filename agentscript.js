@@ -1661,7 +1661,7 @@
       return _results;
     };
 
-    Agent.prototype.myInLinkNeighbors = function() {
+    Agent.prototype.inLinkNeighbors = function() {
       var l, _j, _len1, _ref1, _results;
       _ref1 = this.myLinks();
       _results = [];
@@ -1687,7 +1687,7 @@
       return _results;
     };
 
-    Agent.prototype.myInLinkNeighbors = function() {
+    Agent.prototype.outLinkNeighbors = function() {
       var l, _j, _len1, _ref1, _results;
       _ref1 = this.myLinks();
       _results = [];
