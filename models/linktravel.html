@@ -43,7 +43,7 @@
           n.hatch 1, (a) =>
             a.breed = "drivers"
             a.shape = "default"
-            a.fromNode = a.toNode = n.linkNeighbors().oneOf()
+            a.fromNode = a.toNode = u.oneOf n.linkNeighbors() #.oneOf()
             a.face a.toNode
             a.size = 1.5
             a.v = @baseVelocity + u.randomFloat @velocityDelta
@@ -54,7 +54,7 @@
           d.forward Math.min d.v, d.distance d.toNode
           if .01 > d.distance d.toNode # or (d.distance d.toNode) < .01
             d.fromNode = d.toNode
-            d.toNode = d.toNode.linkNeighbors().oneOf()
+            d.toNode = u.oneOf d.toNode.linkNeighbors() #.oneOf()
 
     # div, patchSize, minX, maxX, minY, maxY, isTorus=true, neighbors=true
     #   NL Defaults: 13, -16, 16, -16, 16
