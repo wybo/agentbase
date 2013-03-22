@@ -448,7 +448,7 @@
         ctx = "2d";
       }
       can = document.createElement('canvas');
-      can.setAttribute('style', "z-index:" + z);
+      can.setAttribute('style', "position:absolute;top:0;left:0;z-index:" + z);
       can.width = width;
       can.height = height;
       can.ctx = ctx === "2d" ? can.getContext("2d") : can.getContext("webgl") || can.getContext("experimental-webgl");
