@@ -305,9 +305,9 @@ ABM.util =
   # and with the z-index of z.
   #
   # The z level gives us the capability of buildng a "stack" of coordinated canvases.
-  createLayer: (div, top, left, width, height, z, ctx = "2d") -> # a canvas ctx object
+  createLayer: (div, width, height, z, ctx = "2d") -> # a canvas ctx object
     can = document.createElement 'canvas'
-    can.setAttribute 'style', "position:fixed;top:#{top};left:#{left};z-index:#{z}"
+    can.setAttribute 'style', "z-index:#{z}"
     can.width = width; can.height = height
     can.ctx = # http://goo.gl/atMRr can't get both 2d/3d contexts, only one allowed
       if ctx is "2d" then can.getContext "2d" 

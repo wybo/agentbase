@@ -242,7 +242,8 @@ class ABM.Patches extends ABM.AgentSet
       i = ( (p.x-minX) + (maxY-p.y)*numX )*4
       c = p.color
       data[i+j] = c[j] for j in [0..2] 
-      data[i+3] = 255
+      data[i+3] = if c.length is 4 then c[3] else 255
+      
     @pixelsCtx.putImageData(@pixelsImageData, 0, 0)
     return if @size is 1
     ctx.drawImage @pixelsCtx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height
@@ -253,9 +254,10 @@ class ABM.Patches extends ABM.AgentSet
     for p in @
       i = (p.x-minX) + (maxY-p.y)*numX
       c = p.color
+      a = if c.length is 4 then c[3] else 255
       if @pixelsAreLittleEndian
         data[i] = 
-          (255  << 24) |  # alpha
+          (a    << 24) |  # alpha
           (c[2] << 16) |  # blue
           (c[1] << 8)  |  # green
           c[0];           # red
@@ -264,7 +266,7 @@ class ABM.Patches extends ABM.AgentSet
           (c[0] << 24) |  # red
           (c[1] << 16) |  # green
           (c[2] << 8)  |  # blue
-          255;            # alpha
+          a;              # alpha
     @pixelsCtx.putImageData(@pixelsImageData, 0, 0)
     return if @size is 1
     ctx.drawImage @pixelsCtx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height

@@ -15,7 +15,6 @@ class ABM.Model
   # * setup patch coord transforms for each layer context
   # * intialize various instance variables
   # * call `setup` abstract method
-  topLeft: [10,10] # layers placed with top left at this location.
   constructor: (
     div, size, minX, maxX, minY, maxY,
     torus=true, neighbors=true
@@ -24,7 +23,7 @@ class ABM.Model
     
     # Create 4 2D canvas contexts layered on top of each other.
     layers = for i in [0..3] # multi-line array comprehension
-      u.createLayer div, @topLeft..., size*(maxX-minX+1), size*(maxY-minY+1), i, "2d"
+      u.createLayer div, size*(maxX-minX+1), size*(maxY-minY+1), i, "2d"
     # One of the layers is used for drawing only, not an agentset:
     @drawing = ABM.drawing = layers[1]
 

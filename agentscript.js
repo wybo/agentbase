@@ -442,13 +442,13 @@
       }
       return false;
     },
-    createLayer: function(div, top, left, width, height, z, ctx) {
+    createLayer: function(div, width, height, z, ctx) {
       var can;
       if (ctx == null) {
         ctx = "2d";
       }
       can = document.createElement('canvas');
-      can.setAttribute('style', "position:fixed;top:" + top + ";left:" + left + ";z-index:" + z);
+      can.setAttribute('style', "z-index:" + z);
       can.width = width;
       can.height = height;
       can.ctx = ctx === "2d" ? can.getContext("2d") : can.getContext("webgl") || can.getContext("experimental-webgl");
@@ -1345,7 +1345,7 @@
         for (j = _k = 0; _k <= 2; j = ++_k) {
           data[i + j] = c[j];
         }
-        data[i + 3] = 255;
+        data[i + 3] = c.length === 4 ? c[3] : 255;
       }
       this.pixelsCtx.putImageData(this.pixelsImageData, 0, 0);
       if (this.size === 1) {
@@ -1355,7 +1355,7 @@
     };
 
     Patches.prototype.drawScaledPixels32 = function(ctx) {
-      var c, data, i, maxY, minX, numX, p, _j, _len1;
+      var a, c, data, i, maxY, minX, numX, p, _j, _len1;
       data = this.pixelsData32;
       minX = this.minX;
       numX = this.numX;
@@ -1364,10 +1364,11 @@
         p = this[_j];
         i = (p.x - minX) + (maxY - p.y) * numX;
         c = p.color;
+        a = c.length === 4 ? c[3] : 255;
         if (this.pixelsAreLittleEndian) {
-          data[i] = (255 << 24) | (c[2] << 16) | (c[1] << 8) | c[0];
+          data[i] = (a << 24) | (c[2] << 16) | (c[1] << 8) | c[0];
         } else {
-          data[i] = (c[0] << 24) | (c[1] << 16) | (c[2] << 8) | 255;
+          data[i] = (c[0] << 24) | (c[1] << 16) | (c[2] << 8) | a;
         }
       }
       this.pixelsCtx.putImageData(this.pixelsImageData, 0, 0);
@@ -1990,8 +1991,6 @@
 
   ABM.Model = (function() {
 
-    Model.prototype.topLeft = [10, 10];
-
     function Model(div, size, minX, maxX, minY, maxY, torus, neighbors) {
       var a, ctx, i, k, layers, v, _j, _k, _len1, _len2, _ref1, _ref2;
       if (torus == null) {
@@ -2006,10 +2005,10 @@
         var _j, _results;
         _results = [];
         for (i = _j = 0; _j <= 3; i = ++_j) {
-          _results.push(u.createLayer.apply(u, [div].concat(__slice.call(this.topLeft), [size * (maxX - minX + 1)], [size * (maxY - minY + 1)], [i], ["2d"])));
+          _results.push(u.createLayer(div, size * (maxX - minX + 1), size * (maxY - minY + 1), i, "2d"));
         }
         return _results;
-      }).call(this);
+      })();
       this.drawing = ABM.drawing = layers[1];
       for (_j = 0, _len1 = layers.length; _j < _len1; _j++) {
         ctx = layers[_j];
