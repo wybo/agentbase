@@ -56,7 +56,7 @@ class ABM.Model
     @links = ABM.links = new ABM.Links
 
     # Setup spotlight layer
-    ABM.model.contexts.spotlight.globalCompositeOperation = "xor"
+    @contexts.spotlight.globalCompositeOperation = "xor"
 
     # Initialize instance variables
     @showFPS = true # show fps in console. generally use chrome fps instead
@@ -149,15 +149,8 @@ class ABM.Model
 #### Animation. 
 # These will be called for you by Model. start/stop animation, increment ticks.
 
-# A (possibly temporary) hook for the first run of the model.
-# Similar to setup/step but `super` should be called in case
-# AgentScript needs to do something here.
-  startup: -> # called on first tick.  Used for optimization late binding.
-
 # Initializes the animation and starts the animation by calling `animate`
   start: ->
-    if @ticks is 1
-      @startup()
     @startMS = Date.now()
     @startTick = @ticks
     @animStop = false
@@ -202,24 +195,18 @@ class ABM.Model
 
   removeSpotlight: ->
     @spotlightAgent = null
-    u.clearCtx this.contexts.spotlight
+    u.clearCtx @contexts.spotlight
 
   drawSpotlight: ->
     agent   = @spotlightAgent
-    ctx     = this.contexts.spotlight
-
-    return unless agent
-
-    u.clearCtx ctx
-
-    if !~this.agents.indexOf(agent)
-      @spotlightAgent = null
+    ctx     = @contexts.spotlight
+    return unless agent? # race condition?
+    if @agents.indexOf(agent) < 0 # Reset if agent.die() called
+      @removeSpotlight()
       return
-
+    u.clearCtx ctx
     u.fillCtx ctx, [0,0,0,0.6]
-
     ctx.beginPath()
-
     ctx.arc agent.x, agent.y, 3, 0, 2*Math.PI, false
     ctx.fill()
 

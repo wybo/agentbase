@@ -78,7 +78,7 @@ Our example models use CoffeeScript directly within the browser via `text/coffee
         </script>
       </head>
       <body onload="ABM.model.start()">
-        <div id="layers"></div>
+        <div id="layers" style="position:relative;padding:20;"></div>
       </body>
     </html>
 

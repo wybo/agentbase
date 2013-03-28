@@ -84,6 +84,9 @@
           @updatePatches(p) for p in @patches
           @reportInfo() 
           @refreshPatches = true
+          # Add use of our first pull request:
+          @setSpotlight @agents.oneOf() if @ticks is 300
+          @removeSpotlight() if @ticks is 600
         else
           @refreshPatches = false
         # Stop the animation at 1000. Restart by `ABM.model.start()` in console.
@@ -101,9 +104,8 @@
         a.forward @speed
       updatePatches: (p) -> # p is patch
         # Update patch colors to be a random gray.
-        # p.color = u.randomGray()
-        u.randomGray(p.color) if p.x isnt 0 and p.y isnt 0
-        #p.color = [255,0,0] if p.x is 0 or p.y is 0
+        # Dont do this: Garbage Collection problem: p.color = u.randomGray()
+        u.randomGray(p.color) if p.x isnt 0 and p.y isnt 0 # aviod GC, reuse color
       reportInfo: ->
         # Report the average heading, in radians and degrees
         headings = @agents.getProp "heading"
@@ -134,7 +136,7 @@ average heading of agents:
     </script>
   </head>
   <body onload="ABM.model.start()">
-    <canvas id="testCanvas" style="height:0;width:0;">Your browser does not support HTML5 Canvas.</canvas>
-    <div id="layers"></div>
+    <canvas id="test" style="height:0;width:0">Browser doesn't support HTML5 Canvas</canvas>
+    <div id="layers" style="position:relative;padding:20;"></div>
   </body>
 </html>

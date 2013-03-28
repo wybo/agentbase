@@ -332,9 +332,7 @@ ABM.util =
       ctx.fillStyle = @colorStr(color)
       ctx.fillRect 0, 0, ctx.canvas.width, ctx.canvas.height
       ctx.restore()
-      console.log "fillCtx: 2d"
     else # 3D
-      console.log "fillCtx: 2d"
       ctx.clearColor color..., 1 # alpha = 1 unless color is rgba
       ctx.clear ctx.COLOR_BUFFER_BIT | ctx.DEPTH_BUFFER_BIT
   # 2D: Draw string of the given color at the xy location.

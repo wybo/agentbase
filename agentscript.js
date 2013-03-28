@@ -472,10 +472,8 @@
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.fillStyle = this.colorStr(color);
         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        ctx.restore();
-        return console.log("fillCtx: 2d");
+        return ctx.restore();
       } else {
-        console.log("fillCtx: 2d");
         ctx.clearColor.apply(ctx, __slice.call(color).concat([1]));
         return ctx.clear(ctx.COLOR_BUFFER_BIT | ctx.DEPTH_BUFFER_BIT);
       }
@@ -2031,7 +2029,7 @@
       this.patches = ABM.patches = new ABM.Patches(size, minX, maxX, minY, maxY, torus, neighbors);
       this.agents = ABM.agents = new ABM.Agents;
       this.links = ABM.links = new ABM.Links;
-      ABM.model.contexts.spotlight.globalCompositeOperation = "xor";
+      this.contexts.spotlight.globalCompositeOperation = "xor";
       this.showFPS = true;
       this.ticks = 1;
       this.refreshLinks = this.refreshAgents = this.refreshPatches = true;
@@ -2149,12 +2147,7 @@
 
     Model.prototype.step = function() {};
 
-    Model.prototype.startup = function() {};
-
     Model.prototype.start = function() {
-      if (this.ticks === 1) {
-        this.startup();
-      }
       this.startMS = Date.now();
       this.startTick = this.ticks;
       this.animStop = false;
@@ -2220,14 +2213,14 @@
       var agent, ctx;
       agent = this.spotlightAgent;
       ctx = this.contexts.spotlight;
-      if (!agent) {
+      if (agent == null) {
+        return;
+      }
+      if (this.agents.indexOf(agent) < 0) {
+        this.removeSpotlight();
         return;
       }
       u.clearCtx(ctx);
-      if (!~this.agents.indexOf(agent)) {
-        this.spotlightAgent = null;
-        return;
-      }
       u.fillCtx(ctx, [0, 0, 0, 0.6]);
       ctx.beginPath();
       ctx.arc(agent.x, agent.y, 3, 0, 2 * Math.PI, false);
