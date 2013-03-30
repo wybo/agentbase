@@ -2032,6 +2032,7 @@
       this.contexts.spotlight.globalCompositeOperation = "xor";
       this.showFPS = true;
       this.ticks = 1;
+      this.maxFPS = 60;
       this.refreshLinks = this.refreshAgents = this.refreshPatches = true;
       this.fastPatches = false;
       this.setup();
@@ -2154,6 +2155,12 @@
       return this.animate();
     };
 
+    Model.prototype.setFPS = function(maxFPS) {
+      this.maxFPS = maxFPS;
+      this.startMS = Date.now();
+      return this.startTick = this.ticks;
+    };
+
     Model.prototype.stop = function() {
       return this.animStop = true;
     };
@@ -2174,22 +2181,33 @@
     };
 
     Model.prototype.animate = function() {
-      this.step();
-      this.draw();
-      this.tick();
+      if (this.animFPS() <= this.maxFPS) {
+        this.step();
+        this.draw();
+        this.tick();
+      }
       if (!this.animStop) {
         return requestAnimFrame(this.animate);
       }
     };
 
     Model.prototype.tick = function() {
-      var animTicks, fps;
+      var animTicks;
       animTicks = this.ticks - this.startTick;
       if (this.showFPS && (animTicks % 100) === 0 && animTicks !== 0) {
-        fps = Math.round(animTicks * 1000 / (Date.now() - this.startMS));
-        console.log("fps: " + fps + " at " + animTicks + " ticks");
+        console.log("fps: " + (Math.round(this.animFPS())) + " at " + animTicks + " ticks");
       }
       return this.ticks++;
+    };
+
+    Model.prototype.animFPS = function() {
+      var animTicks;
+      animTicks = this.ticks - this.startTick;
+      if (animTicks === 0) {
+        return this.maxFPS;
+      } else {
+        return animTicks * 1000 / (Date.now() - this.startMS);
+      }
     };
 
     Model.prototype.setSpotlight = function(agent) {

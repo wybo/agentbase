@@ -1515,6 +1515,7 @@ class ABM.Model
     # Initialize instance variables
     @showFPS = true # show fps in console. generally use chrome fps instead
     @ticks = 1 # initial tick/frame
+    @maxFPS = 60
     @refreshLinks = @refreshAgents = @refreshPatches = true # drawing flags
     @fastPatches = false
     
@@ -1610,6 +1611,12 @@ class ABM.Model
     @animStop = false
     @animate()
 
+# Throttle the animation fps to be at most maxFPS
+  setFPS: (@maxFPS) ->
+    @startMS = Date.now()
+    @startTick = @ticks
+
+
 # Stop the animation at the end of the next call to `animate`
   stop: -> @animStop = true
 
@@ -1624,18 +1631,23 @@ class ABM.Model
 
 # Runs the three methods used to increment the model and queues the next call to itself.
   animate: => # note fat arrow, animate bound to "this"
-    @step()
-    @draw()
-    @tick() # Note: NL difference, called here not in user's step()
+    if @animFPS() <= @maxFPS
+      @step()
+      @draw()
+      @tick() # Note: NL difference, called here not in user's step()
+    # else
+    #   console.log "skip at tick #{@ticks}, fps: #{@animFPS()}"
     requestAnimFrame @animate unless @animStop
 # Updates the `ticks` counter and prints out the fps every 100 steps
 # if the `showFPS` flag is set.
   tick: ->
     animTicks = @ticks-@startTick
     if @showFPS and (animTicks % 100) is 0 and animTicks isnt 0
-      fps = Math.round (animTicks*1000/(Date.now()-@startMS))
-      console.log "fps: #{fps} at #{animTicks} ticks"
+      console.log "fps: #{Math.round @animFPS()} at #{animTicks} ticks"
     @ticks++
+  animFPS: ->
+    animTicks = @ticks-@startTick
+    if animTicks is 0 then @maxFPS else animTicks*1000/(Date.now()-@startMS)
 
 # Creates a spotlight effect on an agent, so we can follow it throughout the model
 # We can pass in either an agent to be spotlighted or a breed. If we pass in a breed,
