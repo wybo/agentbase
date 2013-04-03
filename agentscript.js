@@ -14,13 +14,22 @@
   (function() {
     var vendor, _i, _len, _ref;
     this.requestAnimFrame = this.requestAnimationFrame || null;
+    this.cancelAnimFrame = this.cancelAnimationFrame || null;
     _ref = ['ms', 'moz', 'webkit', 'o'];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       vendor = _ref[_i];
+      if (!(!this.requestAnimFrame)) {
+        continue;
+      }
       this.requestAnimFrame || (this.requestAnimFrame = this[vendor + 'RequestAnimationFrame']);
+      this.cancelAnimFrame || (this.cancelAnimFrame = this[vendor + 'CancelAnimationFrame']);
+      this.cancelAnimFrame || (this.cancelAnimFrame = this[vendor + 'CancelRequestAnimationFrame']);
     }
-    return this.requestAnimFrame || (this.requestAnimFrame = function(callback) {
-      return window.setTimeout(callback, 1000 / 60);
+    this.requestAnimFrame || (this.requestAnimFrame = function(callback) {
+      return this.setTimeout(callback, 1000 / 60);
+    });
+    return this.cancelAnimFrame || (this.cancelAnimFrame = function(id) {
+      return this.clearTimeout(id);
     });
   })();
 

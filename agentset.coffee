@@ -39,9 +39,6 @@ class ABM.AgentSet extends Array
   #     ABM.AgentSet.asSet(evens)
   #     randomEven = evens.oneOf()
   @asSet: (a, setType = ABM.AgentSet) ->
-    # if a.prototype?
-    # then a.prototype = setType.prototype
-    # else a.__proto__ = setType.prototype
     a.__proto__ = setType.prototype ? setType.constructor.prototype # setType.__proto__
     a
 
@@ -69,7 +66,6 @@ class ABM.AgentSet extends Array
   # By "agent" we mean an instance of `Patch`, `Agent` and `Link`.
   add: (o) ->
     o.id = @ID++
-    # o.hidden = false
     @push o; o
 
   # Remove an agent from the agentset, returning the agentset.

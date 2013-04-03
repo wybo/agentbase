@@ -9,13 +9,17 @@
 # Keep copy of global object in ABM
 ABM.root = @
 
-# Global shim for not-yet-standard requestAnimationFrame
+# Global shim for not-yet-standard requestAnimationFrame.
+# See: [Paul Irish Shim](https://gist.github.com/paulirish/1579671)
 do -> 
   @requestAnimFrame = @requestAnimationFrame or null
-  for vendor in ['ms', 'moz', 'webkit', 'o']
+  @cancelAnimFrame = @cancelAnimationFrame or null
+  for vendor in ['ms', 'moz', 'webkit', 'o'] when not @requestAnimFrame
     @requestAnimFrame or= @[vendor+'RequestAnimationFrame']
-  @requestAnimFrame or=
-    (callback) -> window.setTimeout(callback, 1000 / 60)
+    @cancelAnimFrame or= @[vendor+'CancelAnimationFrame']
+    @cancelAnimFrame or= @[vendor+'CancelRequestAnimationFrame']
+  @requestAnimFrame or= (callback) -> @setTimeout(callback, 1000 / 60)
+  @cancelAnimFrame or= (id) -> @clearTimeout(id)
 
 # Shim for `Array.indexOf` if not implemented.
 # Use [es5-shim](https://github.com/kriskowal/es5-shim) if additional shims needed.
