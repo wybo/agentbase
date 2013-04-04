@@ -38,8 +38,8 @@
       # draw: -> # headless test .. max fps
       step: ->
         @flock(a) for a in @agents
-        @reportFlockVectorSize() if @ticks % 10 is 0
-        # @stop() if @ticks is 100
+        @reportFlockVectorSize() if @anim.ticks % 10 is 0
+        # @stop() if @anim.ticks is 100
 
       flock: (a) -> # a is agent
         flockmates = @agents.inRadius a, @vision

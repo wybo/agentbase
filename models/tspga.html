@@ -57,8 +57,8 @@
       step: ->
         @makeTour a for a in @travelers()
         @installBestTour()
-        if (@ticks - @bestTourTick) is @stopTickDifference
-          console.log "Stopping at tick #{@ticks} after no change in #{@stopTickDifference} ticks"
+        if (@anim.ticks - @bestTourTick) is @stopTickDifference
+          console.log "Stopping at tick #{@anim.ticks} after no change in #{@stopTickDifference} ticks"
           console.log "Best tour: #{@bestTourLength} at tick #{@bestTourTick}"
           @stop()
       
@@ -78,7 +78,7 @@
           @reportNewTour a
           @bestTourLength = a.tourLength
           @bestTourNodes = a.tourNodes
-          @bestTourTick = @ticks
+          @bestTourTick = @anim.ticks
           @createTourLinks @bestTourNodes
 
       makeTour: (a) ->
@@ -99,7 +99,7 @@
                   (nlist.slice i+len)
 
       reportNewTour: (a) ->
-        console.log "new best tour at tick #{@ticks}: #{a.tourLength} by traveler #{a.id}"
+        console.log "new best tour at tick #{@anim.ticks}: #{a.tourLength} by traveler #{a.id}"
         
     # div, patchSize, minX, maxX, minY, maxY, isTorus=true, neighbors=true
     #   NL Defaults: 13, -16, 16, -16, 16

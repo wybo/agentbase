@@ -65,8 +65,7 @@
         a.pheromone = @maxPheromone
 
       updateAgents: ->
-        for a in @agents
-          if a.id < @ticks # gradually leave nest
+        for a in @agents when a.id < @anim.ticks # gradually leave nest
             @wiggleUphill a
             @dropPheromone a
         null # needed to avoid returning an absurd comprehension

@@ -12,6 +12,6 @@ echo "cat .coffee files to agentscript.coffee"
 cat $files > agentscript.coffee
 echo "uglify agentscript.js"
 uglifyjs agentscript.js -c -m > agentscript.min.js
-#echo "zip agentscript/"
-#cd ..
-#zip -r agentscript.zip agentscript
+echo "zip agentscript/"
+cd ..
+zip -rq agentscript.zip agentscript

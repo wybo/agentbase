@@ -5,6 +5,49 @@
 # The usual alias for **ABM.util**.
 u = ABM.util
 
+# Because not all models have the same amimator requirements, we build a class
+# for customization by the programmer.  See these URLs for more info:
+#
+# * [JavaScript timers doc](https://developer.mozilla.org/en-US/docs/JavaScript/Timers)
+# * [Using timers & requestAnimFrame together](http://goo.gl/ymEEX)
+# * [John Resig on timers](http://goo.gl/9Q3q)
+# * [jsFiddle setTimeout vs rAF](http://jsfiddle.net/calpo/H7EEE/)
+# * [Timeout tutorial](http://javascript.info/tutorial/settimeout-setinterval)
+# * [Events and timing in depth](http://javascript.info/tutorial/events-and-timing-depth)
+class ABM.Animator
+  constructor: (@model, @rate=30, @multiStep=false) -> # rate/multiStep arbitrary hint to animate()
+    @ticks = @draws = 0
+    @animHandle = @timerHandle = @intervalHandle = null
+    @animStop = true
+  setRate: (@rate, @multiStep=false) -> @reset()
+  start: ->
+    if not @animStop then return # avoid multiple animates
+    @reset()
+    @animStop = false
+    @animate()
+  reset: ->
+    @startMS = @now()
+    @startTick = @ticks
+    @startDraw = @draws
+  stop: ->
+    @animStop = true
+    if @animHandle? then cancelAnimFrame @animHandle
+    if @timeoutHandle? then clearTimeout @timeoutHandle
+    if @intervalHandle? then clearInterval @intervalHandle
+    @animHandle = @timerHandle = @intervalHandle = null
+  step: -> @ticks++; @model.step()
+  draw: -> @draws++; @model.draw()
+  now: -> (performance ? Date).now()
+  ms: -> @now()-@startMS
+  ticksPerSec: -> if (elapsed = @ticks-@startTick) is 0 then 0 else elapsed*1000/@ms()
+  drawsPerSec: -> if (elapsed = @draws-@startDraw) is 0 then 0 else elapsed*1000/@ms()
+  toString: -> "ticks: #{@ticks}, draws: #{@draws}, ms: #{@ms()}, rate: #{@rate}"
+  animate: =>
+    if @drawsPerSec() <= @rate
+      @step()
+      @draw()
+    @animHandle = requestAnimFrame @animate unless @animStop
+
 # ### Class Model
 
 class ABM.Model  
@@ -59,9 +102,7 @@ class ABM.Model
     @contexts.spotlight.globalCompositeOperation = "xor"
 
     # Initialize instance variables
-    @showFPS = true # show fps in console. generally use chrome fps instead
-    @ticks = 1 # initial tick/frame
-    @maxFPS = 60
+    @anim = new ABM.Animator(@)
     @refreshLinks = @refreshAgents = @refreshPatches = true # drawing flags
     @fastPatches = false
     
@@ -146,54 +187,20 @@ class ABM.Model
   setup: -> # called at the end of model creation
   # Update/step your model here
   step: -> # called each step of the animation
+  # Start/stop the animation
+  start: -> @anim.start()
+  stop: -> @anim.stop()
 
 #### Animation. 
-# These will be called for you by Model. start/stop animation, increment ticks.
-
-# Initializes the animation and starts the animation by calling `animate`
-  start: ->
-    @startMS = Date.now()
-    @startTick = @ticks
-    @animStop = false
-    @animate()
-
-# Throttle the animation fps to be at most maxFPS
-  setFPS: (@maxFPS) ->
-    @startMS = Date.now()
-    @startTick = @ticks
-
-
-# Stop the animation at the end of the next call to `animate`
-  stop: -> @animStop = true
 
 # Call the agentset draw methods if either the first draw call or
 # their "refresh" flags are set.  The latter are simple optimizations
-# to avoid redrawing the same static scene.
+# to avoid redrawing the same static scene. Called by animator.
   draw: ->
-    @patches.draw @contexts.patches  if @refreshPatches or @ticks is 1
-    @links.draw   @contexts.links    if @refreshLinks   or @ticks is 1
-    @agents.draw  @contexts.agents   if @refreshAgents  or @ticks is 1
+    @patches.draw @contexts.patches  if @refreshPatches or @anim.draws is 1
+    @links.draw   @contexts.links    if @refreshLinks   or @anim.draws is 1
+    @agents.draw  @contexts.agents   if @refreshAgents  or @anim.draws is 1
     @drawSpotlight() if @spotlightAgent?
-
-# Runs the three methods used to increment the model and queues the next call to itself.
-  animate: => # note fat arrow, animate bound to "this"
-    if @animFPS() <= @maxFPS
-      @step()
-      @draw()
-      @tick() # Note: NL difference, called here not in user's step()
-    # else
-    #   console.log "skip at tick #{@ticks}, fps: #{@animFPS()}"
-    requestAnimFrame @animate unless @animStop
-# Updates the `ticks` counter and prints out the fps every 100 steps
-# if the `showFPS` flag is set.
-  tick: ->
-    animTicks = @ticks-@startTick
-    if @showFPS and (animTicks % 100) is 0 and animTicks isnt 0
-      console.log "fps: #{Math.round @animFPS()} at #{animTicks} ticks"
-    @ticks++
-  animFPS: ->
-    animTicks = @ticks-@startTick
-    if animTicks is 0 then @maxFPS else animTicks*1000/(Date.now()-@startMS)
 
 # Creates a spotlight effect on an agent, so we can follow it throughout the model
 # We can pass in either an agent to be spotlighted or a breed. If we pass in a breed,

@@ -19,7 +19,7 @@
         @agents.setDefaultPen(2.5, true)
         @agents.setDefaultHeading(0) # override promotion to random angle
 
-        @setFPS 10
+        @anim.setRate 10
 
         for p in @patches
           p.color = u.randomGray [], 160, 190

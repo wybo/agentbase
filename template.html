@@ -43,7 +43,8 @@
         # set the default agent size (conserves space)
         @agents.setDefaultSize(1.5)
         # set animation to 30fps
-        @setFPS 30
+        # @anim.start 30
+        #@setFPS 30
 
         # The patch grid will have been setup for us.  Here we initialize
         # patch variables, either built-in ones or any new patch variables
@@ -82,17 +83,17 @@
         # Every 100 steps, update our patches, print stats to 
         # the console, and use the Model refresh flag to redraw
         # the patches. Otherwise don't refresh.
-        if @ticks % 100 is 0
+        if @anim.ticks % 100 is 0
           @updatePatches(p) for p in @patches
           @reportInfo() 
           @refreshPatches = true
           # Add use of our first pull request:
-          @setSpotlight @agents.oneOf() if @ticks is 300
-          @removeSpotlight() if @ticks is 600
+          @setSpotlight @agents.oneOf() if @anim.ticks is 300
+          @removeSpotlight() if @anim.ticks is 600
         else
           @refreshPatches = false
         # Stop the animation at 1000. Restart by `ABM.model.start()` in console.
-        if @ticks is 1000
+        if @anim.ticks is 1000
           log "..stopping, restart by ABM.model.start()"
           @stop()
 

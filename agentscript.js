@@ -1996,6 +1996,107 @@
 
   u = ABM.util;
 
+  ABM.Animator = (function() {
+
+    function Animator(model, rate, multiStep) {
+      this.model = model;
+      this.rate = rate != null ? rate : 30;
+      this.multiStep = multiStep != null ? multiStep : false;
+      this.animate = __bind(this.animate, this);
+      this.ticks = this.draws = 0;
+      this.animHandle = this.timerHandle = this.intervalHandle = null;
+      this.animStop = true;
+    }
+
+    Animator.prototype.setRate = function(rate, multiStep) {
+      this.rate = rate;
+      this.multiStep = multiStep != null ? multiStep : false;
+      return this.reset();
+    };
+
+    Animator.prototype.start = function() {
+      if (!this.animStop) {
+        return;
+      }
+      this.reset();
+      this.animStop = false;
+      return this.animate();
+    };
+
+    Animator.prototype.reset = function() {
+      this.startMS = this.now();
+      this.startTick = this.ticks;
+      return this.startDraw = this.draws;
+    };
+
+    Animator.prototype.stop = function() {
+      this.animStop = true;
+      if (this.animHandle != null) {
+        cancelAnimFrame(this.animHandle);
+      }
+      if (this.timeoutHandle != null) {
+        clearTimeout(this.timeoutHandle);
+      }
+      if (this.intervalHandle != null) {
+        clearInterval(this.intervalHandle);
+      }
+      return this.animHandle = this.timerHandle = this.intervalHandle = null;
+    };
+
+    Animator.prototype.step = function() {
+      this.ticks++;
+      return this.model.step();
+    };
+
+    Animator.prototype.draw = function() {
+      this.draws++;
+      return this.model.draw();
+    };
+
+    Animator.prototype.now = function() {
+      return (typeof performance !== "undefined" && performance !== null ? performance : Date).now();
+    };
+
+    Animator.prototype.ms = function() {
+      return this.now() - this.startMS;
+    };
+
+    Animator.prototype.ticksPerSec = function() {
+      var elapsed;
+      if ((elapsed = this.ticks - this.startTick) === 0) {
+        return 0;
+      } else {
+        return elapsed * 1000 / this.ms();
+      }
+    };
+
+    Animator.prototype.drawsPerSec = function() {
+      var elapsed;
+      if ((elapsed = this.draws - this.startDraw) === 0) {
+        return 0;
+      } else {
+        return elapsed * 1000 / this.ms();
+      }
+    };
+
+    Animator.prototype.toString = function() {
+      return "ticks: " + this.ticks + ", draws: " + this.draws + ", ms: " + (this.ms()) + ", rate: " + this.rate;
+    };
+
+    Animator.prototype.animate = function() {
+      if (this.drawsPerSec() <= this.rate) {
+        this.step();
+        this.draw();
+      }
+      if (!this.animStop) {
+        return this.animHandle = requestAnimFrame(this.animate);
+      }
+    };
+
+    return Animator;
+
+  })();
+
   ABM.Model = (function() {
 
     function Model(div, size, minX, maxX, minY, maxY, torus, neighbors) {
@@ -2006,7 +2107,6 @@
       if (neighbors == null) {
         neighbors = true;
       }
-      this.animate = __bind(this.animate, this);
       ABM.model = this;
       layers = (function() {
         var _j, _results;
@@ -2039,9 +2139,7 @@
       this.agents = ABM.agents = new ABM.Agents;
       this.links = ABM.links = new ABM.Links;
       this.contexts.spotlight.globalCompositeOperation = "xor";
-      this.showFPS = true;
-      this.ticks = 1;
-      this.maxFPS = 60;
+      this.anim = new ABM.Animator(this);
       this.refreshLinks = this.refreshAgents = this.refreshPatches = true;
       this.fastPatches = false;
       this.setup();
@@ -2158,64 +2256,25 @@
     Model.prototype.step = function() {};
 
     Model.prototype.start = function() {
-      this.startMS = Date.now();
-      this.startTick = this.ticks;
-      this.animStop = false;
-      return this.animate();
-    };
-
-    Model.prototype.setFPS = function(maxFPS) {
-      this.maxFPS = maxFPS;
-      this.startMS = Date.now();
-      return this.startTick = this.ticks;
+      return this.anim.start();
     };
 
     Model.prototype.stop = function() {
-      return this.animStop = true;
+      return this.anim.stop();
     };
 
     Model.prototype.draw = function() {
-      if (this.refreshPatches || this.ticks === 1) {
+      if (this.refreshPatches || this.anim.draws === 1) {
         this.patches.draw(this.contexts.patches);
       }
-      if (this.refreshLinks || this.ticks === 1) {
+      if (this.refreshLinks || this.anim.draws === 1) {
         this.links.draw(this.contexts.links);
       }
-      if (this.refreshAgents || this.ticks === 1) {
+      if (this.refreshAgents || this.anim.draws === 1) {
         this.agents.draw(this.contexts.agents);
       }
       if (this.spotlightAgent != null) {
         return this.drawSpotlight();
-      }
-    };
-
-    Model.prototype.animate = function() {
-      if (this.animFPS() <= this.maxFPS) {
-        this.step();
-        this.draw();
-        this.tick();
-      }
-      if (!this.animStop) {
-        return requestAnimFrame(this.animate);
-      }
-    };
-
-    Model.prototype.tick = function() {
-      var animTicks;
-      animTicks = this.ticks - this.startTick;
-      if (this.showFPS && (animTicks % 100) === 0 && animTicks !== 0) {
-        console.log("fps: " + (Math.round(this.animFPS())) + " at " + animTicks + " ticks");
-      }
-      return this.ticks++;
-    };
-
-    Model.prototype.animFPS = function() {
-      var animTicks;
-      animTicks = this.ticks - this.startTick;
-      if (animTicks === 0) {
-        return this.maxFPS;
-      } else {
-        return animTicks * 1000 / (Date.now() - this.startMS);
       }
     };
 

@@ -45,10 +45,10 @@
         l.color = l.end2.color
       step: ->
         for a in @agents
-          # a.stamp() if (@ticks % 100) is 0
+          # a.stamp() if (@anim.ticks % 100) is 0
           a.rotate u.randomCentered(u.degToRad(40))
           a.forward 1
-        if (@ticks % 50) is 0
+        if (@anim.ticks % 50) is 0
           @agents.oneOf().stamp()
           if @agents.length > 2
             @agents.last().die()
