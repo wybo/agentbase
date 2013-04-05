@@ -19,6 +19,8 @@
         # w/ refreshs off and 1 optimization 59/max-fps
         @setCacheMyLinks() # no improvement, but tests a.links
         
+        @anim.setRate 30, true
+        
         # globals
         @numNodes = 30
         @numDrivers = 100
@@ -49,6 +51,7 @@
             a.v = @baseVelocity + u.randomFloat @velocityDelta
             
       step: ->
+        console.log @anim.toString() if @anim.ticks % 100 is 0
         for d in @drivers()
           d.face d.toNode
           d.forward Math.min d.v, d.distance d.toNode

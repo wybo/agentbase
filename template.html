@@ -42,9 +42,9 @@
         
         # set the default agent size (conserves space)
         @agents.setDefaultSize(1.5)
-        # set animation to 30fps
-        # @anim.start 30
-        #@setFPS 30
+
+        # set animation to 30fps, but without multiple steps per draw:
+        @anim.setRate 30, false
 
         # The patch grid will have been setup for us.  Here we initialize
         # patch variables, either built-in ones or any new patch variables
@@ -78,6 +78,7 @@
 
       # Update our model via the second abstract method, `step`
       step: ->  # called by Model.animate
+        console.log @anim.toString() if @anim.ticks % 100 is 0
         # First, update our agents via our `updateAgents` method
         @updateAgents(a) for a in @agents
         # Every 100 steps, update our patches, print stats to 

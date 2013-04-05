@@ -1493,14 +1493,21 @@ class ABM.Animator
   draw: -> @draws++; @model.draw()
   now: -> (performance ? Date).now()
   ms: -> @now()-@startMS
-  ticksPerSec: -> if (elapsed = @ticks-@startTick) is 0 then 0 else elapsed*1000/@ms()
-  drawsPerSec: -> if (elapsed = @draws-@startDraw) is 0 then 0 else elapsed*1000/@ms()
-  toString: -> "ticks: #{@ticks}, draws: #{@draws}, ms: #{@ms()}, rate: #{@rate}"
-  animate: =>
+  ticksPerSec: -> if (elapsed = @ticks-@startTick) is 0 then 0 else Math.round elapsed*1000/@ms()
+  drawsPerSec: -> if (elapsed = @draws-@startDraw) is 0 then 0 else Math.round elapsed*1000/@ms()
+  toString: -> "ticks: #{@ticks}, draws: #{@draws}, rate: #{@rate} #{@ticksPerSec()}/#{@drawsPerSec()}"
+  animateSteps: =>
+    @step()
+    @timeoutHandle = setTimeout @animateSteps, 10 unless @animStop
+  animateDraws: =>
     if @drawsPerSec() <= @rate
-      @step()
+      @step() if not @multiStep
       @draw()
-    @animHandle = requestAnimFrame @animate unless @animStop
+    @animHandle = requestAnimFrame @animateDraws unless @animStop
+  animate: ->
+    if @multiStep
+      @animateSteps()
+    @animateDraws()
 
 # ### Class Model
 

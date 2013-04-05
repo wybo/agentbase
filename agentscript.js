@@ -2002,7 +2002,8 @@
       this.model = model;
       this.rate = rate != null ? rate : 30;
       this.multiStep = multiStep != null ? multiStep : false;
-      this.animate = __bind(this.animate, this);
+      this.animateDraws = __bind(this.animateDraws, this);
+      this.animateSteps = __bind(this.animateSteps, this);
       this.ticks = this.draws = 0;
       this.animHandle = this.timerHandle = this.intervalHandle = null;
       this.animStop = true;
@@ -2066,7 +2067,7 @@
       if ((elapsed = this.ticks - this.startTick) === 0) {
         return 0;
       } else {
-        return elapsed * 1000 / this.ms();
+        return Math.round(elapsed * 1000 / this.ms());
       }
     };
 
@@ -2075,22 +2076,38 @@
       if ((elapsed = this.draws - this.startDraw) === 0) {
         return 0;
       } else {
-        return elapsed * 1000 / this.ms();
+        return Math.round(elapsed * 1000 / this.ms());
       }
     };
 
     Animator.prototype.toString = function() {
-      return "ticks: " + this.ticks + ", draws: " + this.draws + ", ms: " + (this.ms()) + ", rate: " + this.rate;
+      return "ticks: " + this.ticks + ", draws: " + this.draws + ", rate: " + this.rate + " " + (this.ticksPerSec()) + "/" + (this.drawsPerSec());
     };
 
-    Animator.prototype.animate = function() {
+    Animator.prototype.animateSteps = function() {
+      this.step();
+      if (!this.animStop) {
+        return this.timeoutHandle = setTimeout(this.animateSteps, 10);
+      }
+    };
+
+    Animator.prototype.animateDraws = function() {
       if (this.drawsPerSec() <= this.rate) {
-        this.step();
+        if (!this.multiStep) {
+          this.step();
+        }
         this.draw();
       }
       if (!this.animStop) {
-        return this.animHandle = requestAnimFrame(this.animate);
+        return this.animHandle = requestAnimFrame(this.animateDraws);
       }
+    };
+
+    Animator.prototype.animate = function() {
+      if (this.multiStep) {
+        this.animateSteps();
+      }
+      return this.animateDraws();
     };
 
     return Animator;

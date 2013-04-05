@@ -20,6 +20,8 @@
         @diffusionRate = .70
         @coolingRate = .10
         
+        @anim.setRate 30, true
+        
         # defaults
         @agents.setDefaultSize(1.5)
 
@@ -29,6 +31,7 @@
         for p in @patches
           p.heat = 0
       step: ->
+        console.log @anim.toString() if @anim.ticks % 100 is 0
         for p in @patches
           p.heat *= (1-@coolingRate)
         for a in @agents

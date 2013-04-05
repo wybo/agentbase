@@ -15,6 +15,9 @@
         # two: 27fps, now static colors larger percent of faster patches.
         @setAgentsUseSprites() # 24->46-48fps!
         
+        @anim.setRate 10, true
+        # @anim.setRate 60, false
+        
         # globals
         @nestColor = [255,255,0]  # yellow
         @foodColor = [0,0,255]    # blue
@@ -38,6 +41,7 @@
         @setupPatches()
         @setupAgents()
       step: ->
+        console.log @anim.toString() if @anim.ticks % 100 is 0
         @updateAgents()
         @updatePatches()
 
