@@ -81,8 +81,8 @@ ctx.restore() # restore back to patch coord system
       <span class="nv">spotlight: </span><span class="nx">layers</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-10">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-10">&#182;</a>               </div>               <p>Set a variable in each context with its name</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nv">v.agentSetName = </span><span class="nx">k</span> <span class="k">for</span> <span class="nx">k</span><span class="p">,</span><span class="nx">v</span> <span class="k">of</span> <span class="nx">@contexts</span>
     </pre></div>             </td>           </tr>                               <tr id="section-11">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-11">&#182;</a>               </div>               <p>Initialize agentsets.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="vi">@patches = </span><span class="nv">ABM.patches = </span><span class="o">\</span>
       <span class="k">new</span> <span class="nx">ABM</span><span class="p">.</span><span class="nx">Patches</span> <span class="nx">size</span><span class="p">,</span><span class="nx">minX</span><span class="p">,</span><span class="nx">maxX</span><span class="p">,</span><span class="nx">minY</span><span class="p">,</span><span class="nx">maxY</span><span class="p">,</span><span class="nx">torus</span><span class="p">,</span><span class="nx">neighbors</span>
-    <span class="vi">@agents = </span><span class="nv">ABM.agents = </span><span class="k">new</span> <span class="nx">ABM</span><span class="p">.</span><span class="nx">Agents</span>
-    <span class="vi">@links = </span><span class="nv">ABM.links = </span><span class="k">new</span> <span class="nx">ABM</span><span class="p">.</span><span class="nx">Links</span></pre></div>             </td>           </tr>                               <tr id="section-12">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-12">&#182;</a>               </div>               <p>Setup spotlight layer</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="vi">@contexts.spotlight.globalCompositeOperation = </span><span class="s">&quot;xor&quot;</span></pre></div>             </td>           </tr>                               <tr id="section-13">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-13">&#182;</a>               </div>               <p>Initialize instance variables</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="vi">@anim = </span><span class="k">new</span> <span class="nx">ABM</span><span class="p">.</span><span class="nx">Animator</span><span class="p">(</span><span class="nx">@</span><span class="p">)</span>
+    <span class="vi">@agents = </span><span class="nv">ABM.agents = </span><span class="k">new</span> <span class="nx">ABM</span><span class="p">.</span><span class="nx">Agents</span> <span class="nx">ABM</span><span class="p">.</span><span class="nx">Agent</span><span class="p">,</span> <span class="s">&quot;agents&quot;</span>
+    <span class="vi">@links = </span><span class="nv">ABM.links = </span><span class="k">new</span> <span class="nx">ABM</span><span class="p">.</span><span class="nx">Links</span> <span class="nx">ABM</span><span class="p">.</span><span class="nx">Link</span><span class="p">,</span> <span class="s">&quot;links&quot;</span></pre></div>             </td>           </tr>                               <tr id="section-12">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-12">&#182;</a>               </div>               <p>Setup spotlight layer</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="vi">@contexts.spotlight.globalCompositeOperation = </span><span class="s">&quot;xor&quot;</span></pre></div>             </td>           </tr>                               <tr id="section-13">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-13">&#182;</a>               </div>               <p>Initialize instance variables</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="vi">@anim = </span><span class="k">new</span> <span class="nx">ABM</span><span class="p">.</span><span class="nx">Animator</span><span class="p">(</span><span class="nx">@</span><span class="p">)</span>
     <span class="vi">@refreshLinks = @refreshAgents = @refreshPatches = </span><span class="kc">true</span> <span class="c1"># drawing flags</span>
     <span class="vi">@fastPatches = </span><span class="kc">false</span>
     </pre></div>             </td>           </tr>                               <tr id="section-14">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-14">&#182;</a>               </div>               <p>Call the models setup function.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">@setup</span><span class="p">()</span>
@@ -145,7 +145,7 @@ to avoid redrawing the same static scene. Called by animator.</p>             </
 We can pass in either an agent to be spotlighted or a breed. If we pass in a breed,
 we will find a random agent of that breed</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">setSpotlight: </span><span class="nf">(agent) -&gt;</span>
     <span class="k">if</span> <span class="k">typeof</span> <span class="nx">agent</span> <span class="o">is</span> <span class="s">&quot;string&quot;</span>
-      <span class="nv">agentSet = </span><span class="nx">@</span><span class="p">[</span><span class="nx">agent</span><span class="p">]()</span>
+      <span class="nv">agentSet = </span><span class="nx">@</span><span class="p">[</span><span class="nx">agent</span><span class="p">]</span><span class="c1">#()</span>
       <span class="vi">@spotlightAgent = </span><span class="nx">agentSet</span><span class="p">.</span><span class="nx">oneOf</span><span class="p">()</span> <span class="nx">unless</span> <span class="o">not</span> <span class="nx">agentSet</span><span class="p">.</span><span class="nx">any</span><span class="p">()</span>
     <span class="k">else</span>
       <span class="vi">@spotlightAgent = </span><span class="nx">agent</span>
@@ -167,33 +167,37 @@ we will find a random agent of that breed</p>             </td>             <td 
     <span class="nx">ctx</span><span class="p">.</span><span class="nx">arc</span> <span class="nx">agent</span><span class="p">.</span><span class="nx">x</span><span class="p">,</span> <span class="nx">agent</span><span class="p">.</span><span class="nx">y</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="nb">Math</span><span class="p">.</span><span class="nx">PI</span><span class="p">,</span> <span class="kc">false</span>
     <span class="nx">ctx</span><span class="p">.</span><span class="nx">fill</span><span class="p">()</span></pre></div>             </td>           </tr>                               <tr id="section-34">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-34">&#182;</a>               </div>               <h3>Breeds</h3>
 
-<p>Two very primitive versions of NL's <code>breed</code> commands.</p>
+<p>Two versions of NL's <code>breed</code> commands.</p>
 
 <pre><code>@agentBreeds "embers fires"
 @linkBreeds "spokes rims"
 </code></pre>
 
-<p>will create 4 dynamic methods: </p>
+<p>will create 4 agentSets: </p>
 
-<pre><code>@embers() and @fires()
+<pre><code>@embers and @fires
+@spokes and @rims 
 </code></pre>
 
-<p>which return agents with their breeds set to "embers" or "fires", and</p>
+<p>These agentset's <code>create</code> method create subclasses of Agent/Link.
+Use of <breed>.setDefault methods work as for agents/links, creating default
+values for the breed set:</p>
 
-<pre><code>@spokes() and @rims() 
+<pre><code>@embers.setDefaultColor [255,0,0]
 </code></pre>
 
-<p>which return links with their breed set to either "spokes" or "rims"</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">linkBreeds: </span><span class="nf">(s) -&gt;</span>
+<p>..will set the default color for just the embers.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">createBreeds: </span><span class="nf">(s, breedClass, breedSet) -&gt;</span>
+    <span class="nv">breeds = </span><span class="p">[]</span>
     <span class="k">for</span> <span class="nx">b</span> <span class="k">in</span> <span class="nx">s</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s">&quot; &quot;</span><span class="p">)</span>
-      <span class="nx">@</span><span class="p">[</span><span class="nx">b</span><span class="p">]</span> <span class="o">=</span> <span class="nx">do</span><span class="p">(</span><span class="nx">b</span><span class="p">)</span> <span class="o">=&gt;</span>
-       <span class="o">-&gt;</span> <span class="nx">@links</span><span class="p">.</span><span class="nx">breed</span><span class="p">(</span><span class="nx">b</span><span class="p">)</span>
-    <span class="kc">null</span>
-  <span class="nv">agentBreeds: </span><span class="nf">(s) -&gt;</span>
-    <span class="k">for</span> <span class="nx">b</span> <span class="k">in</span> <span class="nx">s</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s">&quot; &quot;</span><span class="p">)</span>
-      <span class="nx">@</span><span class="p">[</span><span class="nx">b</span><span class="p">]</span> <span class="o">=</span> <span class="nx">do</span><span class="p">(</span><span class="nx">b</span><span class="p">)</span> <span class="o">=&gt;</span>
-       <span class="o">-&gt;</span> <span class="nx">@agents</span><span class="p">.</span><span class="nx">breed</span><span class="p">(</span><span class="nx">b</span><span class="p">)</span>
-    <span class="kc">null</span>
-
+      <span class="nv">className = </span><span class="nx">b</span><span class="p">.</span><span class="nx">charAt</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="nx">toUpperCase</span><span class="p">()</span> <span class="o">+</span> <span class="nx">b</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> 
+      <span class="nv">c = </span><span class="k">class</span> <span class="nx">Breed</span> <span class="k">extends</span> <span class="nx">ABM</span><span class="p">.</span><span class="nx">Agent</span>
+      <span class="nv">c::name = </span><span class="nx">b</span>
+      <span class="nx">ABM</span><span class="p">[</span><span class="nx">className</span><span class="p">]</span> <span class="o">=</span> <span class="nx">c</span>
+      <span class="nx">@</span><span class="p">[</span><span class="nx">b</span><span class="p">]</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ABM</span><span class="p">.</span><span class="nx">Agents</span> <span class="nx">c</span><span class="p">,</span> <span class="nx">b</span><span class="p">,</span> <span class="nx">breedClass</span><span class="o">::</span><span class="nx">breed</span> <span class="c1"># @agents/@links</span>
+      <span class="nx">breeds</span><span class="p">.</span><span class="nx">push</span> <span class="nx">@</span><span class="p">[</span><span class="nx">b</span><span class="p">]</span>
+    <span class="nx">breeds</span>
+  <span class="nv">agentBreeds: </span><span class="nf">(s) -&gt;</span> <span class="nv">ABM.agentBreeds = </span><span class="nx">@createBreeds</span> <span class="nx">s</span><span class="p">,</span> <span class="nx">ABM</span><span class="p">.</span><span class="nx">Agent</span><span class="p">,</span> <span class="nx">ABM</span><span class="p">.</span><span class="nx">Agents</span>
+  <span class="nv">linkBreeds: </span><span class="nf">(s) -&gt;</span> <span class="nv">ABM.linkBreeds = </span><span class="nx">@createBreeds</span> <span class="nx">s</span><span class="p">,</span> <span class="nx">ABM</span><span class="p">.</span><span class="nx">Link</span><span class="p">,</span> <span class="nx">ABM</span><span class="p">.</span><span class="nx">Links</span>
   </pre></div>             </td>           </tr>                               <tr id="section-35">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-35">&#182;</a>               </div>               <p>Utility for models to create agentsets from arrays.  Ex:</p>
 
 <pre><code>even = @asSet (a for a in @agents when a.id % 2 is 0)
@@ -213,8 +217,9 @@ See <a href="http://goo.gl/1i7bd">CoffeeConsole</a> Chrome extension too.</p>   
     <span class="nv">ABM.root.u = </span><span class="nx">ABM</span><span class="p">.</span><span class="nx">util</span>
     <span class="nv">ABM.root.app = </span><span class="nx">@</span>
     <span class="nv">ABM.root.cx = </span><span class="nx">@contexts</span>
-    <span class="nv">ABM.root.cl = </span><span class="nf">(o) -&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="nx">o</span>
-    <span class="nv">ABM.root.cla = </span><span class="nf">(array) -&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="nx">a</span> <span class="k">for</span> <span class="nx">a</span> <span class="k">in</span> <span class="nx">array</span>
+    <span class="nv">ABM.root.ab = </span><span class="nx">ABM</span><span class="p">.</span><span class="nx">agentBreeds</span>
+    <span class="nv">ABM.root.lb = </span><span class="nx">ABM</span><span class="p">.</span><span class="nx">linkBreeds</span>
+    <span class="nv">ABM.root.an = </span><span class="nx">@anim</span>
     <span class="kc">null</span>
   
 

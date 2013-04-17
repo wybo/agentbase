@@ -104,6 +104,11 @@ ABM.util =
     dr = rad1-rad2; PI = Math.PI
     dr += 2*PI if dr <= -PI; dr -= 2*PI if dr > PI; dr
   
+# ### Object Operations
+  
+  # Object variable names
+  ownKeys: (obj) -> key for own key, value of obj
+  ownVarKeys: (obj) -> key for own key, value of obj when not @isFunction value
 
 # ### Array Operations
 

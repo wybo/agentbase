@@ -8,8 +8,10 @@
       u = ABM.util # static variable
       
       setup: -> # called by Model ctor
-        @agents.setDefaultShape "square"
         @agentBreeds "embers fires"
+        @agents.setDefaultShape "square"
+        @agents.setDefaultColor [255,0,0]
+        @agents.setDefaultHeading(0) # override promotion to random angle
         
         @refreshPatches = false # <1fps->50-55fps, no surprise, app optimized for this 
         # No optimizations: 50-55fps
@@ -24,32 +26,38 @@
         @initialTrees = 0
         
         # defaults
-        @agents.setDefaultHeading(0) # override promotion to random angle
+        # @anim.setRate 10, true
+        @anim.setRate 60, false
+        
 
         for p in @patches when u.randomInt(100) < @density
           p.color = [0, 255, 0]
         @ignite p for p in @patches when p.x is @patches.minX
         @initialTrees = (p for p in @patches when u.colorsEqual p.color, [0, 255, 0]).length
-        #console.log "burnedTrees #{@burnedTrees}"
+        console.log "burnedTrees #{@burnedTrees}"
         @burnedTrees = 0 # reset from initial ignites
+        # console.log "embers: ", @embers; window.embers = @embers
+        # console.log "fires: ", @fires; window.fires = @fires
+        # console.log "agents:", @agents
       ignite: (p) ->
-        p.sprout 1, (a) -> 
-          a.breed = "fires"
-          a.color = [255, 0, 0]
+        p.sprout 1, @fires, (a) -> 
+          #a.breed = "fires"
+          #a.color = [255, 0, 0]
         p.color = [0, 0, 0] # in original model but apparently not needed, refresh off?
         @burnedTrees++
       fadeEmbers: ->
-        for a in @embers()
+        for a in @embers by -1 #()
           a.scaleColor a.color, .8
-          if 100 > Math.max a.color...
+          if 100 > Math.max a.color... # or (Math.max a.color...) < 100 , needs parens
             a.p.color = a.color
             a.p.draw @contexts.patches
             a.die()
       step: ->
+        console.log @anim.toString() if @anim.ticks % 100 is 0
         if not @agents.any() then @stop()
-        for a in @fires()
+        for a in @fires by -1# ()
           @ignite p for p in a.p.n4 when u.colorsEqual p.color, [0, 255, 0]
-          a.breed = "embers"
+          a.resetBreed @embers #a.breed = "embers"
         @fadeEmbers()
 
     # div, patchSize, minX, maxX, minY, maxY, isTorus=true, neighbors=true

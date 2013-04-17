@@ -9,17 +9,22 @@
       u = ABM.util # utilities; static variable
       setup: -> # called by Model ctor
         @agentBreeds "nodes drivers"
+        @nodes.setDefaultShape "circle"
+        @nodes.setDefaultSize .3
+        @drivers.setDefaultSize 1.5
         
         # 40-44fps->58+fps
         @refreshPatches = false # 56fps
         @refreshLinks = false # 40-49fps
         # @setFastPatches() # 58+fps same as refresh off
         # @setCacheAgentsHere() # 40fps; not needed, slight overhead
-        @setAgentStaticColors() # 42fps, 1-2 fps improvement
+        # @setAgentStaticColors() # 42fps, 1-2 fps improvement
+        @setAgentsUseSprites() # 24 -> 36
         # w/ refreshs off and 1 optimization 59/max-fps
-        @setCacheMyLinks() # no improvement, but tests a.links
+        # @setCacheMyLinks() # no improvement, but tests a.links
         
-        @anim.setRate 30, true
+        @anim.setRate 30, true # almost 3:1 steps/draws!
+        # @anim.setRate 60, false # for optimization studies & profiling
         
         # globals
         @numNodes = 30
@@ -30,34 +35,31 @@
         
         p.color = u.randomGray [], 10, 50 for p in @patches
         for p in @patches.nOf @numNodes
-          p.sprout 1, (a) => 
-            a.breed = "nodes"
-            a.shape = "circle"; a.size = .3 # dot == small circle
-            if @nodes().length > 1
-              @links.create a, @nodes().other(a).oneOf()
+          p.sprout 1, @nodes, (a) => 
+            if @nodes.length > 1 # if @nodes().length > 1
+              @links.create a, @nodes.other(a).oneOf() # @links.create a, @nodes().other(a).oneOf()
         
-        if @layoutCircle then @links.layoutCircle @nodes(), @patches.maxX - 1
+        if @layoutCircle then @links.layoutCircle @nodes, @patches.maxX - 1
         
         # no defaults, hatch copies its values to new agent
         
         for i in [1..@numDrivers]
-          n = @nodes().oneOf()
-          n.hatch 1, (a) =>
-            a.breed = "drivers"
-            a.shape = "default"
+          n = @nodes.oneOf() # n = @nodes().oneOf()
+          n.hatch 1, @drivers, (a) =>
             a.fromNode = a.toNode = u.oneOf n.linkNeighbors() #.oneOf()
             a.face a.toNode
-            a.size = 1.5
             a.v = @baseVelocity + u.randomFloat @velocityDelta
+        null # avoid returning "for" results above
             
       step: ->
         console.log @anim.toString() if @anim.ticks % 100 is 0
-        for d in @drivers()
+        for d in @drivers #for d in @drivers()
           d.face d.toNode
           d.forward Math.min d.v, d.distance d.toNode
           if .01 > d.distance d.toNode # or (d.distance d.toNode) < .01
             d.fromNode = d.toNode
             d.toNode = u.oneOf d.toNode.linkNeighbors() #.oneOf()
+        null # avoid returning "for" results above
 
     # div, patchSize, minX, maxX, minY, maxY, isTorus=true, neighbors=true
     #   NL Defaults: 13, -16, 16, -16, 16

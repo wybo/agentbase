@@ -24,7 +24,8 @@
           p.color = [255,255,0] if p.y is 0
 
         for s in ABM.shapes.names()
-          b = @agents.breed(s); console.log "#{b.length} #{s}"
+          # b = @agents.breed(s); console.log "#{b.length} #{s}"
+          b = @agents.getWithProp "shape", s; console.log "#{b.length} #{s}"
         @links.create @agents[0], @agents.slice(1, @agents.length), @initLink
         
         for a in @agents
@@ -39,7 +40,7 @@
       initAgent: (a) ->
         a.size = 3
         a.shape = u.oneOf ABM.shapes.names()
-        a.breed = a.shape
+        # a.breed = a.shape
         (a.penDown = true; a.penSize *= 5; a.color = [255,0,0]) if a.id is 0
       initLink: (l) ->
         l.color = l.end2.color

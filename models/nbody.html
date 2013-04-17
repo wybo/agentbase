@@ -22,7 +22,7 @@
 
         # window.foo = @patches.nOf(@population)
         for p in @patches.nOf(@population)
-          p.sprout 1, (a) =>
+          p.sprout 1, @agents, (a) =>
             if @sun and a.id is 0
               a.mass = 10000; a.setXY 0,0; a.vx = a.vy = 0
             else

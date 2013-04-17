@@ -60,7 +60,7 @@ class ABM.AgentSet extends Array
     @ID = 0
 
   # Add an agent to the list.  Only used by agentset factory methods. Adds
-  # the `id` and `hidden` properties to all agents. Increment `ID`.
+  # the `id` property to all agents. Increment `ID`.
   # Returns the object for chaining. The set will be sorted by `id`.
   #
   # By "agent" we mean an instance of `Patch`, `Agent` and `Link`.
@@ -77,8 +77,9 @@ class ABM.AgentSet extends Array
   #     AS.remove(AS[3]) # [{id:0,x:0,y:1}, {id:1,x:8,y:0},
   #                         {id:2,x:6,y:4}, {id:4,x:1,y:1}] 
   remove: (o) ->
+    u.error "remove: empty arraySet" if @length is 0
     if o is @last()
-      @.length--
+      @[--@length] = null # set last to null and decrease length (null: GC subtlety)
     else
       @splice i, 1 if (i = @indexOfID o.id) isnt -1
       u.error "remove: indexOfID not in list" if i is -1

@@ -102,8 +102,8 @@ class ABM.Model
     # Initialize agentsets.
     @patches = ABM.patches = \
       new ABM.Patches size,minX,maxX,minY,maxY,torus,neighbors
-    @agents = ABM.agents = new ABM.Agents
-    @links = ABM.links = new ABM.Links
+    @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
+    @links = ABM.links = new ABM.Links ABM.Link, "links"
 
     # Setup spotlight layer
     @contexts.spotlight.globalCompositeOperation = "xor"
@@ -214,7 +214,7 @@ class ABM.Model
 # we will find a random agent of that breed
   setSpotlight: (agent) ->
     if typeof agent is "string"
-      agentSet = @[agent]()
+      agentSet = @[agent]#()
       @spotlightAgent = agentSet.oneOf() unless not agentSet.any()
     else
       @spotlightAgent = agent
@@ -238,33 +238,37 @@ class ABM.Model
 
 
 #### Breeds
-# Two very primitive versions of NL's `breed` commands.
+# Two versions of NL's `breed` commands.
 #
 #     @agentBreeds "embers fires"
 #     @linkBreeds "spokes rims"
 #
-# will create 4 dynamic methods: 
+# will create 4 agentSets: 
 #
-#     @embers() and @fires()
+#     @embers and @fires
+#     @spokes and @rims 
 #
-# which return agents with their breeds set to "embers" or "fires", and
+# These agentset's `create` method create subclasses of Agent/Link.
+# Use of <breed>.setDefault methods work as for agents/links, creating default
+# values for the breed set:
 #
-#     @spokes() and @rims() 
+#     @embers.setDefaultColor [255,0,0]
 #
-# which return links with their breed set to either "spokes" or "rims"
-#
+# ..will set the default color for just the embers.
 
-  linkBreeds: (s) ->
-    for b in s.split(" ")
-      @[b] = do(b) =>
-       -> @links.breed(b)
-    null
-  agentBreeds: (s) ->
-    for b in s.split(" ")
-      @[b] = do(b) =>
-       -> @agents.breed(b)
-    null
 
+  createBreeds: (s, breedClass, breedSet) ->
+    breeds = []
+    for b in s.split(" ")
+      className = b.charAt(0).toUpperCase() + b.slice(1) 
+      c = class Breed extends ABM.Agent
+      c::name = b
+      ABM[className] = c
+      @[b] = new ABM.Agents c, b, breedClass::breed # @agents/@links
+      breeds.push @[b]
+    breeds
+  agentBreeds: (s) -> ABM.agentBreeds = @createBreeds s, ABM.Agent, ABM.Agents
+  linkBreeds: (s) -> ABM.linkBreeds = @createBreeds s, ABM.Link, ABM.Links
   
   # Utility for models to create agentsets from arrays.  Ex:
   #
@@ -288,7 +292,8 @@ class ABM.Model
     ABM.root.u = ABM.util
     ABM.root.app = @
     ABM.root.cx = @contexts
-    ABM.root.cl = (o) -> console.log o
-    ABM.root.cla = (array) -> console.log a for a in array
+    ABM.root.ab = ABM.agentBreeds
+    ABM.root.lb = ABM.linkBreeds
+    ABM.root.an = @anim
     null
   

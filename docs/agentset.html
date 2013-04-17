@@ -49,7 +49,7 @@ ABM.AgentSet.asSet AS # Convert AS to AgentSet in place
 </code></pre>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-6">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-6">&#182;</a>               </div>               <h3>Constructor and add/remove agents.</h3>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-7">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-7">&#182;</a>               </div>               <p>Create an empty <code>AgentSet</code> and initialize the <code>ID</code> counter for add().</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">constructor: </span><span class="o">-&gt;</span>
     <span class="k">super</span><span class="p">()</span>
     <span class="vi">@ID = </span><span class="mi">0</span></pre></div>             </td>           </tr>                               <tr id="section-8">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-8">&#182;</a>               </div>               <p>Add an agent to the list.  Only used by agentset factory methods. Adds
-the <code>id</code> and <code>hidden</code> properties to all agents. Increment <code>ID</code>.
+the <code>id</code> property to all agents. Increment <code>ID</code>.
 Returns the object for chaining. The set will be sorted by <code>id</code>.</p>
 
 <p>By "agent" we mean an instance of <code>Patch</code>, <code>Agent</code> and <code>Link</code>.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">add: </span><span class="nf">(o) -&gt;</span>
@@ -63,8 +63,9 @@ array is unsorted, simply call <code>sortById</code> first, see <code>sortById</
 <pre><code>AS.remove(AS[3]) # [{id:0,x:0,y:1}, {id:1,x:8,y:0},
                     {id:2,x:6,y:4}, {id:4,x:1,y:1}] 
 </code></pre>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">remove: </span><span class="nf">(o) -&gt;</span>
+    <span class="nx">u</span><span class="p">.</span><span class="nx">error</span> <span class="s">&quot;remove: empty arraySet&quot;</span> <span class="k">if</span> <span class="nx">@length</span> <span class="o">is</span> <span class="mi">0</span>
     <span class="k">if</span> <span class="nx">o</span> <span class="o">is</span> <span class="nx">@last</span><span class="p">()</span>
-      <span class="nx">@</span><span class="p">.</span><span class="nx">length</span><span class="o">--</span>
+      <span class="nx">@</span><span class="p">[</span><span class="o">--</span><span class="nx">@length</span><span class="p">]</span> <span class="o">=</span> <span class="kc">null</span> <span class="c1"># set last to null and decrease length (null: GC subtlety)</span>
     <span class="k">else</span>
       <span class="nx">@splice</span> <span class="nx">i</span><span class="p">,</span> <span class="mi">1</span> <span class="k">if</span> <span class="p">(</span><span class="nv">i = </span><span class="nx">@indexOfID</span> <span class="nx">o</span><span class="p">.</span><span class="nx">id</span><span class="p">)</span> <span class="o">isnt</span> <span class="o">-</span><span class="mi">1</span>
       <span class="nx">u</span><span class="p">.</span><span class="nx">error</span> <span class="s">&quot;remove: indexOfID not in list&quot;</span> <span class="k">if</span> <span class="nx">i</span> <span class="o">is</span> <span class="o">-</span><span class="mi">1</span>

@@ -25,6 +25,8 @@
         @setCachePatchRects @vision, true # 22/23 -> 24; only +1+
         @setAgentsUseSprites() # 24 -> 36
         
+        @anim.setRate 60, false
+        
         # defaults
         @agents.setDefaultSize(1.5)
         # @agents.setDefaultColor([255,0,0]) # slightly faster! ->38/39 ??
@@ -37,6 +39,7 @@
 
       # draw: -> # headless test .. max fps
       step: ->
+        console.log @anim.toString() if @anim.ticks % 100 is 0
         @flock(a) for a in @agents
         @reportFlockVectorSize() if @anim.ticks % 10 is 0
         # @stop() if @anim.ticks is 100

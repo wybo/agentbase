@@ -104,6 +104,11 @@ ABM.util =
     dr = rad1-rad2; PI = Math.PI
     dr += 2*PI if dr <= -PI; dr -= 2*PI if dr > PI; dr
   
+# ### Object Operations
+  
+  # Object variable names
+  ownKeys: (obj) -> key for own key, value of obj
+  ownVarKeys: (obj) -> key for own key, value of obj when not @isFunction value
 
 # ### Array Operations
 
@@ -558,7 +563,7 @@ class ABM.AgentSet extends Array
     @ID = 0
 
   # Add an agent to the list.  Only used by agentset factory methods. Adds
-  # the `id` and `hidden` properties to all agents. Increment `ID`.
+  # the `id` property to all agents. Increment `ID`.
   # Returns the object for chaining. The set will be sorted by `id`.
   #
   # By "agent" we mean an instance of `Patch`, `Agent` and `Link`.
@@ -575,8 +580,9 @@ class ABM.AgentSet extends Array
   #     AS.remove(AS[3]) # [{id:0,x:0,y:1}, {id:1,x:8,y:0},
   #                         {id:2,x:6,y:4}, {id:4,x:1,y:1}] 
   remove: (o) ->
+    u.error "remove: empty arraySet" if @length is 0
     if o is @last()
-      @.length--
+      @[--@length] = null # set last to null and decrease length (null: GC subtlety)
     else
       @splice i, 1 if (i = @indexOfID o.id) isnt -1
       u.error "remove: indexOfID not in list" if i is -1
@@ -814,7 +820,6 @@ class ABM.Patch
   # and should be handled with care!
   n: null
   n4: null
-  cachedRects: null
   # Default color starts as black, can be set to different default value
   # by setDefault methods in ABM.Patches
   color: [0,0,0]
@@ -851,7 +856,9 @@ class ABM.Patch
       ctx.restore()
   
   # Return an array of the agents on this patch.
-  # See model.setCacheAgentsHere for optimization.
+  # If model.setCacheAgentsHere has created an @agents instance
+  # variable for the patches, agents will add/remove themselves
+  # as they move from patch to patch.
   agentsHere: ->
     @agents ? (a for a in ABM.agents when a.p is @)
   
@@ -863,10 +870,9 @@ class ABM.Patch
   # Factory: Create num new agents on this patch.
   # The optional init proc is called on each of the newly created agents.<br>
   # NOTE: init must be applied after object inserted in agent set
-  sprout: (num = 1, init = ->) ->
-    ABM.agents.create num, (a) => # fat arrow so that @ = this patch
+  sprout: (num = 1, breed = ABM.agents, init = ->) ->
+    breed.create num, (a) => # fat arrow so that @ = this patch
       a.setXY @x, @y; init(a); a
-  
 
 # Class Patches is a singleton 2D matrix of Patch instances, each patch 
 # representing a 1x1 square in patch coordinates (via 2D coord transforms).
@@ -875,9 +881,9 @@ class ABM.Patch
 # * minX/maxX: min/max x coord, each patch being a unit square.
 # * minY/maxY: min/max y coord.
 # * numX/numY: total patches in x/y direction, width/height of grid.
-# * isTorus: topology of patches, see **ABM.util**.
+# * isTorus: true if coord system wraps around at edges, see **ABM.util**.
 class ABM.Patches extends ABM.AgentSet
-  # Constructor: set variables, fill patch neighbor variables, n & n4.
+  # Constructor: set variables, fill patch neighbors n & n4, setup pixel manipulation data
   constructor: (
     @size, @minX, @maxX, @minY, @maxY, @isTorus=true, neighbors=true
   ) ->
@@ -891,6 +897,14 @@ class ABM.Patches extends ABM.AgentSet
     @setPixels() 
     @drawWithPixels = @size is 1 #false
   
+  # Set the default color for new Patch instances.
+  # Note coffeescript :: which refers to the Patch prototype.
+  # This is the usual way to modify class variables.
+  setDefaultColor: (color) -> ABM.Patch::color = color
+
+  # Like NetLogo's patches.own(), sets a patch variable and its default.
+  setDefaultVariable: (name, value) -> ABM.Patch::[name] = value
+
   # Install neighborhoods in patches
   setNeighbors: -> 
     for p in @
@@ -911,14 +925,11 @@ class ABM.Patches extends ABM.AgentSet
       @pixelsData32 = new Uint32Array @pixelsData.buffer
       @pixelsAreLittleEndian = u.isLittleEndian()
   
-  # If using scaled pixels, use pixel manipulation below, or use default.
+  # If using scaled pixels, use pixel manipulation below, or use default agentSet
+  # draw which iterates over the patches, drawing rectangles.
   draw: (ctx) ->
     if @drawWithPixels then @drawScaledPixels ctx else super ctx
   
-  # Set the default color for new Patch instances.
-  # Note coffeescript :: which refers to the Patch prototype.
-  # This is the usual way to modify class variables.
-  setDefaultColor: (color) -> ABM.Patch::color = color
 
 # #### Patch grid coord system utilities:
 
@@ -1090,24 +1101,26 @@ class ABM.Agent
   # * color: the color of the agent, default: ABM.util.randomColor
   # * shape: the ABM.shape name of the agent, default: ABM.agents.defaultShape
   # * heading: direction of the agent, in radians, from x-axis
+  # * hidden: whether or not to draw this agent
   # * size: size of agent, in patch coords, default: 1
   # * p: patch at current x,y location
   # * penDown: true if agent pen is drawing
   # * penSize: size in patch coords of the pen, default: 1 pixel
-  # * breed: string represented the type of agent. Ex: wolf, rabbit.
+  # * breed: the agentset this agent belongs to
+  # * sprite: an image of the agent if agentSet.useSprites set
 
   # Default class variables, promoted to instances when needed
   color: null  # default color, overrides random color if set
   shape: "default"
-  breed: "default"
+  breed: null # set by the agentSet owning this agent
   hidden: false
   size: 1
   penDown: false
   penSize: 1
   heading: null
-  sprite: null
+  sprite: null # default sprite, set by Model
   links: null
-  constructor: ->
+  constructor: -> # called by agentSets create factory, not user
     @x = @y = 0
     @color = u.randomColor() if not @color? # promote color if default not set
     @heading = u.randomFloat(Math.PI*2) if not @heading? 
@@ -1115,9 +1128,18 @@ class ABM.Agent
     @p.agents.push @ if @p.agents? # ABM.patches.cacheAgentsHere
     @links = [] if ABM.links.cacheAgentLinks
 
-  #  Set agent color to `c` scaled by `s`. Usage: see patch.scaleColor
+  # Move agent to different breed agentSet
+  # Normally not needed, breeds is initialized by the breed agentSet
+  resetBreed: (newBreed) ->
+    u.error "resetBreed: not in agentSet" if not @id?
+    u.error "resetBreed: breed illegally set" if @hasOwnProperty "breed"
+    u.error "resetBreed: breed==newBreed" if @breed is newBreed
+    @die()
+    newBreed.create 1, (a) => a.setXY @x, @y
+
+  # Set agent color to `c` scaled by `s`. Usage: see patch.scaleColor
   scaleColor: (c, s) -> 
-    @color = u.clone @color if not @.hasOwnProperty("color")
+    @color = u.clone @color if not @hasOwnProperty "color" # promote color to inst var
     u.scaleColor c, s, @color
   
   # Return a string representation of the agent.
@@ -1142,8 +1164,7 @@ class ABM.Agent
       drawing.moveTo x0, y0; drawing.lineTo x, y # REMIND: euclidean
       drawing.stroke()
   
-  # Place the agent at the given patch/agent location,
-  # using patch topology (isTorus)
+  # Place the agent at the given patch/agent location
   moveTo: (a) -> @setXY a.x, a.y
   
   # Move forward (along heading) d units (patch coords),
@@ -1221,22 +1242,21 @@ class ABM.Agent
   # Remove myself from the model.  Includes removing myself from the agents
   # agentset and removing any links I may have.
   die: ->
-    ABM.agents.remove @
+    @breed.remove @
     l.die() for l in @myLinks()
     u.removeItem @p.agents, @ if @p.agents?
     null
 
-  # Factory: create num new agents here
+  # Factory: create num new agents at this agents location.
   # The optional init proc is called on each of the newly created agents.<br>
-  # NOTE: init must be applied after object inserted in agent set
-  hatch: (num = 1, init = ->) ->
-    ABM.agents.create num, (a) => # fat arrow so that @ = this agent
+  hatch: (num = 1, breed = ABM.agents, init = ->) ->
+    breed.create num, (a) => # fat arrow so that @ = this agent
       a.setXY @x, @y # for side effects like patches.agentsHere
       a[k] = v for own k, v of @ when k isnt "id"    
-      init(a); a
+      init(a); a # Important: init called after object inserted in agent set
 
   # Return the members of the given agentset that are within radius distance 
-  # from me, and within cone radians of my heading using patch topology (isTorus)
+  # from me, and within cone radians of my heading using patch topology
   inCone: (aset, cone, radius, meToo=false) -> 
     aset.inCone @p, @heading, cone, radius, meToo # REMIND: @p vs @?
   
@@ -1267,75 +1287,84 @@ class ABM.Agent
   outLinkNeighbors: ->
     l.end2 for l in @myLinks() when l.end1 is @
 
-# Class Agents is a subclass of AgentSet which stores instances of Agent.
-
+# Class Agents is a subclass of AgentSet which stores instances of Agent or 
+# Breeds, which are subclasses of Agent
 class ABM.Agents extends ABM.AgentSet
-  # Constructor creates the AgentSet instance and installs
-  # variables shared by all the Agents.  This can be used to
-  # minimize Agent variables by using a "default".  Here for example
-  # we provide a default shape for agents.
-  constructor: ->
+  # Constructor creates the empty AgentSet instance and installs
+  # the breed variable shared by all the Agents in this set.
+  constructor: (@breedClass, @name, @mainSet = null) ->
     super()
     @staticColors = false
     @useSprites = false
+    @breedClass::breed = @
+    delete @ID if @mainSet? # insure we use mainSet, not us, to install agent ids
 
   # Methods to change the default Agent class variables.
-  setDefaultColor:  (color) -> ABM.Agent::color = color#; @setDefaultSprite()
-  setDefaultShape:  (shape) -> ABM.Agent::shape = shape#; @setDefaultSprite()
-  setDefaultSize:   (size)  -> ABM.Agent::size = size#; @setDefaultSprite()
-  setDefaultHeading:(heading)-> ABM.Agent::heading = heading
-  setDefaultHidden: (hidden)-> ABM.Agent::hidden = hidden
+  setDefaultColor:  (color) -> @breedClass::color = color#; @setDefaultSprite()
+  setDefaultShape:  (shape) -> @breedClass::shape = shape#; @setDefaultSprite()
+  setDefaultSize:   (size)  -> @breedClass::size = size#; @setDefaultSprite()
+  setDefaultHeading:(heading)-> @breedClass::heading = heading
+  setDefaultHidden: (hidden)-> @breedClass::hidden = hidden
   setDefaultSprite: -> 
-    if ABM.Agent::color?
-      ABM.Agent::sprite = ABM.shapes.shapeToCtx \
-        ABM.Agent::shape, ABM.Agent::color, ABM.Agent::size*ABM.patches.size
+    if @breedClass::color?
+      @breedClass::sprite = ABM.shapes.shapeToCtx \
+        @breedClass::shape, @breedClass::color, @breedClass::size*ABM.patches.size
   setDefaultPen:   (size, down=false) -> 
-    ABM.Agent::penSize = size
-    ABM.Agent::penDown = down
+    @breedClass::penSize = size
+    @breedClass::penDown = down
+  # Like NetLogo's breed.own(), sets an agent variable and its default.
+  setDefaultVariable: (name, value) -> @breedClass::[name] = value
   
   # Performance: tell draw to reuse existing color string
   setStaticColors: (@staticColors) ->
   # Use sprites rather than drawing
-  setUseSprites: (@useSprites) ->      
+  setUseSprites: (@useSprites) ->
+
+  # Override add/remove to use @mainSet if needed, managing a pair of
+  # agents, one in this agentSet mirroring the one in the mainSet.
+  add: (agent) ->
+    if @mainSet? then @mainSet.add agent; @push agent else super agent
+    agent
+  remove: (agent) ->
+    super agent
+    @mainSet.remove agent if @mainSet?
+  
+  # Filter to return all instances of this breed.  Note: if used by
+  # the mainSet, returns just the agents that are not subclassed breeds.
+  in: (array) -> @asSet (o for o in array when o.breed is @)
 
   # Factory: create num new agents stored in this agentset.
-  # The optional init proc is called on each of the newly created agents.<br>
-  # NOTE: init must be applied after object inserted in agent set
+  # The optional init proc is called on each of the newly created agents.
   create: (num, init = ->) -> # returns list too
-    ((o) -> init(o); o) @add new ABM.Agent for i in [1..num] by 1 # too tricky?
+    ((o) -> init(o); o) @add new @breedClass for i in [1..num] by 1 # too tricky?
 
   # Remove all agents from set via agent.die()
   # Note call in reverse order to optimize list restructuring.
   clear: -> @last().die() while @any(); null # tricky, each die modifies list
-
-  # Return the subset of this set with the given breed value.
-  breed: (breed) -> @getWithProp "breed", breed
   
   # Return an agentset of agents within the patch array
-  agentsInPatches: (patches) ->
+  inPatches: (patches) ->
     array = []
     array.push p.agentsHere()... for p in patches # concat measured slower
-    @asSet array
+    if @mainSet? then @in array else @asSet array
   
   # Return an agentset of agents within the patchRect
-  agentRect: (a, dx, dy, meToo=false) ->
+  inRect: (a, dx, dy, meToo=false) ->
     rect = ABM.patches.patchRect a.p, dx, dy, true
-    rect = @agentsInPatches rect
+    rect = @inPatches rect
     u.removeItem rect, a if not meToo
     rect
   
   # Return the members of this agentset that are within radius distance
-  # from me, and within cone radians of my heading using patch topology (isTorus)<br>
-  # See agentset.inCone
+  # from me, and within cone radians of my heading using patch topology
   inCone: (a, heading, cone, radius, meToo=false) -> # heading? .. so p ok?
-    as = @agentRect a, radius, radius, true
+    as = @inRect a, radius, radius, true
     as.inCone a, heading, cone, radius, meToo
   
   # Return the members of this agentset that are with radius distance
-  # from me, using patch topology (isTorus)<br>
-  # See agentset.inRadius
+  # from me, using patch topology
   inRadius: (a, radius, meToo=false)->
-    as = @agentRect a, radius, radius, true
+    as = @inRect a, radius, radius, true
     as.inRadius a, radius, meToo
 
 # ### Link and Links
@@ -1344,11 +1373,12 @@ class ABM.Agents extends ABM.AgentSet
 class ABM.Link
   # Constructor initializes instance variables:
   #
+  # * breed: the agentset this link belongs to
   # * end1, end2: two agents being connected
   # * color: defaults to light gray
   # * thickness: the thickness of the line connecting the ends<br>
   #   Defaults to 2 pixels in patch coordinates.
-  breed: "default"
+  breed: null # set by the agentSet owning this link
   color: [130, 130, 130]
   thickness: 2
   hidden: false
@@ -1357,7 +1387,6 @@ class ABM.Link
       @end1.links.push @
       @end2.links.push @
       
-  
   # Draw a line between the two endpoints.  Draws "around" the
   # torus if appropriate using two lines. As with Agent.draw,
   # is called with patch coordinate transform installed.
@@ -1383,9 +1412,10 @@ class ABM.Link
   
   # Remove this link from the agent set
   die: ->
-    ABM.links.remove @
+    @breed.remove @
     u.removeItem @end1.links, @ if @end1.links?
     u.removeItem @end2.links, @ if @end2.links?
+    null
   
   # Return the two endpoints of this link
   bothEnds: -> [@end1, @end2]
@@ -1397,18 +1427,33 @@ class ABM.Link
   # Assumes the given input *is* one of the link endpoint pairs!
   otherEnd: (a) -> if @end1 is a then @end2 else @end1
 
-# Class Links is a subclass of AgentSet which stores instances of Link.
+# Class Links is a subclass of AgentSet which stores instances of Link
+# or subclasses of Link
 
 class ABM.Links extends ABM.AgentSet
-  # Constructor simply creates an unmodified AgentSet
-  constructor: ->
+  # Constructor creates the empty AgentSet instance and installs
+  # the breed variable shared by all the Links in this set.
+  constructor: (@breedClass, @name, @mainSet = null) ->
     super()
     @cacheAgentLinks = false
+    @breedClass::breed = @
   
   # Methods to change the default Link class variables.
-  setDefaultColor:     (color)      -> ABM.Link::color = color
-  setDefaultThickness: (thickness)  -> ABM.Link::thickness = thickness
-  setDefaultHidden:    (hidden)     -> ABM.Link::hidden = hidden
+  setDefaultColor:     (color)      -> @breedClass::color = color
+  setDefaultThickness: (thickness)  -> @breedClass::thickness = thickness
+  setDefaultHidden:    (hidden)     -> @breedClass::hidden = hidden
+
+  # Like NetLogo's breed.own(), sets an agent variable and its default.
+  setDefaultVariable: (name, value) -> @breedClass::[name] = value
+
+  # Override add/remove to use @mainSet if needed, managing a pair of
+  # agents, one in this agentSet mirroring the one in the mainSet.
+  add: (agent) ->
+    if @mainSet? then @mainSet.add agent; @push agent else super agent
+    agent
+  remove: (agent) ->
+    super agent
+    @mainSet.remove agent if @mainSet?
 
   # Factory: Add 1 or more links from the from agent to
   # the to agent(s) which can be a single agent or an array
@@ -1417,14 +1462,14 @@ class ABM.Links extends ABM.AgentSet
   create: (from, to, init = ->) -> # returns list too
     to = [to] if not to.length?
     # NOTE: init must be applied after object inserted in agent set
-    ((o) -> init(o); o) @add new ABM.Link from, a for a in to # too tricky?
+    ((o) -> init(o); o) @add new @breedClass from, a for a in to # too tricky?
   
   # Remove all links from set via link.die()
   # Note call in reverse order to optimize list restructuring.
   clear: -> @last().die() while @any(); null # tricky, each die modifies list
 
   # Return the subset of this set with the given breed value.
-  breed: (breed) -> @getWithProp "breed", breed
+  # breed: (breed) -> @getWithProp "breed", breed
 
   # Return all the nodes in this agentset, with duplicates
   # included.  If 4 links have the same endpoint, it will
@@ -1556,8 +1601,8 @@ class ABM.Model
     # Initialize agentsets.
     @patches = ABM.patches = \
       new ABM.Patches size,minX,maxX,minY,maxY,torus,neighbors
-    @agents = ABM.agents = new ABM.Agents
-    @links = ABM.links = new ABM.Links
+    @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
+    @links = ABM.links = new ABM.Links ABM.Link, "links"
 
     # Setup spotlight layer
     @contexts.spotlight.globalCompositeOperation = "xor"
@@ -1668,7 +1713,7 @@ class ABM.Model
 # we will find a random agent of that breed
   setSpotlight: (agent) ->
     if typeof agent is "string"
-      agentSet = @[agent]()
+      agentSet = @[agent]#()
       @spotlightAgent = agentSet.oneOf() unless not agentSet.any()
     else
       @spotlightAgent = agent
@@ -1692,33 +1737,37 @@ class ABM.Model
 
 
 #### Breeds
-# Two very primitive versions of NL's `breed` commands.
+# Two versions of NL's `breed` commands.
 #
 #     @agentBreeds "embers fires"
 #     @linkBreeds "spokes rims"
 #
-# will create 4 dynamic methods: 
+# will create 4 agentSets: 
 #
-#     @embers() and @fires()
+#     @embers and @fires
+#     @spokes and @rims 
 #
-# which return agents with their breeds set to "embers" or "fires", and
+# These agentset's `create` method create subclasses of Agent/Link.
+# Use of <breed>.setDefault methods work as for agents/links, creating default
+# values for the breed set:
 #
-#     @spokes() and @rims() 
+#     @embers.setDefaultColor [255,0,0]
 #
-# which return links with their breed set to either "spokes" or "rims"
-#
+# ..will set the default color for just the embers.
 
-  linkBreeds: (s) ->
-    for b in s.split(" ")
-      @[b] = do(b) =>
-       -> @links.breed(b)
-    null
-  agentBreeds: (s) ->
-    for b in s.split(" ")
-      @[b] = do(b) =>
-       -> @agents.breed(b)
-    null
 
+  createBreeds: (s, breedClass, breedSet) ->
+    breeds = []
+    for b in s.split(" ")
+      className = b.charAt(0).toUpperCase() + b.slice(1) 
+      c = class Breed extends ABM.Agent
+      c::name = b
+      ABM[className] = c
+      @[b] = new ABM.Agents c, b, breedClass::breed # @agents/@links
+      breeds.push @[b]
+    breeds
+  agentBreeds: (s) -> ABM.agentBreeds = @createBreeds s, ABM.Agent, ABM.Agents
+  linkBreeds: (s) -> ABM.linkBreeds = @createBreeds s, ABM.Link, ABM.Links
   
   # Utility for models to create agentsets from arrays.  Ex:
   #
@@ -1742,7 +1791,8 @@ class ABM.Model
     ABM.root.u = ABM.util
     ABM.root.app = @
     ABM.root.cx = @contexts
-    ABM.root.cl = (o) -> console.log o
-    ABM.root.cla = (array) -> console.log a for a in array
+    ABM.root.ab = ABM.agentBreeds
+    ABM.root.lb = ABM.linkBreeds
+    ABM.root.an = @anim
     null
   
