@@ -23,43 +23,43 @@ See the template.html and models/*.html files for example models.  The individua
 
 #### Documentation
 
-Currently the documentation is hosted directly on github via the [htmlpreview](https://github.com/htmlpreview/htmlpreview.github.com) project using the docco generated html found in the doc/ directory.  One exception it the template.html file in the top level directory.
+Currently the documentation is hosted directly on github via the [rawgithub](https://rawgithub.com/) project using the docco generated html found in the doc/ directory.  One exception is the template.html file in the top level directory.
 
-[**util.coffee**](http://htmlpreview.github.com/?https://raw.github.com/backspaces/agentscript/master/docs/util.html): is the base module for all of the miscellaneous functions used by the rest of the project.
+[**util.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/util.html): is the base module for all of the miscellaneous functions used by the rest of the project.
 
-[**shapes.coffee**](http://htmlpreview.github.com/?https://raw.github.com/backspaces/agentscript/master/docs/shapes.html): is a simple agent shapes module containing the default shapes and a few functions for getting the named shapes and adding your own shapes.
+[**shapes.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/shapes.html): is a simple agent shapes module containing the default shapes and a few functions for getting the named shapes and adding your own shapes.
 
-[**agentset.coffee**](http://htmlpreview.github.com/?https://raw.github.com/backspaces/agentscript/master/docs/agentset.html) is the core array subclass used by patches, agents, and links.
+[**agentset.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/agentset.html) is the core array subclass used by patches, agents, and links.
 
-[**agentsets.coffee**](http://htmlpreview.github.com/?https://raw.github.com/backspaces/agentscript/master/docs/agentsets.html) contains the three subclasses of AgentSet: Patches, Agents, and Links along with the three classes they manage: Patch, Agent, and Link.
+[**agentsets.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/agentsets.html) contains the three subclasses of AgentSet: Patches, Agents, and Links along with the three classes they manage: Patch, Agent, and Link.
 
-[**model.coffee**](http://htmlpreview.github.com/?https://raw.github.com/backspaces/agentscript/master/docs/model.html) is the top level integration for all the agentsets and is subclassed by all user models. 
+[**model.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/model.html) is the top level integration for all the agentsets and is subclassed by all user models. 
 
-[**template.html**](http://htmlpreview.github.com/?https://raw.github.com/backspaces/agentscript/master/docs/template.html) is a trivial subclass of Model showing the basic structure how you build your own models.  In addition, the models/ directory contains 10 simple models used in teaching NetLogo. You can [run the model here.](http://htmlpreview.github.com/?https://raw.github.com/backspaces/agentscript/master/template.html) 
+[**template.html**](https://rawgithub.com/backspaces/agentscript/master/docs/template.html) is a trivial subclass of Model showing the basic structure how you build your own models.  In addition, the models/ directory contains 10 simple models used in teaching NetLogo. You can [run the model here.](https://rawgithub.com/backspaces/agentscript/master/template.html) 
 
 #### Sample Models
 
-The models/ directory contains tiny models used to test the system and offer examples to get started with.  These also use the htmlpreview project to view directly on github.
+The models/ directory contains tiny models used to test the system and offer examples to get started with.  I also use the rawgithub project to view directly on github.  These usually print to the console.log, so opening the developer's javascript console will show model information.
 
-[**ants.html**](http://htmlpreview.github.com/?https://github.com/backspaces/agentscript/blob/master/models/ants.html) Ant foraging with nest and food pheromone diffusion. 
+[**ants.html**](https://rawgithub.com/backspaces/agentscript/master/models/ants.html) Ant foraging with nest and food pheromone diffusion. 
 
-[**buttons.html**](http://htmlpreview.github.com/?https://github.com/backspaces/agentscript/blob/master/models/buttons.html) Stuart Kauffman's example of randomly connecting pairs of buttons in a pile resulting in a tipping point.
+[**buttons.html**](https://rawgithub.com/backspaces/agentscript/master/models/buttons.html) Stuart Kauffman's example of randomly connecting pairs of buttons in a pile resulting in a tipping point.
 
-[**diffusion.html**](http://htmlpreview.github.com/?https://github.com/backspaces/agentscript/blob/master/models/diffusion.html) Agents randomly flying on a patch grid dropping a color which is diffused over the grid.
+[**diffusion.html**](https://rawgithub.com/backspaces/agentscript/master/models/diffusion.html) Agents randomly flying on a patch grid dropping a color which is diffused over the grid.
 
-[**fire.html**](http://htmlpreview.github.com/?https://github.com/backspaces/agentscript/blob/master/models/fire.html) A CA based spread of fire showing burn behavior.
+[**fire.html**](https://rawgithub.com/backspaces/agentscript/master/models/fire.html) A CA based spread of fire showing burn behavior.
 
-[**flock.html**](http://htmlpreview.github.com/?https://github.com/backspaces/agentscript/blob/master/models/flock.html) The classic "boids" model where agents use three simple rules resulting in realistic flocking.
+[**flock.html**](https://rawgithub.com/backspaces/agentscript/master/models/flock.html) The classic "boids" model where agents use three simple rules resulting in realistic flocking.
 
-[**gridpath.html**](http://htmlpreview.github.com/?https://github.com/backspaces/agentscript/blob/master/models/gridpath.html) One of Knuth's great puzzles on the probability of all Manhattan  traversals diagonally traversing a grid.
+[**gridpath.html**](https://rawgithub.com/backspaces/agentscript/master/models/gridpath.html) One of Knuth's great puzzles on the probability of all Manhattan  traversals diagonally traversing a grid.
 
-[**linktravel.html**](http://htmlpreview.github.com/?https://github.com/backspaces/agentscript/blob/master/models/linktravel.html) Agents traversing a graph of nodes and links.
+[**linktravel.html**](https://rawgithub.com/backspaces/agentscript/master/models/linktravel.html) Agents traversing a graph of nodes and links.
 
-[**nbody.html**](http://htmlpreview.github.com/?https://github.com/backspaces/agentscript/blob/master/models/nbody.html) Nonlinear gravitation of n bodies.
+[**nbody.html**](https://rawgithub.com/backspaces/agentscript/master/models/nbody.html) Nonlinear gravitation of n bodies.
 
-[**prefattach.html**](http://htmlpreview.github.com/?https://github.com/backspaces/agentscript/blob/master/models/prefattach.html) Example of a dynamic graph with new links preferentially attaching to nodes with most links.  This results in a power-law distribution.
+[**prefattach.html**](https://rawgithub.com/backspaces/agentscript/master/models/prefattach.html) Example of a dynamic graph with new links preferentially attaching to nodes with most links.  This results in a power-law distribution.
 
-[**tspga.html**](http://htmlpreview.github.com/?https://github.com/backspaces/agentscript/blob/master/models/tspga.html) A Traveling Sales Person solution via a Genetic Algorithm showing the rapid conversion of stochastic methods.
+[**tspga.html**](https://rawgithub.com/backspaces/agentscript/master/models/tspga.html) A Traveling Sales Person solution via a Genetic Algorithm showing the rapid conversion of stochastic methods.
 
 #### Sample Models Format
 
