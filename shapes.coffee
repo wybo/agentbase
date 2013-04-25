@@ -68,7 +68,7 @@ ABM.shapes = s = # s alias below for ABM.shapes
       c.closePath(); c.arc 0,.35,.15,0,2*Math.PI
   # Return a list of the available shapes, see above.
   names: ->
-    (name for own name, val of @ when !ABM.util.isFunction val)
+    (name for own name, val of @ when !u.isFunction val)
   # Add your own shape. Will be included in names list.  Usage:
   #
   #     ABM.shapes.add "test", true, (c) -> # bowtie/hourglass
@@ -83,8 +83,9 @@ ABM.shapes = s = # s alias below for ABM.shapes
     null
   
   # Create an image ctx of a shape by drawing it into a small canvas.
-  # Used to implement agent sprites.
-  shapeToCtx: (name, color, scale) ->
+  # Used to implement agent sprites.  
+  # See memory use [StackOverflow discussion.](http://goo.gl/Mwwxn)
+  shapeToImage: (name, color, scale) ->
     shape = @[name]
     can = document.createElement 'canvas'
     can.width = can.height = scale
@@ -96,6 +97,6 @@ ABM.shapes = s = # s alias below for ABM.shapes
     shape.draw ctx
     ctx.closePath()
     ctx.fill()
-    ctx
+    u.ctxToImage ctx # return either ctx or img, both work.
     
 

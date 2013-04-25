@@ -90,7 +90,7 @@
           @refreshPatches = true
           # Add use of our first pull request:
           @setSpotlight @agents.oneOf() if @anim.ticks is 300
-          @removeSpotlight() if @anim.ticks is 600
+          @setSpotlight null if @anim.ticks is 600
         else
           @refreshPatches = false
         # Stop the animation at 1000. Restart by `ABM.model.start()` in console.

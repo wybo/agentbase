@@ -661,7 +661,7 @@
       for (name in this) {
         if (!__hasProp.call(this, name)) continue;
         val = this[name];
-        if (!ABM.util.isFunction(val)) {
+        if (!u.isFunction(val)) {
           _results.push(name);
         }
       }
@@ -685,7 +685,7 @@
       }
       return null;
     },
-    shapeToCtx: function(name, color, scale) {
+    shapeToImage: function(name, color, scale) {
       var can, ctx, shape;
       shape = this[name];
       can = document.createElement('canvas');
@@ -698,7 +698,7 @@
       shape.draw(ctx);
       ctx.closePath();
       ctx.fill();
-      return ctx;
+      return u.ctxToImage(ctx);
     }
   };
 
@@ -1565,7 +1565,11 @@
           ctx.rotate(this.heading);
         }
         ctx.scale(1 / ABM.patches.size, -1 / ABM.patches.size);
-        ctx.drawImage(this.sprite.canvas, -this.sprite.canvas.width / 2, -this.sprite.canvas.height / 2);
+        if (this.sprite.canvas != null) {
+          ctx.drawImage(this.sprite.canvas, -this.sprite.canvas.width / 2, -this.sprite.canvas.height / 2);
+        } else {
+          ctx.drawImage(this.sprite, -this.sprite.width / 2, -this.sprite.height / 2);
+        }
       } else {
         ctx.translate(this.x, this.y);
         ctx.scale(this.size, this.size);
@@ -1801,7 +1805,7 @@
 
     Agents.prototype.setDefaultSprite = function() {
       if (this.breedClass.prototype.color != null) {
-        return this.breedClass.prototype.sprite = ABM.shapes.shapeToCtx(this.breedClass.prototype.shape, this.breedClass.prototype.color, this.breedClass.prototype.size * ABM.patches.size);
+        return this.breedClass.prototype.sprite = ABM.shapes.shapeToImage(this.breedClass.prototype.shape, this.breedClass.prototype.color, this.breedClass.prototype.size * ABM.patches.size);
       }
     };
 
@@ -2169,6 +2173,11 @@
       return this.model.draw();
     };
 
+    Animator.prototype.once = function() {
+      this.step();
+      return this.draw();
+    };
+
     Animator.prototype.now = function() {
       return (typeof performance !== "undefined" && performance !== null ? performance : Date).now();
     };
@@ -2231,8 +2240,31 @@
 
   ABM.Model = (function() {
 
+    Model.prototype.contextsInit = {
+      patches: {
+        z: 0,
+        ctx: "2d"
+      },
+      drawing: {
+        z: 1,
+        ctx: "2d"
+      },
+      links: {
+        z: 2,
+        ctx: "2d"
+      },
+      agents: {
+        z: 3,
+        ctx: "2d"
+      },
+      spotlight: {
+        z: 4,
+        ctx: "2d"
+      }
+    };
+
     function Model(div, size, minX, maxX, minY, maxY, torus, neighbors) {
-      var a, ctx, i, k, layers, v, _j, _k, _len1, _len2, _ref1, _ref2;
+      var a, ctx, k, v, _j, _len1, _ref1, _ref2;
       if (torus == null) {
         torus = true;
       }
@@ -2240,36 +2272,21 @@
         neighbors = true;
       }
       ABM.model = this;
-      layers = (function() {
-        var _j, _results;
-        _results = [];
-        for (i = _j = 0; _j <= 4; i = ++_j) {
-          _results.push(u.createLayer(div, size * (maxX - minX + 1), size * (maxY - minY + 1), i, "2d"));
-        }
-        return _results;
-      })();
-      this.drawing = ABM.drawing = layers[1];
-      for (_j = 0, _len1 = layers.length; _j < _len1; _j++) {
-        ctx = layers[_j];
+      this.contexts = ABM.contexts = {};
+      _ref1 = this.contextsInit;
+      for (k in _ref1) {
+        if (!__hasProp.call(_ref1, k)) continue;
+        v = _ref1[k];
+        this.contexts[k] = ctx = u.createLayer(div, size * (maxX - minX + 1), size * (maxY - minY + 1), v.z, v.ctx);
         ctx.save();
         ctx.scale(size, -size);
         ctx.translate(-(minX - .5), -(maxY + .5));
-      }
-      this.contexts = ABM.contexts = {
-        patches: layers[0],
-        drawing: layers[1],
-        links: layers[2],
-        agents: layers[3],
-        spotlight: layers[4]
-      };
-      _ref1 = this.contexts;
-      for (k in _ref1) {
-        v = _ref1[k];
-        v.agentSetName = k;
+        ctx.agentSetName = k;
       }
       this.patches = ABM.patches = new ABM.Patches(size, minX, maxX, minY, maxY, torus, neighbors);
       this.agents = ABM.agents = new ABM.Agents(ABM.Agent, "agents");
       this.links = ABM.links = new ABM.Links(ABM.Link, "links");
+      this.drawing = ABM.drawing = this.contexts.drawing;
       this.contexts.spotlight.globalCompositeOperation = "xor";
       this.anim = new ABM.Animator(this);
       this.refreshLinks = this.refreshAgents = this.refreshPatches = true;
@@ -2280,11 +2297,11 @@
           this.agents.setDefaultSprite();
         }
         _ref2 = this.agents;
-        for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
-          a = _ref2[_k];
+        for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+          a = _ref2[_j];
           if (!a.hasOwnProperty("sprite")) {
             if (a.hasOwnProperty("color" || a.hasOwnProperty("shape" || a.hasOwnProperty("size")))) {
-              a.sprite = ABM.shapes.shapeToCtx(a.shape, a.color, a.size * this.patches.size);
+              a.sprite = ABM.shapes.shapeToImage(a.shape, a.color, a.size * this.patches.size);
             }
           }
         }
@@ -2359,7 +2376,10 @@
       return this.agents.setStaticColors(true);
     };
 
-    Model.prototype.agentSetName = function(aset) {
+    Model.prototype.agentSetCtxName = function(aset) {
+      if (aset.mainSet != null) {
+        aset = aset.mainSet;
+      }
       return aset.constructor.name.toLowerCase();
     };
 
@@ -2371,14 +2391,20 @@
         baseline = "middle";
       }
       if (typeof agentSetName !== "string") {
-        agentSetName = this.agentSetName(agentSetName);
+        agentSetName = this.agentSetCtxName(agentSetName);
+      }
+      if (this.contexts[agentSetName] == null) {
+        u.error("setTextParams: " + this.agentSetName + " not fount.");
       }
       return u.ctxTextParams(this.contexts[agentSetName], domFont, align, baseline);
     };
 
     Model.prototype.setLabelParams = function(agentSetName, color, xy) {
       if (typeof agentSetName !== "string") {
-        agentSetName = this.agentSetName(agentSetName);
+        agentSetName = this.agentSetCtxName(agentSetName);
+      }
+      if (this.contexts[agentSetName] == null) {
+        u.error("setLabelParams: " + this.agentSetName + " not fount.");
       }
       return u.ctxLabelParams(this.contexts[agentSetName], color, xy);
     };
@@ -2395,6 +2421,10 @@
       return this.anim.stop();
     };
 
+    Model.prototype.once = function() {
+      return this.anim.once();
+    };
+
     Model.prototype.draw = function() {
       if (this.refreshPatches || this.anim.draws === 1) {
         this.patches.draw(this.contexts.patches);
@@ -2406,38 +2436,18 @@
         this.agents.draw(this.contexts.agents);
       }
       if (this.spotlightAgent != null) {
-        return this.drawSpotlight();
+        return this.drawSpotlight(this.spotlightAgent, this.contexts.spotlight);
       }
     };
 
-    Model.prototype.setSpotlight = function(agent) {
-      var agentSet;
-      if (typeof agent === "string") {
-        agentSet = this[agent];
-        if (!!agentSet.any()) {
-          return this.spotlightAgent = agentSet.oneOf();
-        }
-      } else {
-        return this.spotlightAgent = agent;
+    Model.prototype.setSpotlight = function(spotlightAgent) {
+      this.spotlightAgent = spotlightAgent;
+      if (this.spotlightAgent == null) {
+        return u.clearCtx(this.contexts.spotlight);
       }
     };
 
-    Model.prototype.removeSpotlight = function() {
-      this.spotlightAgent = null;
-      return u.clearCtx(this.contexts.spotlight);
-    };
-
-    Model.prototype.drawSpotlight = function() {
-      var agent, ctx;
-      agent = this.spotlightAgent;
-      ctx = this.contexts.spotlight;
-      if (agent == null) {
-        return;
-      }
-      if (this.agents.indexOf(agent) < 0) {
-        this.removeSpotlight();
-        return;
-      }
+    Model.prototype.drawSpotlight = function(agent, ctx) {
       u.clearCtx(ctx);
       u.fillCtx(ctx, [0, 0, 0, 0.6]);
       ctx.beginPath();
@@ -2446,12 +2456,13 @@
     };
 
     Model.prototype.createBreeds = function(s, breedClass, breedSet) {
-      var Breed, b, breeds, c, className, _j, _len1, _ref1;
+      var Breed, b, breeds, c, _j, _len1, _ref1;
       breeds = [];
+      breeds.classes = {};
+      breeds.sets = {};
       _ref1 = s.split(" ");
       for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
         b = _ref1[_j];
-        className = b.charAt(0).toUpperCase() + b.slice(1);
         c = Breed = (function(_super) {
 
           __extends(Breed, _super);
@@ -2462,11 +2473,12 @@
 
           return Breed;
 
-        })(ABM.Agent);
+        })(breedClass);
         c.prototype.name = b;
-        ABM[className] = c;
-        this[b] = new ABM.Agents(c, b, breedClass.prototype.breed);
+        this[b] = new breedSet(c, b, breedClass.prototype.breed);
         breeds.push(this[b]);
+        breeds.sets[b] = this[b];
+        breeds.classes["" + b + "Class"] = c;
       }
       return breeds;
     };
@@ -2491,7 +2503,8 @@
       ABM.root.ls = this.links;
       ABM.root.l0 = this.links[0];
       ABM.root.dr = this.drawing;
-      ABM.root.u = ABM.util;
+      ABM.root.u = u;
+      ABM.root.sh = ABM.shapes;
       ABM.root.app = this;
       ABM.root.cx = this.contexts;
       ABM.root.ab = ABM.agentBreeds;

@@ -37,6 +37,7 @@ class ABM.Animator
     @animHandle = @timerHandle = @intervalHandle = null
   step: -> @ticks++; @model.step()
   draw: -> @draws++; @model.draw()
+  once: -> @step(); @draw() # Take one step .. debugging
   now: -> (performance ? Date).now()
   ms: -> @now()-@startMS
   ticksPerSec: -> if (elapsed = @ticks-@startTick) is 0 then 0 else Math.round elapsed*1000/@ms()
@@ -65,18 +66,24 @@ class ABM.Model
   # * setup patch coord transforms for each layer context
   # * intialize various instance variables
   # * call `setup` abstract method
+  
+  # Class variable for layers parameters. 
+  # Can be added to by programmer to modify/create layers.
+  contextsInit: {
+    patches:   {z:0, ctx:"2d"}
+    drawing:   {z:1, ctx:"2d"}
+    links:     {z:2, ctx:"2d"}
+    agents:    {z:3, ctx:"2d"}
+    spotlight: {z:4, ctx:"2d"}
+  }
   constructor: (
     div, size, minX, maxX, minY, maxY,
     torus=true, neighbors=true
   ) ->
     ABM.model = @
-
-    # Create 5 2D canvas contexts layered on top of each other.
-    layers = for i in [0..4] # multi-line array comprehension
-      u.createLayer div, size*(maxX-minX+1), size*(maxY-minY+1), i, "2d"
-    # One of the layers is used for drawing only, not an agentset:
-    @drawing = ABM.drawing = layers[1]
-
+    @contexts = ABM.contexts = {}
+    
+    # Create 2D canvas contexts layered on top of each other.<br>
     # Initialize a patch coord transform for each layer.<br>
     # Note: this is permanent .. there is no ctx.restore() call.<br>
     # To use the original canvas 2D transform temporarily:
@@ -85,27 +92,23 @@ class ABM.Model
     #     ctx.setTransform(1, 0, 0, 1, 0, 0) # reset to identity
     #       <draw in native coord system>
     #     ctx.restore() # restore back to patch coord system
-    for ctx in layers # install permenant (no ctx.restore) patch coordinates
+    
+    for own k,v of @contextsInit
+      @contexts[k] = ctx =
+        u.createLayer div, size*(maxX-minX+1), size*(maxY-minY+1), v.z, v.ctx
       ctx.save()
       ctx.scale size, -size
-      ctx.translate -(minX-.5), -(maxY+.5); 
-    # Create instance variable object with names for each layer
-    @contexts = ABM.contexts =
-      patches:   layers[0]
-      drawing:   layers[1]
-      links:     layers[2]
-      agents:    layers[3]
-      spotlight: layers[4]
-    # Set a variable in each context with its name
-    v.agentSetName = k for k,v of @contexts
-    
+      ctx.translate -(minX-.5), -(maxY+.5)
+      ctx.agentSetName = k # Set a variable in each context with its name
+
     # Initialize agentsets.
     @patches = ABM.patches = \
       new ABM.Patches size,minX,maxX,minY,maxY,torus,neighbors
     @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
     @links = ABM.links = new ABM.Links ABM.Link, "links"
-
-    # Setup spotlight layer
+    # One of the layers is used for drawing only, not an agentset:
+    @drawing = ABM.drawing = @contexts.drawing
+    # Setup spotlight layer, also not an agentset:
     @contexts.spotlight.globalCompositeOperation = "xor"
 
     # Initialize instance variables
@@ -121,15 +124,13 @@ class ABM.Model
       @agents.setDefaultSprite() if ABM.Agent::color?
       for a in @agents when not a.hasOwnProperty "sprite"
         if a.hasOwnProperty "color" or a.hasOwnProperty "shape" or a.hasOwnProperty "size"
-          a.sprite = ABM.shapes.shapeToCtx a.shape, a.color, a.size*@patches.size
+          a.sprite = ABM.shapes.shapeToImage a.shape, a.color, a.size*@patches.size
     
 
 #### Optimizations:
 
-  # Modelers "tune" their model by adjusting flags:
-  #
-  #      @refreshLinks = @refreshAgents = @refreshPatches
-  #
+  # Modelers "tune" their model by adjusting flags:<br>
+  # `@refreshLinks, @refreshAgents, @refreshPatches`<br>
   # and by the following methods:
 
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
@@ -174,16 +175,20 @@ class ABM.Model
     @agents.setStaticColors(true)
 
 #### Text Utilities:
-  # Return string name for agentset.  Note this depends on our
-  # using a singleton naming convension: foo = new Foo(...)
-  agentSetName: (aset) -> aset.constructor.name.toLowerCase()
-  # Set the text parameters for an agentset's context.  See ABM.util
+
+  # Return context name for agentset
+  agentSetCtxName: (aset) ->
+    aset = aset.mainSet if aset.mainSet? # breeds->mainSet
+    aset.constructor.name.toLowerCase()
+  # Set the text parameters for an agentset's context.  See ABM.util<br>
+  # `agentSetName` can be a key in @contexts or an agentset itself
   setTextParams: (agentSetName, domFont, align="center", baseline="middle") ->
-    agentSetName = @agentSetName(agentSetName) if typeof agentSetName isnt "string"
+    agentSetName = @agentSetCtxName(agentSetName) if typeof agentSetName isnt "string"
+    u.error "setTextParams: #{@agentSetName} not fount." if not @contexts[agentSetName]?
     u.ctxTextParams @contexts[agentSetName], domFont, align, baseline
-  # Set the label parameters for an agentset's context.  See ABM.util
   setLabelParams: (agentSetName, color, xy) ->
-    agentSetName = @agentSetName(agentSetName) if typeof agentSetName isnt "string"
+    agentSetName = @agentSetCtxName(agentSetName) if typeof agentSetName isnt "string"
+    u.error "setLabelParams: #{@agentSetName} not fount." if not @contexts[agentSetName]?
     u.ctxLabelParams @contexts[agentSetName], color, xy
   
 #### User Model Creation
@@ -197,6 +202,8 @@ class ABM.Model
   # Start/stop the animation
   start: -> @anim.start()
   stop: -> @anim.stop()
+  # Animate once by `step(); draw()`. For debugging from console.
+  once: -> @anim.once() 
 
 #### Animation. 
 
@@ -207,29 +214,18 @@ class ABM.Model
     @patches.draw @contexts.patches  if @refreshPatches or @anim.draws is 1
     @links.draw   @contexts.links    if @refreshLinks   or @anim.draws is 1
     @agents.draw  @contexts.agents   if @refreshAgents  or @anim.draws is 1
-    @drawSpotlight() if @spotlightAgent?
+    @drawSpotlight @spotlightAgent, @contexts.spotlight  if @spotlightAgent?
 
-# Creates a spotlight effect on an agent, so we can follow it throughout the model
-# We can pass in either an agent to be spotlighted or a breed. If we pass in a breed,
-# we will find a random agent of that breed
-  setSpotlight: (agent) ->
-    if typeof agent is "string"
-      agentSet = @[agent]#()
-      @spotlightAgent = agentSet.oneOf() unless not agentSet.any()
-    else
-      @spotlightAgent = agent
+# Creates a spotlight effect on an agent, so we can follow it throughout the model.
+# Use:
+#
+#     @setSpotliight breed.oneOf()
+#
+# to draw one of a random breed. Remove spotlight by passing `null`
+  setSpotlight: (@spotlightAgent) ->
+    u.clearCtx @contexts.spotlight if not @spotlightAgent?
 
-  removeSpotlight: ->
-    @spotlightAgent = null
-    u.clearCtx @contexts.spotlight
-
-  drawSpotlight: ->
-    agent   = @spotlightAgent
-    ctx     = @contexts.spotlight
-    return unless agent? # race condition?
-    if @agents.indexOf(agent) < 0 # Reset if agent.die() called
-      @removeSpotlight()
-      return
+  drawSpotlight: (agent, ctx) ->
     u.clearCtx ctx
     u.fillCtx ctx, [0,0,0,0.6]
     ctx.beginPath()
@@ -256,16 +252,15 @@ class ABM.Model
 #
 # ..will set the default color for just the embers.
 
-
   createBreeds: (s, breedClass, breedSet) ->
-    breeds = []
+    breeds = []; breeds.classes = {}; breeds.sets = {}
     for b in s.split(" ")
-      className = b.charAt(0).toUpperCase() + b.slice(1) 
-      c = class Breed extends ABM.Agent
+      c = class Breed extends breedClass
       c::name = b
-      ABM[className] = c
-      @[b] = new ABM.Agents c, b, breedClass::breed # @agents/@links
+      @[b] = new breedSet c, b, breedClass::breed # add @<breed> to local scope
       breeds.push @[b]
+      breeds.sets[b] = @[b]
+      breeds.classes["#{b}Class"] = c
     breeds
   agentBreeds: (s) -> ABM.agentBreeds = @createBreeds s, ABM.Agent, ABM.Agents
   linkBreeds: (s) -> ABM.linkBreeds = @createBreeds s, ABM.Link, ABM.Links
@@ -289,7 +284,8 @@ class ABM.Model
     ABM.root.ls = @links
     ABM.root.l0 = @links[0]
     ABM.root.dr = @drawing
-    ABM.root.u = ABM.util
+    ABM.root.u  = u
+    ABM.root.sh = ABM.shapes
     ABM.root.app = @
     ABM.root.cx = @contexts
     ABM.root.ab = ABM.agentBreeds

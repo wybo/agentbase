@@ -394,7 +394,10 @@ class ABM.Agent
       ctx.translate @x, @y # see tutorial: http://goo.gl/VUlhY
       ctx.rotate @heading if shape.rotate
       ctx.scale 1/ABM.patches.size, -1/ABM.patches.size # convert back to pixel scale
-      ctx.drawImage @sprite.canvas, -@sprite.canvas.width/2, -@sprite.canvas.height/2
+      if @sprite.canvas?
+        ctx.drawImage @sprite.canvas, -@sprite.canvas.width/2, -@sprite.canvas.height/2
+      else
+        ctx.drawImage @sprite, -@sprite.width/2, -@sprite.height/2
     else
       ctx.translate @x, @y
       ctx.scale @size, @size
@@ -512,7 +515,7 @@ class ABM.Agents extends ABM.AgentSet
   setDefaultHidden: (hidden)-> @breedClass::hidden = hidden
   setDefaultSprite: -> 
     if @breedClass::color?
-      @breedClass::sprite = ABM.shapes.shapeToCtx \
+      @breedClass::sprite = ABM.shapes.shapeToImage \
         @breedClass::shape, @breedClass::color, @breedClass::size*ABM.patches.size
   setDefaultPen:   (size, down=false) -> 
     @breedClass::penSize = size
