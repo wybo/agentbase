@@ -4,8 +4,9 @@
     <script src="../agentscript.js"></script>
     <script src="../coffee-script.js"></script>
     <script type="text/coffeescript">
+
+    u = ABM.util; s = ABM.shapes # ABM.util & ABM.shape aliases; "local" to coffeescript wrapper
     class MyModel extends ABM.Model
-      u = ABM.util # utilities; static variable
       setup: -> # called by Model ctor
         @refreshAgents = false # for static agents
         
@@ -22,7 +23,7 @@
         @anim.setRate 10
 
         for p in @patches
-          p.color = u.randomGray [], 160, 190
+          p.color = u.randomGray 160, 190
           p.occupied = false
         @drawGrid [0,0,0]
         @walker = @agents.create(1)[0]

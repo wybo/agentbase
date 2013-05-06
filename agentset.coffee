@@ -21,12 +21,6 @@
 #
 # Because we are an array subset, @[i] below (this[i]), gets the i'th agentset element.
 
-# The usual alias for **ABM.util**. These are equivalent:
-#
-#      ABM.util.clearCtx(ctx)
-#      u.clearCtx(ctx)
-u = ABM.util
-
 class ABM.AgentSet extends Array 
 # ### Static members
 
@@ -140,14 +134,14 @@ class ABM.AgentSet extends Array
 
   # Return an array of agents with the property equal to the given value
   #
-  #     AS.getWithProp "x", 1
+  #     AS.getPropWith "x", 1
   #     [{id:4,x:1,y:3},{id:5,x:1,y:1}]
-  getWithProp: (prop, value) -> @asSet (o for o in @ when o[prop] is value)
+  getPropWith: (prop, value) -> @asSet (o for o in @ when o[prop] is value)
 
   # Set the property of the agents to a given value
   #
   #     # increment x for agents with x=1
-  #     AS1 = ABM.AgentSet.asSet AS.getWithProp("x",1)
+  #     AS1 = ABM.AgentSet.asSet AS.getPropWith("x",1)
   #     AS1.setProp "x", 2 # {id:4,x:2,y:3},{id:5,x:2,y:1}
   #
   # Note this changes the last two objects in the original AS above
@@ -192,7 +186,7 @@ class ABM.AgentSet extends Array
   # Returns true if the agentset has any agents
   #
   #     AS.any()  # true
-  #     AS.getWithProp("x", 99).any() #false
+  #     AS.getPropWith("x", 99).any() #false
   any: -> u.any @
 
   # Return an agentset without given agent a

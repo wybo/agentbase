@@ -26,6 +26,6 @@ foo=`cat agentscript.js | sed '
 
 echo "uglify agentscript.js"
 uglifyjs agentscript.js -c -m > agentscript.min.js
-echo "zip agentscript/"
-cd ..
-zip -rq agentscript.zip agentscript
+# echo "zip agentscript/"
+# cd ..
+# zip -rq agentscript.zip agentscript

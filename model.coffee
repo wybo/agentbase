@@ -2,9 +2,6 @@
 # Creating new models is done by subclassing class Model and overriding two 
 # virtual/abstract methods: `setup()` and `step()`
 
-# The usual alias for **ABM.util**.
-u = ABM.util
-
 # Because not all models have the same amimator requirements, we build a class
 # for customization by the programmer.  See these URLs for more info:
 #
@@ -121,10 +118,10 @@ class ABM.Model
     
     # Postprocesssing after setup
     if @agents.useSprites
-      @agents.setDefaultSprite() if ABM.Agent::color?
+      @agents.setDefaultSprite() # if ABM.Agent::color?
       for a in @agents when not a.hasOwnProperty "sprite"
         if a.hasOwnProperty "color" or a.hasOwnProperty "shape" or a.hasOwnProperty "size"
-          a.sprite = ABM.shapes.shapeToImage a.shape, a.color, a.size*@patches.size
+          a.sprite = ABM.shapes.shapeToSprite a.shape, a.color, a.size*@patches.size
     
 
 #### Optimizations:
@@ -143,10 +140,6 @@ class ABM.Model
     ctx.save() # revert to native 2D transform
     ctx.setTransform 1, 0, 0, 1, 0, 0
     @patches.drawWithPixels = true
-
-  # Have agents use images (sprites) rather than drawing for agents.
-  setAgentsUseSprites: ->
-    @agents.setUseSprites(true)
     
   # Have patches cache the agents currently on them.
   # Optimizes Patch p.agentsHere method
@@ -168,11 +161,6 @@ class ABM.Model
       p.pRect = @patches.patchRect p, radius, radius, meToo
       p.pRect.radius = radius
       p.pRect.meToo = meToo
-  
-  # Ask agents to cache their color strings.
-  # This is a temporary optimization and will likely change.
-  setAgentStaticColors: ->
-    @agents.setStaticColors(true)
 
 #### Text Utilities:
 
@@ -277,19 +265,19 @@ class ABM.Model
   # can cause our modules to mistakenly depend on a global name.
   # See [CoffeeConsole](http://goo.gl/1i7bd) Chrome extension too.
   setRootVars: ->
-    ABM.root.ps = @patches
-    ABM.root.p0 = @patches[0]
-    ABM.root.as = @agents
-    ABM.root.a0 = @agents[0]
-    ABM.root.ls = @links
-    ABM.root.l0 = @links[0]
-    ABM.root.dr = @drawing
-    ABM.root.u  = u
-    ABM.root.sh = ABM.shapes
+    ABM.root.ps  = @patches
+    ABM.root.p0  = @patches[0]
+    ABM.root.as  = @agents
+    ABM.root.a0  = @agents[0]
+    ABM.root.ls  = @links
+    ABM.root.l0  = @links[0]
+    ABM.root.dr  = @drawing
+    ABM.root.u   = ABM.util
+    ABM.root.sh  = ABM.shapes
     ABM.root.app = @
-    ABM.root.cx = @contexts
-    ABM.root.ab = ABM.agentBreeds
-    ABM.root.lb = ABM.linkBreeds
-    ABM.root.an = @anim
+    ABM.root.cx  = @contexts
+    ABM.root.ab  = ABM.agentBreeds
+    ABM.root.lb  = ABM.linkBreeds
+    ABM.root.an  = @anim
     null
   

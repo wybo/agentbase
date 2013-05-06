@@ -30,7 +30,12 @@ Array::indexOf or= (item) -> # shim for IE8
 
 # **ABM.util** contains the general utilities for the project. Note that within
 # **util** `@` referrs to ABM.util, *not* the global name space as above.
-ABM.util =
+# Alias: u is an alias for ABM.util within the agentscript module (not outside)
+#
+#      u.clearCtx(ctx) is equivalent to
+#      ABM.util.clearCtx(ctx)
+
+ABM.util = u =
 
   # Shortcut for throwing an error.  Good for debugging:
   #
@@ -71,24 +76,40 @@ ABM.util =
   aToFixed: (a,p=2,s=", ") -> "[#{(i.toFixed p for i in a).join(s)}]"
 
 # ### Color and Angle Operations
+# Our colors are r,g,b,[a] arrays, with an optional HTML str value.
+# The str value is sent on the first call to colorStr
 
   # Return a random RGB or gray color. Array passed to minimize garbage collection
-  randomColor: (color = []) -> 
-    color[i] = @randomInt(256) for i in [0..2]
-    color 
-  randomGray: (color = [], min = 64, max = 192) -> 
+  randomColor: (c = []) -> 
+    c.str = null if c.str?
+    c[i] = @randomInt(256) for i in [0..2]
+    c 
+  # Note: if 2 args passed, assume they're min, max w/ default c
+  randomGray: (c = [], min = 64, max = 192) -> 
+    if arguments.length is 2 then return @randomGray null, c, min
+    c.str = null if c.str?
     r=@randomInt2 min,max
-    color[i] = r for i in [0..2]
-    color
+    c[i] = r for i in [0..2]
+    c
+  # modify an existing color to minimize GC
+  setColor: (c, r, g, b, a=null) ->
+    c.str = null if c.str?
+    c[0] = r; c[1] = g; c[2] = b; c[3] = a if a?; 
+    c
   # Return new color by scaling each value of an RGB array.
   # Note [r,g,b] must be ints
-  scaleColor: (max, s, color = []) -> 
-    color[i] = @clamp(Math.round(c*s),0,255) for c, i in max
-    color
+  scaleColor: (max, s, c = []) -> 
+    c.str = null if c.str?
+    c[i] = @clamp(Math.round(val*s),0,255) for val, i in max
+    c
   # Return HTML color as used by canvas element.  Can include Alpha
-  colorStr: (c) -> if c.length is 3 then "rgb(#{c})" else "rgba(#{c})"
+  colorStr: (c) ->
+    return s if (s = c.str)?
+    # console.log c
+    c.str = if c.length is 3 then "rgb(#{c})" else "rgba(#{c})"
   # Compare two colors.  Alas, there is no array.Equal operator.
   colorsEqual: (c1, c2) -> c1.toString() is c2.toString()
+    
   # Return little/big endian-ness of hardware. 
   # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq)
   isLittleEndian: ->
@@ -309,24 +330,31 @@ ABM.util =
     
 # ### Canvas/Context Operations
   
+  # Create a new canvas of given width/height
+  createCanvas: (width, height) ->
+    can = document.createElement 'canvas'
+    can.width = width; can.height = height
+    can
+  # As above, but returing the context object.  Note ctx.canvas is the canvas for the ctx.
+  createCtx: (width, height, ctx="2d") ->
+    can = @createCanvas width, height
+    if ctx is "2d" then can.getContext "2d" 
+    else can.getContext("webgl") or can.getContext("experimental-webgl")
+
   # Return a "layer" 2D/3D rendering context within the specified HTML `<div>`,
   # with the given width/height positioned absolutely at top/left within the div,
   # and with the z-index of z.
   #
   # The z level gives us the capability of buildng a "stack" of coordinated canvases.
   createLayer: (div, width, height, z, ctx = "2d") -> # a canvas ctx object
-    can = document.createElement 'canvas'
-    can.setAttribute 'style', "position:absolute;top:0;left:0;z-index:#{z}"
-    can.width = width; can.height = height
-    can.ctx = # http://goo.gl/atMRr can't get both 2d/3d contexts, only one allowed
-      if ctx is "2d" then can.getContext "2d" 
-      else can.getContext("webgl") or can.getContext("experimental-webgl")
-    document.getElementById(div).appendChild(can)
-    can.ctx
+    ctx = @createCtx width, height, ctx
+    ctx.canvas.setAttribute 'style', "position:absolute;top:0;left:0;z-index:#{z}"
+    document.getElementById(div).appendChild(ctx.canvas)
+    ctx
   # Clear the 2D/3D layer to be transparent. Note this [discussion](http://goo.gl/qekXS).
   clearCtx: (ctx) ->
     if ctx.save? # test for 2D ctx
-      ctx.save()
+      ctx.save() # ctx.canvas.width = ctx.canvas.width should work but problems on chrome anyway
       ctx.setTransform 1, 0, 0, 1, 0, 0
       ctx.clearRect 0, 0, ctx.canvas.width, ctx.canvas.height
       ctx.restore()
@@ -369,19 +397,20 @@ ABM.util =
     img.onload = -> f(img)
     img.src = imageSrc
     img
+    
   # Convert an image to a context
   imageToCtx: (image) ->
-    canvas = document.createElement "canvas"
-    canvas.width = image.width
-    canvas.height = image.height
-    ctx = canvas.getContext "2d"
+    ctx = @createCtx image.width, image.height
     ctx.drawImage image, 0, 0
-    ctx # note: ctx.canvas gives the canvas created above.
-  # Convert a context to an image
-  ctxToImage: (ctx) ->
-    image = new Image()
-    image.src = ctx.canvas.toDataURL "image/png"
-    image
+    ctx # note: ctx.canvas gives the canvas we created.
+
+  # Convert a context to an image, executing function f on completion.
+  # Generally can skip callback but see [stackoverflow](http://goo.gl/kIk2U)
+  ctxToImage: (ctx, f=(img)->) ->
+    img = new Image()
+    img.onload = -> f(img)
+    img.src = ctx.canvas.toDataURL "image/png"
+    img
   # Convert a ctx to an imageData object
   ctxToImageData: (ctx) -> ctx.getImageData 0, 0, ctx.canvas.width, ctx.canvas.height
 
@@ -396,7 +425,14 @@ ABM.util =
     ctx.translate x, y # translate to center
     ctx.rotate rad
     ctx.drawImage img, -dx/2, -dy/2
-    
-    
+  
+  # Resize a ctx/canvas and preserve data.
+  # Note async: the new canvas will "refresh" after we return!
+  resizeCtx: (ctx, width, height, scale = false) -> # http://goo.gl/Tp90B
+    @ctxToImage ctx, (img)-> # apparently => not needed
+      if scale then ctx.drawImage img, 0, 0, width, height
+      else ctx.drawImage img, 0, 0
+    ctx.canvas.width = width; ctx.canvas.height = height
+
     
   

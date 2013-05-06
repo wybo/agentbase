@@ -30,7 +30,12 @@ Array::indexOf or= (item) -> # shim for IE8
 
 # **ABM.util** contains the general utilities for the project. Note that within
 # **util** `@` referrs to ABM.util, *not* the global name space as above.
-ABM.util =
+# Alias: U is an alias for ABM.util within the agentscript module (not outside)
+#
+#      U.clearCtx(ctx) is equivalent to
+#      ABM.util.clearCtx(ctx)
+
+ABM.util = u =
 
   # Shortcut for throwing an error.  Good for debugging:
   #
@@ -71,24 +76,40 @@ ABM.util =
   aToFixed: (a,p=2,s=", ") -> "[#{(i.toFixed p for i in a).join(s)}]"
 
 # ### Color and Angle Operations
+# Our colors are r,g,b,[a] arrays, with an optional HTML str value.
+# The str value is sent on the first call to colorStr
 
   # Return a random RGB or gray color. Array passed to minimize garbage collection
-  randomColor: (color = []) -> 
-    color[i] = @randomInt(256) for i in [0..2]
-    color 
-  randomGray: (color = [], min = 64, max = 192) -> 
+  randomColor: (c = []) -> 
+    c.str = null if c.str?
+    c[i] = @randomInt(256) for i in [0..2]
+    c 
+  # Note: if 2 args passed, assume they're min, max w/ default c
+  randomGray: (c = [], min = 64, max = 192) -> 
+    if arguments.length is 2 then return @randomGray null, c, min
+    c.str = null if c.str?
     r=@randomInt2 min,max
-    color[i] = r for i in [0..2]
-    color
+    c[i] = r for i in [0..2]
+    c
+  # modify an existing color to minimize GC
+  setColor: (c, r, g, b, a=null) ->
+    c.str = null if c.str?
+    c[0] = r; c[1] = g; c[2] = b; c[3] = a if a?; 
+    c
   # Return new color by scaling each value of an RGB array.
   # Note [r,g,b] must be ints
-  scaleColor: (max, s, color = []) -> 
-    color[i] = @clamp(Math.round(c*s),0,255) for c, i in max
-    color
+  scaleColor: (max, s, c = []) -> 
+    c.str = null if c.str?
+    c[i] = @clamp(Math.round(val*s),0,255) for val, i in max
+    c
   # Return HTML color as used by canvas element.  Can include Alpha
-  colorStr: (c) -> if c.length is 3 then "rgb(#{c})" else "rgba(#{c})"
+  colorStr: (c) ->
+    return s if (s = c.str)?
+    # console.log c
+    c.str = if c.length is 3 then "rgb(#{c})" else "rgba(#{c})"
   # Compare two colors.  Alas, there is no array.Equal operator.
   colorsEqual: (c1, c2) -> c1.toString() is c2.toString()
+    
   # Return little/big endian-ness of hardware. 
   # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq)
   isLittleEndian: ->
@@ -309,24 +330,31 @@ ABM.util =
     
 # ### Canvas/Context Operations
   
+  # Create a new canvas of given width/height
+  createCanvas: (width, height) ->
+    can = document.createElement 'canvas'
+    can.width = width; can.height = height
+    can
+  # As above, but returing the context object.  Note ctx.canvas is the canvas for the ctx.
+  createCtx: (width, height, ctx="2d") ->
+    can = @createCanvas width, height
+    if ctx is "2d" then can.getContext "2d" 
+    else can.getContext("webgl") or can.getContext("experimental-webgl")
+
   # Return a "layer" 2D/3D rendering context within the specified HTML `<div>`,
   # with the given width/height positioned absolutely at top/left within the div,
   # and with the z-index of z.
   #
   # The z level gives us the capability of buildng a "stack" of coordinated canvases.
   createLayer: (div, width, height, z, ctx = "2d") -> # a canvas ctx object
-    can = document.createElement 'canvas'
-    can.setAttribute 'style', "position:absolute;top:0;left:0;z-index:#{z}"
-    can.width = width; can.height = height
-    can.ctx = # http://goo.gl/atMRr can't get both 2d/3d contexts, only one allowed
-      if ctx is "2d" then can.getContext "2d" 
-      else can.getContext("webgl") or can.getContext("experimental-webgl")
-    document.getElementById(div).appendChild(can)
-    can.ctx
+    ctx = @createCtx width, height, ctx
+    ctx.canvas.setAttribute 'style', "position:absolute;top:0;left:0;z-index:#{z}"
+    document.getElementById(div).appendChild(ctx.canvas)
+    ctx
   # Clear the 2D/3D layer to be transparent. Note this [discussion](http://goo.gl/qekXS).
   clearCtx: (ctx) ->
     if ctx.save? # test for 2D ctx
-      ctx.save()
+      ctx.save() # ctx.canvas.width = ctx.canvas.width should work but problems on chrome anyway
       ctx.setTransform 1, 0, 0, 1, 0, 0
       ctx.clearRect 0, 0, ctx.canvas.width, ctx.canvas.height
       ctx.restore()
@@ -369,19 +397,37 @@ ABM.util =
     img.onload = -> f(img)
     img.src = imageSrc
     img
+    
+  importScaledCtx: (imageSrc, sx, sy) ->
+    ctx = @createCtx 0,0
+    @importImage imageSrc, (img) =>
+      w = Math.abs sx*img.width
+      h = Math.abs sy*img.height
+      ctx.canvas.width = w; ctx.canvas.height = h
+      x = if sx > 0 then 0 else w
+      y = if sy > 0 then 0 else h
+      ctx.translate x, y
+      ctx.scale sx, sy
+      ctx.drawImage img, x, y #, Math.abs sx, Math.abs sy
+    ctx
+
   # Convert an image to a context
   imageToCtx: (image) ->
-    canvas = document.createElement "canvas"
-    canvas.width = image.width
-    canvas.height = image.height
-    ctx = canvas.getContext "2d"
+    # canvas = document.createElement "canvas"
+    # canvas.width = image.width
+    # canvas.height = image.height
+    # ctx = canvas.getContext "2d"
+    ctx = @createCtx image.width, image.height
     ctx.drawImage image, 0, 0
-    ctx # note: ctx.canvas gives the canvas created above.
-  # Convert a context to an image
-  ctxToImage: (ctx) ->
-    image = new Image()
-    image.src = ctx.canvas.toDataURL "image/png"
-    image
+    ctx # note: ctx.canvas gives the canvas we created.
+
+  # Convert a context to an image, executing function f on completion.
+  # Generally can skip callback but see [stackoverflow](http://goo.gl/kIk2U)
+  ctxToImage: (ctx, f=(img)->) ->
+    img = new Image()
+    img.onload = -> f(img)
+    img.src = ctx.canvas.toDataURL "image/png"
+    img
   # Convert a ctx to an imageData object
   ctxToImageData: (ctx) -> ctx.getImageData 0, 0, ctx.canvas.width, ctx.canvas.height
 
@@ -396,15 +442,21 @@ ABM.util =
     ctx.translate x, y # translate to center
     ctx.rotate rad
     ctx.drawImage img, -dx/2, -dy/2
-    
-    
+  
+  # Resize a ctx/canvas and preserve data.
+  # Note async: the new canvas will "refresh" after we return!
+  resizeCtx: (ctx, width, height, scale = false) -> # http://goo.gl/Tp90B
+    @ctxToImage ctx, (img)-> # apparently => not needed
+      if scale then ctx.drawImage img, 0, 0, width, height
+      else ctx.drawImage img, 0, 0
+    ctx.canvas.width = width; ctx.canvas.height = height
+
     
   
 # A *very* simple shapes module for drawing
 # [NetLogo-like](http://ccl.northwestern.edu/netlogo/docs/) agents.
-u = ABM.util # alias for util module
 
-ABM.shapes = s = # s alias below for ABM.shapes
+ABM.shapes = do ->
   # Each shape is a named object with two members: 
   # a boolean "rotate" and a drawing procedure.
   # The shape is used in the following context with a color set
@@ -424,82 +476,147 @@ ABM.shapes = s = # s alias below for ABM.shapes
   #
   #     ["default", "triangle", "arrow", "bug", "pyramid", 
   #      "circle", "square", "pentagon", "ring", "person"]
-  #
+
+  # A simple polygon utility:  c is the 2D context, and a is an array of 2D points.
+  # c.closePath() and c.fill() will be called by the calling agent, see initial 
+  # discription of drawing context.  It is used in adding a new shape above.
+  poly = (c, a) ->
+    for p, i in a 
+      if i is 0 then c.moveTo p[0], p[1] else c.lineTo p[0], p[1]
+    null
+
+  # Centered drawing primitives: centered on x,y with a given width/height size.
+  circ = (c,x,y,s)->c.arc x,y,s/2,0,2*Math.PI
+  ccirc = (c,x,y,s)->c.arc x,y,s/2,0,2*Math.PI,true
+  cimg = (c,x,y,s,img)->c.scale 1,-1;c.drawImage img,x-s/2,y-s/2,s,s;c.scale 1,-1
+  csq = (c,x,y,s)->c.fillRect x-s/2, y-s/2, s, s
   
+  fillSlot = (slot, img) ->
+    console.log "fillSlot #{slot.x} #{slot.y}", img
+    slot.ctx.save(); slot.ctx.scale 1, -1
+    slot.ctx.drawImage img, slot.x, -(slot.y+slot.size), slot.size, slot.size    
+    slot.ctx.restore()
+  
+  # Return our module:
+  poly: poly
+  spriteSheets: []
   default:
     rotate: true
-    draw: (c) -> s.poly c, [[.5,0],[-.5,-.5],[-.25,0],[-.5,.5]]
+    draw: (c) -> poly c, [[.5,0],[-.5,-.5],[-.25,0],[-.5,.5]]
   triangle:
     rotate: true
-    draw: (c) -> s.poly c, [[.5,0],[-.5,-.4],[-.5,.4]]
+    draw: (c) -> poly c, [[.5,0],[-.5,-.4],[-.5,.4]]
   arrow:
     rotate: true
-    draw: (c) -> s.poly c, [[.5,0],[0,.5],[0,.2],[-.5,.2],[-.5,-.2],[0,-.2],[0,-.5]]
+    draw: (c) -> poly c, [[.5,0],[0,.5],[0,.2],[-.5,.2],[-.5,-.2],[0,-.2],[0,-.5]]
   bug:
     rotate: true
     draw: (c) ->
-      PI = Math.PI
       c.strokeStyle = c.fillStyle; c.lineWidth = .05
-      c.moveTo .4,.225; c.lineTo .2,0; c.lineTo .4, -.225
-      c.stroke()
-      c.beginPath()
-      c.arc .12,0,.13,0,2*PI; c.arc -.05,0,.13,0,2*PI; c.arc -.27,0,.2,0,2*PI
+      poly c, [[.4,.225],[.2,0],[.4,-.225]]; c.stroke()
+      # c.beginPath(); circ c,.12,0,.13; circ c,-.05,0,.13; circ c,-.27,0,.2
+      c.beginPath(); circ c,.12,0,.26; circ c,-.05,0,.26; circ c,-.27,0,.4
   pyramid:
     rotate: false
-    draw: (c) -> s.poly c, [[0,.5],[-.433,-.25],[.433,-.25]]
+    draw: (c) -> poly c, [[0,.5],[-.433,-.25],[.433,-.25]]
   circle:
+    shortcut: (c,x,y,s) -> c.beginPath(); circ c,x,y,s; c.closePath(); c.fill()
     rotate: false
-    draw: (c) -> c.arc 0,0,.5,0,2*Math.PI
+    draw: (c) -> circ c,0,0,1 # c.arc 0,0,.5,0,2*Math.PI
   square:
+    shortcut: (c,x,y,s) -> csq c,x,y,s
     rotate: false
-    draw: (c) -> c.fillRect -.5,-.5,1,1
+    draw: (c) -> csq c,0,0,1 #c.fillRect -.5,-.5,1,1
   pentagon:
     rotate: false
-    draw: (c) -> s.poly c, [[0,.45],[-.45,.1],[-.3,-.45],[.3,-.45],[.45,.1]]
+    draw: (c) -> poly c, [[0,.45],[-.45,.1],[-.3,-.45],[.3,-.45],[.45,.1]]
   ring:
     rotate: false
-    draw: (c) ->
-      c.arc 0,0,.5,0,2*Math.PI,true;c.closePath();c.arc 0,0,.3,0,2*Math.PI,false
+    draw: (c) -> circ c,0,0,1; c.closePath(); ccirc c,0,0,.6
+  cup:
+    shortcut: (c,x,y,s) -> cimg c,x,y,s,@img
+    rotate: false
+    img: u.importImage "http://goo.gl/HrBBb"
+    draw: (c) -> cimg c,.5,.5,1,@img
   person:
     rotate: false
     draw: (c) ->
-      s.poly c, [  [.15,.2],[.3,0],[.125,-.1],[.125,.05],
+      poly c, [  [.15,.2],[.3,0],[.125,-.1],[.125,.05],
       [.1,-.15],[.25,-.5],[.05,-.5],[0,-.25],
       [-.05,-.5],[-.25,-.5],[-.1,-.15],[-.125,.05],
       [-.125,-.1],[-.3,0],[-.15,.2]  ]
-      c.closePath(); c.arc 0,.35,.15,0,2*Math.PI
+      c.closePath(); circ c,0,.35,.30 
+  # draw a path based sprite
+  # drawPath: (c, color, )
   # Return a list of the available shapes, see above.
   names: ->
-    (name for own name, val of @ when !u.isFunction val)
+    (name for own name, val of @ when val.rotate? and val.draw?)
   # Add your own shape. Will be included in names list.  Usage:
   #
   #     ABM.shapes.add "test", true, (c) -> # bowtie/hourglass
   #       ABM.shapes.poly c, [[-.5,-.5],[.5,.5],[-.5,.5],[.5,-.5]]
-  add: (name, rotate, draw) -> @[name] = {rotate,draw}
-  # A simple polygon utility:  c is the 2D context, and a is an array of 2D points.
-  # c.closePath() and c.fill() will be called by the calling agent, see initial 
-  # discription of drawing context.  It is used in adding a new shape above.
-  poly: (c, a) ->
-    for p, i in a 
-      if i is 0 then c.moveTo p[0], p[1] else c.lineTo p[0], p[1]
-    null
-  
-  # Create an image ctx of a shape by drawing it into a small canvas.
-  # Used to implement agent sprites.  
-  # See memory use [StackOverflow discussion.](http://goo.gl/Mwwxn)
-  shapeToImage: (name, color, scale) ->
+  add: (name, rotate, draw, shortcut = null) ->
+    s = @[name] =
+      if u.isFunction draw then {rotate,draw} else {rotate,img:draw,draw:(c)->cimg c,.5,.5,1,@img}
+    (s.shortcut = (c,x,y,s) -> cimg c,x,y,s,@img) if s.img? and not s.rotate
+    s.shortcut = shortcut if shortcut? # can override img default shortcut if needed
+
+  draw: (ctx, shape, x, y, size, rot, color) ->
+    if shape.shortcut?
+      ctx.fillStyle = u.colorStr color if not shape.img?
+      shape.shortcut ctx,x,y,size
+    else
+      ctx.save()
+      ctx.translate x, y
+      ctx.scale size, size if size isnt 1
+      ctx.rotate rot if rot isnt 0
+      if shape.img? # is an image, not a path function
+        shape.draw ctx
+      else
+        ctx.fillStyle = u.colorStr color
+        ctx.beginPath(); shape.draw ctx; ctx.closePath()
+        ctx.fill()
+      ctx.restore()
+    shape
+  drawSprite: (ctx, s, x, y, size, rot) ->
+    if rot is 0
+      ctx.drawImage s.ctx.canvas, s.x, s.y, s.size, s.size, x-size/2, y-size/2, size, size
+    else
+      ctx.save()
+      ctx.translate x, y # see tutorial: http://goo.gl/VUlhY
+      ctx.rotate rot
+      ctx.drawImage s.ctx.canvas, s.x, s.y, s.size, s.size, -size/2,-size/2, size, size
+      ctx.restore()
+    s
+
+  shapeToSprite: (name, color, size) ->
+    size = Math.ceil size
     shape = @[name]
-    can = document.createElement 'canvas'
-    can.width = can.height = scale
-    ctx = can.getContext "2d"
-    ctx.scale scale, scale
-    ctx.translate .5, .5
-    ctx.fillStyle = u.colorStr color
-    ctx.beginPath()
-    shape.draw ctx
-    ctx.closePath()
-    ctx.fill()
-    u.ctxToImage ctx # return either ctx or img, both work.
+    ctx = @spriteSheets[size]
+    # Create sheet for this size if it does not yet exist
+    if not ctx?
+      @spriteSheets[size] = ctx = u.createCtx size*10, size
+      ctx.nextX = 0; ctx.nextY = 0; ctx.images = {}
+    # Extend the sheet if we're out of space
+    if size*ctx.nextX is ctx.canvas.width
+      u.resizeCtx ctx, ctx.canvas.width, ctx.canvas.height+size
+      ctx.nextX = 0; ctx.nextY++
+    x = size*ctx.nextX; y = size*ctx.nextY
+    slot = {ctx, x, y, size, name, color}
+    if (img=shape.img)? # is an image, not a path function
+      return imgslot if (imgslot = ctx.images[name])?
+      ctx.images[name] = slot
+      img.onload = -> fillSlot(slot, img)
+    else
+      ctx.save()
+      ctx.scale size, size
+      ctx.translate ctx.nextX+.5, ctx.nextY+.5
+      ctx.fillStyle = u.colorStr color
+      ctx.beginPath(); shape.draw ctx; ctx.closePath()
+      ctx.fill()
+      ctx.restore()
+    ctx.nextX++; slot
+
     
 
 # **AgentSet** is a subclass of `Array` and is the base class for
@@ -524,12 +641,6 @@ ABM.shapes = s = # s alias below for ABM.shapes
 # ABM.util array functions rather than "super".
 #
 # Because we are an array subset, @[i] below (this[i]), gets the i'th agentset element.
-
-# The usual alias for **ABM.util**. These are equivalent:
-#
-#      ABM.util.clearCtx(ctx)
-#      u.clearCtx(ctx)
-u = ABM.util
 
 class ABM.AgentSet extends Array 
 # ### Static members
@@ -644,14 +755,14 @@ class ABM.AgentSet extends Array
 
   # Return an array of agents with the property equal to the given value
   #
-  #     AS.getWithProp "x", 1
+  #     AS.getPropWith "x", 1
   #     [{id:4,x:1,y:3},{id:5,x:1,y:1}]
-  getWithProp: (prop, value) -> @asSet (o for o in @ when o[prop] is value)
+  getPropWith: (prop, value) -> @asSet (o for o in @ when o[prop] is value)
 
   # Set the property of the agents to a given value
   #
   #     # increment x for agents with x=1
-  #     AS1 = ABM.AgentSet.asSet AS.getWithProp("x",1)
+  #     AS1 = ABM.AgentSet.asSet AS.getPropWith("x",1)
   #     AS1.setProp "x", 2 # {id:4,x:2,y:3},{id:5,x:2,y:1}
   #
   # Note this changes the last two objects in the original AS above
@@ -696,7 +807,7 @@ class ABM.AgentSet extends Array
   # Returns true if the agentset has any agents
   #
   #     AS.any()  # true
-  #     AS.getWithProp("x", 99).any() #false
+  #     AS.getPropWith("x", 99).any() #false
   any: -> u.any @
 
   # Return an agentset without given agent a
@@ -797,9 +908,6 @@ AS.add new XY(pt...) for pt in [[0,1],[8,0],[6,4],[1,3],[1,1]]
 # There are three agentsets and their corresponding 
 # agents: Patches/Patch, Agents/Agent, and Links/Link.
 
-# The usual alias for **ABM.util**.
-u = ABM.util
-
 # ### Patch and Patches
 
 # Class Patch instances represent a rectangle on a grid with::
@@ -852,7 +960,7 @@ class ABM.Patch
       [x,y] = ctx.labelXY
       ctx.save()
       ctx.translate @x, @y # bug: fonts don't scale for size < 1
-      ctx.scale 1/ABM.patches.size, -1/ABM.patches.size
+      ctx.scale 1/ABM.patches.size, -1/ABM.patches.size # revert to identity for text use
       u.ctxDrawText ctx, @label, [x,y], ctx.labelColor
       ctx.restore()
   
@@ -999,7 +1107,6 @@ class ABM.Patches extends ABM.AgentSet
   # [new Image()](http://javascript.mfields.org/2011/creating-an-image-in-javascript/)
   # tutorial.  We draw the image into the drawing layer as
   # soon as the onload callback executes.
-  # The "fat arrow" insures the callback executes within the importDrawing context.
   importDrawing: (imageSrc) ->
     u.importImage imageSrc, (img) ->
       ctx = ABM.drawing
@@ -1121,6 +1228,7 @@ class ABM.Agent
   heading: null
   sprite: null # default sprite, set by Model
   links: null
+  ownVariables: [] # keep list of user defined variables
   constructor: -> # called by agentSets create factory, not user
     @x = @y = 0
     @color = u.randomColor() if not @color? # promote color if default not set
@@ -1131,10 +1239,10 @@ class ABM.Agent
 
   # Move agent to different breed agentSet
   # Normally not needed, breeds is initialized by the breed agentSet
-  resetBreed: (newBreed) ->
-    u.error "resetBreed: not in agentSet" if not @id?
-    u.error "resetBreed: breed illegally set" if @hasOwnProperty "breed"
-    u.error "resetBreed: breed==newBreed" if @breed is newBreed
+  changeBreed: (newBreed) ->
+    u.error "changeBreed: not in agentSet" if not @id?
+    u.error "changeBreed: breed illegally set" if @hasOwnProperty "breed"
+    u.error "changeBreed: breed==newBreed" if @breed is newBreed
     @die()
     newBreed.create 1, (a) => a.setXY @x, @y
 
@@ -1185,26 +1293,11 @@ class ABM.Agent
   # * Fill with agent color
   draw: (ctx) ->
     shape = ABM.shapes[@shape]
-    ctx.save()
+    rot = if shape.rotate then @heading else 0
     if @sprite?
-      ctx.translate @x, @y # see tutorial: http://goo.gl/VUlhY
-      ctx.rotate @heading if shape.rotate
-      ctx.scale 1/ABM.patches.size, -1/ABM.patches.size # convert back to pixel scale
-      if @sprite.canvas?
-        ctx.drawImage @sprite.canvas, -@sprite.canvas.width/2, -@sprite.canvas.height/2
-      else
-        ctx.drawImage @sprite, -@sprite.width/2, -@sprite.height/2
+      ABM.shapes.drawSprite ctx, @sprite, @x, @y, @size, rot
     else
-      ctx.translate @x, @y
-      ctx.scale @size, @size
-      ctx.rotate @heading if shape.rotate
-      @colorStr = u.colorStr @color if ABM.agents.staticColors and not @colorStr?
-      ctx.fillStyle = @colorStr or u.colorStr @color
-      ctx.beginPath()
-      shape.draw ctx
-      ctx.closePath()
-      ctx.fill()
-    ctx.restore()
+      ABM.shapes.draw ctx, shape, @x, @y, @size, rot, @color
   
   # Draw the agent on the drawing layer, leaving perminant image.
   stamp: -> @draw ABM.drawing
@@ -1298,7 +1391,7 @@ class ABM.Agents extends ABM.AgentSet
   # the breed variable shared by all the Agents in this set.
   constructor: (@breedClass, @name, @mainSet = null) ->
     super()
-    @staticColors = false
+    # @staticColors = false
     @useSprites = false
     @breedClass::breed = @
     delete @ID if @mainSet? # insure we use mainSet, not us, to install agent ids
@@ -1311,18 +1404,29 @@ class ABM.Agents extends ABM.AgentSet
   setDefaultHidden: (hidden)-> @breedClass::hidden = hidden
   setDefaultSprite: -> 
     if @breedClass::color?
-      @breedClass::sprite = ABM.shapes.shapeToImage \
+      @breedClass::sprite = ABM.shapes.shapeToSprite \
         @breedClass::shape, @breedClass::color, @breedClass::size*ABM.patches.size
   setDefaultPen:   (size, down=false) -> 
     @breedClass::penSize = size
     @breedClass::penDown = down
   # Like NetLogo's breed.own(), sets an agent variable and its default.
-  setDefaultVariable: (name, value) -> @breedClass::[name] = value
-  
-  # Performance: tell draw to reuse existing color string
-  setStaticColors: (@staticColors) ->
+  # Use "own" below for declaring a set of variables.
+  setDefaultVariable: (name, value) ->
+    u.error "setDefaultVariable: name is not a string" if typeof name isnt "string"
+    @breedClass::[name] = value
+    @breedClass::ownVariables.push name
+
   # Use sprites rather than drawing
-  setUseSprites: (@useSprites) ->
+  setUseSprites: (@useSprites=true) ->
+  
+  # Declare NetLogo "own" variables by name, default-value pairs:<br>
+  # frogs.own "pad", 22, "pond", "lake lovely", age, 12<br>
+  # Setting own, or default values vastly reduces memory foot print,
+  # helps with changeBreed, and helps identify wayward variables in agents
+  own: (name, value, others...) ->
+    @setDefaultVariable name, value
+    u.error "own: odd number of arguments" if others.length % 2 isnt 0
+    @setDefaultVariable name, others[i+1] for name, i in others by 2
 
   # Override add/remove to use @mainSet if needed, managing a pair of
   # agents, one in this agentSet mirroring the one in the mainSet.
@@ -1473,7 +1577,7 @@ class ABM.Links extends ABM.AgentSet
   clear: -> @last().die() while @any(); null # tricky, each die modifies list
 
   # Return the subset of this set with the given breed value.
-  # breed: (breed) -> @getWithProp "breed", breed
+  # breed: (breed) -> @getPropWith "breed", breed
 
   # Return all the nodes in this agentset, with duplicates
   # included.  If 4 links have the same endpoint, it will
@@ -1504,9 +1608,6 @@ class ABM.Links extends ABM.AgentSet
 # Class Model is the control center for our AgentSets: Patches, Agents and Links.
 # Creating new models is done by subclassing class Model and overriding two 
 # virtual/abstract methods: `setup()` and `step()`
-
-# The usual alias for **ABM.util**.
-u = ABM.util
 
 # Because not all models have the same amimator requirements, we build a class
 # for customization by the programmer.  See these URLs for more info:
@@ -1624,10 +1725,10 @@ class ABM.Model
     
     # Postprocesssing after setup
     if @agents.useSprites
-      @agents.setDefaultSprite() if ABM.Agent::color?
+      @agents.setDefaultSprite() # if ABM.Agent::color?
       for a in @agents when not a.hasOwnProperty "sprite"
         if a.hasOwnProperty "color" or a.hasOwnProperty "shape" or a.hasOwnProperty "size"
-          a.sprite = ABM.shapes.shapeToImage a.shape, a.color, a.size*@patches.size
+          a.sprite = ABM.shapes.shapeToSprite a.shape, a.color, a.size*@patches.size
     
 
 #### Optimizations:
@@ -1646,10 +1747,6 @@ class ABM.Model
     ctx.save() # revert to native 2D transform
     ctx.setTransform 1, 0, 0, 1, 0, 0
     @patches.drawWithPixels = true
-
-  # Have agents use images (sprites) rather than drawing for agents.
-  setAgentsUseSprites: ->
-    @agents.setUseSprites(true)
     
   # Have patches cache the agents currently on them.
   # Optimizes Patch p.agentsHere method
@@ -1671,11 +1768,6 @@ class ABM.Model
       p.pRect = @patches.patchRect p, radius, radius, meToo
       p.pRect.radius = radius
       p.pRect.meToo = meToo
-  
-  # Ask agents to cache their color strings.
-  # This is a temporary optimization and will likely change.
-  setAgentStaticColors: ->
-    @agents.setStaticColors(true)
 
 #### Text Utilities:
 
@@ -1780,19 +1872,19 @@ class ABM.Model
   # can cause our modules to mistakenly depend on a global name.
   # See [CoffeeConsole](http://goo.gl/1i7bd) Chrome extension too.
   setRootVars: ->
-    ABM.root.ps = @patches
-    ABM.root.p0 = @patches[0]
-    ABM.root.as = @agents
-    ABM.root.a0 = @agents[0]
-    ABM.root.ls = @links
-    ABM.root.l0 = @links[0]
-    ABM.root.dr = @drawing
-    ABM.root.u  = u
-    ABM.root.sh = ABM.shapes
+    ABM.root.ps  = @patches
+    ABM.root.p0  = @patches[0]
+    ABM.root.as  = @agents
+    ABM.root.a0  = @agents[0]
+    ABM.root.ls  = @links
+    ABM.root.l0  = @links[0]
+    ABM.root.dr  = @drawing
+    ABM.root.u   = ABM.util
+    ABM.root.sh  = ABM.shapes
     ABM.root.app = @
-    ABM.root.cx = @contexts
-    ABM.root.ab = ABM.agentBreeds
-    ABM.root.lb = ABM.linkBreeds
-    ABM.root.an = @anim
+    ABM.root.cx  = @contexts
+    ABM.root.ab  = ABM.agentBreeds
+    ABM.root.lb  = ABM.linkBreeds
+    ABM.root.an  = @anim
     null
   

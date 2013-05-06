@@ -4,14 +4,15 @@
     <script src="../agentscript.js"></script>
     <script src="../coffee-script.js"></script>
     <script type="text/coffeescript">
+
+    u = ABM.util; s = ABM.shapes # ABM.util & ABM.shape aliases; "local" to coffeescript wrapper
     class MyModel extends ABM.Model
-      u = ABM.util # static variable
       setup: -> # called by Model ctor
 
         # No optimizations: 30fps
         @setFastPatches() # 57+fps
         # @setCacheAgentsHere() # 28-9fps, not needed * overhead
-        @setAgentStaticColors() # 30fps, not large part of performance
+        # @setAgentStaticColors() # 30fps, not large part of performance
         # two: 57+fps, fast patches get us to max
         
 

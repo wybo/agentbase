@@ -4,9 +4,9 @@
     <script src="../agentscript.js"></script>
     <script src="../coffee-script.js"></script>
     <script type="text/coffeescript">
+
+    u = ABM.util; s = ABM.shapes # ABM.util & ABM.shape aliases; "local" to coffeescript wrapper
     class MyModel extends ABM.Model
-      u = ABM.util # static variable
-      
       setup: -> # called by Model ctor
         @agentBreeds "embers fires"
         @agents.setDefaultShape "square"
@@ -31,7 +31,8 @@
         
 
         for p in @patches when u.randomInt(100) < @density
-          p.color = [0, 255, 0]
+          # u.setColor p.color, 0, 255, 0
+          p.color = [0, 255, 0] # override default, set per patch color
         @ignite p for p in @patches when p.x is @patches.minX
         @initialTrees = (p for p in @patches when u.colorsEqual p.color, [0, 255, 0]).length
         console.log "burnedTrees #{@burnedTrees}"
@@ -57,7 +58,7 @@
         if not @agents.any() then @stop()
         for a in @fires by -1# ()
           @ignite p for p in a.p.n4 when u.colorsEqual p.color, [0, 255, 0]
-          a.resetBreed @embers #a.breed = "embers"
+          a.changeBreed @embers #a.breed = "embers"
         @fadeEmbers()
 
     # div, patchSize, minX, maxX, minY, maxY, isTorus=true, neighbors=true

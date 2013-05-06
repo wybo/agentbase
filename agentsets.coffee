@@ -1,9 +1,6 @@
 # There are three agentsets and their corresponding 
 # agents: Patches/Patch, Agents/Agent, and Links/Link.
 
-# The usual alias for **ABM.util**.
-u = ABM.util
-
 # ### Patch and Patches
 
 # Class Patch instances represent a rectangle on a grid with::
@@ -56,7 +53,7 @@ class ABM.Patch
       [x,y] = ctx.labelXY
       ctx.save()
       ctx.translate @x, @y # bug: fonts don't scale for size < 1
-      ctx.scale 1/ABM.patches.size, -1/ABM.patches.size
+      ctx.scale 1/ABM.patches.size, -1/ABM.patches.size # revert to identity for text use
       u.ctxDrawText ctx, @label, [x,y], ctx.labelColor
       ctx.restore()
   
@@ -203,7 +200,6 @@ class ABM.Patches extends ABM.AgentSet
   # [new Image()](http://javascript.mfields.org/2011/creating-an-image-in-javascript/)
   # tutorial.  We draw the image into the drawing layer as
   # soon as the onload callback executes.
-  # The "fat arrow" insures the callback executes within the importDrawing context.
   importDrawing: (imageSrc) ->
     u.importImage imageSrc, (img) ->
       ctx = ABM.drawing
@@ -325,6 +321,7 @@ class ABM.Agent
   heading: null
   sprite: null # default sprite, set by Model
   links: null
+  ownVariables: [] # keep list of user defined variables
   constructor: -> # called by agentSets create factory, not user
     @x = @y = 0
     @color = u.randomColor() if not @color? # promote color if default not set
@@ -335,10 +332,10 @@ class ABM.Agent
 
   # Move agent to different breed agentSet
   # Normally not needed, breeds is initialized by the breed agentSet
-  resetBreed: (newBreed) ->
-    u.error "resetBreed: not in agentSet" if not @id?
-    u.error "resetBreed: breed illegally set" if @hasOwnProperty "breed"
-    u.error "resetBreed: breed==newBreed" if @breed is newBreed
+  changeBreed: (newBreed) ->
+    u.error "changeBreed: not in agentSet" if not @id?
+    u.error "changeBreed: breed illegally set" if @hasOwnProperty "breed"
+    u.error "changeBreed: breed==newBreed" if @breed is newBreed
     @die()
     newBreed.create 1, (a) => a.setXY @x, @y
 
@@ -389,26 +386,11 @@ class ABM.Agent
   # * Fill with agent color
   draw: (ctx) ->
     shape = ABM.shapes[@shape]
-    ctx.save()
+    rot = if shape.rotate then @heading else 0
     if @sprite?
-      ctx.translate @x, @y # see tutorial: http://goo.gl/VUlhY
-      ctx.rotate @heading if shape.rotate
-      ctx.scale 1/ABM.patches.size, -1/ABM.patches.size # convert back to pixel scale
-      if @sprite.canvas?
-        ctx.drawImage @sprite.canvas, -@sprite.canvas.width/2, -@sprite.canvas.height/2
-      else
-        ctx.drawImage @sprite, -@sprite.width/2, -@sprite.height/2
+      ABM.shapes.drawSprite ctx, @sprite, @x, @y, @size, rot
     else
-      ctx.translate @x, @y
-      ctx.scale @size, @size
-      ctx.rotate @heading if shape.rotate
-      @colorStr = u.colorStr @color if ABM.agents.staticColors and not @colorStr?
-      ctx.fillStyle = @colorStr or u.colorStr @color
-      ctx.beginPath()
-      shape.draw ctx
-      ctx.closePath()
-      ctx.fill()
-    ctx.restore()
+      ABM.shapes.draw ctx, shape, @x, @y, @size, rot, @color
   
   # Draw the agent on the drawing layer, leaving perminant image.
   stamp: -> @draw ABM.drawing
@@ -502,7 +484,7 @@ class ABM.Agents extends ABM.AgentSet
   # the breed variable shared by all the Agents in this set.
   constructor: (@breedClass, @name, @mainSet = null) ->
     super()
-    @staticColors = false
+    # @staticColors = false
     @useSprites = false
     @breedClass::breed = @
     delete @ID if @mainSet? # insure we use mainSet, not us, to install agent ids
@@ -515,18 +497,29 @@ class ABM.Agents extends ABM.AgentSet
   setDefaultHidden: (hidden)-> @breedClass::hidden = hidden
   setDefaultSprite: -> 
     if @breedClass::color?
-      @breedClass::sprite = ABM.shapes.shapeToImage \
+      @breedClass::sprite = ABM.shapes.shapeToSprite \
         @breedClass::shape, @breedClass::color, @breedClass::size*ABM.patches.size
   setDefaultPen:   (size, down=false) -> 
     @breedClass::penSize = size
     @breedClass::penDown = down
   # Like NetLogo's breed.own(), sets an agent variable and its default.
-  setDefaultVariable: (name, value) -> @breedClass::[name] = value
-  
-  # Performance: tell draw to reuse existing color string
-  setStaticColors: (@staticColors) ->
+  # Use "own" below for declaring a set of variables.
+  setDefaultVariable: (name, value) ->
+    u.error "setDefaultVariable: name is not a string" if typeof name isnt "string"
+    @breedClass::[name] = value
+    @breedClass::ownVariables.push name
+
   # Use sprites rather than drawing
-  setUseSprites: (@useSprites) ->
+  setUseSprites: (@useSprites=true) ->
+  
+  # Declare NetLogo "own" variables by name, default-value pairs:<br>
+  # frogs.own "pad", 22, "pond", "lake lovely", age, 12<br>
+  # Setting own, or default values vastly reduces memory foot print,
+  # helps with changeBreed, and helps identify wayward variables in agents
+  own: (name, value, others...) ->
+    @setDefaultVariable name, value
+    u.error "own: odd number of arguments" if others.length % 2 isnt 0
+    @setDefaultVariable name, others[i+1] for name, i in others by 2
 
   # Override add/remove to use @mainSet if needed, managing a pair of
   # agents, one in this agentSet mirroring the one in the mainSet.
@@ -677,7 +670,7 @@ class ABM.Links extends ABM.AgentSet
   clear: -> @last().die() while @any(); null # tricky, each die modifies list
 
   # Return the subset of this set with the given breed value.
-  # breed: (breed) -> @getWithProp "breed", breed
+  # breed: (breed) -> @getPropWith "breed", breed
 
   # Return all the nodes in this agentset, with duplicates
   # included.  If 4 links have the same endpoint, it will
