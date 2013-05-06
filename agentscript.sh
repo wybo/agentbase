@@ -11,6 +11,8 @@ files="\
 echo "cat .coffee files to agentscript.coffee"
 cat $files > agentscript.coffee
 
+#echo "compile agentscript.coffee"; coffee agentscript.coffee -c
+
 foo=`cat agentscript.coffee | sed '
   /^ *#/d
   s:#.*$::

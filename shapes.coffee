@@ -20,7 +20,7 @@ ABM.shapes = do ->
   # The list of current shapes, via `ABM.shapes.names()` below, is:
   #
   #     ["default", "triangle", "arrow", "bug", "pyramid", 
-  #      "circle", "square", "pentagon", "ring", "person"]
+  #      "circle", "square", "pentagon", "ring", "cup", "person"]
 
   # A simple polygon utility:  c is the 2D context, and a is an array of 2D points.
   # c.closePath() and c.fill() will be called by the calling agent, see initial 
@@ -31,20 +31,22 @@ ABM.shapes = do ->
     null
 
   # Centered drawing primitives: centered on x,y with a given width/height size.
-  circ = (c,x,y,s)->c.arc x,y,s/2,0,2*Math.PI
-  ccirc = (c,x,y,s)->c.arc x,y,s/2,0,2*Math.PI,true
-  cimg = (c,x,y,s,img)->c.scale 1,-1;c.drawImage img,x-s/2,y-s/2,s,s;c.scale 1,-1
-  csq = (c,x,y,s)->c.fillRect x-s/2, y-s/2, s, s
+  circ = (c,x,y,s)->c.arc x,y,s/2,0,2*Math.PI # centered circle
+  ccirc = (c,x,y,s)->c.arc x,y,s/2,0,2*Math.PI,true # centered counter clockwise circle
+  cimg = (c,x,y,s,img)->c.scale 1,-1;c.drawImage img,x-s/2,y-s/2,s,s;c.scale 1,-1 # centered image
+  csq = (c,x,y,s)->c.fillRect x-s/2, y-s/2, s, s # centered square
   
+  # An async util for delayed drawing of images into sprite slots
   fillSlot = (slot, img) ->
-    console.log "fillSlot #{slot.x} #{slot.y}", img
+    console.log "fillSlot #{slot.x} #{slot.y}", img # nifty to see the delayed response!
     slot.ctx.save(); slot.ctx.scale 1, -1
     slot.ctx.drawImage img, slot.x, -(slot.y+slot.size), slot.size, slot.size    
     slot.ctx.restore()
+  # The spritesheet data, indexed by size
+  spriteSheets = []
+  
   
   # Return our module:
-  poly: poly
-  spriteSheets: []
   default:
     rotate: true
     draw: (c) -> poly c, [[.5,0],[-.5,-.5],[-.25,0],[-.5,.5]]
@@ -78,7 +80,7 @@ ABM.shapes = do ->
   ring:
     rotate: false
     draw: (c) -> circ c,0,0,1; c.closePath(); ccirc c,0,0,.6
-  cup:
+  cup: # an image shape, using coffeescript logo
     shortcut: (c,x,y,s) -> cimg c,x,y,s,@img
     rotate: false
     img: u.importImage "http://goo.gl/HrBBb"
@@ -91,8 +93,6 @@ ABM.shapes = do ->
       [-.05,-.5],[-.25,-.5],[-.1,-.15],[-.125,.05],
       [-.125,-.1],[-.3,0],[-.15,.2]  ]
       c.closePath(); circ c,0,.35,.30 
-  # draw a path based sprite
-  # drawPath: (c, color, )
   # Return a list of the available shapes, see above.
   names: ->
     (name for own name, val of @ when val.rotate? and val.draw?)
@@ -100,12 +100,17 @@ ABM.shapes = do ->
   #
   #     ABM.shapes.add "test", true, (c) -> # bowtie/hourglass
   #       ABM.shapes.poly c, [[-.5,-.5],[.5,.5],[-.5,.5],[.5,-.5]]
+  #
+  # Note: an image that is not rotated automatically gets a shortcut. 
   add: (name, rotate, draw, shortcut = null) ->
     s = @[name] =
       if u.isFunction draw then {rotate,draw} else {rotate,img:draw,draw:(c)->cimg c,.5,.5,1,@img}
     (s.shortcut = (c,x,y,s) -> cimg c,x,y,s,@img) if s.img? and not s.rotate
     s.shortcut = shortcut if shortcut? # can override img default shortcut if needed
+  poly:poly, circ:circ, ccirc:ccirc, cimg:cimg, csq:csq # export utils for use by add
+  spriteSheets:spriteSheets # export spriteSheets for debugging, showing in DOM
 
+  # Two draw procedures, one for shapes, the other for sprites made from shapes.
   draw: (ctx, shape, x, y, size, rot, color) ->
     if shape.shortcut?
       ctx.fillStyle = u.colorStr color if not shape.img?
@@ -128,19 +133,19 @@ ABM.shapes = do ->
       ctx.drawImage s.ctx.canvas, s.x, s.y, s.size, s.size, x-size/2, y-size/2, size, size
     else
       ctx.save()
-      ctx.translate x, y # see tutorial: http://goo.gl/VUlhY
+      ctx.translate x, y # see http://goo.gl/VUlhY for drawing centered rotated images
       ctx.rotate rot
       ctx.drawImage s.ctx.canvas, s.x, s.y, s.size, s.size, -size/2,-size/2, size, size
       ctx.restore()
     s
-
+  # Convert a shape to a sprite by allocating a sprite "slot" and drawing the shape to fit it.
   shapeToSprite: (name, color, size) ->
     size = Math.ceil size
     shape = @[name]
-    ctx = @spriteSheets[size]
+    ctx = spriteSheets[size]
     # Create sheet for this size if it does not yet exist
     if not ctx?
-      @spriteSheets[size] = ctx = u.createCtx size*10, size
+      spriteSheets[size] = ctx = u.createCtx size*10, size
       ctx.nextX = 0; ctx.nextY = 0; ctx.images = {}
     # Extend the sheet if we're out of space
     if size*ctx.nextX is ctx.canvas.width

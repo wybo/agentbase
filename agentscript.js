@@ -637,7 +637,7 @@
   };
 
   ABM.shapes = (function() {
-    var ccirc, cimg, circ, csq, fillSlot, poly;
+    var ccirc, cimg, circ, csq, fillSlot, poly, spriteSheets;
     poly = function(c, a) {
       var i, p, _i, _len;
       for (i = _i = 0, _len = a.length; _i < _len; i = ++_i) {
@@ -671,9 +671,8 @@
       slot.ctx.drawImage(img, slot.x, -(slot.y + slot.size), slot.size, slot.size);
       return slot.ctx.restore();
     };
+    spriteSheets = [];
     return {
-      poly: poly,
-      spriteSheets: [],
       "default": {
         rotate: true,
         draw: function(c) {
@@ -800,6 +799,12 @@
           return s.shortcut = shortcut;
         }
       },
+      poly: poly,
+      circ: circ,
+      ccirc: ccirc,
+      cimg: cimg,
+      csq: csq,
+      spriteSheets: spriteSheets,
       draw: function(ctx, shape, x, y, size, rot, color) {
         if (shape.shortcut != null) {
           if (shape.img == null) {
@@ -844,9 +849,9 @@
         var ctx, img, imgslot, shape, slot, x, y;
         size = Math.ceil(size);
         shape = this[name];
-        ctx = this.spriteSheets[size];
+        ctx = spriteSheets[size];
         if (ctx == null) {
-          this.spriteSheets[size] = ctx = u.createCtx(size * 10, size);
+          spriteSheets[size] = ctx = u.createCtx(size * 10, size);
           ctx.nextX = 0;
           ctx.nextY = 0;
           ctx.images = {};

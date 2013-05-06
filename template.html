@@ -35,18 +35,20 @@
         @population = 100
         @size = 1.5   # size in patch coords
         @speed = .5   # move forward this amount in patch coords
-        @wiggle = U.degToRad(30) # degrees/radians to wiggle
+        @wiggle = u.degToRad(30) # degrees/radians to wiggle
         @startCircle = true  # initialize agents randomly or in circle
         @debug = true # turn on/off use of setRootVars() below
         
         # set the default agent size (conserves storage)
         @agents.setDefaultSize(@size)
         # set the agent to convert shape to bitmap for better performance.
-        # @agents.setUseSprites()
+        @agents.setUseSprites()
         # Add a few new shapes:
-        S.add "cc", true, U.importImage("http://backspaces.net/media/CCt.png")
-        S.add "redfish", false, U.importImage("http://backspaces.net/media/redfish64t.png")
-        S.add "bowtie", true, (c) => S.poly c, [[-.5,-.5],[.5,.5],[-.5,.5],[.5,-.5]]
+        s.add "cc", true, u.importImage("http://backspaces.net/media/CCt.png")
+        s.add "redfish", false, u.importImage("http://backspaces.net/media/redfish64t.png")
+        # s.add "bowtie", true, (c) -> poly c, [[-.5,-.5],[.5,.5],[-.5,.5],[.5,-.5]]
+        ABM.shapes.add "test", true, (c) -> # bowtie/hourglass
+          ABM.shapes.poly c, [[-.5,-.5],[.5,.5],[-.5,.5],[.5,-.5]]
         
 
         # set animation to 30fps, but without multiple steps per draw:
@@ -57,7 +59,7 @@
         # our model needs. In this case, we set the built-in color to a
         # random gray value.
         for p in @patches
-          p.color = U.randomGray()
+          p.color = u.randomGray()
           # Set x,y axes different color, use [0,0,0,0] for transparent pixel test
           p.color = [255,0,0] if p.x is 0 or p.y is 0
 
@@ -67,7 +69,7 @@
         # and layout the agents randomly or in a circle depending
         # on our modeel's `startCircle` variable.
         for a in @agents.create @population
-          a.shape = U.oneOf S.names() # random shapes
+          a.shape = u.oneOf s.names() # random shapes
           if @startCircle
             a.forward @patches.maxX/2 # start in circle
           else
@@ -78,7 +80,7 @@
         # [string interpolation](http://jashkenas.github.com/coffee-script/#strings)
         log "total agents: #{@agents.length}, total patches: #{@patches.length}"
         # Print number of agents with each shape
-        for s in S.names()
+        for s in s.names()
           num = @agents.getPropWith("shape", s).length
           log "#{num} #{s}"
 
@@ -109,13 +111,13 @@
       updateAgents: (a) -> # a is agent
         # Have our agent "wiggle" by changing
         # our heading by +/- `wiggle/2` radians
-        a.rotate U.randomCentered @wiggle
+        a.rotate u.randomCentered @wiggle
         # Then move forward by our speed.
         a.forward @speed
       updatePatches: (p) -> # p is patch
         # Update patch colors to be a random gray.
-        # Dont do this: Garbage Collection problem: p.color = U.randomGray()
-        U.randomGray(p.color) if p.x isnt 0 and p.y isnt 0 # aviod GC, reuse color
+        # Dont do this: Garbage Collection problem: p.color = u.randomGray()
+        u.randomGray(p.color) if p.x isnt 0 and p.y isnt 0 # aviod GC, reuse color
       reportInfo: ->
         # Report the average heading, in radians and degrees
         headings = @agents.getProp "heading"
@@ -124,7 +126,7 @@
         log "
 average heading of agents: 
 #{avgHeading.toFixed(2)} radians, 
-#{U.radToDeg(avgHeading).toFixed(2)} degrees"
+#{u.radToDeg(avgHeading).toFixed(2)} degrees"
 
     # Now that we've build our class, we call it with Model's
     # constructor arguments:
