@@ -351,11 +351,15 @@ ABM.util = u =
     ctx.canvas.setAttribute 'style', "position:absolute;top:0;left:0;z-index:#{z}"
     document.getElementById(div).appendChild(ctx.canvas)
     ctx
+  # Install identity transform.  Call ctx.restore() to revert to previous
+  setIdentity: (ctx) ->
+    ctx.save() # revert to native 2D transform
+    ctx.setTransform 1, 0, 0, 1, 0, 0
+  
   # Clear the 2D/3D layer to be transparent. Note this [discussion](http://goo.gl/qekXS).
   clearCtx: (ctx) ->
     if ctx.save? # test for 2D ctx
-      ctx.save() # ctx.canvas.width = ctx.canvas.width should work but problems on chrome anyway
-      ctx.setTransform 1, 0, 0, 1, 0, 0
+      @setIdentity ctx # ctx.canvas.width = ctx.canvas.width not used so as to preserve patch coords
       ctx.clearRect 0, 0, ctx.canvas.width, ctx.canvas.height
       ctx.restore()
     else # 3D
@@ -364,8 +368,7 @@ ABM.util = u =
   # Fill the 2D/3D layer with the given color
   fillCtx: (ctx, color) ->
     if ctx.fillStyle? # test for 2D ctx
-      ctx.save()
-      ctx.setTransform 1, 0, 0, 1, 0, 0
+      @setIdentity ctx
       ctx.fillStyle = @colorStr(color)
       ctx.fillRect 0, 0, ctx.canvas.width, ctx.canvas.height
       ctx.restore()
@@ -439,7 +442,7 @@ ABM.util = u =
 # A *very* simple shapes module for drawing
 # [NetLogo-like](http://ccl.northwestern.edu/netlogo/docs/) agents.
 
-ABM.shapes = do ->
+ABM.shapes = ABM.util.s = do ->
   # Each shape is a named object with two members: 
   # a boolean "rotate" and a drawing procedure.
   # The shape is used in the following context with a color set
@@ -549,7 +552,7 @@ ABM.shapes = do ->
   spriteSheets:spriteSheets # export spriteSheets for debugging, showing in DOM
 
   # Two draw procedures, one for shapes, the other for sprites made from shapes.
-  draw: (ctx, shape, x, y, size, rot, color) ->
+  draw: (ctx, shape, x, y, size, rad, color) ->
     if shape.shortcut?
       ctx.fillStyle = u.colorStr color if not shape.img?
       shape.shortcut ctx,x,y,size
@@ -557,7 +560,7 @@ ABM.shapes = do ->
       ctx.save()
       ctx.translate x, y
       ctx.scale size, size if size isnt 1
-      ctx.rotate rot if rot isnt 0
+      ctx.rotate rad if rad isnt 0
       if shape.img? # is an image, not a path function
         shape.draw ctx
       else
@@ -566,13 +569,13 @@ ABM.shapes = do ->
         ctx.fill()
       ctx.restore()
     shape
-  drawSprite: (ctx, s, x, y, size, rot) ->
-    if rot is 0
+  drawSprite: (ctx, s, x, y, size, rad) ->
+    if rad is 0
       ctx.drawImage s.ctx.canvas, s.x, s.y, s.size, s.size, x-size/2, y-size/2, size, size
     else
       ctx.save()
       ctx.translate x, y # see http://goo.gl/VUlhY for drawing centered rotated images
-      ctx.rotate rot
+      ctx.rotate rad
       ctx.drawImage s.ctx.canvas, s.x, s.y, s.size, s.size, -size/2,-size/2, size, size
       ctx.restore()
     s
@@ -884,15 +887,18 @@ class ABM.AgentSet extends Array
 
 # The example agentset AS used in the code fragments was made like this,
 # slightly more useful than shown above due to the toString method.
-class XY
-  constructor: (@x,@y) ->
-  toString: -> "{id:#{@id},x:#{@x},y:#{@y}}"
-@AS = new ABM.AgentSet # @ => global name space
+#
+# class XY
+#   constructor: (@x,@y) ->
+#   toString: -> "{id:#{@id},x:#{@x},y:#{@y}}"
+# @AS = new ABM.AgentSet # @ => global name space
+#
 # The result of 
 #
 #     AS.add new XY(u.randomInt(10), u.randomInt(10)) for i in [1..5]
+#
 # random run, captured so we can reuse.
-AS.add new XY(pt...) for pt in [[0,1],[8,0],[6,4],[1,3],[1,1]]
+# AS.add new XY(pt...) for pt in [[0,1],[8,0],[6,4],[1,3],[1,1]]
 # There are three agentsets and their corresponding 
 # agents: Patches/Patch, Agents/Agent, and Links/Link.
 
@@ -923,6 +929,9 @@ class ABM.Patch
   # Default patch is visible but can be changed to true if
   # appropriate by setDefault methods
   hidden: false
+  # Patch variables for this model
+  ownVariables: [] # keep list of user defined variables
+  
   # new Patch: set x,y. Neighbors set by Patches constructor if needed.
   constructor: (@x, @y) ->
 
@@ -998,9 +1007,43 @@ class ABM.Patches extends ABM.AgentSet
   # Note coffeescript :: which refers to the Patch prototype.
   # This is the usual way to modify class variables.
   setDefaultColor: (color) -> ABM.Patch::color = color
+  
+  # Have patches cache the agents currently on them.
+  # Optimizes Patch p.agentsHere method.
+  # Must be called before first agent is created.
+  cacheAgentsHere: -> p.agents = [] for p in @; null
 
-  # Like NetLogo's patches.own(), sets a patch variable and its default.
-  setDefaultVariable: (name, value) -> ABM.Patch::[name] = value
+  # Draw patches using scaled image of colors. Note anti-aliasing may occur
+  # if browser does not support imageSmoothingEnabled or equivalent.
+  usePixels: (usePix=true) ->
+    ctx = ABM.contexts.patches
+    ctx.imageSmoothingEnabled = not usePix
+    ctx.mozImageSmoothingEnabled = not usePix
+    ctx.webkitImageSmoothingEnabled = not usePix
+    u.setIdentity ctx
+    @drawWithPixels = usePix
+
+  cacheRect: (radius, meToo=false) ->
+    for p in @
+      p.pRect = @patchRect p, radius, radius, meToo # posssibly multiple radii?
+      p.pRect.radius = radius
+      p.pRect.meToo = meToo
+
+  # Set a patch variable and its default.
+  # Use "own" below for declaring a set of variables.
+  setDefaultVariable: (name, value) ->
+    u.error "setDefaultVariable: name is not a string" if typeof name isnt "string"
+    ABM.Patch::[name] = value
+    ABM.Patch::ownVariables.push name
+
+  # Declare NetLogo "own" variables by name, default-value pairs:<br>
+  # patches.own "elevation", 0, "onFire", false<br>
+  # Setting own, or default values vastly reduces memory foot print,
+  # and helps identify wayward variables in agents
+  own: (name, value, others...) ->
+    @setDefaultVariable name, value
+    u.error "own: odd number of arguments" if others.length % 2 isnt 0
+    @setDefaultVariable name, others[i+1] for name, i in others by 2
 
   # Install neighborhoods in patches
   setNeighbors: -> 
@@ -1098,8 +1141,7 @@ class ABM.Patches extends ABM.AgentSet
   importDrawing: (imageSrc) ->
     u.importImage imageSrc, (img) ->
       ctx = ABM.drawing
-      ctx.save() # revert to native 2D transform
-      ctx.setTransform 1, 0, 0, 1, 0, 0
+      u.setIdentity ctx
       ctx.drawImage img, 0, 0, ctx.canvas.width, ctx.canvas.height
       ctx.restore() # restore patch transform
   
@@ -1215,7 +1257,7 @@ class ABM.Agent
   penSize: 1
   heading: null
   sprite: null # default sprite, set by Model
-  links: null
+  cacheLinks: false
   ownVariables: [] # keep list of user defined variables
   constructor: -> # called by agentSets create factory, not user
     @x = @y = 0
@@ -1223,7 +1265,7 @@ class ABM.Agent
     @heading = u.randomFloat(Math.PI*2) if not @heading? 
     @p = ABM.patches.patch @x, @y
     @p.agents.push @ if @p.agents? # ABM.patches.cacheAgentsHere
-    @links = [] if ABM.links.cacheAgentLinks
+    @links = [] if @cacheLinks
 
   # Move agent to different breed agentSet
   # Normally not needed, breeds is initialized by the breed agentSet
@@ -1281,11 +1323,11 @@ class ABM.Agent
   # * Fill with agent color
   draw: (ctx) ->
     shape = ABM.shapes[@shape]
-    rot = if shape.rotate then @heading else 0
+    rad = if shape.rotate then @heading else 0 # radians
     if @sprite?
-      ABM.shapes.drawSprite ctx, @sprite, @x, @y, @size, rot
+      ABM.shapes.drawSprite ctx, @sprite, @x, @y, @size, rad
     else
-      ABM.shapes.draw ctx, shape, @x, @y, @size, rot, @color
+      ABM.shapes.draw ctx, shape, @x, @y, @size, rad, @color
   
   # Draw the agent on the drawing layer, leaving perminant image.
   stamp: -> @draw ABM.drawing
@@ -1384,6 +1426,10 @@ class ABM.Agents extends ABM.AgentSet
     @breedClass::breed = @
     delete @ID if @mainSet? # insure we use mainSet, not us, to install agent ids
 
+  # Have agents cache the links with them as a node.
+  # Optimizes Agent a.myLinks method. Call before any agents created.
+  cacheLinks: -> ABM.Agent::cacheLinks = true # all agents, not individual breeds
+
   # Methods to change the default Agent class variables.
   setDefaultColor:  (color) -> @breedClass::color = color#; @setDefaultSprite()
   setDefaultShape:  (shape) -> @breedClass::shape = shape#; @setDefaultSprite()
@@ -1397,13 +1443,13 @@ class ABM.Agents extends ABM.AgentSet
   setDefaultPen:   (size, down=false) -> 
     @breedClass::penSize = size
     @breedClass::penDown = down
-  # Like NetLogo's breed.own(), sets an agent variable and its default.
+  # Set an agent variable and its default.
   # Use "own" below for declaring a set of variables.
   setDefaultVariable: (name, value) ->
     u.error "setDefaultVariable: name is not a string" if typeof name isnt "string"
     @breedClass::[name] = value
     @breedClass::ownVariables.push name
-
+  
   # Use sprites rather than drawing
   setUseSprites: (@useSprites=true) ->
   
@@ -1478,8 +1524,9 @@ class ABM.Link
   color: [130, 130, 130]
   thickness: 2
   hidden: false
+  ownVariables: [] # keep list of user defined variables
   constructor: (@end1, @end2) ->
-    if ABM.links.cacheAgentLinks
+    if @end1.links?
       @end1.links.push @
       @end2.links.push @
       
@@ -1531,7 +1578,7 @@ class ABM.Links extends ABM.AgentSet
   # the breed variable shared by all the Links in this set.
   constructor: (@breedClass, @name, @mainSet = null) ->
     super()
-    @cacheAgentLinks = false
+    # @cacheAgentLinks = false
     @breedClass::breed = @
   
   # Methods to change the default Link class variables.
@@ -1539,8 +1586,19 @@ class ABM.Links extends ABM.AgentSet
   setDefaultThickness: (thickness)  -> @breedClass::thickness = thickness
   setDefaultHidden:    (hidden)     -> @breedClass::hidden = hidden
 
-  # Like NetLogo's breed.own(), sets an agent variable and its default.
-  setDefaultVariable: (name, value) -> @breedClass::[name] = value
+  # Set a link variable and its default.
+  # Use "own" below for declaring a set of variables.
+  setDefaultVariable: (name, value) ->
+    u.error "setDefaultVariable: name is not a string" if typeof name isnt "string"
+    @breedClass::[name] = value
+    @breedClass::ownVariables.push name
+
+  # Declare NetLogo "own" variables by name, default-value pairs:<br>
+  # spokes.own "radius", 7, "agentsOn", []<br>
+  own: (name, value, others...) ->
+    @setDefaultVariable name, value
+    u.error "own: odd number of arguments" if others.length % 2 isnt 0
+    @setDefaultVariable name, others[i+1] for name, i in others by 2
 
   # Override add/remove to use @mainSet if needed, managing a pair of
   # agents, one in this agentSet mirroring the one in the mainSet.
@@ -1680,8 +1738,7 @@ class ABM.Model
     # Note: this is permanent .. there is no ctx.restore() call.<br>
     # To use the original canvas 2D transform temporarily:
     #
-    #     ctx.save()
-    #     ctx.setTransform(1, 0, 0, 1, 0, 0) # reset to identity
+    #     u.setIdentity ctx
     #       <draw in native coord system>
     #     ctx.restore() # restore back to patch coord system
     
@@ -1727,39 +1784,23 @@ class ABM.Model
 
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
   # if browser does not support imageSmoothingEnabled or equivalent.
-  setFastPatches: ->
-    ctx = @contexts.patches
-    ctx.imageSmoothingEnabled = false
-    ctx.mozImageSmoothingEnabled = false
-    ctx.webkitImageSmoothingEnabled = false
-    ctx.save() # revert to native 2D transform
-    ctx.setTransform 1, 0, 0, 1, 0, 0
-    @patches.drawWithPixels = true
+  setFastPatches: -> @patches.usePixels()
     
   # Have patches cache the agents currently on them.
   # Optimizes Patch p.agentsHere method
-  setCacheAgentsHere: ->
-    p.agents = [] for p in @patches
-    a.p.agents.push a for a in @agents
+  setCacheAgentsHere: -> @patches.cacheAgentsHere()
   
   # Have agents cache the links with them as a node.
   # Optimizes Agent a.myLinks method
-  setCacheMyLinks: ->
-    @links.cacheAgentLinks = true
-    a.links = [] for a in @agents # not needed if called b4 any agents & links made
-    (l.end1.links.push l; l.end2.links.push l) for l in @links
+  setCacheMyLinks: -> @agents.cacheLinks()
   
   # Have patches cache the given patchRect.
   # Optimizes patchRect, inRadius and inCone
-  setCachePatchRects: (radius, meToo=false) ->
-    for p in @patches
-      p.pRect = @patches.patchRect p, radius, radius, meToo
-      p.pRect.radius = radius
-      p.pRect.meToo = meToo
+  setCachePatchRects: (radius, meToo=false) -> @patches.cacheRect radius, meToo
 
 #### Text Utilities:
 
-  # Return context name for agentset
+  # Return context name for agentset via naming convention: Links->links etc.
   agentSetCtxName: (aset) ->
     aset = aset.mainSet if aset.mainSet? # breeds->mainSet
     aset.constructor.name.toLowerCase()

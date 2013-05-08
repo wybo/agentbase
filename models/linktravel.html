@@ -5,7 +5,7 @@
     <script src="../coffee-script.js"></script>
     <script type="text/coffeescript">
     
-    u = ABM.util; s = ABM.shapes # ABM.util & ABM.shape aliases; "local" to coffeescript wrapper
+    u = ABM.util # ABM.util alias, u.s is also ABM.shape accessor.
     class MyModel extends ABM.Model
       setup: -> # called by Model ctor
         @agentBreeds "nodes drivers"
@@ -16,12 +16,12 @@
         # 40-44fps->58+fps
         @refreshPatches = false # 56fps
         @refreshLinks = false # 40-49fps
-        # @setFastPatches() # 58+fps same as refresh off
-        # @setCacheAgentsHere() # 40fps; not needed, slight overhead
+        # @patches.usePixels() # 58+fps same as refresh off
+        # @patches.cacheAgentsHere() # 40fps; not needed, slight overhead
         # @setAgentStaticColors() # 42fps, 1-2 fps improvement
         @agents.setUseSprites() # 24 -> 36
         # w/ refreshs off and 1 optimization 59/max-fps
-        # @setCacheMyLinks() # no improvement, but tests a.links
+        # @agents.cacheLinks() # no improvement, but tests a.links
         
         @anim.setRate 30, true # almost 3:1 steps/draws!
         # @anim.setRate 60, false # for optimization studies & profiling

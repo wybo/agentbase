@@ -5,7 +5,7 @@
     <script src="../coffee-script.js"></script>
     <script type="text/coffeescript">
     
-    u = ABM.util; s = ABM.shapes # ABM.util & ABM.shape aliases; "local" to coffeescript wrapper
+    u = ABM.util # ABM.util alias, u.s is also ABM.shape accessor.
     class MyModel extends ABM.Model
       setup: -> # called by Model ctor
         @agentBreeds "nodes travelers"
@@ -13,7 +13,7 @@
         # no optimizations: 44fps
         @refreshPatches = false # for static patches
         @refreshAgents = false # for static agents
-        # setFastPatches, setCacheAgentsHere, setAgentStaticColors would not apply
+        # @patches.usePixels(), setCacheAgentsHere, setAgentStaticColors would not apply
         # both: 57+fps (max)
 
         # globals

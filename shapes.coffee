@@ -1,7 +1,7 @@
 # A *very* simple shapes module for drawing
 # [NetLogo-like](http://ccl.northwestern.edu/netlogo/docs/) agents.
 
-ABM.shapes = do ->
+ABM.shapes = ABM.util.s = do ->
   # Each shape is a named object with two members: 
   # a boolean "rotate" and a drawing procedure.
   # The shape is used in the following context with a color set
@@ -111,7 +111,7 @@ ABM.shapes = do ->
   spriteSheets:spriteSheets # export spriteSheets for debugging, showing in DOM
 
   # Two draw procedures, one for shapes, the other for sprites made from shapes.
-  draw: (ctx, shape, x, y, size, rot, color) ->
+  draw: (ctx, shape, x, y, size, rad, color) ->
     if shape.shortcut?
       ctx.fillStyle = u.colorStr color if not shape.img?
       shape.shortcut ctx,x,y,size
@@ -119,7 +119,7 @@ ABM.shapes = do ->
       ctx.save()
       ctx.translate x, y
       ctx.scale size, size if size isnt 1
-      ctx.rotate rot if rot isnt 0
+      ctx.rotate rad if rad isnt 0
       if shape.img? # is an image, not a path function
         shape.draw ctx
       else
@@ -128,13 +128,13 @@ ABM.shapes = do ->
         ctx.fill()
       ctx.restore()
     shape
-  drawSprite: (ctx, s, x, y, size, rot) ->
-    if rot is 0
+  drawSprite: (ctx, s, x, y, size, rad) ->
+    if rad is 0
       ctx.drawImage s.ctx.canvas, s.x, s.y, s.size, s.size, x-size/2, y-size/2, size, size
     else
       ctx.save()
       ctx.translate x, y # see http://goo.gl/VUlhY for drawing centered rotated images
-      ctx.rotate rot
+      ctx.rotate rad
       ctx.drawImage s.ctx.canvas, s.x, s.y, s.size, s.size, -size/2,-size/2, size, size
       ctx.restore()
     s

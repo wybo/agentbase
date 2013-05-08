@@ -20,9 +20,9 @@
     #
     # below, which passes all its arguments to `Model`
     
-    u = ABM.util; s = ABM.shapes # ABM.util & ABM.shape aliases; "local" to coffeescript wrapper
+    u = ABM.util # ABM.util alias, u.s is also ABM.shape accessor.
+    log = (arg) -> console.log arg
     class MyModel extends ABM.Model
-      log = (arg) -> console.log arg
 
       # Initialize our model via the `setup` abstract method.
       # This model simply creates `population` agents with
@@ -43,13 +43,10 @@
         @agents.setDefaultSize(@size)
         # set the agent to convert shape to bitmap for better performance.
         @agents.setUseSprites()
-        # Add a few new shapes:
-        s.add "cc", true, u.importImage("http://backspaces.net/media/CCt.png")
-        s.add "redfish", false, u.importImage("http://backspaces.net/media/redfish64t.png")
-        # s.add "bowtie", true, (c) -> poly c, [[-.5,-.5],[.5,.5],[-.5,.5],[.5,-.5]]
-        ABM.shapes.add "test", true, (c) -> # bowtie/hourglass
-          ABM.shapes.poly c, [[-.5,-.5],[.5,.5],[-.5,.5],[.5,-.5]]
-        
+        # Add a few new shapes; u.s. is ABM.shapes.
+        u.s.add "cc", true, u.importImage("http://backspaces.net/media/CCt.png")
+        u.s.add "redfish", false, u.importImage("http://backspaces.net/media/redfish64t.png")
+        u.s.add "bowtie", true, (c) -> u.s.poly c, [[-.5,-.5],[.5,.5],[-.5,.5],[.5,-.5]]
 
         # set animation to 30fps, but without multiple steps per draw:
         @anim.setRate 60, false
@@ -69,7 +66,7 @@
         # and layout the agents randomly or in a circle depending
         # on our modeel's `startCircle` variable.
         for a in @agents.create @population
-          a.shape = u.oneOf s.names() # random shapes
+          a.shape = u.oneOf u.s.names() # random shapes
           if @startCircle
             a.forward @patches.maxX/2 # start in circle
           else
@@ -80,7 +77,7 @@
         # [string interpolation](http://jashkenas.github.com/coffee-script/#strings)
         log "total agents: #{@agents.length}, total patches: #{@patches.length}"
         # Print number of agents with each shape
-        for s in s.names()
+        for s in u.s.names()
           num = @agents.getPropWith("shape", s).length
           log "#{num} #{s}"
 
@@ -146,10 +143,10 @@ average heading of agents:
     # for name scope discussion.
     (@APP = APP; APP.setRootVars()) if APP.debug
     
-    # Debug: show agent sheet
+    # Debug: show agent sheet; use ABM.shapes rather than u.s to show both uses
     sheet = ABM.shapes.spriteSheets[Math.ceil APP.size*APP.patches.size]
     if sheet?
-      console.log sheet
+      log sheet
       document.getElementById("play").appendChild(sheet.canvas)
     
     </script>

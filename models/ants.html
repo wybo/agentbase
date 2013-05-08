@@ -5,13 +5,13 @@
     <script src="../coffee-script.js"></script>
     <script type="text/coffeescript">
 
-    u = ABM.util; s = ABM.shapes # ABM.util & ABM.shape aliases; "local" to coffeescript wrapper
+    u = ABM.util # ABM.util alias, u.s is also ABM.shape accessor.
     class MyModel extends ABM.Model
       setup: -> # called by Model ctor
         
         # No optimizations: 10fps
-        @setFastPatches() # 24fps
-        # @setCacheAgentsHere() # 9-10fps, not needed & modest overhead
+        @patches.usePixels() # 24fps
+        # @patches.cacheAgentsHere() # 9-10fps, not needed & modest overhead
         # @setAgentStaticColors() # 10fps, not large part of performance
         # two: 27fps, now static colors larger percent of faster patches.
         @agents.setUseSprites() # 24->46-48fps!

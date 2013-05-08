@@ -28,6 +28,9 @@ class ABM.Patch
   # Default patch is visible but can be changed to true if
   # appropriate by setDefault methods
   hidden: false
+  # Patch variables for this model
+  ownVariables: [] # keep list of user defined variables
+  
   # new Patch: set x,y. Neighbors set by Patches constructor if needed.
   constructor: (@x, @y) ->
 
@@ -103,9 +106,43 @@ class ABM.Patches extends ABM.AgentSet
   # Note coffeescript :: which refers to the Patch prototype.
   # This is the usual way to modify class variables.
   setDefaultColor: (color) -> ABM.Patch::color = color
+  
+  # Have patches cache the agents currently on them.
+  # Optimizes Patch p.agentsHere method.
+  # Must be called before first agent is created.
+  cacheAgentsHere: -> p.agents = [] for p in @; null
 
-  # Like NetLogo's patches.own(), sets a patch variable and its default.
-  setDefaultVariable: (name, value) -> ABM.Patch::[name] = value
+  # Draw patches using scaled image of colors. Note anti-aliasing may occur
+  # if browser does not support imageSmoothingEnabled or equivalent.
+  usePixels: (usePix=true) ->
+    ctx = ABM.contexts.patches
+    ctx.imageSmoothingEnabled = not usePix
+    ctx.mozImageSmoothingEnabled = not usePix
+    ctx.webkitImageSmoothingEnabled = not usePix
+    u.setIdentity ctx
+    @drawWithPixels = usePix
+
+  cacheRect: (radius, meToo=false) ->
+    for p in @
+      p.pRect = @patchRect p, radius, radius, meToo # posssibly multiple radii?
+      p.pRect.radius = radius
+      p.pRect.meToo = meToo
+
+  # Set a patch variable and its default.
+  # Use "own" below for declaring a set of variables.
+  setDefaultVariable: (name, value) ->
+    u.error "setDefaultVariable: name is not a string" if typeof name isnt "string"
+    ABM.Patch::[name] = value
+    ABM.Patch::ownVariables.push name
+
+  # Declare NetLogo "own" variables by name, default-value pairs:<br>
+  # patches.own "elevation", 0, "onFire", false<br>
+  # Setting own, or default values vastly reduces memory foot print,
+  # and helps identify wayward variables in agents
+  own: (name, value, others...) ->
+    @setDefaultVariable name, value
+    u.error "own: odd number of arguments" if others.length % 2 isnt 0
+    @setDefaultVariable name, others[i+1] for name, i in others by 2
 
   # Install neighborhoods in patches
   setNeighbors: -> 
@@ -203,8 +240,7 @@ class ABM.Patches extends ABM.AgentSet
   importDrawing: (imageSrc) ->
     u.importImage imageSrc, (img) ->
       ctx = ABM.drawing
-      ctx.save() # revert to native 2D transform
-      ctx.setTransform 1, 0, 0, 1, 0, 0
+      u.setIdentity ctx
       ctx.drawImage img, 0, 0, ctx.canvas.width, ctx.canvas.height
       ctx.restore() # restore patch transform
   
@@ -320,7 +356,7 @@ class ABM.Agent
   penSize: 1
   heading: null
   sprite: null # default sprite, set by Model
-  links: null
+  cacheLinks: false
   ownVariables: [] # keep list of user defined variables
   constructor: -> # called by agentSets create factory, not user
     @x = @y = 0
@@ -328,7 +364,7 @@ class ABM.Agent
     @heading = u.randomFloat(Math.PI*2) if not @heading? 
     @p = ABM.patches.patch @x, @y
     @p.agents.push @ if @p.agents? # ABM.patches.cacheAgentsHere
-    @links = [] if ABM.links.cacheAgentLinks
+    @links = [] if @cacheLinks
 
   # Move agent to different breed agentSet
   # Normally not needed, breeds is initialized by the breed agentSet
@@ -386,11 +422,11 @@ class ABM.Agent
   # * Fill with agent color
   draw: (ctx) ->
     shape = ABM.shapes[@shape]
-    rot = if shape.rotate then @heading else 0
+    rad = if shape.rotate then @heading else 0 # radians
     if @sprite?
-      ABM.shapes.drawSprite ctx, @sprite, @x, @y, @size, rot
+      ABM.shapes.drawSprite ctx, @sprite, @x, @y, @size, rad
     else
-      ABM.shapes.draw ctx, shape, @x, @y, @size, rot, @color
+      ABM.shapes.draw ctx, shape, @x, @y, @size, rad, @color
   
   # Draw the agent on the drawing layer, leaving perminant image.
   stamp: -> @draw ABM.drawing
@@ -489,6 +525,10 @@ class ABM.Agents extends ABM.AgentSet
     @breedClass::breed = @
     delete @ID if @mainSet? # insure we use mainSet, not us, to install agent ids
 
+  # Have agents cache the links with them as a node.
+  # Optimizes Agent a.myLinks method. Call before any agents created.
+  cacheLinks: -> ABM.Agent::cacheLinks = true # all agents, not individual breeds
+
   # Methods to change the default Agent class variables.
   setDefaultColor:  (color) -> @breedClass::color = color#; @setDefaultSprite()
   setDefaultShape:  (shape) -> @breedClass::shape = shape#; @setDefaultSprite()
@@ -502,13 +542,13 @@ class ABM.Agents extends ABM.AgentSet
   setDefaultPen:   (size, down=false) -> 
     @breedClass::penSize = size
     @breedClass::penDown = down
-  # Like NetLogo's breed.own(), sets an agent variable and its default.
+  # Set an agent variable and its default.
   # Use "own" below for declaring a set of variables.
   setDefaultVariable: (name, value) ->
     u.error "setDefaultVariable: name is not a string" if typeof name isnt "string"
     @breedClass::[name] = value
     @breedClass::ownVariables.push name
-
+  
   # Use sprites rather than drawing
   setUseSprites: (@useSprites=true) ->
   
@@ -583,8 +623,9 @@ class ABM.Link
   color: [130, 130, 130]
   thickness: 2
   hidden: false
+  ownVariables: [] # keep list of user defined variables
   constructor: (@end1, @end2) ->
-    if ABM.links.cacheAgentLinks
+    if @end1.links?
       @end1.links.push @
       @end2.links.push @
       
@@ -636,7 +677,7 @@ class ABM.Links extends ABM.AgentSet
   # the breed variable shared by all the Links in this set.
   constructor: (@breedClass, @name, @mainSet = null) ->
     super()
-    @cacheAgentLinks = false
+    # @cacheAgentLinks = false
     @breedClass::breed = @
   
   # Methods to change the default Link class variables.
@@ -644,8 +685,19 @@ class ABM.Links extends ABM.AgentSet
   setDefaultThickness: (thickness)  -> @breedClass::thickness = thickness
   setDefaultHidden:    (hidden)     -> @breedClass::hidden = hidden
 
-  # Like NetLogo's breed.own(), sets an agent variable and its default.
-  setDefaultVariable: (name, value) -> @breedClass::[name] = value
+  # Set a link variable and its default.
+  # Use "own" below for declaring a set of variables.
+  setDefaultVariable: (name, value) ->
+    u.error "setDefaultVariable: name is not a string" if typeof name isnt "string"
+    @breedClass::[name] = value
+    @breedClass::ownVariables.push name
+
+  # Declare NetLogo "own" variables by name, default-value pairs:<br>
+  # spokes.own "radius", 7, "agentsOn", []<br>
+  own: (name, value, others...) ->
+    @setDefaultVariable name, value
+    u.error "own: odd number of arguments" if others.length % 2 isnt 0
+    @setDefaultVariable name, others[i+1] for name, i in others by 2
 
   # Override add/remove to use @mainSet if needed, managing a pair of
   # agents, one in this agentSet mirroring the one in the mainSet.

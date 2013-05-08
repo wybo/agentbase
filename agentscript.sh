@@ -8,10 +8,9 @@ files="\
   model.coffee \
 "
 
-echo "cat .coffee files to agentscript.coffee"
-cat $files > agentscript.coffee
+echo "cat .coffee files to agentscript.coffee"; cat $files > agentscript.coffee
 
-#echo "compile agentscript.coffee"; coffee agentscript.coffee -c
+echo "compile agentscript.coffee"; coffee -c agentscript.coffee
 
 foo=`cat agentscript.coffee | sed '
   /^ *#/d
@@ -26,8 +25,10 @@ foo=`cat agentscript.js | sed '
   /setRootVars/,$d
 ' | wc`; echo "AgentScript: JavaScript lines of code: " $foo
 
-echo "uglify agentscript.js"
-uglifyjs agentscript.js -c -m > agentscript.min.js
+echo "uglify agentscript.js"; uglifyjs agentscript.js -c -m > agentscript.min.js
+
+echo "creating docs from .coffee files"; ./doc.sh
+
 # echo "zip agentscript/"
 # cd ..
 # zip -rq agentscript.zip agentscript

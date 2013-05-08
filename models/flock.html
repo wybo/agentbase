@@ -5,7 +5,7 @@
     <script src="../coffee-script.js"></script>
     <script type="text/coffeescript">
     
-    u = ABM.util; s = ABM.shapes # ABM.util & ABM.shape aliases; "local" to coffeescript wrapper
+    u = ABM.util # ABM.util alias, u.s is also ABM.shape accessor.
     class MyModel extends ABM.Model
       setup: -> # called by Model ctor
       
@@ -18,11 +18,11 @@
       
         @refreshPatches = false # <3fps->4fps agents larger part of drawing 
         # No optimizations: 4fps
-        # @setFastPatches() # 4fps same as refresh off
-        @setCacheAgentsHere() # 17fps, big help for inRadius
+        # @patches.usePixels() # 4fps same as refresh off
+        @patches.cacheAgentsHere() # 17fps, big help for inRadius
         # @setAgentStaticColors() # 3fps, not large part of performance
         # w/ refresh off and two optimizations, 22-23fps
-        @setCachePatchRects @vision, true # 22/23 -> 24; only +1+
+        @patches.cacheRect @vision, true # 22/23 -> 24; only +1+
         @agents.setUseSprites() # 24 -> 36
         
         @anim.setRate 60, false

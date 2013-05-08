@@ -85,8 +85,7 @@ class ABM.Model
     # Note: this is permanent .. there is no ctx.restore() call.<br>
     # To use the original canvas 2D transform temporarily:
     #
-    #     ctx.save()
-    #     ctx.setTransform(1, 0, 0, 1, 0, 0) # reset to identity
+    #     u.setIdentity ctx
     #       <draw in native coord system>
     #     ctx.restore() # restore back to patch coord system
     
@@ -132,39 +131,23 @@ class ABM.Model
 
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
   # if browser does not support imageSmoothingEnabled or equivalent.
-  setFastPatches: ->
-    ctx = @contexts.patches
-    ctx.imageSmoothingEnabled = false
-    ctx.mozImageSmoothingEnabled = false
-    ctx.webkitImageSmoothingEnabled = false
-    ctx.save() # revert to native 2D transform
-    ctx.setTransform 1, 0, 0, 1, 0, 0
-    @patches.drawWithPixels = true
+  setFastPatches: -> @patches.usePixels()
     
   # Have patches cache the agents currently on them.
   # Optimizes Patch p.agentsHere method
-  setCacheAgentsHere: ->
-    p.agents = [] for p in @patches
-    a.p.agents.push a for a in @agents
+  setCacheAgentsHere: -> @patches.cacheAgentsHere()
   
   # Have agents cache the links with them as a node.
   # Optimizes Agent a.myLinks method
-  setCacheMyLinks: ->
-    @links.cacheAgentLinks = true
-    a.links = [] for a in @agents # not needed if called b4 any agents & links made
-    (l.end1.links.push l; l.end2.links.push l) for l in @links
+  setCacheMyLinks: -> @agents.cacheLinks()
   
   # Have patches cache the given patchRect.
   # Optimizes patchRect, inRadius and inCone
-  setCachePatchRects: (radius, meToo=false) ->
-    for p in @patches
-      p.pRect = @patches.patchRect p, radius, radius, meToo
-      p.pRect.radius = radius
-      p.pRect.meToo = meToo
+  setCachePatchRects: (radius, meToo=false) -> @patches.cacheRect radius, meToo
 
 #### Text Utilities:
 
-  # Return context name for agentset
+  # Return context name for agentset via naming convention: Links->links etc.
   agentSetCtxName: (aset) ->
     aset = aset.mainSet if aset.mainSet? # breeds->mainSet
     aset.constructor.name.toLowerCase()

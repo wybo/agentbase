@@ -275,12 +275,15 @@ class ABM.AgentSet extends Array
 
 # The example agentset AS used in the code fragments was made like this,
 # slightly more useful than shown above due to the toString method.
-class XY
-  constructor: (@x,@y) ->
-  toString: -> "{id:#{@id},x:#{@x},y:#{@y}}"
-@AS = new ABM.AgentSet # @ => global name space
+#
+# class XY
+#   constructor: (@x,@y) ->
+#   toString: -> "{id:#{@id},x:#{@x},y:#{@y}}"
+# @AS = new ABM.AgentSet # @ => global name space
+#
 # The result of 
 #
 #     AS.add new XY(u.randomInt(10), u.randomInt(10)) for i in [1..5]
+#
 # random run, captured so we can reuse.
-AS.add new XY(pt...) for pt in [[0,1],[8,0],[6,4],[1,3],[1,1]]
+# AS.add new XY(pt...) for pt in [[0,1],[8,0],[6,4],[1,3],[1,1]]

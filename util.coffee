@@ -351,11 +351,15 @@ ABM.util = u =
     ctx.canvas.setAttribute 'style', "position:absolute;top:0;left:0;z-index:#{z}"
     document.getElementById(div).appendChild(ctx.canvas)
     ctx
+  # Install identity transform.  Call ctx.restore() to revert to previous
+  setIdentity: (ctx) ->
+    ctx.save() # revert to native 2D transform
+    ctx.setTransform 1, 0, 0, 1, 0, 0
+  
   # Clear the 2D/3D layer to be transparent. Note this [discussion](http://goo.gl/qekXS).
   clearCtx: (ctx) ->
     if ctx.save? # test for 2D ctx
-      ctx.save() # ctx.canvas.width = ctx.canvas.width should work but problems on chrome anyway
-      ctx.setTransform 1, 0, 0, 1, 0, 0
+      @setIdentity ctx # ctx.canvas.width = ctx.canvas.width not used so as to preserve patch coords
       ctx.clearRect 0, 0, ctx.canvas.width, ctx.canvas.height
       ctx.restore()
     else # 3D
@@ -364,8 +368,7 @@ ABM.util = u =
   # Fill the 2D/3D layer with the given color
   fillCtx: (ctx, color) ->
     if ctx.fillStyle? # test for 2D ctx
-      ctx.save()
-      ctx.setTransform 1, 0, 0, 1, 0, 0
+      @setIdentity ctx
       ctx.fillStyle = @colorStr(color)
       ctx.fillRect 0, 0, ctx.canvas.width, ctx.canvas.height
       ctx.restore()
