@@ -25,17 +25,17 @@ See the template.html and models/*.html files for example models.  The individua
 
 Currently the documentation is hosted directly on github via the [rawgithub](https://rawgithub.com/) project using the docco generated html found in the doc/ directory.  One exception is the template.html file in the top level directory.
 
-[**util.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/util.html): is the base module for all of the miscellaneous functions used by the rest of the project.
+[**util.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/1-util.html): is the base module for all of the miscellaneous functions used by the rest of the project.
 
-[**shapes.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/shapes.html): is a simple agent shapes module containing the default shapes and a few functions for getting the named shapes and adding your own shapes.
+[**shapes.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/2-shapes.html): is a simple agent shapes module containing the default shapes and a few functions for getting the named shapes and adding your own shapes.
 
-[**agentset.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/agentset.html) is the core array subclass used by patches, agents, and links.
+[**agentset.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/3-agentset.html) is the core array subclass used by patches, agents, and links.
 
-[**agentsets.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/agentsets.html) contains the three subclasses of AgentSet: Patches, Agents, and Links along with the three classes they manage: Patch, Agent, and Link.
+[**agentsets.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/4-agentsets.html) contains the three subclasses of AgentSet: Patches, Agents, and Links along with the three classes they manage: Patch, Agent, and Link.
 
-[**model.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/model.html) is the top level integration for all the agentsets and is subclassed by all user models. 
+[**model.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/5-model.html) is the top level integration for all the agentsets and is subclassed by all user models. 
 
-[**template.html**](https://rawgithub.com/backspaces/agentscript/master/docs/template.html) is a trivial subclass of Model showing the basic structure how you build your own models.  In addition, the models/ directory contains 10 simple models used in teaching NetLogo. You can [run the model here.](https://rawgithub.com/backspaces/agentscript/master/template.html) 
+[**template.html**](https://rawgithub.com/backspaces/agentscript/master/docs/6-template.html) is a trivial subclass of Model showing the basic structure how you build your own models.  In addition, the models/ directory contains 10 simple models used in teaching NetLogo. You can [run the model here.](https://rawgithub.com/backspaces/agentscript/master/template.html) 
 
 #### Sample Models
 
