@@ -1,7 +1,10 @@
-# **AgentSet** is a subclass of `Array` and is the base class for
-# `Patches`, `Agents`, and `Links`.  Its subclasses are also a factory
-# for agent classes (`Patch`, `Agent`, `Link`). `AgentSet` keeps track of all
-# the created agent instances.  It also provides, much like the **ABM.util**
+# An **AgentSet** is an array, along with a class, agentClass, whose instances
+# are the items of the array.  Instances of the class are created
+# by the `create` factory method of an AgentSet.
+#
+# It is a subclass of `Array` and is the base class for
+# `Patches`, `Agents`, and `Links`. An AgentSet keeps track of all
+# its created instances.  It also provides, much like the **ABM.util**
 # module, many methods shared by all subclasses of AgentSet.
 #
 # ABM contains three agentsets created by class Model:
@@ -16,14 +19,13 @@
 #
 # Note: subclassing `Array` can be dangerous and we may have to convert
 # to a different style. See Trevor Burnham's [comments](http://goo.gl/Lca8g)
-# but thus far we've resolved all related problems, mainly by using the
-# ABM.util array functions rather than "super".
+# but thus far we've resolved all related problems.
 #
-# Because we are an array subset, @[i] below (this[i]), gets the i'th agentset element.
+# Because we are an array subset, @[i] == this[i] == agentset[i]
 
 class ABM.AgentSet extends Array 
 # ### Static members
-
+  
   # `asSet` is a static wrapper function converting an array of agents into
   # an `AgentSet` .. except for the ID which only impacts the add method.
   # It is primarily used to turn a comprehension into an AgentSet instance
@@ -36,6 +38,7 @@ class ABM.AgentSet extends Array
     a.__proto__ = setType.prototype ? setType.constructor.prototype # setType.__proto__
     a
 
+  
   # In the examples below, we'll use an array of primitive agent objects
   # with three fields: id, x, y.
   #
@@ -47,19 +50,26 @@ class ABM.AgentSet extends Array
   #         {id:4,x:1,y:3}, {id:5,x:1,y:1}]
 
 # ### Constructor and add/remove agents.
-
+  
   # Create an empty `AgentSet` and initialize the `ID` counter for add().
-  constructor: ->
+  # If mainSet is supplied, the new agentset is a sub-array of mainSet.
+  # This sub-array feature is how breeds are managed, see class `Model`
+  constructor: (@agentClass, @name, @mainSet = null) ->
     super()
-    @ID = 0
+    @agentClass::breed = @ # let the breed know I'm it's agentSet
+    @ownVariables = []
+    @ID = 0 if not @mainSet? # Do not set ID if I'm a subset
 
+  # Abstract method used by subclasses to create and add their instances.
+  create: ->
+    
   # Add an agent to the list.  Only used by agentset factory methods. Adds
   # the `id` property to all agents. Increment `ID`.
   # Returns the object for chaining. The set will be sorted by `id`.
   #
   # By "agent" we mean an instance of `Patch`, `Agent` and `Link`.
   add: (o) ->
-    o.id = @ID++
+    if @mainSet? then @mainSet.add o else o.id = @ID++
     @push o; o
 
   # Remove an agent from the agentset, returning the agentset.
@@ -71,6 +81,7 @@ class ABM.AgentSet extends Array
   #     AS.remove(AS[3]) # [{id:0,x:0,y:1}, {id:1,x:8,y:0},
   #                         {id:2,x:6,y:4}, {id:4,x:1,y:1}] 
   remove: (o) ->
+    @mainSet.remove o if @mainSet?
     u.error "remove: empty arraySet" if @length is 0
     if o is @last()
       @[--@length] = null # set last to null and decrease length (null: GC subtlety)
@@ -78,6 +89,17 @@ class ABM.AgentSet extends Array
       @splice i, 1 if (i = @indexOfID o.id) isnt -1
       u.error "remove: indexOfID not in list" if i is -1
     @
+
+  setDefault: (name, value) ->
+    u.error "setDefault: name is not a string" if typeof name isnt "string"
+    @agentClass::[name] = value
+
+  own: (nameValueList...) ->
+    u.error "own: odd number of arguments" if nameValueList.length % 2 isnt 0
+    for name, i in nameValueList by 2
+      @setDefault name, nameValueList[i+1]
+      @ownVariables.push name
+  
 
   # Remove adjacent duplicates, by reference, in a sorted agentset.
   # Use `sortById` first if agentset not sorted.
@@ -117,7 +139,7 @@ class ABM.AgentSet extends Array
 
 # ### Property Utilities
 # Property access, also useful for debugging<br>
-
+  
   # Return an array of a property of the agentset
   #
   #      AS.getProp "x" # [0, 8, 6, 1, 1]
@@ -218,6 +240,7 @@ class ABM.AgentSet extends Array
     u.maxOneOf @, f, valueToo
 
 # ### Drawing
+  
   # For agentsets who's agents have a `draw` method.
   # Clears the graphics context (transparent), then
   # calls each agent's draw(ctx) method.
@@ -226,7 +249,7 @@ class ABM.AgentSet extends Array
     o.draw(ctx) for o in @ when not o.hidden; null
 
 # ### Topology
-
+  
   # For ABM.patches & ABM.agents which have x,y. See ABM.util doc.
   #
   # Return all agents in agentset within d distance from given object.
@@ -255,6 +278,7 @@ class ABM.AgentSet extends Array
         (a is o and meToo) or u.inCone(heading,cone,radius,x,y,a.x,a.y))    
 
 # ### Debugging
+  
   # Useful in console.
   # Also see [CoffeeConsole](http://goo.gl/1i7bd) Chrome extension.
   
@@ -276,14 +300,15 @@ class ABM.AgentSet extends Array
 # The example agentset AS used in the code fragments was made like this,
 # slightly more useful than shown above due to the toString method.
 #
-# class XY
-#   constructor: (@x,@y) ->
-#   toString: -> "{id:#{@id},x:#{@x},y:#{@y}}"
-# @AS = new ABM.AgentSet # @ => global name space
+#     class XY
+#       constructor: (@x,@y) ->
+#       toString: -> "{id:#{@id},x:#{@x},y:#{@y}}"
+#     @AS = new ABM.AgentSet # @ => global name space
 #
 # The result of 
 #
 #     AS.add new XY(u.randomInt(10), u.randomInt(10)) for i in [1..5]
 #
 # random run, captured so we can reuse.
-# AS.add new XY(pt...) for pt in [[0,1],[8,0],[6,4],[1,3],[1,1]]
+#
+#     AS.add new XY(pt...) for pt in [[0,1],[8,0],[6,4],[1,3],[1,1]]

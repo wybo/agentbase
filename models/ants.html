@@ -64,6 +64,7 @@
         a.carryingFood = withFood
         if @agents.useSprites
           a.sprite = if withFood then @nestSprite else @foodSprite
+          # a.setSprite (if withFood then @nestSprite else @foodSprite)
         else
           a.color = if withFood then @nestColor else @foodColor
           # a.colorStr = u.colorStr a.color if @agents.staticColors
@@ -117,9 +118,10 @@
       patchRect: (x, y, dw, dh) ->
         @patches.patchRect @patches.patch(x,y), dw, dh, true
 
-    # div, patchSize, minX, maxX, minY, maxY, isTorus=true, neighbors=true
+    # div, patchSize, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true
     #   NL Defaults: 13, -16, 16, -16, 16
     APP=new MyModel "layers", 6, -40, 40, -40, 40, false
+    APP.setRootVars() # Put Model vars in global name space -- only for demo & debug
     </script>
 
   </head>

@@ -3,17 +3,16 @@
 
 ABM.shapes = ABM.util.s = do ->
   # Each shape is a named object with two members: 
-  # a boolean "rotate" and a drawing procedure.
+  # a boolean rotate and a draw procedure and two optional
+  # properties: img for images, and shortcut for a transform-less version of draw.
   # The shape is used in the following context with a color set
   # and a transform such that the shape should be drawn in a -.5 to .5 square
   #
   #     ctx.save()
-  #     ctx.fillStyle = u.colorStr @color
-  #     ctx.translate @x, @y; ctx.scale @size, @size;
-  #     ctx.rotate @heading if shape.rotate
-  #     ctx.beginPath()
-  #     shape.draw(ctx)
-  #     ctx.closePath()
+  #     ctx.fillStyle = u.colorStr color
+  #     ctx.translate x, y; ctx.scale size, size;
+  #     ctx.rotate heading if shape.rotate
+  #     ctx.beginPath(); shape.draw(ctx); ctx.closePath()
   #     ctx.fill()
   #     ctx.restore()
   #
@@ -21,7 +20,7 @@ ABM.shapes = ABM.util.s = do ->
   #
   #     ["default", "triangle", "arrow", "bug", "pyramid", 
   #      "circle", "square", "pentagon", "ring", "cup", "person"]
-
+  
   # A simple polygon utility:  c is the 2D context, and a is an array of 2D points.
   # c.closePath() and c.fill() will be called by the calling agent, see initial 
   # discription of drawing context.  It is used in adding a new shape above.
@@ -31,6 +30,7 @@ ABM.shapes = ABM.util.s = do ->
     null
 
   # Centered drawing primitives: centered on x,y with a given width/height size.
+  # Useful for shortcuts
   circ = (c,x,y,s)->c.arc x,y,s/2,0,2*Math.PI # centered circle
   ccirc = (c,x,y,s)->c.arc x,y,s/2,0,2*Math.PI,true # centered counter clockwise circle
   cimg = (c,x,y,s,img)->c.scale 1,-1;c.drawImage img,x-s/2,y-s/2,s,s;c.scale 1,-1 # centered image
@@ -38,15 +38,13 @@ ABM.shapes = ABM.util.s = do ->
   
   # An async util for delayed drawing of images into sprite slots
   fillSlot = (slot, img) ->
-    console.log "fillSlot #{slot.x} #{slot.y}", img # nifty to see the delayed response!
     slot.ctx.save(); slot.ctx.scale 1, -1
-    slot.ctx.drawImage img, slot.x, -(slot.y+slot.size), slot.size, slot.size    
+    slot.ctx.drawImage img, slot.x, -(slot.y+slot.bits), slot.bits, slot.bits    
     slot.ctx.restore()
-  # The spritesheet data, indexed by size
+  # The spritesheet data, indexed by bits
   spriteSheets = []
   
-  
-  # Return our module:
+  # The module returns the following object:
   default:
     rotate: true
     draw: (c) -> poly c, [[.5,0],[-.5,-.5],[-.25,0],[-.5,.5]]
@@ -61,7 +59,6 @@ ABM.shapes = ABM.util.s = do ->
     draw: (c) ->
       c.strokeStyle = c.fillStyle; c.lineWidth = .05
       poly c, [[.4,.225],[.2,0],[.4,-.225]]; c.stroke()
-      # c.beginPath(); circ c,.12,0,.13; circ c,-.05,0,.13; circ c,-.27,0,.2
       c.beginPath(); circ c,.12,0,.26; circ c,-.05,0,.26; circ c,-.27,0,.4
   pyramid:
     rotate: false
@@ -83,7 +80,7 @@ ABM.shapes = ABM.util.s = do ->
   cup: # an image shape, using coffeescript logo
     shortcut: (c,x,y,s) -> cimg c,x,y,s,@img
     rotate: false
-    img: u.importImage "http://goo.gl/HrBBb"
+    img: u.importImage "http://goo.gl/LTIyR"
     draw: (c) -> cimg c,.5,.5,1,@img
   person:
     rotate: false
@@ -107,6 +104,8 @@ ABM.shapes = ABM.util.s = do ->
       if u.isFunction draw then {rotate,draw} else {rotate,img:draw,draw:(c)->cimg c,.5,.5,1,@img}
     (s.shortcut = (c,x,y,s) -> cimg c,x,y,s,@img) if s.img? and not s.rotate
     s.shortcut = shortcut if shortcut? # can override img default shortcut if needed
+
+  # Add local private objects for use by add() and debugging
   poly:poly, circ:circ, ccirc:ccirc, cimg:cimg, csq:csq # export utils for use by add
   spriteSheets:spriteSheets # export spriteSheets for debugging, showing in DOM
 
@@ -130,36 +129,42 @@ ABM.shapes = ABM.util.s = do ->
     shape
   drawSprite: (ctx, s, x, y, size, rad) ->
     if rad is 0
-      ctx.drawImage s.ctx.canvas, s.x, s.y, s.size, s.size, x-size/2, y-size/2, size, size
+      ctx.drawImage s.ctx.canvas, s.x, s.y, s.bits, s.bits, x-size/2, y-size/2, size, size
     else
       ctx.save()
       ctx.translate x, y # see http://goo.gl/VUlhY for drawing centered rotated images
       ctx.rotate rad
-      ctx.drawImage s.ctx.canvas, s.x, s.y, s.size, s.size, -size/2,-size/2, size, size
+      ctx.drawImage s.ctx.canvas, s.x, s.y, s.bits, s.bits, -size/2,-size/2, size, size
       ctx.restore()
     s
-  # Convert a shape to a sprite by allocating a sprite "slot" and drawing the shape to fit it.
+  # Convert a shape to a sprite by allocating a sprite sheet "slot" and drawing
+  # the shape to fit it. Return existing sprite if duplicate.
   shapeToSprite: (name, color, size) ->
-    size = Math.ceil size
+    bits = Math.ceil size*ABM.patches.size
     shape = @[name]
-    ctx = spriteSheets[size]
-    # Create sheet for this size if it does not yet exist
+    index = if shape.img? then name else "#{name}-#{u.colorStr(color)}"
+    ctx = spriteSheets[bits]
+    # Create sheet for this bit size if it does not yet exist
     if not ctx?
-      spriteSheets[size] = ctx = u.createCtx size*10, size
-      ctx.nextX = 0; ctx.nextY = 0; ctx.images = {}
+      spriteSheets[bits] = ctx = u.createCtx bits*10, bits
+      ctx.nextX = 0; ctx.nextY = 0; ctx.index = {}
+    # Return matching sprite if index match found
+    return foundSlot if (foundSlot = ctx.index[index])?
     # Extend the sheet if we're out of space
-    if size*ctx.nextX is ctx.canvas.width
-      u.resizeCtx ctx, ctx.canvas.width, ctx.canvas.height+size
+    if bits*ctx.nextX is ctx.canvas.width
+      u.resizeCtx ctx, ctx.canvas.width, ctx.canvas.height+bits
       ctx.nextX = 0; ctx.nextY++
-    x = size*ctx.nextX; y = size*ctx.nextY
-    slot = {ctx, x, y, size, name, color}
+    # Create the sprite "slot" object and install in index object
+    x = bits*ctx.nextX; y = bits*ctx.nextY
+    slot = {ctx, x, y, size, bits, name, color, index}
+    ctx.index[index] = slot
+    # Draw the shape into the sprite slot
     if (img=shape.img)? # is an image, not a path function
-      return imgslot if (imgslot = ctx.images[name])?
-      ctx.images[name] = slot
-      img.onload = -> fillSlot(slot, img)
+      if img.height isnt 0 then fillSlot(slot, img)
+      else img.onload = -> fillSlot(slot, img)
     else
       ctx.save()
-      ctx.scale size, size
+      ctx.scale bits, bits
       ctx.translate ctx.nextX+.5, ctx.nextY+.5
       ctx.fillStyle = u.colorStr color
       ctx.beginPath(); shape.draw ctx; ctx.closePath()

@@ -39,16 +39,16 @@
         @startCircle = true  # initialize agents randomly or in circle
         @debug = true # turn on/off use of setRootVars() below
         
-        # set the default agent size (conserves storage)
+        # Set the default agent size (conserves storage)
         @agents.setDefaultSize(@size)
-        # set the agent to convert shape to bitmap for better performance.
+        # Set the agent to convert shape to bitmap for better performance.
         @agents.setUseSprites()
         # Add a few new shapes; u.s. is ABM.shapes.
         u.s.add "cc", true, u.importImage("http://backspaces.net/media/CCt.png")
         u.s.add "redfish", false, u.importImage("http://backspaces.net/media/redfish64t.png")
         u.s.add "bowtie", true, (c) -> u.s.poly c, [[-.5,-.5],[.5,.5],[-.5,.5],[.5,-.5]]
 
-        # set animation to 30fps, but without multiple steps per draw:
+        # Set animation to 30fps, without multiple steps per draw:
         @anim.setRate 60, false
 
         # The patch grid will have been setup for us.  Here we initialize
@@ -83,8 +83,7 @@
 
       # Update our model via the second abstract method, `step`
       step: ->  # called by Model.animate
-        log @anim.toString() if @anim.ticks % 100 is 0
-        # First, update our agents via our `updateAgents` method
+        # First, update our agents via `updateAgents` below
         @updateAgents(a) for a in @agents
         # Every 100 steps, update our patches, print stats to 
         # the console, and use the Model refresh flag to redraw
@@ -98,6 +97,12 @@
           @setSpotlight null if @anim.ticks is 600
         else
           @refreshPatches = false
+        if @anim.draws is 2 # Show the sprite sheet if there is one after first draw
+          sheet = u.last(u.s.spriteSheets) if u.s.spriteSheets.length isnt 0
+          if sheet?
+            log sheet
+            document.getElementById("play").appendChild(sheet.canvas)
+        log @anim.toString() if @anim.ticks % 100 is 0
         # Stop the animation at 1000. Restart by `ABM.model.start()` in console.
         if @anim.ticks is 1000
           log "..stopping, restart by ABM.model.start()"
@@ -113,7 +118,7 @@
         a.forward @speed
       updatePatches: (p) -> # p is patch
         # Update patch colors to be a random gray.
-        # Dont do this: Garbage Collection problem: p.color = u.randomGray()
+        # Note we modify the existing color, GC minimization.
         u.randomGray(p.color) if p.x isnt 0 and p.y isnt 0 # aviod GC, reuse color
       reportInfo: ->
         # Report the average heading, in radians and degrees
@@ -129,25 +134,13 @@ average heading of agents:
     # constructor arguments:
     #
     #     divName, patchSize, minX, maxX, minY, maxY,
-    #     isTorus = true, neighbors = true
+    #     isTorus = true, hasNeighbors = true
     #
     # Note: Netlogo defaults 13, -16, 16, -16, 16 <br>
     # for patchSize, minX, maxX, minY, maxY
-    #
-    # We do not strictly need to set the new model to a local variable,
-    # class Model sets it to `ABM.model`. We do so here for convenience.
     APP = new MyModel "layers", 13, -16, 16, -16, 16, true, false
-    # Finally set some debugging aids in the global namespace.
-    # Here @APP is window.APP, see CoffeeScript
-    # [lexical scoping](http://jashkenas.github.com/coffee-script/#lexical_scope)
-    # for name scope discussion.
-    (@APP = APP; APP.setRootVars()) if APP.debug
-    
-    # Debug: show agent sheet; use ABM.shapes rather than u.s to show both uses
-    sheet = ABM.shapes.spriteSheets[Math.ceil APP.size*APP.patches.size]
-    if sheet?
-      log sheet
-      document.getElementById("play").appendChild(sheet.canvas)
+    # Set useful global variables for debugging
+    APP.setRootVars() # Put Model vars in global name space -- only for demo & debug
     
     </script>
   </head>

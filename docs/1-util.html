@@ -1,186 +1,930 @@
-<!DOCTYPE html>  <html> <head>   <title>1-util.coffee</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>            <div id="jump_to">         Jump To &hellip;         <div id="jump_wrapper">           <div id="jump_page">                                           <a class="source" href="1-util.html">                 1-util.coffee               </a>                                           <a class="source" href="2-shapes.html">                 2-shapes.coffee               </a>                                           <a class="source" href="3-agentset.html">                 3-agentset.coffee               </a>                                           <a class="source" href="4-agentsets.html">                 4-agentsets.coffee               </a>                                           <a class="source" href="5-model.html">                 5-model.coffee               </a>                                           <a class="source" href="6-template.html">                 6-template.coffee               </a>                        </div>         </div>       </div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               1-util.coffee             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>               <p>This documentation uses Jeremy Ashkenas's
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>1-util.coffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="1-util.html">
+                1-util.coffee
+              </a>
+            
+              
+              <a class="source" href="2-shapes.html">
+                2-shapes.coffee
+              </a>
+            
+              
+              <a class="source" href="3-agentset.html">
+                3-agentset.coffee
+              </a>
+            
+              
+              <a class="source" href="4-agentsets.html">
+                4-agentsets.coffee
+              </a>
+            
+              
+              <a class="source" href="5-model.html">
+                5-model.coffee
+              </a>
+            
+              
+              <a class="source" href="6-template.html">
+                6-template.coffee
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>1-util.coffee</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <p>This documentation uses Jeremy Ashkenas&#39;s
 <a href="http://jashkenas.github.com/docco/">docco</a> which allows
-<a href="http://daringfireball.net/projects/markdown/syntax">markdown</a>.</p>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <p>Create the namespace <strong>ABM</strong> for our project.
+<a href="http://daringfireball.net/projects/markdown/syntax">markdown</a>.</p>
+<p>Create the namespace <strong>ABM</strong> for our project.
 Note here <code>this</code> or <code>@</code> == window due to coffeescript wrapper call.
-Thus @ABM is placed in the global scope.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nx">@ABM</span><span class="o">=</span><span class="p">{}</span></pre></div>             </td>           </tr>                               <tr id="section-3">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-3">&#182;</a>               </div>               <p>Keep copy of global object in ABM</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">ABM.root = </span><span class="nx">@</span></pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <p>Global shim for not-yet-standard requestAnimationFrame.
-See: <a href="https://gist.github.com/paulirish/1579671">Paul Irish Shim</a></p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nx">do</span> <span class="o">-&gt;</span> 
-  <span class="vi">@requestAnimFrame = </span><span class="nx">@requestAnimationFrame</span> <span class="o">or</span> <span class="kc">null</span>
-  <span class="vi">@cancelAnimFrame = </span><span class="nx">@cancelAnimationFrame</span> <span class="o">or</span> <span class="kc">null</span>
-  <span class="k">for</span> <span class="nx">vendor</span> <span class="k">in</span> <span class="p">[</span><span class="s">&#39;ms&#39;</span><span class="p">,</span> <span class="s">&#39;moz&#39;</span><span class="p">,</span> <span class="s">&#39;webkit&#39;</span><span class="p">,</span> <span class="s">&#39;o&#39;</span><span class="p">]</span> <span class="k">when</span> <span class="o">not</span> <span class="nx">@requestAnimFrame</span>
-    <span class="nx">@requestAnimFrame</span> <span class="o">or=</span> <span class="nx">@</span><span class="p">[</span><span class="nx">vendor</span><span class="o">+</span><span class="s">&#39;RequestAnimationFrame&#39;</span><span class="p">]</span>
-    <span class="nx">@cancelAnimFrame</span> <span class="o">or=</span> <span class="nx">@</span><span class="p">[</span><span class="nx">vendor</span><span class="o">+</span><span class="s">&#39;CancelAnimationFrame&#39;</span><span class="p">]</span>
-    <span class="nx">@cancelAnimFrame</span> <span class="o">or=</span> <span class="nx">@</span><span class="p">[</span><span class="nx">vendor</span><span class="o">+</span><span class="s">&#39;CancelRequestAnimationFrame&#39;</span><span class="p">]</span>
-  <span class="nx">@requestAnimFrame</span> <span class="o">or=</span> <span class="nf">(callback) -&gt;</span> <span class="nx">@setTimeout</span><span class="p">(</span><span class="nx">callback</span><span class="p">,</span> <span class="mi">1000</span> <span class="o">/</span> <span class="mi">60</span><span class="p">)</span>
-  <span class="nx">@cancelAnimFrame</span> <span class="o">or=</span> <span class="nf">(id) -&gt;</span> <span class="nx">@clearTimeout</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-5">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-5">&#182;</a>               </div>               <p>Shim for <code>Array.indexOf</code> if not implemented.
-Use <a href="https://github.com/kriskowal/es5-shim">es5-shim</a> if additional shims needed.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nb">Array</span><span class="o">::</span><span class="nx">indexOf</span> <span class="o">or=</span> <span class="nf">(item) -&gt;</span> <span class="c1"># shim for IE8</span>
-  <span class="k">for</span> <span class="nx">x</span><span class="p">,</span> <span class="nx">i</span> <span class="k">in</span> <span class="k">this</span>
-    <span class="k">return</span> <span class="nx">i</span> <span class="k">if</span> <span class="nx">x</span> <span class="o">is</span> <span class="nx">item</span>
-  <span class="k">return</span> <span class="o">-</span><span class="mi">1</span></pre></div>             </td>           </tr>                               <tr id="section-6">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-6">&#182;</a>               </div>               <p><strong>ABM.util</strong> contains the general utilities for the project. Note that within
+Thus @ABM is placed in the global scope.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="property">@ABM</span>={}
+
+root = @ <span class="comment"># Keep a private copy of global object</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Global shim for not-yet-standard requestAnimationFrame.
+See: <a href="https://gist.github.com/paulirish/1579671">Paul Irish Shim</a></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="keyword">do</span> -&gt; 
+  <span class="property">@requestAnimFrame</span> = <span class="property">@requestAnimationFrame</span> <span class="keyword">or</span> <span class="literal">null</span>
+  <span class="property">@cancelAnimFrame</span> = <span class="property">@cancelAnimationFrame</span> <span class="keyword">or</span> <span class="literal">null</span>
+  <span class="keyword">for</span> vendor <span class="keyword">in</span> [<span class="string">'ms'</span>, <span class="string">'moz'</span>, <span class="string">'webkit'</span>, <span class="string">'o'</span>] <span class="keyword">when</span> <span class="keyword">not</span> <span class="property">@requestAnimFrame</span>
+    <span class="property">@requestAnimFrame</span> <span class="keyword">or</span>= @[vendor+<span class="string">'RequestAnimationFrame'</span>]
+    <span class="property">@cancelAnimFrame</span> <span class="keyword">or</span>= @[vendor+<span class="string">'CancelAnimationFrame'</span>]
+    <span class="property">@cancelAnimFrame</span> <span class="keyword">or</span>= @[vendor+<span class="string">'CancelRequestAnimationFrame'</span>]
+  <span class="property">@requestAnimFrame</span> <span class="function"><span class="title">or</span></span>= (callback) -&gt; <span class="property">@setTimeout</span>(callback, <span class="number">1000</span> / <span class="number">60</span>)
+  <span class="property">@cancelAnimFrame</span> <span class="function"><span class="title">or</span></span>= (id) -&gt; <span class="property">@clearTimeout</span>(id)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Shim for <code>Array.indexOf</code> if not implemented.
+Use <a href="https://github.com/kriskowal/es5-shim">es5-shim</a> if additional shims needed.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Array::indexOf <span class="function"><span class="title">or</span></span>= (item) -&gt; <span class="comment"># shim for IE8</span>
+  <span class="keyword">for</span> x, i <span class="keyword">in</span> <span class="keyword">this</span>
+    <span class="keyword">return</span> i <span class="keyword">if</span> x <span class="keyword">is</span> item
+  <span class="keyword">return</span> -<span class="number">1</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p><strong>ABM.util</strong> contains the general utilities for the project. Note that within
 <strong>util</strong> <code>@</code> referrs to ABM.util, <em>not</em> the global name space as above.
 Alias: u is an alias for ABM.util within the agentscript module (not outside)</p>
-
 <pre><code> u.clearCtx(ctx) is equivalent to
- ABM.util.clearCtx(ctx)
-</code></pre>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">ABM.util = u =</span></pre></div>             </td>           </tr>                               <tr id="section-7">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-7">&#182;</a>               </div>               <p>Shortcut for throwing an error.  Good for debugging:</p>
+ ABM.util.clearCtx(ctx)</code></pre>
 
-<pre><code>error("wtf? foo=#{foo}") if fooProblem
-</code></pre>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">error: </span><span class="nf">(s) -&gt;</span> <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span> <span class="nx">s</span>
-  </pre></div>             </td>           </tr>                               <tr id="section-8">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-8">&#182;</a>               </div>               <p>Good replacements for Javascript's badly broken<code>typeof</code> and <code>instanceof</code>
-See <a href="http://goo.gl/L0umK">underscore.coffee</a></p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">isArray: </span><span class="nb">Array</span><span class="p">.</span><span class="nx">isArray</span> <span class="o">or</span> <span class="c1"># works with agentSets too</span>
-    <span class="nf">(obj) -&gt;</span> <span class="o">!!</span><span class="p">(</span><span class="nx">obj</span> <span class="o">and</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">concat</span> <span class="o">and</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">unshift</span> <span class="o">and</span> <span class="o">not</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">callee</span><span class="p">)</span>
-  <span class="nv">isFunction: </span><span class="nf">(obj) -&gt;</span> 
-    <span class="o">!!</span><span class="p">(</span><span class="nx">obj</span> <span class="o">and</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">constructor</span> <span class="o">and</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">call</span> <span class="o">and</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">apply</span><span class="p">)</span>
-  <span class="nv">isString: </span><span class="nf">(obj) -&gt;</span> 
-    <span class="o">!!</span><span class="p">(</span><span class="nx">obj</span> <span class="o">is</span> <span class="s">&#39;&#39;</span> <span class="o">or</span> <span class="p">(</span><span class="nx">obj</span> <span class="o">and</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">charCodeAt</span> <span class="o">and</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">substr</span><span class="p">))</span>
-  </pre></div>             </td>           </tr>                               <tr id="section-9">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-9">&#182;</a>               </div>               <h3>Numeric Operations</h3>             </td>             <td class="code">               <div class="highlight"><pre>  </pre></div>             </td>           </tr>                               <tr id="section-10">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-10">&#182;</a>               </div>               <p>Return random int in [0,max) or [min,max)</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">randomInt: </span><span class="nf">(max) -&gt;</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">floor</span><span class="p">(</span><span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">()</span> <span class="o">*</span> <span class="nx">max</span><span class="p">)</span>
-  <span class="nv">randomInt2: </span><span class="nf">(min, max) -&gt;</span> <span class="nx">min</span> <span class="o">+</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">floor</span><span class="p">(</span><span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="nx">max</span><span class="o">-</span><span class="nx">min</span><span class="p">))</span></pre></div>             </td>           </tr>                               <tr id="section-11">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-11">&#182;</a>               </div>               <p>Return float in [0,max) or [min,max) or [-r/2,r/2)</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">randomFloat: </span><span class="nf">(max) -&gt;</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">()</span> <span class="o">*</span> <span class="nx">max</span>
-  <span class="nv">randomFloat2: </span><span class="nf">(min, max) -&gt;</span> <span class="nx">min</span> <span class="o">+</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="nx">max</span><span class="o">-</span><span class="nx">min</span><span class="p">)</span>
-  <span class="nv">randomCentered: </span><span class="nf">(r) -&gt;</span> <span class="nx">@randomFloat2</span> <span class="o">-</span><span class="nx">r</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="nx">r</span><span class="o">/</span><span class="mi">2</span></pre></div>             </td>           </tr>                               <tr id="section-12">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-12">&#182;</a>               </div>               <p>Return log n where base is 10, base, e respectively</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">log10: </span><span class="nf">(n) -&gt;</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">n</span><span class="p">)</span><span class="o">/</span><span class="nb">Math</span><span class="p">.</span><span class="nx">LN10</span>
-  <span class="nv">logN: </span><span class="nf">(n, base) -&gt;</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">n</span><span class="p">)</span><span class="o">/</span><span class="nb">Math</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">base</span><span class="p">)</span>
-  <span class="nv">ln: </span><span class="nf">(n) -&gt;</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">log</span> <span class="nx">n</span></pre></div>             </td>           </tr>                               <tr id="section-13">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-13">&#182;</a>               </div>               <p>Return true <a href="http://goo.gl/spr24">mod functin</a>, % is remainder, not mod.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">mod: </span><span class="nf">(v, n) -&gt;</span> <span class="p">((</span><span class="nx">v</span> <span class="o">%</span> <span class="nx">n</span><span class="p">)</span> <span class="o">+</span> <span class="nx">n</span><span class="p">)</span> <span class="o">%</span> <span class="nx">n</span></pre></div>             </td>           </tr>                               <tr id="section-14">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-14">&#182;</a>               </div>               <p>Return v to be between min, max via mod fcn</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">wrap: </span><span class="nf">(v, min, max) -&gt;</span> <span class="nx">min</span> <span class="o">+</span> <span class="nx">@mod</span><span class="p">(</span><span class="nx">v</span><span class="o">-</span><span class="nx">min</span><span class="p">,</span> <span class="nx">max</span><span class="o">-</span><span class="nx">min</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-15">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-15">&#182;</a>               </div>               <p>Return v to be between min, max via clamping with min/max</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">clamp: </span><span class="nf">(v, min, max) -&gt;</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">max</span><span class="p">(</span><span class="nb">Math</span><span class="p">.</span><span class="nx">min</span><span class="p">(</span><span class="nx">v</span><span class="p">,</span><span class="nx">max</span><span class="p">),</span><span class="nx">min</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-16">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-16">&#182;</a>               </div>               <p>Return sign of a number as +/- 1</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">sign: </span><span class="nf">(v) -&gt;</span> <span class="k">return</span> <span class="p">(</span><span class="k">if</span> <span class="nx">v</span><span class="o">&lt;</span><span class="mi">0</span> <span class="k">then</span> <span class="o">-</span><span class="mi">1</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-17">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-17">&#182;</a>               </div>               <p>Return a string float array for printing using given precision and separator</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">aToFixed: </span><span class="nf">(a,p=2,s=&quot;, &quot;) -&gt;</span> <span class="s">&quot;[</span><span class="si">#{</span><span class="p">(</span><span class="nx">i</span><span class="p">.</span><span class="nx">toFixed</span> <span class="nx">p</span> <span class="k">for</span> <span class="nx">i</span> <span class="k">in</span> <span class="nx">a</span><span class="p">).</span><span class="nx">join</span><span class="p">(</span><span class="nx">s</span><span class="p">)</span><span class="si">}</span><span class="s">]&quot;</span></pre></div>             </td>           </tr>                               <tr id="section-18">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-18">&#182;</a>               </div>               <h3>Color and Angle Operations</h3>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>ABM.util = u =</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Shortcut for throwing an error.  Good for debugging:</p>
+<pre><code>error(&quot;wtf? foo=#{foo}&quot;) if fooProblem</code></pre>
 
-<p>Our colors are r,g,b,[a] arrays, with an optional HTML str value.
-The str value is sent on the first call to colorStr</p>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-19">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-19">&#182;</a>               </div>               <p>Return a random RGB or gray color. Array passed to minimize garbage collection</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">randomColor: </span><span class="nf">(c = []) -&gt;</span> 
-    <span class="nv">c.str = </span><span class="kc">null</span> <span class="k">if</span> <span class="nx">c</span><span class="p">.</span><span class="nx">str</span><span class="o">?</span>
-    <span class="nx">c</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">=</span> <span class="nx">@randomInt</span><span class="p">(</span><span class="mi">256</span><span class="p">)</span> <span class="k">for</span> <span class="nx">i</span> <span class="k">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">..</span><span class="mi">2</span><span class="p">]</span>
-    <span class="nx">c</span> </pre></div>             </td>           </tr>                               <tr id="section-20">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-20">&#182;</a>               </div>               <p>Note: if 2 args passed, assume they're min, max w/ default c</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">randomGray: </span><span class="nf">(c = [], min = 64, max = 192) -&gt;</span> 
-    <span class="k">if</span> <span class="nx">arguments</span><span class="p">.</span><span class="nx">length</span> <span class="o">is</span> <span class="mi">2</span> <span class="k">then</span> <span class="k">return</span> <span class="nx">@randomGray</span> <span class="kc">null</span><span class="p">,</span> <span class="nx">c</span><span class="p">,</span> <span class="nx">min</span>
-    <span class="nv">c.str = </span><span class="kc">null</span> <span class="k">if</span> <span class="nx">c</span><span class="p">.</span><span class="nx">str</span><span class="o">?</span>
-    <span class="nx">r</span><span class="o">=</span><span class="nx">@randomInt2</span> <span class="nx">min</span><span class="p">,</span><span class="nx">max</span>
-    <span class="nx">c</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">=</span> <span class="nx">r</span> <span class="k">for</span> <span class="nx">i</span> <span class="k">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">..</span><span class="mi">2</span><span class="p">]</span>
-    <span class="nx">c</span></pre></div>             </td>           </tr>                               <tr id="section-21">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-21">&#182;</a>               </div>               <p>modify an existing color to minimize GC</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">setColor: </span><span class="nf">(c, r, g, b, a=null) -&gt;</span>
-    <span class="nv">c.str = </span><span class="kc">null</span> <span class="k">if</span> <span class="nx">c</span><span class="p">.</span><span class="nx">str</span><span class="o">?</span>
-    <span class="nx">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nx">r</span><span class="p">;</span> <span class="nx">c</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nx">g</span><span class="p">;</span> <span class="nx">c</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="nx">b</span><span class="p">;</span> <span class="nx">c</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="nx">a</span> <span class="k">if</span> <span class="nx">a</span><span class="o">?</span><span class="p">;</span> 
-    <span class="nx">c</span></pre></div>             </td>           </tr>                               <tr id="section-22">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-22">&#182;</a>               </div>               <p>Return new color by scaling each value of an RGB array.
-Note [r,g,b] must be ints</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">scaleColor: </span><span class="nf">(max, s, c = []) -&gt;</span> 
-    <span class="nv">c.str = </span><span class="kc">null</span> <span class="k">if</span> <span class="nx">c</span><span class="p">.</span><span class="nx">str</span><span class="o">?</span>
-    <span class="nx">c</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">=</span> <span class="nx">@clamp</span><span class="p">(</span><span class="nb">Math</span><span class="p">.</span><span class="nx">round</span><span class="p">(</span><span class="nx">val</span><span class="o">*</span><span class="nx">s</span><span class="p">),</span><span class="mi">0</span><span class="p">,</span><span class="mi">255</span><span class="p">)</span> <span class="k">for</span> <span class="nx">val</span><span class="p">,</span> <span class="nx">i</span> <span class="k">in</span> <span class="nx">max</span>
-    <span class="nx">c</span></pre></div>             </td>           </tr>                               <tr id="section-23">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-23">&#182;</a>               </div>               <p>Return HTML color as used by canvas element.  Can include Alpha</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">colorStr: </span><span class="nf">(c) -&gt;</span>
-    <span class="k">return</span> <span class="nx">s</span> <span class="k">if</span> <span class="p">(</span><span class="nv">s = </span><span class="nx">c</span><span class="p">.</span><span class="nx">str</span><span class="p">)</span><span class="o">?</span></pre></div>             </td>           </tr>                               <tr id="section-24">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-24">&#182;</a>               </div>               <p>console.log c</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nv">c.str = </span><span class="k">if</span> <span class="nx">c</span><span class="p">.</span><span class="nx">length</span> <span class="o">is</span> <span class="mi">3</span> <span class="k">then</span> <span class="s">&quot;rgb(</span><span class="si">#{</span><span class="nx">c</span><span class="si">}</span><span class="s">)&quot;</span> <span class="k">else</span> <span class="s">&quot;rgba(</span><span class="si">#{</span><span class="nx">c</span><span class="si">}</span><span class="s">)&quot;</span></pre></div>             </td>           </tr>                               <tr id="section-25">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-25">&#182;</a>               </div>               <p>Compare two colors.  Alas, there is no array.Equal operator.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">colorsEqual: </span><span class="nf">(c1, c2) -&gt;</span> <span class="nx">c1</span><span class="p">.</span><span class="nx">toString</span><span class="p">()</span> <span class="o">is</span> <span class="nx">c2</span><span class="p">.</span><span class="nx">toString</span><span class="p">()</span>
-    </pre></div>             </td>           </tr>                               <tr id="section-26">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-26">&#182;</a>               </div>               <p>Return little/big endian-ness of hardware. 
-See Mozilla pixel <a href="http://goo.gl/Lxliq">manipulation article</a></p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">isLittleEndian: </span><span class="o">-&gt;</span>
-    <span class="nv">d8 = </span><span class="k">new</span> <span class="nx">Uint8ClampedArray</span> <span class="mi">4</span>
-    <span class="nv">d32 = </span><span class="k">new</span> <span class="nx">Uint32Array</span> <span class="nx">d8</span><span class="p">.</span><span class="nx">buffer</span>
-    <span class="nx">d32</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mh">0x01020304</span>
-    <span class="nx">d8</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">is</span> <span class="mi">4</span></pre></div>             </td>           </tr>                               <tr id="section-27">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-27">&#182;</a>               </div>               <p>Convert between degrees and radians.  We/Math package use radians.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">degToRad: </span><span class="nf">(degrees) -&gt;</span> <span class="nx">degrees</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">PI</span> <span class="o">/</span> <span class="mi">180</span>
-  <span class="nv">radToDeg: </span><span class="nf">(radians) -&gt;</span> <span class="nx">radians</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">PI</span></pre></div>             </td>           </tr>                               <tr id="section-28">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-28">&#182;</a>               </div>               <p>Return angle in (-pi,pi] that added to rad2 = rad1</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">subtractRads: </span><span class="nf">(rad1, rad2) -&gt;</span>
-    <span class="nv">dr = </span><span class="nx">rad1</span><span class="o">-</span><span class="nx">rad2</span><span class="p">;</span> <span class="nv">PI = </span><span class="nb">Math</span><span class="p">.</span><span class="nx">PI</span>
-    <span class="nx">dr</span> <span class="o">+=</span> <span class="mi">2</span><span class="o">*</span><span class="nx">PI</span> <span class="k">if</span> <span class="nx">dr</span> <span class="o">&lt;=</span> <span class="o">-</span><span class="nx">PI</span><span class="p">;</span> <span class="nx">dr</span> <span class="o">-=</span> <span class="mi">2</span><span class="o">*</span><span class="nx">PI</span> <span class="k">if</span> <span class="nx">dr</span> <span class="o">&gt;</span> <span class="nx">PI</span><span class="p">;</span> <span class="nx">dr</span>
-  </pre></div>             </td>           </tr>                               <tr id="section-29">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-29">&#182;</a>               </div>               <h3>Object Operations</h3>             </td>             <td class="code">               <div class="highlight"><pre>  </pre></div>             </td>           </tr>                               <tr id="section-30">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-30">&#182;</a>               </div>               <p>Object variable names</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">ownKeys: </span><span class="nf">(obj) -&gt;</span> <span class="nx">key</span> <span class="k">for</span> <span class="nx">own</span> <span class="nx">key</span><span class="p">,</span> <span class="nx">value</span> <span class="k">of</span> <span class="nx">obj</span>
-  <span class="nv">ownVarKeys: </span><span class="nf">(obj) -&gt;</span> <span class="nx">key</span> <span class="k">for</span> <span class="nx">own</span> <span class="nx">key</span><span class="p">,</span> <span class="nx">value</span> <span class="k">of</span> <span class="nx">obj</span> <span class="k">when</span> <span class="o">not</span> <span class="nx">@isFunction</span> <span class="nx">value</span></pre></div>             </td>           </tr>                               <tr id="section-31">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-31">&#182;</a>               </div>               <h3>Array Operations</h3>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-32">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-32">&#182;</a>               </div>               <p>Does the array have any elements? Is the array empty?</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">any: </span><span class="nf">(array) -&gt;</span> <span class="nx">array</span><span class="p">.</span><span class="nx">length</span> <span class="o">isnt</span> <span class="mi">0</span>
-  <span class="nv">empty: </span><span class="nf">(array) -&gt;</span> <span class="nx">array</span><span class="p">.</span><span class="nx">length</span> <span class="o">is</span> <span class="mi">0</span></pre></div>             </td>           </tr>                               <tr id="section-33">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-33">&#182;</a>               </div>               <p>Make a copy of the array. Needed when you don't want to modify the given
-array with mutator methods like sort, splice or your own functions.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">clone: </span><span class="nf">(array) -&gt;</span> <span class="nx">array</span><span class="p">.</span><span class="nx">slice</span> <span class="mi">0</span></pre></div>             </td>           </tr>                               <tr id="section-34">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-34">&#182;</a>               </div>               <p>Return last element of array.  Error if empty.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">last: </span><span class="nf">(array) -&gt;</span> 
-    <span class="nx">@error</span> <span class="s">&quot;last: empty array&quot;</span> <span class="k">if</span> <span class="nx">@empty</span> <span class="nx">array</span>
-    <span class="nx">array</span><span class="p">[</span><span class="nx">array</span><span class="p">.</span><span class="nx">length</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-35">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-35">&#182;</a>               </div>               <p>Return random element of array.  Error if empty.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">oneOf: </span><span class="nf">(array) -&gt;</span> 
-    <span class="nx">@error</span> <span class="s">&quot;oneOf: empty array&quot;</span> <span class="k">if</span> <span class="nx">@empty</span> <span class="nx">array</span>
-    <span class="nx">array</span><span class="p">[</span><span class="nx">@randomInt</span> <span class="nx">array</span><span class="p">.</span><span class="nx">length</span><span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-36">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-36">&#182;</a>               </div>               <p>Return n random elements of array.  Error if n > array size.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">nOf: </span><span class="nf">(array, n) -&gt;</span> <span class="c1"># REMIND: shuffle then first n may be better</span>
-    <span class="nx">@error</span> <span class="s">&quot;nOf: n &gt; length&quot;</span> <span class="k">if</span> <span class="nx">n</span> <span class="o">&gt;</span> <span class="nx">array</span><span class="p">.</span><span class="nx">length</span>
-    <span class="nv">r = </span><span class="p">[];</span> <span class="k">while</span> <span class="nx">r</span><span class="p">.</span><span class="nx">length</span> <span class="o">&lt;</span> <span class="nx">n</span>
-      <span class="nv">o = </span><span class="nx">@oneOf</span><span class="p">(</span><span class="nx">array</span><span class="p">)</span>
-      <span class="nx">r</span><span class="p">.</span><span class="nx">push</span> <span class="nx">o</span> <span class="nx">unless</span> <span class="nx">o</span> <span class="k">in</span> <span class="nx">r</span>
-    <span class="nx">r</span></pre></div>             </td>           </tr>                               <tr id="section-37">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-37">&#182;</a>               </div>               <p>Remove an item from an array. Error if item not in array.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">removeItem: </span><span class="nf">(array, item) -&gt;</span>
-    <span class="nx">array</span><span class="p">.</span><span class="nx">splice</span> <span class="nx">i</span><span class="p">,</span> <span class="mi">1</span> <span class="k">if</span> <span class="p">(</span><span class="nv">i = </span><span class="nx">array</span><span class="p">.</span><span class="nx">indexOf</span> <span class="nx">item</span><span class="p">)</span> <span class="o">isnt</span> <span class="o">-</span><span class="mi">1</span>
-    <span class="nx">@error</span> <span class="s">&quot;removeItem: item not found&quot;</span> <span class="k">if</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="mi">0</span>
-    <span class="nx">i</span>
-    </pre></div>             </td>           </tr>                               <tr id="section-38">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-38">&#182;</a>               </div>               <p>Randomize the elements of array.  Clever! See <a href="http://goo.gl/TT2SY">cookbook</a></p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">shuffle: </span><span class="nf">(array) -&gt;</span> <span class="nx">array</span><span class="p">.</span><span class="nx">sort</span> <span class="o">-&gt;</span> <span class="mf">0.5</span> <span class="o">-</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">()</span></pre></div>             </td>           </tr>                               <tr id="section-39">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-39">&#182;</a>               </div>               <p>Return o when f(o) min/max in array. Error if array empty.
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  error: (s) -&gt; <span class="keyword">throw</span> <span class="keyword">new</span> Error s</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Good replacements for Javascript&#39;s badly broken<code>typeof</code> and <code>instanceof</code>
+See <a href="http://goo.gl/L0umK">underscore.coffee</a></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  isArray: Array.isArray <span class="keyword">or</span> <span class="comment"># works with agentSets too</span>
+    (obj) -&gt; !!(obj <span class="keyword">and</span> obj.concat <span class="keyword">and</span> obj.unshift <span class="keyword">and</span> <span class="keyword">not</span> obj.callee)
+  isFunction: (obj) -&gt; 
+    !!(obj <span class="keyword">and</span> obj.constructor <span class="keyword">and</span> obj.call <span class="keyword">and</span> obj.apply)
+  isString: (obj) -&gt; 
+    !!(obj <span class="keyword">is</span> <span class="string">''</span> <span class="keyword">or</span> (obj <span class="keyword">and</span> obj.charCodeAt <span class="keyword">and</span> obj.substr))</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h3">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <h3>Numeric Operations</h3>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Return random int in [0,max) or [min,max)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  randomInt: (max) -&gt; Math.floor(Math.random() * max)
+  randomInt2: (min, max) -&gt; min + Math.floor(Math.random() * (max-min))</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Return float in [0,max) or [min,max) or [-r/2,r/2)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  randomFloat: (max) -&gt; Math.random() * max
+  randomFloat2: (min, max) -&gt; min + Math.random() * (max-min)
+  randomCentered: (r) -&gt; <span class="property">@randomFloat2</span> -r<span class="regexp">/2, r/</span><span class="number">2</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>Return log n where base is 10, base, e respectively</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  log10: (n) -&gt; Math.log(n)/Math.LN10
+  logN: (n, base) -&gt; Math.log(n)/Math.log(base)
+  ln: (n) -&gt; Math.log n</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>Return true <a href="http://goo.gl/spr24">mod functin</a>, % is remainder, not mod.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  mod: (v, n) -&gt; ((v % n) + n) % n</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>Return v to be between min, max via mod fcn</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  wrap: (v, min, max) -&gt; min + <span class="property">@mod</span>(v-min, max-min)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>Return v to be between min, max via clamping with min/max</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  clamp: (v, min, max) -&gt; Math.max(Math.min(v,max),min)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>Return sign of a number as +/- 1</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  sign: (v) -&gt; <span class="keyword">return</span> (<span class="keyword">if</span> v&lt;<span class="number">0</span> <span class="keyword">then</span> -<span class="number">1</span> <span class="keyword">else</span> <span class="number">1</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>Return a string float array for printing using given precision and separator</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  aToFixed: (a,p=<span class="number">2</span>,s=<span class="string">", "</span>) -&gt; <span class="string">"[<span class="subst">#{(i.toFixed p <span class="keyword">for</span> i <span class="keyword">in</span> a).join(s)}</span>]"</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h3">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <h3>Color and Angle Operations</h3>
+<p>Our colors are r,g,b,[a] arrays, with an optional color.str HTML
+color string property. The str value is set on the first call to colorStr</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>Return a random RGB or gray color. Array passed to minimize garbage collection</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  randomColor: (c = []) -&gt; 
+    c.str = <span class="literal">null</span> <span class="keyword">if</span> c.str?
+    c[i] = <span class="property">@randomInt</span>(<span class="number">256</span>) <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span><span class="number">.2</span>]
+    c</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>Note: if 2 args passed, assume they&#39;re min, max w/ default c</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  randomGray: (c = [], min = <span class="number">64</span>, max = <span class="number">192</span>) -&gt; 
+    <span class="keyword">if</span> arguments.length <span class="keyword">is</span> <span class="number">2</span> <span class="keyword">then</span> <span class="keyword">return</span> <span class="property">@randomGray</span> <span class="literal">null</span>, c, min
+    c.str = <span class="literal">null</span> <span class="keyword">if</span> c.str?
+    r=<span class="property">@randomInt2</span> min,max
+    c[i] = r <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span><span class="number">.2</span>]
+    c</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>Random color from a colormap set of r,g,b values, default is one of 125 (5^3) colors</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  randomMapColor: (c = [], set = [<span class="number">0</span>,<span class="number">63</span>,<span class="number">127</span>,<span class="number">191</span>,<span class="number">255</span>]) -&gt; 
+    <span class="property">@setColor</span> c, u.oneOf(set), u.oneOf(set), u.oneOf(set)
+  randomBrightColor: (c=[]) -&gt; <span class="property">@randomMapColor</span> c, [<span class="number">0</span>,<span class="number">127</span>,<span class="number">255</span>]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>Modify an existing color. Modifying an existing array minimizes GC overhead</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  setColor: (c, r, g, b, a=<span class="literal">null</span>) -&gt;
+    c.str = <span class="literal">null</span> <span class="keyword">if</span> c.str?
+    c[<span class="number">0</span>] = r; c[<span class="number">1</span>] = g; c[<span class="number">2</span>] = b; c[<span class="number">3</span>] = a <span class="keyword">if</span> a?; 
+    c</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>Return new color, c, by scaling each value of the rgb color max.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  scaleColor: (max, s, c = []) -&gt; 
+    c.str = <span class="literal">null</span> <span class="keyword">if</span> c.str?
+    c[i] = <span class="property">@clamp</span>(Math.round(val*s),<span class="number">0</span>,<span class="number">255</span>) <span class="keyword">for</span> val, i <span class="keyword">in</span> max <span class="comment"># [r,g,b] must be ints</span>
+    c</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>Return HTML color as used by canvas element.  Can include Alpha</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  colorStr: (c) -&gt;
+    <span class="keyword">return</span> s <span class="keyword">if</span> (s = c.str)?
+    c.str = <span class="keyword">if</span> c.length <span class="keyword">is</span> <span class="number">3</span> <span class="keyword">then</span> <span class="string">"rgb(<span class="subst">#{c}</span>)"</span> <span class="keyword">else</span> <span class="string">"rgba(<span class="subst">#{c}</span>)"</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p>Compare two colors.  Alas, there is no array.Equal operator.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  colorsEqual: (c1, c2) -&gt; c1.toString() <span class="keyword">is</span> c2.toString()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>
+              <p>Return little/big endian-ness of hardware. 
+See Mozilla pixel <a href="http://goo.gl/Lxliq">manipulation article</a></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  isLittleEndian: -&gt;
+    d8 = <span class="keyword">new</span> Uint8ClampedArray <span class="number">4</span>
+    d32 = <span class="keyword">new</span> Uint32Array d8.buffer
+    d32[<span class="number">0</span>] = <span class="number">0x01020304</span>
+    d8[<span class="number">0</span>] <span class="keyword">is</span> <span class="number">4</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>
+              <p>Convert between degrees and radians.  We/Math package use radians.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  degToRad: (degrees) -&gt; degrees * Math.PI / <span class="number">180</span>
+  radToDeg: (radians) -&gt; radians * <span class="number">180</span> / Math.PI</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-26">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>
+              <p>Return angle in (-pi,pi] that added to rad2 = rad1</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  subtractRads: (rad1, rad2) -&gt;
+    dr = rad1-rad2; PI = Math.PI
+    dr += <span class="number">2</span>*PI <span class="keyword">if</span> dr &lt;= -PI; dr -= <span class="number">2</span>*PI <span class="keyword">if</span> dr &gt; PI; dr</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h3">
+                <a class="pilcrow" href="#section-27">&#182;</a>
+              </div>
+              <h3>Object Operations</h3>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-28">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>
+              <p>Return object&#39;s own variable names, less function in second version</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  ownKeys: (obj) -&gt; key <span class="keyword">for</span> own key, value <span class="keyword">of</span> obj
+  ownVarKeys: (obj) -&gt; key <span class="keyword">for</span> own key, value <span class="keyword">of</span> obj <span class="keyword">when</span> <span class="keyword">not</span> <span class="property">@isFunction</span> value</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h3">
+                <a class="pilcrow" href="#section-29">&#182;</a>
+              </div>
+              <h3>Array Operations</h3>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-30">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-30">&#182;</a>
+              </div>
+              <p>Does the array have any elements? Is the array empty?</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  any: (array) -&gt; array.length <span class="keyword">isnt</span> <span class="number">0</span>
+  empty: (array) -&gt; array.length <span class="keyword">is</span> <span class="number">0</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-31">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-31">&#182;</a>
+              </div>
+              <p>Make a copy of the array. Needed when you don&#39;t want to modify the given
+array with mutator methods like sort, splice or your own functions.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  clone: (array) -&gt; array.slice <span class="number">0</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-32">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-32">&#182;</a>
+              </div>
+              <p>Return last element of array.  Error if empty.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  last: (array) -&gt; 
+    <span class="property">@error</span> <span class="string">"last: empty array"</span> <span class="keyword">if</span> <span class="property">@empty</span> array
+    array[array.length-<span class="number">1</span>]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-33">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-33">&#182;</a>
+              </div>
+              <p>Return random element of array.  Error if empty.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  oneOf: (array) -&gt; 
+    <span class="property">@error</span> <span class="string">"oneOf: empty array"</span> <span class="keyword">if</span> <span class="property">@empty</span> array
+    array[<span class="property">@randomInt</span> array.length]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-34">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-34">&#182;</a>
+              </div>
+              <p>Return n random elements of array.  Error if n &gt; array size.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  nOf: (array, n) -&gt; <span class="comment"># Note: clone, shuffle then first n may be better</span>
+    <span class="property">@error</span> <span class="string">"nOf: n &gt; length"</span> <span class="keyword">if</span> n &gt; array.length
+    r = []; <span class="keyword">while</span> r.length &lt; n
+      o = <span class="property">@oneOf</span>(array)
+      r.push o <span class="keyword">unless</span> o <span class="keyword">in</span> r
+    r
+  contains: (array, item) -&gt; -<span class="number">1</span> <span class="keyword">isnt</span> array.indexOf item</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-35">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-35">&#182;</a>
+              </div>
+              <p>Remove an item from an array. Error if item not in array.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  removeItem: (array, item) -&gt;
+    array.splice i, <span class="number">1</span> <span class="keyword">if</span> (i = array.indexOf item) <span class="keyword">isnt</span> -<span class="number">1</span>
+    <span class="property">@error</span> <span class="string">"removeItem: item not found"</span> <span class="keyword">if</span> i &lt; <span class="number">0</span>
+    i</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-36">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-36">&#182;</a>
+              </div>
+              <p>Randomize the elements of array.  Clever! See <a href="http://goo.gl/TT2SY">cookbook</a></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  shuffle: (array) -&gt; array.sort -&gt; <span class="number">0.5</span> - Math.random()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-37">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-37">&#182;</a>
+              </div>
+              <p>Return o when f(o) min/max in array. Error if array empty.
 If f is a string, return element with max value of that property.
-If "valueToo" then return an array of the element and the value.</p>
-
+If &quot;valueToo&quot; then return an array of the element and the value.</p>
 <pre><code>array = [{x:1,y:2}, {x:3,y:4}]
 # returns {x: 1, y: 2} 5
 [min, dist2] = minOneOf array, ((o)-&gt;o.x*o.x+o.y*o.y), true
 # returns {x: 3, y: 4}
-max = maxOneOf array, "x"
-</code></pre>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">minOneOf: </span><span class="nf">(array, f, valueToo=false) -&gt;</span>
-    <span class="nx">@error</span> <span class="s">&quot;minOneOf: empty array&quot;</span> <span class="k">if</span> <span class="nx">@empty</span> <span class="nx">array</span>
-    <span class="nv">r = </span><span class="kc">Infinity</span><span class="p">;</span> <span class="nv">o = </span><span class="kc">null</span><span class="p">;</span> <span class="p">(</span><span class="nx">s</span><span class="o">=</span><span class="nx">f</span><span class="p">;</span> <span class="nv">f = </span><span class="p">(</span><span class="nf">(o)-&gt;</span><span class="nx">o</span><span class="p">[</span><span class="nx">s</span><span class="p">]))</span> <span class="k">if</span> <span class="nx">@isString</span> <span class="nx">f</span>
-    <span class="k">for</span> <span class="nx">a</span> <span class="k">in</span> <span class="nx">array</span>
-      <span class="p">(</span><span class="nv">r = </span><span class="nx">r1</span><span class="p">;</span> <span class="nv">o = </span><span class="nx">a</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="nx">r1</span><span class="o">=</span><span class="nx">f</span><span class="p">(</span><span class="nx">a</span><span class="p">))</span> <span class="o">&lt;</span> <span class="nx">r</span>
-    <span class="k">if</span> <span class="nx">valueToo</span> <span class="k">then</span> <span class="p">[</span><span class="nx">o</span><span class="p">,</span> <span class="nx">r</span><span class="p">]</span> <span class="k">else</span> <span class="nx">o</span>
-  <span class="nv">maxOneOf: </span><span class="nf">(array, f, valueToo=false) -&gt;</span>
-    <span class="nx">@error</span> <span class="s">&quot;maxOneOf: empty array&quot;</span> <span class="k">if</span> <span class="nx">@empty</span> <span class="nx">array</span>
-    <span class="nv">r = </span><span class="o">-</span><span class="kc">Infinity</span><span class="p">;</span> <span class="nv">o = </span><span class="kc">null</span><span class="p">;</span> <span class="p">(</span><span class="nx">s</span><span class="o">=</span><span class="nx">f</span><span class="p">;</span> <span class="nv">f = </span><span class="p">(</span><span class="nf">(o)-&gt;</span><span class="nx">o</span><span class="p">[</span><span class="nx">s</span><span class="p">]))</span> <span class="k">if</span> <span class="nx">@isString</span> <span class="nx">f</span>
-    <span class="k">for</span> <span class="nx">a</span> <span class="k">in</span> <span class="nx">array</span>
-      <span class="p">(</span><span class="nv">r = </span><span class="nx">r1</span><span class="p">;</span> <span class="nv">o = </span><span class="nx">a</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="nx">r1</span><span class="o">=</span><span class="nx">f</span><span class="p">(</span><span class="nx">a</span><span class="p">))</span> <span class="o">&gt;</span> <span class="nx">r</span>
-    <span class="k">if</span> <span class="nx">valueToo</span> <span class="k">then</span> <span class="p">[</span><span class="nx">o</span><span class="p">,</span> <span class="nx">r</span><span class="p">]</span> <span class="k">else</span> <span class="nx">o</span></pre></div>             </td>           </tr>                               <tr id="section-40">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-40">&#182;</a>               </div>               <p>Return histogram of o when f(o) is a numeric value in array.
+max = maxOneOf array, &quot;x&quot;</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  minOneOf: (array, f, valueToo=<span class="literal">false</span>) -&gt;
+    <span class="property">@error</span> <span class="string">"minOneOf: empty array"</span> <span class="keyword">if</span> <span class="property">@empty</span> array
+    r = Infinity; o = <span class="literal">null</span>; (s=f; <span class="function"><span class="title">f</span></span> = ((o)-&gt;o[s])) <span class="keyword">if</span> <span class="property">@isString</span> f
+    <span class="keyword">for</span> a <span class="keyword">in</span> array
+      (r = r1; o = a) <span class="keyword">if</span> (r1=f(a)) &lt; r
+    <span class="keyword">if</span> valueToo <span class="keyword">then</span> [o, r] <span class="keyword">else</span> o
+  maxOneOf: (array, f, valueToo=<span class="literal">false</span>) -&gt;
+    <span class="property">@error</span> <span class="string">"maxOneOf: empty array"</span> <span class="keyword">if</span> <span class="property">@empty</span> array
+    r = -Infinity; o = <span class="literal">null</span>; (s=f; <span class="function"><span class="title">f</span></span> = ((o)-&gt;o[s])) <span class="keyword">if</span> <span class="property">@isString</span> f
+    <span class="keyword">for</span> a <span class="keyword">in</span> array
+      (r = r1; o = a) <span class="keyword">if</span> (r1=f(a)) &gt; r
+    <span class="keyword">if</span> valueToo <span class="keyword">then</span> [o, r] <span class="keyword">else</span> o</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-38">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-38">&#182;</a>
+              </div>
+              <p>Return histogram of o when f(o) is a numeric value in array.
 Histogram interval is bin. Error if array empty.
 If f is a string, return histogram of that property.</p>
-
 <p>In examples below, histOf returns [3,1,1,0,0,1]</p>
-
 <pre><code>a = [1,3,4,1,1,10]
 h = histOf a, 2, (i) -&gt; i
 
 b = ({id:i} for i in a)
 h = histOf b, 2, (o) -&gt; o.id
-h = histOf b, 2, "id"
-</code></pre>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">histOf: </span><span class="nf">(array, bin, f) -&gt;</span>
-    <span class="nv">r = </span><span class="p">[];</span> <span class="p">(</span><span class="nx">s</span><span class="o">=</span><span class="nx">f</span><span class="p">;</span> <span class="nv">f = </span><span class="p">(</span><span class="nf">(o)-&gt;</span><span class="nx">o</span><span class="p">[</span><span class="nx">s</span><span class="p">]))</span> <span class="k">if</span> <span class="nx">@isString</span> <span class="nx">f</span>
-    <span class="k">for</span> <span class="nx">a</span> <span class="k">in</span> <span class="nx">array</span>
-      <span class="nv">i = </span><span class="nb">Math</span><span class="p">.</span><span class="nx">floor</span> <span class="nx">f</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span><span class="o">/</span><span class="nx">bin</span>
-      <span class="nx">r</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">=</span> <span class="k">if</span> <span class="p">(</span><span class="nx">ri</span><span class="o">=</span><span class="nx">r</span><span class="p">[</span><span class="nx">i</span><span class="p">])</span><span class="o">?</span> <span class="k">then</span> <span class="nx">ri</span><span class="o">+</span><span class="mi">1</span> <span class="k">else</span> <span class="mi">1</span>
-    <span class="nx">r</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">for</span> <span class="nx">val</span><span class="p">,</span><span class="nx">i</span> <span class="k">in</span> <span class="nx">r</span> <span class="k">when</span> <span class="o">not</span> <span class="nx">val</span><span class="o">?</span>
-    <span class="nx">r</span></pre></div>             </td>           </tr>                               <tr id="section-41">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-41">&#182;</a>               </div>               <p>Mutator. Sorts the array of objects in place by the property. Returns array.
-Clone first if you want to preserve the original array.</p>
+h = histOf b, 2, &quot;id&quot;</code></pre>
 
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  histOf: (array, bin, f) -&gt;
+    r = []; (s=f; <span class="function"><span class="title">f</span></span> = ((o)-&gt;o[s])) <span class="keyword">if</span> <span class="property">@isString</span> f
+    <span class="keyword">for</span> a <span class="keyword">in</span> array
+      i = Math.floor f(a)/bin
+      r[i] = <span class="keyword">if</span> (ri=r[i])? <span class="keyword">then</span> ri+<span class="number">1</span> <span class="keyword">else</span> <span class="number">1</span>
+    r[i] = <span class="number">0</span> <span class="keyword">for</span> val,i <span class="keyword">in</span> r <span class="keyword">when</span> <span class="keyword">not</span> val?
+    r</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-39">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-39">&#182;</a>
+              </div>
+              <p>Mutator. Sorts the array of objects in place by the property. Returns array.
+Clone first if you want to preserve the original array.</p>
 <pre><code>array = [{i:1},{i:5},{i:-1},{i:2},{i:2}]
-sortBy array, "i"
-# array now is [{i:-1},{i:1},{i:2},{i:2},{i:5}]
-</code></pre>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">sortBy: </span><span class="nf">(array, prop) -&gt;</span> <span class="nx">array</span><span class="p">.</span><span class="nx">sort</span> <span class="nf">(a,b) -&gt;</span> <span class="nx">a</span><span class="p">[</span><span class="nx">prop</span><span class="p">]</span> <span class="o">-</span> <span class="nx">b</span><span class="p">[</span><span class="nx">prop</span><span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-42">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-42">&#182;</a>               </div>               <p>Mutator. Removes adjacent dups, by reference, in place from sorted array.
-Note "by reference" means litteraly same object, not copy. Returns array.
-Clone first if you want to preserve the original array.</p>
+sortBy array, &quot;i&quot;
+# array now is [{i:-1},{i:1},{i:2},{i:2},{i:5}]</code></pre>
 
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  sortBy: (array, prop) -&gt; array.sort (a,b) -&gt; a[prop] - b[prop]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-40">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-40">&#182;</a>
+              </div>
+              <p>Mutator. Removes adjacent dups, by reference, in place from sorted array.
+Note &quot;by reference&quot; means litteraly same object, not copy. Returns array.
+Clone first if you want to preserve the original array.</p>
 <pre><code>ids = ({id:i} for i in [0..10])
 a = (ids[i] for i in [1,3,4,1,1,10])
 # a is [{id:1},{id:3},{id:4},{id:1},{id:1},{id:10}]
 b = clone a
-sortBy b, "id"
+sortBy b, &quot;id&quot;
 # b is [{id:1},{id:1},{id:1},{id:3},{id:4},{id:10}]
 uniq b
-# b now is [{id:1},{id:3},{id:4},{id:10}]
-</code></pre>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">uniq: </span><span class="nf">(array) -&gt;</span>
-    <span class="nx">array</span><span class="p">.</span><span class="nx">splice</span> <span class="nx">i</span><span class="p">,</span><span class="mi">1</span> <span class="k">for</span> <span class="nx">i</span> <span class="k">in</span> <span class="p">[</span><span class="nx">array</span><span class="p">.</span><span class="nx">length</span><span class="o">-</span><span class="mi">1</span><span class="p">..</span><span class="mi">1</span><span class="p">]</span> <span class="k">by</span> <span class="o">-</span><span class="mi">1</span> <span class="k">when</span> <span class="nx">array</span><span class="p">[</span><span class="nx">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">is</span> <span class="nx">array</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span>
-    <span class="nx">array</span>
-  </pre></div>             </td>           </tr>                               <tr id="section-43">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-43">&#182;</a>               </div>               <p>Return a new array composed of the rows of a matrix. I.e. convert</p>
+# b now is [{id:1},{id:3},{id:4},{id:10}]</code></pre>
 
-<pre><code>[[1,2,3],[4,5,6]] to [1,2,3,4,5,6]
-</code></pre>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">flatten: </span><span class="nf">(matrix) -&gt;</span> <span class="nx">matrix</span><span class="p">.</span><span class="nx">reduce</span><span class="p">(</span> <span class="nf">(a,b) -&gt;</span> <span class="nx">a</span><span class="p">.</span><span class="nx">concat</span> <span class="nx">b</span> <span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-44">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-44">&#182;</a>               </div>               <p>Binary search of a sorted array, adapted from <a href="http://goo.gl/ozAZH">jaskenas</a>.
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  uniq: (array) -&gt;
+    array.splice i,<span class="number">1</span> <span class="keyword">for</span> i <span class="keyword">in</span> [array.length-<span class="number">1.</span><span class="number">.1</span>] <span class="keyword">by</span> -<span class="number">1</span> <span class="keyword">when</span> array[i-<span class="number">1</span>] <span class="keyword">is</span> array[i]
+    array</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-41">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-41">&#182;</a>
+              </div>
+              <p>Return a new array composed of the rows of a matrix. I.e. convert</p>
+<pre><code>[[1,2,3],[4,5,6]] to [1,2,3,4,5,6]</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  flatten: (matrix) -&gt; matrix.reduce( (a,b) -&gt; a.concat b )</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-42">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-42">&#182;</a>
+              </div>
+              <p>Binary search of a sorted array, adapted from <a href="http://goo.gl/ozAZH">jaskenas</a>.
 Search for index of value with items array, using fcn for item value.
-Return -1 if not found.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">binarySearch: </span><span class="p">(</span><span class="nx">items</span><span class="p">,</span> <span class="nx">value</span><span class="p">,</span> <span class="nv">fcn = </span><span class="nf">(ex) -&gt;</span> <span class="nx">ex</span><span class="p">)</span> <span class="o">-&gt;</span>
-    <span class="nv">start = </span><span class="mi">0</span>
-    <span class="nv">stop  = </span><span class="nx">items</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span>
-    <span class="nv">pivot = </span><span class="nb">Math</span><span class="p">.</span><span class="nx">floor</span> <span class="p">(</span><span class="nx">start</span> <span class="o">+</span> <span class="nx">stop</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
-    <span class="k">while</span> <span class="p">(</span><span class="nv">pivotVal = </span><span class="nx">fcn</span><span class="p">(</span><span class="nx">items</span><span class="p">[</span><span class="nx">pivot</span><span class="p">]))</span> <span class="o">isnt</span> <span class="nx">value</span> <span class="o">and</span> <span class="nx">start</span> <span class="o">&lt;</span> <span class="nx">stop</span>
-      <span class="nv">stop  = </span><span class="nx">pivot</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">if</span> <span class="nx">value</span> <span class="o">&lt;</span> <span class="nx">pivotVal</span>  <span class="c1"># Adjust the search area.</span>
-      <span class="nv">start = </span><span class="nx">pivot</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">if</span> <span class="nx">value</span> <span class="o">&gt;</span> <span class="nx">pivotVal</span>
-      <span class="nv">pivot = </span><span class="nb">Math</span><span class="p">.</span><span class="nx">floor</span> <span class="p">(</span><span class="nx">stop</span> <span class="o">+</span> <span class="nx">start</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>  <span class="c1"># Recalculate the pivot.</span>
-    <span class="k">if</span> <span class="nx">fcn</span><span class="p">(</span><span class="nx">items</span><span class="p">[</span><span class="nx">pivot</span><span class="p">])</span> <span class="o">is</span> <span class="nx">value</span> <span class="k">then</span> <span class="nx">pivot</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span></pre></div>             </td>           </tr>                               <tr id="section-45">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-45">&#182;</a>               </div>               <p>Useful for JS users: max/min of array, push array.  Not used in our CS code</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">aMax: </span><span class="nf">(array) -&gt;</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">max</span> <span class="nx">array</span><span class="p">...</span>
-  <span class="nv">aMin: </span><span class="nf">(array) -&gt;</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">min</span> <span class="nx">array</span><span class="p">...</span>
-  <span class="nv">aPush: </span><span class="nf">(array, a) -&gt;</span> <span class="nx">array</span><span class="p">.</span><span class="nx">push</span> <span class="nx">a</span><span class="p">...</span></pre></div>             </td>           </tr>                               <tr id="section-46">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-46">&#182;</a>               </div>               <h3>Topology Operations</h3>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-47">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-47">&#182;</a>               </div>               <p>Return angle in (-pi,pi] radians from x1,y1 to x2,y2.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">radsToward: </span><span class="nf">(x1, y1, x2, y2) -&gt;</span> 
-    <span class="nv">PI = </span><span class="nb">Math</span><span class="p">.</span><span class="nx">PI</span><span class="p">;</span> <span class="nv">dx = </span><span class="nx">x2</span><span class="o">-</span><span class="nx">x1</span><span class="p">;</span> <span class="nv">dy = </span><span class="nx">y2</span><span class="o">-</span><span class="nx">y1</span>
-    <span class="k">if</span> <span class="nx">dx</span> <span class="o">is</span> <span class="mi">0</span> <span class="k">then</span> <span class="k">return</span> <span class="mi">3</span><span class="o">*</span><span class="nx">PI</span><span class="o">/</span><span class="mi">2</span> <span class="k">if</span> <span class="nx">dy</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">;</span> <span class="k">return</span> <span class="nx">PI</span><span class="o">/</span><span class="mi">2</span> <span class="k">if</span> <span class="nx">dy</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">;</span> <span class="k">return</span> <span class="mi">0</span>
-    <span class="k">else</span> <span class="k">return</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">atan</span><span class="p">(</span><span class="nx">dy</span><span class="o">/</span><span class="nx">dx</span><span class="p">)</span> <span class="o">+</span> <span class="k">if</span> <span class="nx">dx</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">then</span> <span class="nx">PI</span> <span class="k">else</span> <span class="mi">0</span></pre></div>             </td>           </tr>                               <tr id="section-48">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-48">&#182;</a>               </div>               <p>Return true if x2,y2 is in cone radians around heading radians from x1,x2
+Return -1 if not found.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  binarySearch: (items, value, <span class="function"><span class="title">fcn</span></span> = (ex) -&gt; ex) -&gt;
+    start = <span class="number">0</span>
+    stop  = items.length - <span class="number">1</span>
+    pivot = Math.floor (start + stop) / <span class="number">2</span>
+    <span class="keyword">while</span> (pivotVal = fcn(items[pivot])) <span class="keyword">isnt</span> value <span class="keyword">and</span> start &lt; stop
+      stop  = pivot - <span class="number">1</span> <span class="keyword">if</span> value &lt; pivotVal  <span class="comment"># Adjust the search area.</span>
+      start = pivot + <span class="number">1</span> <span class="keyword">if</span> value &gt; pivotVal
+      pivot = Math.floor (stop + start) / <span class="number">2</span>  <span class="comment"># Recalculate the pivot.</span>
+    <span class="keyword">if</span> fcn(items[pivot]) <span class="keyword">is</span> value <span class="keyword">then</span> pivot <span class="keyword">else</span> -<span class="number">1</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-43">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-43">&#182;</a>
+              </div>
+              <p>Useful for JS/debugging users: max/min of array, via pushing array.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  aMax: (array) -&gt; Math.max array...
+  aMin: (array) -&gt; Math.min array...
+  aPush: (array, a) -&gt; array.push a...</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-44">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h3">
+                <a class="pilcrow" href="#section-44">&#182;</a>
+              </div>
+              <h3>Topology Operations</h3>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-45">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-45">&#182;</a>
+              </div>
+              <p>Return angle in (-pi,pi] radians from x1,y1 to x2,y2.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  radsToward: (x1, y1, x2, y2) -&gt; 
+    PI = Math.PI; dx = x2-x1; dy = y2-y1
+    <span class="keyword">if</span> dx <span class="keyword">is</span> <span class="number">0</span> <span class="keyword">then</span> <span class="keyword">return</span> <span class="number">3</span>*PI<span class="regexp">/2 if dy &lt; 0; return PI/</span><span class="number">2</span> <span class="keyword">if</span> dy &gt; <span class="number">0</span>; <span class="keyword">return</span> <span class="number">0</span>
+    <span class="keyword">else</span> <span class="keyword">return</span> Math.atan(dy/dx) + <span class="keyword">if</span> dx &lt; <span class="number">0</span> <span class="keyword">then</span> PI <span class="keyword">else</span> <span class="number">0</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-46">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-46">&#182;</a>
+              </div>
+              <p>Return true if x2,y2 is in cone radians around heading radians from x1,x2
 and within distance radius from x1,x2.
-I.e. is p2 in cone/heading/radius from p1</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">inCone: </span><span class="nf">(heading, cone, radius, x1, y1, x2, y2) -&gt;</span>
-    <span class="k">if</span> <span class="nx">radius</span> <span class="o">&lt;</span> <span class="nx">@distance</span> <span class="nx">x1</span><span class="p">,</span> <span class="nx">y1</span><span class="p">,</span> <span class="nx">x2</span><span class="p">,</span> <span class="nx">y2</span> <span class="k">then</span> <span class="k">return</span> <span class="kc">false</span>
-    <span class="nv">angle12 = </span><span class="nx">@radsToward</span> <span class="nx">x1</span><span class="p">,</span> <span class="nx">y1</span><span class="p">,</span> <span class="nx">x2</span><span class="p">,</span> <span class="nx">y2</span> <span class="c1"># angle from 1 to 2</span>
-    <span class="nx">cone</span><span class="o">/</span><span class="mi">2</span> <span class="o">&gt;=</span><span class="nb">Math</span><span class="p">.</span><span class="nx">abs</span> <span class="nx">@subtractRads</span><span class="p">(</span><span class="nx">heading</span><span class="p">,</span> <span class="nx">angle12</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-49">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-49">&#182;</a>               </div>               <p>Return the Euclidean distance and distance squared between x1,y1, x2,y2.
-The squared distance is used for comparisons to avoid the Math.sqrt fcn.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">distance: </span><span class="nf">(x1, y1, x2, y2) -&gt;</span> <span class="nv">dx = </span><span class="nx">x1</span><span class="o">-</span><span class="nx">x2</span><span class="p">;</span> <span class="nv">dy = </span><span class="nx">y1</span><span class="o">-</span><span class="nx">y2</span><span class="p">;</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">sqrt</span> <span class="nx">dx</span><span class="o">*</span><span class="nx">dx</span> <span class="o">+</span> <span class="nx">dy</span><span class="o">*</span><span class="nx">dy</span>
-  <span class="nv">sqDistance: </span><span class="nf">(x1, y1, x2, y2) -&gt;</span> <span class="nv">dx = </span><span class="nx">x1</span><span class="o">-</span><span class="nx">x2</span><span class="p">;</span> <span class="nv">dy = </span><span class="nx">y1</span><span class="o">-</span><span class="nx">y2</span><span class="p">;</span> <span class="nx">dx</span><span class="o">*</span><span class="nx">dx</span> <span class="o">+</span> <span class="nx">dy</span><span class="o">*</span><span class="nx">dy</span></pre></div>             </td>           </tr>                               <tr id="section-50">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-50">&#182;</a>               </div>               <p>Return the <a href="http://goo.gl/PgJ5N">torus distance</a> and distance squared
+I.e. is p2 in cone/heading/radius from p1</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  inCone: (heading, cone, radius, x1, y1, x2, y2) -&gt;
+    <span class="keyword">if</span> radius &lt; <span class="property">@distance</span> x1, y1, x2, y2 <span class="keyword">then</span> <span class="keyword">return</span> <span class="literal">false</span>
+    angle12 = <span class="property">@radsToward</span> x1, y1, x2, y2 <span class="comment"># angle from 1 to 2</span>
+    cone/<span class="number">2</span> &gt;=Math.abs <span class="property">@subtractRads</span>(heading, angle12)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-47">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-47">&#182;</a>
+              </div>
+              <p>Return the Euclidean distance and distance squared between x1,y1, x2,y2.
+The squared distance is used for comparisons to avoid the Math.sqrt fcn.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  distance: (x1, y1, x2, y2) -&gt; dx = x1-x2; dy = y1-y2; Math.sqrt dx*dx + dy*dy
+  sqDistance: (x1, y1, x2, y2) -&gt; dx = x1-x2; dy = y1-y2; dx*dx + dy*dy</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-48">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-48">&#182;</a>
+              </div>
+              <p>Return the <a href="http://goo.gl/PgJ5N">torus distance</a> and distance squared
 between two points A(x1,y1) and B(x2,y2):</p>
-
 <pre><code>dx = |x2-x1|; dy = |y2-y1|
-d=sqrt(min(dx, W-dx)^2 + min(dy, H-dy)^2)
-</code></pre>
-
+d=sqrt(min(dx, W-dx)^2 + min(dy, H-dy)^2)</code></pre>
 <p>Torus note: ABMs often use a Torus topology where the right and left edges
 fold to meet,and similarly for the top/bottom.
 For points, this is easily handled with the mod function .. insuring the
 point is within the rectangle modulo W &amp; H.</p>
-
 <p>The relationship <em>between</em> points is more difficult.  The relationship between
 A and B must also include the towards-reflections around A, thus 4 points.</p>
-
 <pre><code>     |               |
      |      W        |
 -----+---------------+-----
@@ -190,104 +934,446 @@ A and B must also include the towards-reflections around A, thus 4 points.</p>
      |  A            |
 -----+---------------+-----
  B3  |           B2  |
-     |               |
-</code></pre>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">torusDistance: </span><span class="nf">(x1, y1, x2, y2, w, h) -&gt;</span> 
-    <span class="nb">Math</span><span class="p">.</span><span class="nx">sqrt</span> <span class="nx">@torusSqDistance</span> <span class="nx">x1</span><span class="p">,</span> <span class="nx">y1</span><span class="p">,</span> <span class="nx">x2</span><span class="p">,</span> <span class="nx">y2</span><span class="p">,</span> <span class="nx">w</span><span class="p">,</span> <span class="nx">h</span>
-  <span class="nv">torusSqDistance: </span><span class="nf">(x1, y1, x2, y2, w, h) -&gt;</span>
-    <span class="nv">dx = </span><span class="nb">Math</span><span class="p">.</span><span class="nx">abs</span> <span class="nx">x2</span><span class="o">-</span><span class="nx">x1</span><span class="p">;</span> <span class="nv">dy = </span><span class="nb">Math</span><span class="p">.</span><span class="nx">abs</span> <span class="nx">y2</span><span class="o">-</span><span class="nx">y1</span>
-    <span class="nv">dxMin = </span><span class="nb">Math</span><span class="p">.</span><span class="nx">min</span> <span class="nx">dx</span><span class="p">,</span> <span class="nx">w</span><span class="o">-</span><span class="nx">dx</span><span class="p">;</span> <span class="nv">dyMin = </span><span class="nb">Math</span><span class="p">.</span><span class="nx">min</span> <span class="nx">dy</span><span class="p">,</span> <span class="nx">h</span><span class="o">-</span><span class="nx">dy</span>
-    <span class="nx">dxMin</span><span class="o">*</span><span class="nx">dxMin</span> <span class="o">+</span> <span class="nx">dyMin</span><span class="o">*</span><span class="nx">dyMin</span></pre></div>             </td>           </tr>                               <tr id="section-51">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-51">&#182;</a>               </div>               <p>Return true if closest path between x1,y1 &amp; x2,y2 wraps around the torus.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">torusWraps: </span><span class="nf">(x1, y1, x2, y2, w, h) -&gt;</span>
-    <span class="nv">dx = </span><span class="nb">Math</span><span class="p">.</span><span class="nx">abs</span> <span class="nx">x2</span><span class="o">-</span><span class="nx">x1</span><span class="p">;</span> <span class="nv">dy = </span><span class="nb">Math</span><span class="p">.</span><span class="nx">abs</span> <span class="nx">y2</span><span class="o">-</span><span class="nx">y1</span>
-    <span class="nx">dx</span> <span class="o">&gt;</span> <span class="nx">w</span><span class="o">-</span><span class="nx">dx</span> <span class="o">or</span> <span class="nx">dy</span> <span class="o">&gt;</span> <span class="nx">h</span><span class="o">-</span><span class="nx">dy</span></pre></div>             </td>           </tr>                               <tr id="section-52">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-52">&#182;</a>               </div>               <p>Return 4 torus point reflections of x2,y2 around x1,y1</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">torus4Pts: </span><span class="nf">(x1, y1, x2, y2, w, h) -&gt;</span>
-    <span class="nv">x2r = </span><span class="k">if</span> <span class="nx">x2</span><span class="o">&lt;</span><span class="nx">x1</span> <span class="k">then</span> <span class="nx">x2</span><span class="o">+</span><span class="nx">w</span> <span class="k">else</span> <span class="nx">x2</span><span class="o">-</span><span class="nx">w</span>
-    <span class="nv">y2r = </span><span class="k">if</span> <span class="nx">y2</span><span class="o">&lt;</span><span class="nx">y1</span> <span class="k">then</span> <span class="nx">y2</span><span class="o">+</span><span class="nx">h</span> <span class="k">else</span> <span class="nx">y2</span><span class="o">-</span><span class="nx">h</span>
-    <span class="p">[</span> <span class="p">[</span><span class="nx">x2</span><span class="p">,</span><span class="nx">y2</span><span class="p">],</span> <span class="p">[</span><span class="nx">x2r</span><span class="p">,</span><span class="nx">y2</span><span class="p">],</span> <span class="p">[</span><span class="nx">x2</span><span class="p">,</span><span class="nx">y2r</span><span class="p">],</span> <span class="p">[</span><span class="nx">x2r</span><span class="p">,</span><span class="nx">y2r</span><span class="p">]</span> <span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-53">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-53">&#182;</a>               </div>               <p>Return closest of 4 torus pts from A to B</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">torusPt: </span><span class="nf">(x1, y1, x2, y2, w, h) -&gt;</span>
-    <span class="nv">x2r = </span><span class="k">if</span> <span class="nx">x2</span><span class="o">&lt;</span><span class="nx">x1</span> <span class="k">then</span> <span class="nx">x2</span><span class="o">+</span><span class="nx">w</span> <span class="k">else</span> <span class="nx">x2</span><span class="o">-</span><span class="nx">w</span>
-    <span class="nv">y2r = </span><span class="k">if</span> <span class="nx">y2</span><span class="o">&lt;</span><span class="nx">y1</span> <span class="k">then</span> <span class="nx">y2</span><span class="o">+</span><span class="nx">h</span> <span class="k">else</span> <span class="nx">y2</span><span class="o">-</span><span class="nx">h</span>
-    <span class="nv">x = </span><span class="k">if</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">abs</span><span class="p">(</span><span class="nx">x2r</span><span class="o">-</span><span class="nx">x1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">abs</span><span class="p">(</span><span class="nx">x2</span><span class="o">-</span><span class="nx">x1</span><span class="p">)</span> <span class="k">then</span> <span class="nx">x2r</span> <span class="k">else</span> <span class="nx">x2</span>
-    <span class="nv">y = </span><span class="k">if</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">abs</span><span class="p">(</span><span class="nx">y2r</span><span class="o">-</span><span class="nx">y1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">abs</span><span class="p">(</span><span class="nx">y2</span><span class="o">-</span><span class="nx">y1</span><span class="p">)</span> <span class="k">then</span> <span class="nx">y2r</span> <span class="k">else</span> <span class="nx">y2</span>
-    <span class="p">[</span><span class="nx">x</span><span class="p">,</span><span class="nx">y</span><span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-54">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-54">&#182;</a>               </div>               <p>Return the angle from x1,y1 to x2.y2 on torus using shortest reflection.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">torusRadsToward: </span><span class="nf">(x1, y1, x2, y2, w, h) -&gt;</span> 
-    <span class="p">[</span><span class="nx">x2</span><span class="p">,</span><span class="nx">y2</span><span class="p">]</span> <span class="o">=</span> <span class="nx">@torusPt</span> <span class="nx">x1</span><span class="p">,</span> <span class="nx">y1</span><span class="p">,</span> <span class="nx">x2</span><span class="p">,</span> <span class="nx">y2</span><span class="p">,</span> <span class="nx">w</span><span class="p">,</span> <span class="nx">h</span>
-    <span class="nx">@radsToward</span> <span class="nx">x1</span><span class="p">,</span> <span class="nx">y1</span><span class="p">,</span> <span class="nx">x2</span><span class="p">,</span> <span class="nx">y2</span></pre></div>             </td>           </tr>                               <tr id="section-55">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-55">&#182;</a>               </div>               <p>Return true if x2,y2 is in cone radians around heading radians from x1,x2
-and within distance radius from x1,x2 considering all torus reflections.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">inTorusCone: </span><span class="nf">(heading, cone, radius, x1, y1, x2, y2, w, h) -&gt;</span>
-    <span class="k">for</span> <span class="nx">p</span> <span class="k">in</span> <span class="nx">@torus4Pts</span> <span class="nx">x1</span><span class="p">,</span> <span class="nx">y1</span><span class="p">,</span> <span class="nx">x2</span><span class="p">,</span> <span class="nx">y2</span><span class="p">,</span> <span class="nx">w</span><span class="p">,</span> <span class="nx">h</span>
-      <span class="k">return</span> <span class="kc">true</span> <span class="k">if</span> <span class="nx">@inCone</span> <span class="nx">heading</span><span class="p">,</span> <span class="nx">cone</span><span class="p">,</span> <span class="nx">radius</span><span class="p">,</span> <span class="nx">x1</span><span class="p">,</span> <span class="nx">y1</span><span class="p">,</span> <span class="nx">p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nx">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-    <span class="kc">false</span>
-    </pre></div>             </td>           </tr>                               <tr id="section-56">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-56">&#182;</a>               </div>               <h3>Canvas/Context Operations</h3>             </td>             <td class="code">               <div class="highlight"><pre>  </pre></div>             </td>           </tr>                               <tr id="section-57">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-57">&#182;</a>               </div>               <p>Create a new canvas of given width/height</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">createCanvas: </span><span class="nf">(width, height) -&gt;</span>
-    <span class="nv">can = </span><span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span> <span class="s">&#39;canvas&#39;</span>
-    <span class="nv">can.width = </span><span class="nx">width</span><span class="p">;</span> <span class="nv">can.height = </span><span class="nx">height</span>
-    <span class="nx">can</span></pre></div>             </td>           </tr>                               <tr id="section-58">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-58">&#182;</a>               </div>               <p>As above, but returing the context object.  Note ctx.canvas is the canvas for the ctx.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">createCtx: </span><span class="nf">(width, height, ctx=&quot;2d&quot;) -&gt;</span>
-    <span class="nv">can = </span><span class="nx">@createCanvas</span> <span class="nx">width</span><span class="p">,</span> <span class="nx">height</span>
-    <span class="k">if</span> <span class="nx">ctx</span> <span class="o">is</span> <span class="s">&quot;2d&quot;</span> <span class="k">then</span> <span class="nx">can</span><span class="p">.</span><span class="nx">getContext</span> <span class="s">&quot;2d&quot;</span> 
-    <span class="k">else</span> <span class="nx">can</span><span class="p">.</span><span class="nx">getContext</span><span class="p">(</span><span class="s">&quot;webgl&quot;</span><span class="p">)</span> <span class="o">or</span> <span class="nx">can</span><span class="p">.</span><span class="nx">getContext</span><span class="p">(</span><span class="s">&quot;experimental-webgl&quot;</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-59">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-59">&#182;</a>               </div>               <p>Return a "layer" 2D/3D rendering context within the specified HTML <code>&lt;div&gt;</code>,
+     |               |</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  torusDistance: (x1, y1, x2, y2, w, h) -&gt; 
+    Math.sqrt <span class="property">@torusSqDistance</span> x1, y1, x2, y2, w, h
+  torusSqDistance: (x1, y1, x2, y2, w, h) -&gt;
+    dx = Math.abs x2-x1; dy = Math.abs y2-y1
+    dxMin = Math.min dx, w-dx; dyMin = Math.min dy, h-dy
+    dxMin*dxMin + dyMin*dyMin</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-49">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-49">&#182;</a>
+              </div>
+              <p>Return true if closest path between x1,y1 &amp; x2,y2 wraps around the torus.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  torusWraps: (x1, y1, x2, y2, w, h) -&gt;
+    dx = Math.abs x2-x1; dy = Math.abs y2-y1
+    dx &gt; w-dx <span class="keyword">or</span> dy &gt; h-dy</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-50">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-50">&#182;</a>
+              </div>
+              <p>Return 4 torus point reflections of x2,y2 around x1,y1</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  torus4Pts: (x1, y1, x2, y2, w, h) -&gt;
+    x2r = <span class="keyword">if</span> x2&lt;x1 <span class="keyword">then</span> x2+w <span class="keyword">else</span> x2-w
+    y2r = <span class="keyword">if</span> y2&lt;y1 <span class="keyword">then</span> y2+h <span class="keyword">else</span> y2-h
+    [ [x2,y2], [x2r,y2], [x2,y2r], [x2r,y2r] ]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-51">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-51">&#182;</a>
+              </div>
+              <p>Return closest of 4 torus pts from A to B</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  torusPt: (x1, y1, x2, y2, w, h) -&gt;
+    x2r = <span class="keyword">if</span> x2&lt;x1 <span class="keyword">then</span> x2+w <span class="keyword">else</span> x2-w
+    y2r = <span class="keyword">if</span> y2&lt;y1 <span class="keyword">then</span> y2+h <span class="keyword">else</span> y2-h
+    x = <span class="keyword">if</span> Math.abs(x2r-x1) &lt; Math.abs(x2-x1) <span class="keyword">then</span> x2r <span class="keyword">else</span> x2
+    y = <span class="keyword">if</span> Math.abs(y2r-y1) &lt; Math.abs(y2-y1) <span class="keyword">then</span> y2r <span class="keyword">else</span> y2
+    [x,y]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-52">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-52">&#182;</a>
+              </div>
+              <p>Return the angle from x1,y1 to x2.y2 on torus using shortest reflection.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  torusRadsToward: (x1, y1, x2, y2, w, h) -&gt; 
+    [x2,y2] = <span class="property">@torusPt</span> x1, y1, x2, y2, w, h
+    <span class="property">@radsToward</span> x1, y1, x2, y2</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-53">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-53">&#182;</a>
+              </div>
+              <p>Return true if x2,y2 is in cone radians around heading radians from x1,x2
+and within distance radius from x1,x2 considering all torus reflections.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  inTorusCone: (heading, cone, radius, x1, y1, x2, y2, w, h) -&gt;
+    <span class="keyword">for</span> p <span class="keyword">in</span> <span class="property">@torus4Pts</span> x1, y1, x2, y2, w, h
+      <span class="keyword">return</span> <span class="literal">true</span> <span class="keyword">if</span> <span class="property">@inCone</span> heading, cone, radius, x1, y1, p[<span class="number">0</span>], p[<span class="number">1</span>]
+    <span class="literal">false</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-54">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h3">
+                <a class="pilcrow" href="#section-54">&#182;</a>
+              </div>
+              <h3>Canvas/Context Operations</h3>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-55">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-55">&#182;</a>
+              </div>
+              <p>Create a new canvas of given width/height</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  createCanvas: (width, height) -&gt;
+    can = document.createElement <span class="string">'canvas'</span>
+    can.width = width; can.height = height
+    can</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-56">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-56">&#182;</a>
+              </div>
+              <p>As above, but returing the context object.  Note ctx.canvas is the canvas for the ctx.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  createCtx: (width, height, ctx=<span class="string">"2d"</span>) -&gt;
+    can = <span class="property">@createCanvas</span> width, height
+    <span class="keyword">if</span> ctx <span class="keyword">is</span> <span class="string">"2d"</span> <span class="keyword">then</span> can.getContext <span class="string">"2d"</span> 
+    <span class="keyword">else</span> can.getContext(<span class="string">"webgl"</span>) <span class="keyword">or</span> can.getContext(<span class="string">"experimental-webgl"</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-57">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-57">&#182;</a>
+              </div>
+              <p>Return a &quot;layer&quot; 2D/3D rendering context within the specified HTML <code>&lt;div&gt;</code>,
 with the given width/height positioned absolutely at top/left within the div,
 and with the z-index of z.</p>
+<p>The z level gives us the capability of buildng a &quot;stack&quot; of coordinated canvases.</p>
 
-<p>The z level gives us the capability of buildng a "stack" of coordinated canvases.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">createLayer: </span><span class="nf">(div, width, height, z, ctx = &quot;2d&quot;) -&gt;</span> <span class="c1"># a canvas ctx object</span>
-    <span class="nv">ctx = </span><span class="nx">@createCtx</span> <span class="nx">width</span><span class="p">,</span> <span class="nx">height</span><span class="p">,</span> <span class="nx">ctx</span>
-    <span class="nx">ctx</span><span class="p">.</span><span class="nx">canvas</span><span class="p">.</span><span class="nx">setAttribute</span> <span class="s">&#39;style&#39;</span><span class="p">,</span> <span class="s">&quot;position:absolute;top:0;left:0;z-index:</span><span class="si">#{</span><span class="nx">z</span><span class="si">}</span><span class="s">&quot;</span>
-    <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="nx">div</span><span class="p">).</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">ctx</span><span class="p">.</span><span class="nx">canvas</span><span class="p">)</span>
-    <span class="nx">ctx</span></pre></div>             </td>           </tr>                               <tr id="section-60">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-60">&#182;</a>               </div>               <p>Install identity transform.  Call ctx.restore() to revert to previous</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">setIdentity: </span><span class="nf">(ctx) -&gt;</span>
-    <span class="nx">ctx</span><span class="p">.</span><span class="nx">save</span><span class="p">()</span> <span class="c1"># revert to native 2D transform</span>
-    <span class="nx">ctx</span><span class="p">.</span><span class="nx">setTransform</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
-  </pre></div>             </td>           </tr>                               <tr id="section-61">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-61">&#182;</a>               </div>               <p>Clear the 2D/3D layer to be transparent. Note this <a href="http://goo.gl/qekXS">discussion</a>.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">clearCtx: </span><span class="nf">(ctx) -&gt;</span>
-    <span class="k">if</span> <span class="nx">ctx</span><span class="p">.</span><span class="nx">save</span><span class="o">?</span> <span class="c1"># test for 2D ctx</span>
-      <span class="nx">@setIdentity</span> <span class="nx">ctx</span> <span class="c1"># ctx.canvas.width = ctx.canvas.width not used so as to preserve patch coords</span>
-      <span class="nx">ctx</span><span class="p">.</span><span class="nx">clearRect</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">ctx</span><span class="p">.</span><span class="nx">canvas</span><span class="p">.</span><span class="nx">width</span><span class="p">,</span> <span class="nx">ctx</span><span class="p">.</span><span class="nx">canvas</span><span class="p">.</span><span class="nx">height</span>
-      <span class="nx">ctx</span><span class="p">.</span><span class="nx">restore</span><span class="p">()</span>
-    <span class="k">else</span> <span class="c1"># 3D</span>
-      <span class="nx">ctx</span><span class="p">.</span><span class="nx">clearColor</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span> <span class="c1"># transparent!</span>
-      <span class="nx">ctx</span><span class="p">.</span><span class="nx">clear</span> <span class="nx">ctx</span><span class="p">.</span><span class="nx">COLOR_BUFFER_BIT</span> <span class="o">|</span> <span class="nx">ctx</span><span class="p">.</span><span class="nx">DEPTH_BUFFER_BIT</span></pre></div>             </td>           </tr>                               <tr id="section-62">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-62">&#182;</a>               </div>               <p>Fill the 2D/3D layer with the given color</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">fillCtx: </span><span class="nf">(ctx, color) -&gt;</span>
-    <span class="k">if</span> <span class="nx">ctx</span><span class="p">.</span><span class="nx">fillStyle</span><span class="o">?</span> <span class="c1"># test for 2D ctx</span>
-      <span class="nx">@setIdentity</span> <span class="nx">ctx</span>
-      <span class="nv">ctx.fillStyle = </span><span class="nx">@colorStr</span><span class="p">(</span><span class="nx">color</span><span class="p">)</span>
-      <span class="nx">ctx</span><span class="p">.</span><span class="nx">fillRect</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">ctx</span><span class="p">.</span><span class="nx">canvas</span><span class="p">.</span><span class="nx">width</span><span class="p">,</span> <span class="nx">ctx</span><span class="p">.</span><span class="nx">canvas</span><span class="p">.</span><span class="nx">height</span>
-      <span class="nx">ctx</span><span class="p">.</span><span class="nx">restore</span><span class="p">()</span>
-    <span class="k">else</span> <span class="c1"># 3D</span>
-      <span class="nx">ctx</span><span class="p">.</span><span class="nx">clearColor</span> <span class="nx">color</span><span class="p">...,</span> <span class="mi">1</span> <span class="c1"># alpha = 1 unless color is rgba</span>
-      <span class="nx">ctx</span><span class="p">.</span><span class="nx">clear</span> <span class="nx">ctx</span><span class="p">.</span><span class="nx">COLOR_BUFFER_BIT</span> <span class="o">|</span> <span class="nx">ctx</span><span class="p">.</span><span class="nx">DEPTH_BUFFER_BIT</span></pre></div>             </td>           </tr>                               <tr id="section-63">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-63">&#182;</a>               </div>               <p>2D: Draw string of the given color at the xy location.
-Note that this will follow the existing transform.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">ctxDrawText: </span><span class="nf">(ctx, string, xy, color = [0,0,0]) -&gt;</span> 
-    <span class="nv">ctx.fillStyle = </span><span class="nx">@colorStr</span> <span class="nx">color</span>
-    <span class="nx">ctx</span><span class="p">.</span><span class="nx">fillText</span><span class="p">(</span><span class="nx">string</span><span class="p">,</span> <span class="nx">xy</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nx">xy</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></pre></div>             </td>           </tr>                               <tr id="section-64">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-64">&#182;</a>               </div>               <p>2D: Set the canvas text align and baseline drawing parameters</p>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  createLayer: (div, width, height, z, ctx = <span class="string">"2d"</span>) -&gt; <span class="comment"># a canvas ctx object</span>
+    ctx = <span class="property">@createCtx</span> width, height, ctx
+    ctx.canvas.setAttribute <span class="string">'style'</span>, <span class="string">"position:absolute;top:0;left:0;z-index:<span class="subst">#{z}</span>"</span>
+    document.getElementById(div).appendChild(ctx.canvas)
+    ctx</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-58">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-58">&#182;</a>
+              </div>
+              <p>Install identity transform.  Call ctx.restore() to revert to previous transform</p>
 
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  setIdentity: (ctx) -&gt;
+    ctx.save() <span class="comment"># revert to native 2D transform</span>
+    ctx.setTransform <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-59">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-59">&#182;</a>
+              </div>
+              <p>Clear the 2D/3D layer to be transparent. Note this <a href="http://goo.gl/qekXS">discussion</a>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  clearCtx: (ctx) -&gt;
+    <span class="keyword">if</span> ctx.save? <span class="comment"># test for 2D ctx</span>
+      <span class="property">@setIdentity</span> ctx <span class="comment"># ctx.canvas.width = ctx.canvas.width not used so as to preserve patch coords</span>
+      ctx.clearRect <span class="number">0</span>, <span class="number">0</span>, ctx.canvas.width, ctx.canvas.height
+      ctx.restore()
+    <span class="keyword">else</span> <span class="comment"># 3D</span>
+      ctx.clearColor <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span> <span class="comment"># transparent!</span>
+      ctx.clear ctx.COLOR_BUFFER_BIT | ctx.DEPTH_BUFFER_BIT</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-60">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-60">&#182;</a>
+              </div>
+              <p>Fill the 2D/3D layer with the given color</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  fillCtx: (ctx, color) -&gt;
+    <span class="keyword">if</span> ctx.fillStyle? <span class="comment"># test for 2D ctx</span>
+      <span class="property">@setIdentity</span> ctx
+      ctx.fillStyle = <span class="property">@colorStr</span>(color)
+      ctx.fillRect <span class="number">0</span>, <span class="number">0</span>, ctx.canvas.width, ctx.canvas.height
+      ctx.restore()
+    <span class="keyword">else</span> <span class="comment"># 3D</span>
+      ctx.clearColor color..., <span class="number">1</span> <span class="comment"># alpha = 1 unless color is rgba</span>
+      ctx.clear ctx.COLOR_BUFFER_BIT | ctx.DEPTH_BUFFER_BIT</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-61">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-61">&#182;</a>
+              </div>
+              <p>Draw string of the given color at the xy location.
+Note that this will follow the existing transform.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  ctxDrawText: (ctx, string, xy, color = [<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>]) -&gt; 
+    ctx.fillStyle = <span class="property">@colorStr</span> color
+    ctx.fillText(string, xy[<span class="number">0</span>], xy[<span class="number">1</span>])</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-62">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-62">&#182;</a>
+              </div>
+              <p>Set the canvas text align and baseline drawing parameters</p>
 <ul>
-<li>font is a HTML/CSS string like: "9px sans-serif"</li>
+<li>font is a HTML/CSS string like: &quot;9px sans-serif&quot;</li>
 <li>align is left right center start end</li>
 <li>baseline is top hanging middle alphabetic ideographic bottom</li>
 </ul>
+<p>See <a href="http://goo.gl/AvEAq">reference</a> for details.</p>
 
-<p>See <a href="http://goo.gl/AvEAq">reference</a> for details.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">ctxTextParams: </span><span class="nf">(ctx, font, align = &quot;center&quot;, baseline = &quot;middle&quot;) -&gt;</span> 
-    <span class="nv">ctx.font = </span><span class="nx">font</span><span class="p">;</span> <span class="nv">ctx.textAlign = </span><span class="nx">align</span><span class="p">;</span> <span class="nv">ctx.textBaseline = </span><span class="nx">baseline</span></pre></div>             </td>           </tr>                               <tr id="section-65">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-65">&#182;</a>               </div>               <p>2D: Store the default color and xy offset for text labels for agentsets.
-This is simply using the ctx object for convenient storage.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">ctxLabelParams: </span><span class="nf">(ctx, color, xy) -&gt;</span> <span class="c1"># patches/agents defaults</span>
-    <span class="nv">ctx.labelColor = </span><span class="nx">color</span><span class="p">;</span> <span class="nv">ctx.labelXY = </span><span class="nx">xy</span></pre></div>             </td>           </tr>                               <tr id="section-66">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-66">&#182;</a>               </div>               <p>Import an image, executing function f on completion</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">importImage: </span><span class="p">(</span><span class="nx">imageSrc</span><span class="p">,</span> <span class="nx">f</span><span class="o">=</span><span class="nf">(img)-&gt;</span><span class="p">)</span> <span class="o">-&gt;</span>
-    <span class="nv">img = </span><span class="k">new</span> <span class="nx">Image</span><span class="p">()</span>
-    <span class="nv">img.onload = </span><span class="o">-&gt;</span> <span class="nx">f</span><span class="p">(</span><span class="nx">img</span><span class="p">)</span>
-    <span class="nv">img.src = </span><span class="nx">imageSrc</span>
-    <span class="nx">img</span>
-    </pre></div>             </td>           </tr>                               <tr id="section-67">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-67">&#182;</a>               </div>               <p>Convert an image to a context</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">imageToCtx: </span><span class="nf">(image) -&gt;</span>
-    <span class="nv">ctx = </span><span class="nx">@createCtx</span> <span class="nx">image</span><span class="p">.</span><span class="nx">width</span><span class="p">,</span> <span class="nx">image</span><span class="p">.</span><span class="nx">height</span>
-    <span class="nx">ctx</span><span class="p">.</span><span class="nx">drawImage</span> <span class="nx">image</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
-    <span class="nx">ctx</span> <span class="c1"># note: ctx.canvas gives the canvas we created.</span></pre></div>             </td>           </tr>                               <tr id="section-68">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-68">&#182;</a>               </div>               <p>Convert a context to an image, executing function f on completion.
-Generally can skip callback but see <a href="http://goo.gl/kIk2U">stackoverflow</a></p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">ctxToImage: </span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">f</span><span class="o">=</span><span class="nf">(img)-&gt;</span><span class="p">)</span> <span class="o">-&gt;</span>
-    <span class="nv">img = </span><span class="k">new</span> <span class="nx">Image</span><span class="p">()</span>
-    <span class="nv">img.onload = </span><span class="o">-&gt;</span> <span class="nx">f</span><span class="p">(</span><span class="nx">img</span><span class="p">)</span>
-    <span class="nv">img.src = </span><span class="nx">ctx</span><span class="p">.</span><span class="nx">canvas</span><span class="p">.</span><span class="nx">toDataURL</span> <span class="s">&quot;image/png&quot;</span>
-    <span class="nx">img</span></pre></div>             </td>           </tr>                               <tr id="section-69">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-69">&#182;</a>               </div>               <p>Convert a ctx to an imageData object</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">ctxToImageData: </span><span class="nf">(ctx) -&gt;</span> <span class="nx">ctx</span><span class="p">.</span><span class="nx">getImageData</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">ctx</span><span class="p">.</span><span class="nx">canvas</span><span class="p">.</span><span class="nx">width</span><span class="p">,</span> <span class="nx">ctx</span><span class="p">.</span><span class="nx">canvas</span><span class="p">.</span><span class="nx">height</span></pre></div>             </td>           </tr>                               <tr id="section-70">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-70">&#182;</a>               </div>               <p>Canvas versions of above</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">canvasToImage: </span><span class="nf">(canvas) -&gt;</span> <span class="nx">ctxToImage</span><span class="p">(</span><span class="nx">canvas</span><span class="p">.</span><span class="nx">getContext</span> <span class="s">&quot;2d&quot;</span><span class="p">)</span>
-  <span class="nv">canvasToImageData: </span><span class="nf">(canvas) -&gt;</span> <span class="nx">ctxToImageData</span><span class="p">(</span><span class="nx">canvas</span><span class="p">.</span><span class="nx">getContext</span> <span class="s">&quot;2d&quot;</span><span class="p">)</span>
-  <span class="nv">imageToCanvas: </span><span class="nf">(image) -&gt;</span> <span class="nx">imageToCtx</span><span class="p">(</span><span class="nx">image</span><span class="p">).</span><span class="nx">canvas</span>
-  </pre></div>             </td>           </tr>                               <tr id="section-71">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-71">&#182;</a>               </div>               <p>Draw an image centered at x, y w/ image size dx, dy.
-See <a href="http://goo.gl/VUlhY">this tutorial</a>.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">drawCenteredImage: </span><span class="nf">(ctx, img, rad, x, y, dx, dy) -&gt;</span> <span class="c1"># presume save/restore surrounds this</span>
-    <span class="nx">ctx</span><span class="p">.</span><span class="nx">translate</span> <span class="nx">x</span><span class="p">,</span> <span class="nx">y</span> <span class="c1"># translate to center</span>
-    <span class="nx">ctx</span><span class="p">.</span><span class="nx">rotate</span> <span class="nx">rad</span>
-    <span class="nx">ctx</span><span class="p">.</span><span class="nx">drawImage</span> <span class="nx">img</span><span class="p">,</span> <span class="o">-</span><span class="nx">dx</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="nx">dy</span><span class="o">/</span><span class="mi">2</span>
-  </pre></div>             </td>           </tr>                               <tr id="section-72">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-72">&#182;</a>               </div>               <p>Resize a ctx/canvas and preserve data.
-Note async: the new canvas will "refresh" after we return!</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">resizeCtx: </span><span class="nf">(ctx, width, height, scale = false) -&gt;</span> <span class="c1"># http://goo.gl/Tp90B</span>
-    <span class="nx">@ctxToImage</span> <span class="nx">ctx</span><span class="p">,</span> <span class="nf">(img)-&gt;</span> <span class="c1"># apparently =&gt; not needed</span>
-      <span class="k">if</span> <span class="nx">scale</span> <span class="k">then</span> <span class="nx">ctx</span><span class="p">.</span><span class="nx">drawImage</span> <span class="nx">img</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">width</span><span class="p">,</span> <span class="nx">height</span>
-      <span class="k">else</span> <span class="nx">ctx</span><span class="p">.</span><span class="nx">drawImage</span> <span class="nx">img</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
-    <span class="nv">ctx.canvas.width = </span><span class="nx">width</span><span class="p">;</span> <span class="nv">ctx.canvas.height = </span><span class="nx">height</span>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  ctxTextParams: (ctx, font, align = <span class="string">"center"</span>, baseline = <span class="string">"middle"</span>) -&gt; 
+    ctx.font = font; ctx.textAlign = align; ctx.textBaseline = baseline</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-63">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-63">&#182;</a>
+              </div>
+              <p>2D: Store the default color and xy offset for text labels for agentsets.
+This is simply using the ctx object for convenient storage.</p>
 
-    
-  
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  ctxLabelParams: (ctx, color, xy) -&gt; <span class="comment"># patches/agents defaults</span>
+    ctx.labelColor = color; ctx.labelXY = xy</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-64">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-64">&#182;</a>
+              </div>
+              <p>Import an image, executing (async) optional function f(img) on completion</p>
 
-</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  importImage: (imageSrc, f=<span class="literal">null</span>) -&gt;
+    img = <span class="keyword">new</span> Image()
+    img.<span class="function"><span class="title">onload</span></span> = -&gt; f(img) <span class="keyword">if</span> f?
+    img.src = imageSrc
+    img</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-65">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-65">&#182;</a>
+              </div>
+              <p>Convert an image to a context. ctx.canvas gives the created canvas.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  imageToCtx: (image) -&gt;
+    ctx = <span class="property">@createCtx</span> image.width, image.height
+    ctx.drawImage image, <span class="number">0</span>, <span class="number">0</span>
+    ctx</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-66">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-66">&#182;</a>
+              </div>
+              <p>Convert a context to an image, executing function f on completion.
+Generally can skip callback but see <a href="http://goo.gl/kIk2U">stackoverflow</a>
+Note: uses toDataURL thus possible cross origin problems.
+Fix: use ctx.canvas for programatic imaging.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  ctxToImage: (ctx, f=<span class="literal">null</span>) -&gt;
+    img = <span class="keyword">new</span> Image()
+    img.<span class="function"><span class="title">onload</span></span> = -&gt; f(img) <span class="keyword">if</span> f?
+    img.src = ctx.canvas.toDataURL <span class="string">"image/png"</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-67">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-67">&#182;</a>
+              </div>
+              <p>Convert a ctx to an imageData object</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  ctxToImageData: (ctx) -&gt; ctx.getImageData <span class="number">0</span>, <span class="number">0</span>, ctx.canvas.width, ctx.canvas.height</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-68">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-68">&#182;</a>
+              </div>
+              <p>Canvas versions of above</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  canvasToImage: (canvas) -&gt; ctxToImage(canvas.getContext <span class="string">"2d"</span>)
+  canvasToImageData: (canvas) -&gt; ctxToImageData(canvas.getContext <span class="string">"2d"</span>)
+  imageToCanvas: (image) -&gt; imageToCtx(image).canvas</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-69">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-69">&#182;</a>
+              </div>
+              <p>Draw an image centered at x, y w/ image size dx, dy.
+See <a href="http://goo.gl/VUlhY">this tutorial</a>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  drawCenteredImage: (ctx, img, rad, x, y, dx, dy) -&gt; <span class="comment"># presume save/restore surrounds this</span>
+    ctx.translate x, y <span class="comment"># translate to center</span>
+    ctx.rotate rad
+    ctx.drawImage img, -dx<span class="regexp">/2, -dy/</span><span class="number">2</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-70">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-70">&#182;</a>
+              </div>
+              <p>Duplicate a ctx&#39;s image.  Returns the new ctx, use ctx.canvas for canvas.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  copyCtx: (ctx0) -&gt;
+    ctx = <span class="property">@createCtx</span> ctx0.canvas.width, ctx0.canvas.height
+    ctx.drawImage ctx0.canvas, <span class="number">0</span>, <span class="number">0</span>
+    ctx</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-71">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-71">&#182;</a>
+              </div>
+              <p>Resize a ctx/canvas and preserve data.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  resizeCtx: (ctx, width, height, scale = <span class="literal">false</span>) -&gt; <span class="comment"># http://goo.gl/Tp90B</span>
+    copy = <span class="property">@copyCtx</span> ctx
+    ctx.canvas.width = width; ctx.canvas.height = height
+    ctx.drawImage copy.canvas, <span class="number">0</span>, <span class="number">0</span></pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

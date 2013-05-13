@@ -2,6 +2,8 @@
 # Creating new models is done by subclassing class Model and overriding two 
 # virtual/abstract methods: `setup()` and `step()`
 
+# ### Animator
+  
 # Because not all models have the same amimator requirements, we build a class
 # for customization by the programmer.  See these URLs for more info:
 #
@@ -11,12 +13,19 @@
 # * [jsFiddle setTimeout vs rAF](http://jsfiddle.net/calpo/H7EEE/)
 # * [Timeout tutorial](http://javascript.info/tutorial/settimeout-setinterval)
 # * [Events and timing in depth](http://javascript.info/tutorial/events-and-timing-depth)
+  
 class ABM.Animator
-  constructor: (@model, @rate=30, @multiStep=false) -> # rate/multiStep arbitrary hint to animate()
+  # Create initial animator for the model, specifying default rate (fps) and multiStep (async).
+  # If multiStep, run the draw() and step() methods asynchronously by draw() using
+  # requestAnimFrame and step() using setTimeout.
+  constructor: (@model, @rate=30, @multiStep=false) ->
     @ticks = @draws = 0
     @animHandle = @timerHandle = @intervalHandle = null
     @animStop = true
+  # Adjust animator.  This is used by programmer as the default animator will already have
+  # been created by the time her model runs.
   setRate: (@rate, @multiStep=false) -> @reset()
+  # start/stop model, often used for debugging
   start: ->
     if not @animStop then return # avoid multiple animates
     @reset()
@@ -32,14 +41,21 @@ class ABM.Animator
     if @timeoutHandle? then clearTimeout @timeoutHandle
     if @intervalHandle? then clearInterval @intervalHandle
     @animHandle = @timerHandle = @intervalHandle = null
+  # step/draw the model.  Note ticks/draws counters separate due to async.
   step: -> @ticks++; @model.step()
   draw: -> @draws++; @model.draw()
-  once: -> @step(); @draw() # Take one step .. debugging
+  # step and draw the model once, mainly debugging
+  once: -> @step(); @draw()
+  # Get current time, with high resolution timer if available
   now: -> (performance ? Date).now()
+  # Time in ms since starting animator
   ms: -> @now()-@startMS
+  # Get the number of ticks/draws per second.  They will differ if async
   ticksPerSec: -> if (elapsed = @ticks-@startTick) is 0 then 0 else Math.round elapsed*1000/@ms()
   drawsPerSec: -> if (elapsed = @draws-@startDraw) is 0 then 0 else Math.round elapsed*1000/@ms()
+  # Return a status string for debugging and logging performance
   toString: -> "ticks: #{@ticks}, draws: #{@draws}, rate: #{@rate} #{@ticksPerSec()}/#{@drawsPerSec()}"
+  # Animation via setTimeout and requestAnimFrame
   animateSteps: =>
     @step()
     @timeoutHandle = setTimeout @animateSteps, 10 unless @animStop
@@ -56,16 +72,12 @@ class ABM.Animator
 # ### Class Model
 
 class ABM.Model  
-  # Constructor: 
-  #
-  # * create agentsets, install them and ourselves in ABM global namespace
-  # * create layers/contexts, install drawing layer in ABM global namespace
-  # * setup patch coord transforms for each layer context
-  # * intialize various instance variables
-  # * call `setup` abstract method
   
   # Class variable for layers parameters. 
-  # Can be added to by programmer to modify/create layers.
+  # Can be added to by programmer to modify/create layers, **before** starting your own model.
+  # Example:
+  # 
+  #     v.z++ for k,v of ABM.Model::contextsInit # increase each z value by one
   contextsInit: {
     patches:   {z:0, ctx:"2d"}
     drawing:   {z:1, ctx:"2d"}
@@ -73,21 +85,30 @@ class ABM.Model
     agents:    {z:3, ctx:"2d"}
     spotlight: {z:4, ctx:"2d"}
   }
+  # Constructor: 
+  #
+  # * create agentsets, install them and ourselves in ABM global namespace
+  # * create layers/contexts, install drawing layer in ABM global namespace
+  # * setup patch coord transforms for each layer context
+  # * intialize various instance variables
+  # * call `setup` abstract method
   constructor: (
     div, size, minX, maxX, minY, maxY,
-    torus=true, neighbors=true
+    isTorus=true, hasNeighbors=true
   ) ->
     ABM.model = @
+    ABM.world = @world = {div, size, minX, maxX, minY, maxY, isTorus, hasNeighbors}
     @contexts = ABM.contexts = {}
     
-    # Create 2D canvas contexts layered on top of each other.<br>
-    # Initialize a patch coord transform for each layer.<br>
-    # Note: this is permanent .. there is no ctx.restore() call.<br>
+    # * Create 2D canvas contexts layered on top of each other.
+    # * Initialize a patch coord transform for each layer.
+    # 
+    # Note: this is permanent .. there isn't the usual ctx.restore().
     # To use the original canvas 2D transform temporarily:
     #
     #     u.setIdentity ctx
     #       <draw in native coord system>
-    #     ctx.restore() # restore back to patch coord system
+    #     ctx.restore() # restore patch coord system
     
     for own k,v of @contextsInit
       @contexts[k] = ctx =
@@ -98,8 +119,7 @@ class ABM.Model
       ctx.agentSetName = k # Set a variable in each context with its name
 
     # Initialize agentsets.
-    @patches = ABM.patches = \
-      new ABM.Patches size,minX,maxX,minY,maxY,torus,neighbors
+    @patches = ABM.patches = new ABM.Patches ABM.Patch, "patches"
     @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
     @links = ABM.links = new ABM.Links ABM.Link, "links"
     # One of the layers is used for drawing only, not an agentset:
@@ -107,24 +127,25 @@ class ABM.Model
     # Setup spotlight layer, also not an agentset:
     @contexts.spotlight.globalCompositeOperation = "xor"
 
-    # Initialize instance variables
+    # Initialize animator to default: 30fps, not async
     @anim = new ABM.Animator(@)
-    @refreshLinks = @refreshAgents = @refreshPatches = true # drawing flags
-    @fastPatches = false
+    # Set drawing controls.  Default to drawing each agentset.
+    # Optimization: If any of these is set to false, the associated
+    # agentset is drawn only once, remaining static after that.
+    @refreshLinks = @refreshAgents = @refreshPatches = true
     
-    # Call the models setup function.
+    # Call the models setup function. Set the list of global variables to
+    # the new variables created by setup(). Do not include agentsets, they
+    # are available in the ABM global.
+    beginVars = (k for own k,v of @ when not (v.agentClass? or u.isFunction v))
     @setup()
-    
-    # Postprocesssing after setup
-    if @agents.useSprites
-      @agents.setDefaultSprite() # if ABM.Agent::color?
-      for a in @agents when not a.hasOwnProperty "sprite"
-        if a.hasOwnProperty "color" or a.hasOwnProperty "shape" or a.hasOwnProperty "size"
-          a.sprite = ABM.shapes.shapeToSprite a.shape, a.color, a.size*@patches.size
+    endVars = (k for own k,v of @ when not (v.agentClass? or u.isFunction v))
+    ABM.globals = @globals = (v for v in endVars when not u.contains beginVars, v)
+    console.log "globals", @globals
     
 
 #### Optimizations:
-
+  
   # Modelers "tune" their model by adjusting flags:<br>
   # `@refreshLinks, @refreshAgents, @refreshPatches`<br>
   # and by the following methods:
@@ -146,7 +167,7 @@ class ABM.Model
   setCachePatchRects: (radius, meToo=false) -> @patches.cacheRect radius, meToo
 
 #### Text Utilities:
-
+  
   # Return context name for agentset via naming convention: Links->links etc.
   agentSetCtxName: (aset) ->
     aset = aset.mainSet if aset.mainSet? # breeds->mainSet
@@ -165,19 +186,22 @@ class ABM.Model
 #### User Model Creation
 # A user's model is made by subclassing Model and over-riding these
 # two abstract methods. `super` need not be called.
-
+  
   # Initialize your model here
   setup: -> # called at the end of model creation
   # Update/step your model here
   step: -> # called each step of the animation
+
+# Convenience access to animator:
+
   # Start/stop the animation
   start: -> @anim.start()
   stop: -> @anim.stop()
   # Animate once by `step(); draw()`. For debugging from console.
   once: -> @anim.once() 
 
-#### Animation. 
-
+#### Animation.
+  
 # Call the agentset draw methods if either the first draw call or
 # their "refresh" flags are set.  The latter are simple optimizations
 # to avoid redrawing the same static scene. Called by animator.
@@ -204,14 +228,17 @@ class ABM.Model
     ctx.fill()
 
 
-#### Breeds
-# Two versions of NL's `breed` commands.
+# ### Breeds
+  
+# Three versions of NL's `breed` commands.
 #
+#     @patchBreeds "streets buildings"
 #     @agentBreeds "embers fires"
 #     @linkBreeds "spokes rims"
 #
-# will create 4 agentSets: 
+# will create 6 agentSets: 
 #
+#     @streets and @buildings
 #     @embers and @fires
 #     @spokes and @rims 
 #
@@ -222,19 +249,20 @@ class ABM.Model
 #     @embers.setDefaultColor [255,0,0]
 #
 # ..will set the default color for just the embers.
-
-  createBreeds: (s, breedClass, breedSet) ->
+  
+  createBreeds: (s, agentClass, breedSet) ->
     breeds = []; breeds.classes = {}; breeds.sets = {}
     for b in s.split(" ")
-      c = class Breed extends breedClass
-      c::name = b
-      @[b] = new breedSet c, b, breedClass::breed # add @<breed> to local scope
+      c = class Breed extends agentClass
+      @[b] = # add @<breed> to local scope
+        new breedSet c, b, agentClass::breed # create subset agentSet
       breeds.push @[b]
       breeds.sets[b] = @[b]
       breeds.classes["#{b}Class"] = c
     breeds
+  patchBreeds: (s) -> ABM.patchBreeds = @createBreeds s, ABM.Patch, ABM.Patches
   agentBreeds: (s) -> ABM.agentBreeds = @createBreeds s, ABM.Agent, ABM.Agents
-  linkBreeds: (s) -> ABM.linkBreeds = @createBreeds s, ABM.Link, ABM.Links
+  linkBreeds:  (s) -> ABM.linkBreeds  = @createBreeds s, ABM.Link,  ABM.Links
   
   # Utility for models to create agentsets from arrays.  Ex:
   #
@@ -248,19 +276,22 @@ class ABM.Model
   # can cause our modules to mistakenly depend on a global name.
   # See [CoffeeConsole](http://goo.gl/1i7bd) Chrome extension too.
   setRootVars: ->
-    ABM.root.ps  = @patches
-    ABM.root.p0  = @patches[0]
-    ABM.root.as  = @agents
-    ABM.root.a0  = @agents[0]
-    ABM.root.ls  = @links
-    ABM.root.l0  = @links[0]
-    ABM.root.dr  = @drawing
-    ABM.root.u   = ABM.util
-    ABM.root.sh  = ABM.shapes
-    ABM.root.app = @
-    ABM.root.cx  = @contexts
-    ABM.root.ab  = ABM.agentBreeds
-    ABM.root.lb  = ABM.linkBreeds
-    ABM.root.an  = @anim
+    root.ps  = @patches
+    root.p0  = @patches[0]
+    root.as  = @agents
+    root.a0  = @agents[0]
+    root.ls  = @links
+    root.l0  = @links[0]
+    root.dr  = @drawing
+    root.u   = ABM.util
+    root.sh  = ABM.shapes
+    root.app = @
+    root.cs  = @contexts
+    root.ab  = ABM.agentBreeds
+    root.lb  = ABM.linkBreeds
+    root.an  = @anim
+    root.wd  = @world
+    root.gl  = @globals
+    root.root= root
     null
   

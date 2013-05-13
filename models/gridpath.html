@@ -30,7 +30,7 @@
         # @walker.color = [210,0,0]
         # @walker.shape = "circle"
         # @walker.size = .4
-        @walker.setXY 0, 0
+        # @walker.setXY 0, 0 # needed? should start at 0,0
         @walker.stamp()
         @walker.p.occupied = true
         # @walker.penDown = true
@@ -71,12 +71,12 @@
           pset = (n for n in pnext when not n.ok and not n.occupied)
         null
 
-    # div, patchSize, minX, maxX, minY, maxY, isTorus=true, neighbors=true
+    # div, patchSize, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true
     #   NL Defaults: 13, -16, 16, -16, 16
     APP=new MyModel "layers", 30, 0,10, 0,10, false
-    APP.setRootVars()
-    </script>
+    APP.setRootVars() # Put Model vars in global name space -- only for demo & debug
 
+    </script>
   </head>
   <body onload="ABM.model.start()">
     <canvas id="test" style="height:0;width:0">Browser doesn't support HTML5 Canvas</canvas>

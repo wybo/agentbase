@@ -10,7 +10,7 @@ files="\
 
 echo "cat .coffee files to agentscript.coffee"; cat $files > agentscript.coffee
 
-echo "compile agentscript.coffee"; coffee -c agentscript.coffee
+echo "compile agentscript.coffee"; coffee -mc agentscript.coffee
 
 foo=`cat agentscript.coffee | sed '
   /^ *#/d

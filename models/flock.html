@@ -9,13 +9,6 @@
     class MyModel extends ABM.Model
       setup: -> # called by Model ctor
       
-        # @population = 800     # agents
-        @population = 500     # agents
-        @vision = 3.0         # patches
-        @minSeparation = 0.75 # patches
-        @maxTurn = 3.0        # degrees
-        @maxTurn = u.degToRad(@maxTurn) # radians
-      
         @refreshPatches = false # <3fps->4fps agents larger part of drawing 
         # No optimizations: 4fps
         # @patches.usePixels() # 4fps same as refresh off
@@ -27,6 +20,12 @@
         
         @anim.setRate 60, false
         
+        @population = 500     # agents
+        @vision = 3.0         # patches
+        @minSeparation = 0.75 # patches
+        @maxTurn = 3.0        # degrees
+        @maxTurn = u.degToRad(@maxTurn) # radians
+      
         # defaults
         @agents.setDefaultSize(1.5)
         # @agents.setDefaultColor([255,0,0]) # slightly faster! ->38/39 ??
@@ -35,12 +34,18 @@
         @agents.create @population, (a) => # fat arrow for @patches
           #a.size = 1.5
           a.setXY @patches.randomPt()...
+          a.color = u.randomMapColor() # u.randomBrightColor()
 
       # draw: -> # headless test .. max fps
       step: ->
         console.log @anim.toString() if @anim.ticks % 100 is 0
         @flock(a) for a in @agents
         @reportFlockVectorSize() if @anim.ticks % 10 is 0
+        if @anim.draws is 2 # Show the sprite sheet if there is one after first draw
+          sheet = u.last(u.s.spriteSheets) if u.s.spriteSheets.length isnt 0
+          if sheet?
+            console.log sheet
+            document.getElementById("play").appendChild(sheet.canvas)
         # @stop() if @anim.ticks is 100
 
       flock: (a) -> # a is agent
@@ -80,15 +85,17 @@
         dy = (Math.cos a.heading for a in @agents).reduce (x,y) -> x+y
         alignment = Math.sqrt(dx*dx + dy*dy)/@population
 
-    # div, patchSize, minX, maxX, minY, maxY, isTorus=true, neighbors=true
+    # div, patchSize, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true
     #   NL Defaults: 13, -16, 16, -16, 16
     APP=new MyModel "layers", 15, -16, 16, -16, 16, true, false
     # APP=new MyModel "layers", 16, 0, 78, 0, 40, true, false
-    </script>
+    APP.setRootVars() # Put Model vars in global name space -- only for demo & debug
 
+    </script>
   </head>
   <body onload="ABM.model.start()">
     <canvas id="test" style="height:0;width:0">Browser doesn't support HTML5 Canvas</canvas>
     <div id="layers" style="position:relative;padding:20;"></div>
+    <div id="play" style="float:right;"></div>
   </body>
 </html>

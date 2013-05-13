@@ -20,6 +20,7 @@
         @population = 100
         @diffusionRate = .70
         @coolingRate = .10
+        @speed = .5
         
         @anim.setRate 30, true
         
@@ -37,16 +38,17 @@
           p.heat *= (1-@coolingRate)
         for a in @agents
           a.rotate u.randomCentered(u.degToRad(40))
-          a.forward 1
+          a.forward @speed
           a.p.heat = 1
         @patches.diffuse "heat", @diffusionRate, [255,0,0]
         # @stop() # debug: one step
 
-    # div, patchSize, minX, maxX, minY, maxY, isTorus=true, neighbors=true
+    # div, patchSize, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true
     #   NL Defaults: 13, -16, 16, -16, 16
     APP=new MyModel "layers", 10, -25, 25, -20, 20
-    </script>
+    APP.setRootVars() # Put Model vars in global name space -- only for demo & debug
 
+    </script>
   </head>
   <body onload="ABM.model.start()">
     <canvas id="test" style="height:0;width:0">Browser doesn't support HTML5 Canvas</canvas>

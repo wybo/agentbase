@@ -8,6 +8,9 @@ files="\
   model.coffee \
 "
 
-cat $files > agentscript.coffee
+# cat $files > agentscript.coffee
 
-coffee -wj agentscript.js -c $files &
+# coffee --watch --map --join agentscript.js --compile $files &
+coffee --watch --join agentscript.js --compile $files &
+
+# coffee -mj agentscript.js -c $files

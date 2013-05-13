@@ -6,8 +6,8 @@
 # Note here `this` or `@` == window due to coffeescript wrapper call.
 # Thus @ABM is placed in the global scope.
 @ABM={}
-# Keep copy of global object in ABM
-ABM.root = @
+
+root = @ # Keep a private copy of global object
 
 # Global shim for not-yet-standard requestAnimationFrame.
 # See: [Paul Irish Shim](https://gist.github.com/paulirish/1579671)
@@ -27,6 +27,7 @@ Array::indexOf or= (item) -> # shim for IE8
   for x, i in this
     return i if x is item
   return -1
+
 
 # **ABM.util** contains the general utilities for the project. Note that within
 # **util** `@` referrs to ABM.util, *not* the global name space as above.
@@ -76,9 +77,9 @@ ABM.util = u =
   aToFixed: (a,p=2,s=", ") -> "[#{(i.toFixed p for i in a).join(s)}]"
 
 # ### Color and Angle Operations
-# Our colors are r,g,b,[a] arrays, with an optional HTML str value.
-# The str value is sent on the first call to colorStr
-
+# Our colors are r,g,b,[a] arrays, with an optional color.str HTML
+# color string property. The str value is set on the first call to colorStr
+  
   # Return a random RGB or gray color. Array passed to minimize garbage collection
   randomColor: (c = []) -> 
     c.str = null if c.str?
@@ -91,21 +92,23 @@ ABM.util = u =
     r=@randomInt2 min,max
     c[i] = r for i in [0..2]
     c
-  # modify an existing color to minimize GC
+  # Random color from a colormap set of r,g,b values, default is one of 125 (5^3) colors
+  randomMapColor: (c = [], set = [0,63,127,191,255]) -> 
+    @setColor c, u.oneOf(set), u.oneOf(set), u.oneOf(set)
+  randomBrightColor: (c=[]) -> @randomMapColor c, [0,127,255]
+  # Modify an existing color. Modifying an existing array minimizes GC overhead
   setColor: (c, r, g, b, a=null) ->
     c.str = null if c.str?
     c[0] = r; c[1] = g; c[2] = b; c[3] = a if a?; 
     c
-  # Return new color by scaling each value of an RGB array.
-  # Note [r,g,b] must be ints
+  # Return new color, c, by scaling each value of the rgb color max.
   scaleColor: (max, s, c = []) -> 
     c.str = null if c.str?
-    c[i] = @clamp(Math.round(val*s),0,255) for val, i in max
+    c[i] = @clamp(Math.round(val*s),0,255) for val, i in max # [r,g,b] must be ints
     c
   # Return HTML color as used by canvas element.  Can include Alpha
   colorStr: (c) ->
     return s if (s = c.str)?
-    # console.log c
     c.str = if c.length is 3 then "rgb(#{c})" else "rgba(#{c})"
   # Compare two colors.  Alas, there is no array.Equal operator.
   colorsEqual: (c1, c2) -> c1.toString() is c2.toString()
@@ -127,12 +130,12 @@ ABM.util = u =
   
 # ### Object Operations
   
-  # Object variable names
+  # Return object's own variable names, less function in second version
   ownKeys: (obj) -> key for own key, value of obj
   ownVarKeys: (obj) -> key for own key, value of obj when not @isFunction value
 
 # ### Array Operations
-
+  
   # Does the array have any elements? Is the array empty?
   any: (array) -> array.length isnt 0
   empty: (array) -> array.length is 0
@@ -148,12 +151,13 @@ ABM.util = u =
     @error "oneOf: empty array" if @empty array
     array[@randomInt array.length]
   # Return n random elements of array.  Error if n > array size.
-  nOf: (array, n) -> # REMIND: shuffle then first n may be better
+  nOf: (array, n) -> # Note: clone, shuffle then first n may be better
     @error "nOf: n > length" if n > array.length
     r = []; while r.length < n
       o = @oneOf(array)
       r.push o unless o in r
     r
+  contains: (array, item) -> -1 isnt array.indexOf item
   # Remove an item from an array. Error if item not in array.
   removeItem: (array, item) ->
     array.splice i, 1 if (i = array.indexOf item) isnt -1
@@ -247,13 +251,13 @@ ABM.util = u =
       pivot = Math.floor (stop + start) / 2  # Recalculate the pivot.
     if fcn(items[pivot]) is value then pivot else -1
 
-  # Useful for JS users: max/min of array, push array.  Not used in our CS code
+  # Useful for JS/debugging users: max/min of array, via pushing array.
   aMax: (array) -> Math.max array...
   aMin: (array) -> Math.min array...
   aPush: (array, a) -> array.push a...
 
 # ### Topology Operations
-
+  
   # Return angle in (-pi,pi] radians from x1,y1 to x2,y2.
   radsToward: (x1, y1, x2, y2) -> 
     PI = Math.PI; dx = x2-x1; dy = y2-y1
@@ -351,7 +355,7 @@ ABM.util = u =
     ctx.canvas.setAttribute 'style', "position:absolute;top:0;left:0;z-index:#{z}"
     document.getElementById(div).appendChild(ctx.canvas)
     ctx
-  # Install identity transform.  Call ctx.restore() to revert to previous
+  # Install identity transform.  Call ctx.restore() to revert to previous transform
   setIdentity: (ctx) ->
     ctx.save() # revert to native 2D transform
     ctx.setTransform 1, 0, 0, 1, 0, 0
@@ -375,12 +379,12 @@ ABM.util = u =
     else # 3D
       ctx.clearColor color..., 1 # alpha = 1 unless color is rgba
       ctx.clear ctx.COLOR_BUFFER_BIT | ctx.DEPTH_BUFFER_BIT
-  # 2D: Draw string of the given color at the xy location.
+  # Draw string of the given color at the xy location.
   # Note that this will follow the existing transform.
   ctxDrawText: (ctx, string, xy, color = [0,0,0]) -> 
     ctx.fillStyle = @colorStr color
     ctx.fillText(string, xy[0], xy[1])
-  # 2D: Set the canvas text align and baseline drawing parameters
+  # Set the canvas text align and baseline drawing parameters
   #
   # * font is a HTML/CSS string like: "9px sans-serif"
   # * align is left right center start end
@@ -394,26 +398,27 @@ ABM.util = u =
   ctxLabelParams: (ctx, color, xy) -> # patches/agents defaults
     ctx.labelColor = color; ctx.labelXY = xy
 
-  # Import an image, executing function f on completion
-  importImage: (imageSrc, f=(img)->) ->
+  # Import an image, executing (async) optional function f(img) on completion
+  importImage: (imageSrc, f=null) ->
     img = new Image()
-    img.onload = -> f(img)
+    img.onload = -> f(img) if f?
     img.src = imageSrc
     img
     
-  # Convert an image to a context
+  # Convert an image to a context. ctx.canvas gives the created canvas.
   imageToCtx: (image) ->
     ctx = @createCtx image.width, image.height
     ctx.drawImage image, 0, 0
-    ctx # note: ctx.canvas gives the canvas we created.
+    ctx
 
   # Convert a context to an image, executing function f on completion.
   # Generally can skip callback but see [stackoverflow](http://goo.gl/kIk2U)
-  ctxToImage: (ctx, f=(img)->) ->
+  # Note: uses toDataURL thus possible cross origin problems.
+  # Fix: use ctx.canvas for programatic imaging.
+  ctxToImage: (ctx, f=null) ->
     img = new Image()
-    img.onload = -> f(img)
+    img.onload = -> f(img) if f?
     img.src = ctx.canvas.toDataURL "image/png"
-    img
   # Convert a ctx to an imageData object
   ctxToImageData: (ctx) -> ctx.getImageData 0, 0, ctx.canvas.width, ctx.canvas.height
 
@@ -429,13 +434,17 @@ ABM.util = u =
     ctx.rotate rad
     ctx.drawImage img, -dx/2, -dy/2
   
+  # Duplicate a ctx's image.  Returns the new ctx, use ctx.canvas for canvas.
+  copyCtx: (ctx0) ->
+    ctx = @createCtx ctx0.canvas.width, ctx0.canvas.height
+    ctx.drawImage ctx0.canvas, 0, 0
+    ctx
+    
   # Resize a ctx/canvas and preserve data.
-  # Note async: the new canvas will "refresh" after we return!
   resizeCtx: (ctx, width, height, scale = false) -> # http://goo.gl/Tp90B
-    @ctxToImage ctx, (img)-> # apparently => not needed
-      if scale then ctx.drawImage img, 0, 0, width, height
-      else ctx.drawImage img, 0, 0
+    copy = @copyCtx ctx
     ctx.canvas.width = width; ctx.canvas.height = height
+    ctx.drawImage copy.canvas, 0, 0
 
     
   
