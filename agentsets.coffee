@@ -214,12 +214,13 @@ class ABM.Patches extends ABM.AgentSet
   # [new Image()](http://javascript.mfields.org/2011/creating-an-image-in-javascript/)
   # tutorial.  We draw the image into the drawing layer as
   # soon as the onload callback executes.
-  importDrawing: (imageSrc) ->
+  importDrawing: (imageSrc, f=null) ->
     u.importImage imageSrc, (img) ->
       ctx = ABM.drawing
       u.setIdentity ctx
       ctx.drawImage img, 0, 0, ctx.canvas.width, ctx.canvas.height
       ctx.restore() # restore patch transform
+      f() if f?
   
   # Utility function for pixel manipulation.  Given a patch, returns the 
   # native canvas index i into the pixel data.
@@ -229,7 +230,7 @@ class ABM.Patches extends ABM.AgentSet
   # Draws, or "imports" an image URL into the patches as their color property.
   # The drawing is scaled to the number of x,y patches, thus one pixel
   # per patch.  The colors are then transferred to the patches.
-  importColors: (imageSrc) ->
+  importColors: (imageSrc, f=null) ->
     u.importImage imageSrc, (img) => # fat arrow, this context
       if img.width isnt @numX or img.height isnt @numY
         @pixelsCtx.drawImage img, 0, 0, @numX, @numY
@@ -239,6 +240,7 @@ class ABM.Patches extends ABM.AgentSet
       for p in @
         i = @pixelIndex p
         p.color = (data[i+j] for j in [0..2])
+      f() if f?
       null # avoid CS return of array
   
   # Draw the patches via pixel manipulation rather than 2D drawRect.
@@ -547,7 +549,7 @@ class ABM.Agents extends ABM.AgentSet
     as = @inRect a, radius, radius, true
     as.inCone a, heading, cone, radius, meToo
   
-  # Return the members of this agentset that are with radius distance
+  # Return the members of this agentset that are within radius distance
   # from me, using patch topology
   inRadius: (a, radius, meToo=false)->
     as = @inRect a, radius, radius, true

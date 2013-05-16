@@ -13,7 +13,6 @@
         # No optimizations: 4fps
         # @patches.usePixels() # 4fps same as refresh off
         @patches.cacheAgentsHere() # 17fps, big help for inRadius
-        # @setAgentStaticColors() # 3fps, not large part of performance
         # w/ refresh off and two optimizations, 22-23fps
         @patches.cacheRect @vision, true # 22/23 -> 24; only +1+
         @agents.setUseSprites() # 24 -> 36

@@ -1661,14 +1661,20 @@
       return this.asSet(rect);
     };
 
-    Patches.prototype.importDrawing = function(imageSrc) {
+    Patches.prototype.importDrawing = function(imageSrc, f) {
+      if (f == null) {
+        f = null;
+      }
       return u.importImage(imageSrc, function(img) {
         var ctx;
 
         ctx = ABM.drawing;
         u.setIdentity(ctx);
         ctx.drawImage(img, 0, 0, ctx.canvas.width, ctx.canvas.height);
-        return ctx.restore();
+        ctx.restore();
+        if (f != null) {
+          return f();
+        }
       });
     };
 
@@ -1676,9 +1682,12 @@
       return ((p.x - this.minX) + (this.maxY - p.y) * this.numX) * 4;
     };
 
-    Patches.prototype.importColors = function(imageSrc) {
+    Patches.prototype.importColors = function(imageSrc, f) {
       var _this = this;
 
+      if (f == null) {
+        f = null;
+      }
       return u.importImage(imageSrc, function(img) {
         var data, i, j, p, _i, _len;
 
@@ -1700,6 +1709,9 @@
             }
             return _results;
           })();
+        }
+        if (f != null) {
+          f();
         }
         return null;
       });

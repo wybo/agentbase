@@ -667,12 +667,13 @@ soon as the onload callback executes.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  importDrawing: (imageSrc) -&gt;
+            <div class="content"><div class='highlight'><pre>  importDrawing: (imageSrc, f=<span class="literal">null</span>) -&gt;
     u.importImage imageSrc, (img) -&gt;
       ctx = ABM.drawing
       u.setIdentity ctx
       ctx.drawImage img, <span class="number">0</span>, <span class="number">0</span>, ctx.canvas.width, ctx.canvas.height
-      ctx.restore() <span class="comment"># restore patch transform</span></pre></div></div>
+      ctx.restore() <span class="comment"># restore patch transform</span>
+      f() <span class="keyword">if</span> f?</pre></div></div>
             
         </li>
         
@@ -706,7 +707,7 @@ per patch.  The colors are then transferred to the patches.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  importColors: (imageSrc) -&gt;
+            <div class="content"><div class='highlight'><pre>  importColors: (imageSrc, f=<span class="literal">null</span>) -&gt;
     u.importImage imageSrc, (img) =&gt; <span class="comment"># fat arrow, this context</span>
       <span class="keyword">if</span> img.width <span class="keyword">isnt</span> <span class="property">@numX</span> <span class="keyword">or</span> img.height <span class="keyword">isnt</span> <span class="property">@numY</span>
         <span class="property">@pixelsCtx</span>.drawImage img, <span class="number">0</span>, <span class="number">0</span>, <span class="property">@numX</span>, <span class="property">@numY</span>
@@ -716,6 +717,7 @@ per patch.  The colors are then transferred to the patches.</p>
       <span class="keyword">for</span> p <span class="keyword">in</span> @
         i = <span class="property">@pixelIndex</span> p
         p.color = (data[i+j] <span class="keyword">for</span> j <span class="keyword">in</span> [<span class="number">0.</span><span class="number">.2</span>])
+      f() <span class="keyword">if</span> f?
       <span class="literal">null</span> <span class="comment"># avoid CS return of array</span></pre></div></div>
             
         </li>
@@ -1616,7 +1618,7 @@ from me, and within cone radians of my heading using patch topology</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-84">&#182;</a>
               </div>
-              <p>Return the members of this agentset that are with radius distance
+              <p>Return the members of this agentset that are within radius distance
 from me, using patch topology</p>
 
             </div>
