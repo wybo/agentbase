@@ -701,11 +701,13 @@ soon as the onload callback executes.</p>
                 <a class="pilcrow" href="#section-35">&#182;</a>
               </div>
               <p>Utility function for pixel manipulation.  Given a patch, returns the 
-native canvas index i into the pixel data.</p>
+native canvas index i into the pixel data.
+The top-left order simplifies finding pixels in data sets</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  pixelIndex: (p) -&gt; <span class="number">4</span>*p.id <span class="comment"># top-left order simplifies finding pixels in data sets</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  pixelByteIndex: (p) -&gt; <span class="number">4</span>*p.id <span class="comment"># Uint8</span>
+  pixelWordIndex: (p) -&gt; p.id   <span class="comment"># Uint32</span></pre></div></div>
             
         </li>
         
@@ -727,7 +729,7 @@ per patch.  The colors are then transferred to the patches.</p>
       <span class="property">@pixelsCtx</span>.drawImage img, <span class="number">0</span>, <span class="number">0</span>, <span class="property">@numX</span>, <span class="property">@numY</span> <span class="comment"># scale if needed</span>
       data = <span class="property">@pixelsCtx</span>.getImageData(<span class="number">0</span>, <span class="number">0</span>, <span class="property">@numX</span>, <span class="property">@numY</span>).data
       <span class="keyword">for</span> p <span class="keyword">in</span> @
-        i = <span class="property">@pixelIndex</span> p
+        i = <span class="property">@pixelByteIndex</span> p
         p.color = [data[i++], data[i++], data[i]] <span class="comment"># promote initial default</span>
       f() <span class="keyword">if</span> f?</pre></div></div>
             
@@ -766,9 +768,8 @@ See Mozilla pixel <a href="http://goo.gl/Lxliq">manipulation article</a></p>
             
             <div class="content"><div class='highlight'><pre>  drawScaledPixels8: (ctx) -&gt;
     data = <span class="property">@pixelsData</span>
-    minX=<span class="property">@minX</span>; numX=<span class="property">@numX</span>; maxY=<span class="property">@maxY</span>
     <span class="keyword">for</span> p <span class="keyword">in</span> @
-      i = <span class="property">@pixelIndex</span> p
+      i = <span class="property">@pixelByteIndex</span> p
       c = p.color
       data[i+j] = c[j] <span class="keyword">for</span> j <span class="keyword">in</span> [<span class="number">0.</span><span class="number">.2</span>] 
       data[i+<span class="number">3</span>] = <span class="keyword">if</span> c.length <span class="keyword">is</span> <span class="number">4</span> <span class="keyword">then</span> c[<span class="number">3</span>] <span class="keyword">else</span> <span class="number">255</span>
@@ -791,9 +792,8 @@ See Mozilla pixel <a href="http://goo.gl/Lxliq">manipulation article</a></p>
             
             <div class="content"><div class='highlight'><pre>  drawScaledPixels32: (ctx) -&gt;
     data = <span class="property">@pixelsData32</span>
-    minX=<span class="property">@minX</span>; numX=<span class="property">@numX</span>; maxY=<span class="property">@maxY</span>
     <span class="keyword">for</span> p <span class="keyword">in</span> @
-      i = <span class="property">@pixelIndex</span> p
+      i = <span class="property">@pixelWordIndex</span> p
       c = p.color
       a = <span class="keyword">if</span> c.length <span class="keyword">is</span> <span class="number">4</span> <span class="keyword">then</span> c[<span class="number">3</span>] <span class="keyword">else</span> <span class="number">255</span>
       <span class="keyword">if</span> <span class="property">@pixelsAreLittleEndian</span>

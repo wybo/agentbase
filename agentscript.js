@@ -1710,8 +1710,12 @@
       });
     };
 
-    Patches.prototype.pixelIndex = function(p) {
+    Patches.prototype.pixelByteIndex = function(p) {
       return 4 * p.id;
+    };
+
+    Patches.prototype.pixelWordIndex = function(p) {
+      return p.id;
     };
 
     Patches.prototype.importColors = function(imageSrc, f) {
@@ -1727,7 +1731,7 @@
         data = _this.pixelsCtx.getImageData(0, 0, _this.numX, _this.numY).data;
         for (_i = 0, _len = _this.length; _i < _len; _i++) {
           p = _this[_i];
-          i = _this.pixelIndex(p);
+          i = _this.pixelByteIndex(p);
           p.color = [data[i++], data[i++], data[i]];
         }
         if (f != null) {
@@ -1745,15 +1749,12 @@
     };
 
     Patches.prototype.drawScaledPixels8 = function(ctx) {
-      var c, data, i, j, maxY, minX, numX, p, _i, _j, _len;
+      var c, data, i, j, p, _i, _j, _len;
 
       data = this.pixelsData;
-      minX = this.minX;
-      numX = this.numX;
-      maxY = this.maxY;
       for (_i = 0, _len = this.length; _i < _len; _i++) {
         p = this[_i];
-        i = this.pixelIndex(p);
+        i = this.pixelByteIndex(p);
         c = p.color;
         for (j = _j = 0; _j <= 2; j = ++_j) {
           data[i + j] = c[j];
@@ -1768,15 +1769,12 @@
     };
 
     Patches.prototype.drawScaledPixels32 = function(ctx) {
-      var a, c, data, i, maxY, minX, numX, p, _i, _len;
+      var a, c, data, i, p, _i, _len;
 
       data = this.pixelsData32;
-      minX = this.minX;
-      numX = this.numX;
-      maxY = this.maxY;
       for (_i = 0, _len = this.length; _i < _len; _i++) {
         p = this[_i];
-        i = this.pixelIndex(p);
+        i = this.pixelWordIndex(p);
         c = p.color;
         a = c.length === 4 ? c[3] : 255;
         if (this.pixelsAreLittleEndian) {

@@ -227,7 +227,9 @@ class ABM.Patches extends ABM.AgentSet
   
   # Utility function for pixel manipulation.  Given a patch, returns the 
   # native canvas index i into the pixel data.
-  pixelIndex: (p) -> 4*p.id # top-left order simplifies finding pixels in data sets
+  # The top-left order simplifies finding pixels in data sets
+  pixelByteIndex: (p) -> 4*p.id # Uint8
+  pixelWordIndex: (p) -> p.id   # Uint32
     
   # Draws, or "imports" an image URL into the patches as their color property.
   # The drawing is scaled to the number of x,y patches, thus one pixel
@@ -237,7 +239,7 @@ class ABM.Patches extends ABM.AgentSet
       @pixelsCtx.drawImage img, 0, 0, @numX, @numY # scale if needed
       data = @pixelsCtx.getImageData(0, 0, @numX, @numY).data
       for p in @
-        i = @pixelIndex p
+        i = @pixelByteIndex p
         p.color = [data[i++], data[i++], data[i]] # promote initial default
       f() if f?
   
@@ -251,9 +253,8 @@ class ABM.Patches extends ABM.AgentSet
   # The 8-bit version for drawScaledPixels.  Used for systems w/o typed arrays
   drawScaledPixels8: (ctx) ->
     data = @pixelsData
-    minX=@minX; numX=@numX; maxY=@maxY
     for p in @
-      i = @pixelIndex p
+      i = @pixelByteIndex p
       c = p.color
       data[i+j] = c[j] for j in [0..2] 
       data[i+3] = if c.length is 4 then c[3] else 255
@@ -263,9 +264,8 @@ class ABM.Patches extends ABM.AgentSet
   # The 32-bit version of drawScaledPixels, with both little and big endian hardware.
   drawScaledPixels32: (ctx) ->
     data = @pixelsData32
-    minX=@minX; numX=@numX; maxY=@maxY
     for p in @
-      i = @pixelIndex p
+      i = @pixelWordIndex p
       c = p.color
       a = if c.length is 4 then c[3] else 255
       if @pixelsAreLittleEndian
