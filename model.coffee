@@ -286,7 +286,7 @@ class ABM.Model
     root.u   = ABM.util
     root.sh  = ABM.shapes
     root.app = @
-    root.cs  = @contexts
+    root.cx  = @contexts
     root.ab  = ABM.agentBreeds
     root.lb  = ABM.linkBreeds
     root.an  = @anim

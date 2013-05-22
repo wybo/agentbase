@@ -99,7 +99,7 @@ ABM.util = u =
   # Modify an existing color. Modifying an existing array minimizes GC overhead
   setColor: (c, r, g, b, a=null) ->
     c.str = null if c.str?
-    c[0] = r; c[1] = g; c[2] = b; c[3] = a if a?; 
+    c[0] = r; c[1] = g; c[2] = b; c[3] = a if a?
     c
   # Return new color, c, by scaling each value of the rgb color max.
   scaleColor: (max, s, c = []) -> 
@@ -331,7 +331,28 @@ ABM.util = u =
     for p in @torus4Pts x1, y1, x2, y2, w, h
       return true if @inCone heading, cone, radius, x1, y1, p[0], p[1]
     false
-    
+
+# ### File I/O
+# function loadFileAJAX(name) {
+#     var xhr = new XMLHttpRequest(),
+#         okStatus = document.location.protocol === "file:" ? 0 : 200;
+#     xhr.open('GET', name, false);
+#     xhr.send(null);
+#     return xhr.status == okStatus ? xhr.responseText : null;
+# };
+
+  # Use XMLHttpRequest to fetch data of several types.
+  # Data Types: text, arraybuffer, blob, json, document, ... see: http://goo.gl/y3r3h
+  xhrLoadFile: (name, type="text", f=null) -> # AJAX request, sync if f is null
+    xhr = new XMLHttpRequest()
+    xhr.open "GET", name, f?
+    xhr.responseType = type
+    xhr.onload = -> f(xhr.response) if f?
+    xhr.send()
+    return xhr if f?
+    okStatus = if document.location.protocol is "file:" then 0 else 200
+    if xhr.status is okStatus then xhr.response else null
+
 # ### Canvas/Context Operations
   
   # Create a new canvas of given width/height

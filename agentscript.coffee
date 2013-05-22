@@ -99,7 +99,7 @@ ABM.util = u =
   # Modify an existing color. Modifying an existing array minimizes GC overhead
   setColor: (c, r, g, b, a=null) ->
     c.str = null if c.str?
-    c[0] = r; c[1] = g; c[2] = b; c[3] = a if a?; 
+    c[0] = r; c[1] = g; c[2] = b; c[3] = a if a?
     c
   # Return new color, c, by scaling each value of the rgb color max.
   scaleColor: (max, s, c = []) -> 
@@ -331,7 +331,28 @@ ABM.util = u =
     for p in @torus4Pts x1, y1, x2, y2, w, h
       return true if @inCone heading, cone, radius, x1, y1, p[0], p[1]
     false
-    
+
+# ### File I/O
+# function loadFileAJAX(name) {
+#     var xhr = new XMLHttpRequest(),
+#         okStatus = document.location.protocol === "file:" ? 0 : 200;
+#     xhr.open('GET', name, false);
+#     xhr.send(null);
+#     return xhr.status == okStatus ? xhr.responseText : null;
+# };
+
+  # Use XMLHttpRequest to fetch data of several types.
+  # Data Types: text, arraybuffer, blob, json, document, ... see: http://goo.gl/y3r3h
+  xhrLoadFile: (name, type="text", f=null) -> # AJAX request, sync if f is null
+    xhr = new XMLHttpRequest()
+    xhr.open "GET", name, f?
+    xhr.responseType = type
+    xhr.onload = -> f(xhr.response) if f?
+    xhr.send()
+    return xhr if f?
+    okStatus = if document.location.protocol is "file:" then 0 else 200
+    if xhr.status is okStatus then xhr.response else null
+
 # ### Canvas/Context Operations
   
   # Create a new canvas of given width/height
@@ -1024,12 +1045,13 @@ class ABM.Patch
 class ABM.Patches extends ABM.AgentSet
   # Constructor: super creates the empty AgentSet instance and installs
   # the agentClass (breed) variable shared by all the Patches in this set.
+  # Patches are created from top-left to bottom-right to match data sets.
   constructor: -> # agentClass, name, mainSet
     super # call super with all the args I was called with
     @[k] = v for own k,v of ABM.world # add world items to patches
     ABM.world.numX = @numX = @maxX-@minX+1 # add two more items to world
     ABM.world.numY = @numY = @maxY-@minY+1
-    for y in [@minY..@maxY] by 1
+    for y in [@maxY..@minY] by -1
       for x in [@minX..@maxX] by 1
         @add new ABM.Patch x, y
     @setNeighbors() if @hasNeighbors
@@ -1089,9 +1111,11 @@ class ABM.Patches extends ABM.AgentSet
 
 # #### Patch grid coord system utilities:
   
+  # Return the patch id/index given integer x,y in patch coords
+  patchIndex: (x,y) -> x-@minX + @numX*(@maxY-y)
   # Return the patch at matrix position x,y where 
   # x & y are both valid integer patch coordinates.
-  patchXY: (x,y) -> @[x-@minX + @numX*(y-@minY)]
+  patchXY: (x,y) -> @[@patchIndex x,y]
   
   # Return x,y float values to be between min/max patch coord values
   clamp: (x,y) -> [u.clamp(x, @minX-.5, @maxX+.5), u.clamp(y, @minY-.5, @maxY+.5)]
@@ -1131,7 +1155,7 @@ class ABM.Patches extends ABM.AgentSet
   # patch `p`, dx, dy units to the right/left and up/down. 
   # Exclude `p` unless meToo is true, default false.
   patchRect: (p, dx, dy, meToo=false) ->
-    if p.pRect? and p.pRect.radius is dx and p.pRect.radius is dy
+    if p.pRect? and p.pRect.radius is dx # and p.pRect.radius is dy
       return p.pRect
     rect = []; # REMIND: optimize if no wrapping, rect inside patch boundaries
     for y in [p.y-dy..p.y+dy] by 1 # by 1: perf: avoid bidir JS for loop
@@ -1164,24 +1188,19 @@ class ABM.Patches extends ABM.AgentSet
   
   # Utility function for pixel manipulation.  Given a patch, returns the 
   # native canvas index i into the pixel data.
-  pixelIndex: (p) ->
-    ( (p.x-@minX) + (@maxY-p.y)*@numX )*4
+  pixelIndex: (p) -> 4*p.id # top-left order simplifies finding pixels in data sets
     
   # Draws, or "imports" an image URL into the patches as their color property.
   # The drawing is scaled to the number of x,y patches, thus one pixel
   # per patch.  The colors are then transferred to the patches.
   importColors: (imageSrc, f=null) ->
     u.importImage imageSrc, (img) => # fat arrow, this context
-      if img.width isnt @numX or img.height isnt @numY
-        @pixelsCtx.drawImage img, 0, 0, @numX, @numY
-      else
-        @pixelsCtx.drawImage img, 0, 0
+      @pixelsCtx.drawImage img, 0, 0, @numX, @numY # scale if needed
       data = @pixelsCtx.getImageData(0, 0, @numX, @numY).data
       for p in @
         i = @pixelIndex p
-        p.color = (data[i+j] for j in [0..2])
+        p.color = [data[i++], data[i++], data[i]] # promote initial default
       f() if f?
-      null # avoid CS return of array
   
   # Draw the patches via pixel manipulation rather than 2D drawRect.
   # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq)
@@ -1195,7 +1214,7 @@ class ABM.Patches extends ABM.AgentSet
     data = @pixelsData
     minX=@minX; numX=@numX; maxY=@maxY
     for p in @
-      i = ( (p.x-minX) + (maxY-p.y)*numX )*4
+      i = @pixelIndex p
       c = p.color
       data[i+j] = c[j] for j in [0..2] 
       data[i+3] = if c.length is 4 then c[3] else 255
@@ -1207,7 +1226,7 @@ class ABM.Patches extends ABM.AgentSet
     data = @pixelsData32
     minX=@minX; numX=@numX; maxY=@maxY
     for p in @
-      i = (p.x-minX) + (maxY-p.y)*numX
+      i = @pixelIndex p
       c = p.color
       a = if c.length is 4 then c[3] else 255
       if @pixelsAreLittleEndian
@@ -1897,7 +1916,7 @@ class ABM.Model
     root.u   = ABM.util
     root.sh  = ABM.shapes
     root.app = @
-    root.cs  = @contexts
+    root.cx  = @contexts
     root.ab  = ABM.agentBreeds
     root.lb  = ABM.linkBreeds
     root.an  = @anim

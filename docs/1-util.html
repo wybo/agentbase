@@ -403,7 +403,7 @@ color string property. The str value is set on the first call to colorStr</p>
             
             <div class="content"><div class='highlight'><pre>  setColor: (c, r, g, b, a=<span class="literal">null</span>) -&gt;
     c.str = <span class="literal">null</span> <span class="keyword">if</span> c.str?
-    c[<span class="number">0</span>] = r; c[<span class="number">1</span>] = g; c[<span class="number">2</span>] = b; c[<span class="number">3</span>] = a <span class="keyword">if</span> a?; 
+    c[<span class="number">0</span>] = r; c[<span class="number">1</span>] = g; c[<span class="number">2</span>] = b; c[<span class="number">3</span>] = a <span class="keyword">if</span> a?
     c</pre></div></div>
             
         </li>
@@ -1045,9 +1045,28 @@ and within distance radius from x1,x2 considering all torus reflections.</p>
               <div class="pilwrap for-h3">
                 <a class="pilcrow" href="#section-54">&#182;</a>
               </div>
-              <h3>Canvas/Context Operations</h3>
+              <h3>File I/O</h3>
+<p>function loadFileAJAX(name) {
+    var xhr = new XMLHttpRequest(),
+        okStatus = document.location.protocol === &quot;file:&quot; ? 0 : 200;
+    xhr.open(&#39;GET&#39;, name, false);
+    xhr.send(null);
+    return xhr.status == okStatus ? xhr.responseText : null;
+};</p>
+<p>Use XMLHttpRequest to fetch data of several types.
+Data Types: text, arraybuffer, blob, json, document, ... see: <a href="http://goo.gl/y3r3h">http://goo.gl/y3r3h</a></p>
 
             </div>
+            
+            <div class="content"><div class='highlight'><pre>  xhrLoadFile: (name, type=<span class="string">"text"</span>, f=<span class="literal">null</span>) -&gt; <span class="comment"># AJAX request, sync if f is null</span>
+    xhr = <span class="keyword">new</span> XMLHttpRequest()
+    xhr.open <span class="string">"GET"</span>, name, f?
+    xhr.responseType = type
+    xhr.<span class="function"><span class="title">onload</span></span> = -&gt; f(xhr.response) <span class="keyword">if</span> f?
+    xhr.send()
+    <span class="keyword">return</span> xhr <span class="keyword">if</span> f?
+    okStatus = <span class="keyword">if</span> document.location.protocol <span class="keyword">is</span> <span class="string">"file:"</span> <span class="keyword">then</span> <span class="number">0</span> <span class="keyword">else</span> <span class="number">200</span>
+    <span class="keyword">if</span> xhr.status <span class="keyword">is</span> okStatus <span class="keyword">then</span> xhr.response <span class="keyword">else</span> <span class="literal">null</span></pre></div></div>
             
         </li>
         
@@ -1055,8 +1074,21 @@ and within distance radius from x1,x2 considering all torus reflections.</p>
         <li id="section-55">
             <div class="annotation">
               
-              <div class="pilwrap ">
+              <div class="pilwrap for-h3">
                 <a class="pilcrow" href="#section-55">&#182;</a>
+              </div>
+              <h3>Canvas/Context Operations</h3>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-56">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-56">&#182;</a>
               </div>
               <p>Create a new canvas of given width/height</p>
 
@@ -1070,11 +1102,11 @@ and within distance radius from x1,x2 considering all torus reflections.</p>
         </li>
         
         
-        <li id="section-56">
+        <li id="section-57">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-56">&#182;</a>
+                <a class="pilcrow" href="#section-57">&#182;</a>
               </div>
               <p>As above, but returing the context object.  Note ctx.canvas is the canvas for the ctx.</p>
 
@@ -1088,11 +1120,11 @@ and within distance radius from x1,x2 considering all torus reflections.</p>
         </li>
         
         
-        <li id="section-57">
+        <li id="section-58">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-57">&#182;</a>
+                <a class="pilcrow" href="#section-58">&#182;</a>
               </div>
               <p>Return a &quot;layer&quot; 2D/3D rendering context within the specified HTML <code>&lt;div&gt;</code>,
 with the given width/height positioned absolutely at top/left within the div,
@@ -1110,11 +1142,11 @@ and with the z-index of z.</p>
         </li>
         
         
-        <li id="section-58">
+        <li id="section-59">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-58">&#182;</a>
+                <a class="pilcrow" href="#section-59">&#182;</a>
               </div>
               <p>Install identity transform.  Call ctx.restore() to revert to previous transform</p>
 
@@ -1127,11 +1159,11 @@ and with the z-index of z.</p>
         </li>
         
         
-        <li id="section-59">
+        <li id="section-60">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-59">&#182;</a>
+                <a class="pilcrow" href="#section-60">&#182;</a>
               </div>
               <p>Clear the 2D/3D layer to be transparent. Note this <a href="http://goo.gl/qekXS">discussion</a>.</p>
 
@@ -1149,11 +1181,11 @@ and with the z-index of z.</p>
         </li>
         
         
-        <li id="section-60">
+        <li id="section-61">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-60">&#182;</a>
+                <a class="pilcrow" href="#section-61">&#182;</a>
               </div>
               <p>Fill the 2D/3D layer with the given color</p>
 
@@ -1172,11 +1204,11 @@ and with the z-index of z.</p>
         </li>
         
         
-        <li id="section-61">
+        <li id="section-62">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-61">&#182;</a>
+                <a class="pilcrow" href="#section-62">&#182;</a>
               </div>
               <p>Draw string of the given color at the xy location.
 Note that this will follow the existing transform.</p>
@@ -1190,11 +1222,11 @@ Note that this will follow the existing transform.</p>
         </li>
         
         
-        <li id="section-62">
+        <li id="section-63">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-62">&#182;</a>
+                <a class="pilcrow" href="#section-63">&#182;</a>
               </div>
               <p>Set the canvas text align and baseline drawing parameters</p>
 <ul>
@@ -1212,11 +1244,11 @@ Note that this will follow the existing transform.</p>
         </li>
         
         
-        <li id="section-63">
+        <li id="section-64">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-63">&#182;</a>
+                <a class="pilcrow" href="#section-64">&#182;</a>
               </div>
               <p>2D: Store the default color and xy offset for text labels for agentsets.
 This is simply using the ctx object for convenient storage.</p>
@@ -1229,11 +1261,11 @@ This is simply using the ctx object for convenient storage.</p>
         </li>
         
         
-        <li id="section-64">
+        <li id="section-65">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-64">&#182;</a>
+                <a class="pilcrow" href="#section-65">&#182;</a>
               </div>
               <p>Import an image, executing (async) optional function f(img) on completion</p>
 
@@ -1248,11 +1280,11 @@ This is simply using the ctx object for convenient storage.</p>
         </li>
         
         
-        <li id="section-65">
+        <li id="section-66">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-65">&#182;</a>
+                <a class="pilcrow" href="#section-66">&#182;</a>
               </div>
               <p>Convert an image to a context. ctx.canvas gives the created canvas.</p>
 
@@ -1266,11 +1298,11 @@ This is simply using the ctx object for convenient storage.</p>
         </li>
         
         
-        <li id="section-66">
+        <li id="section-67">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-66">&#182;</a>
+                <a class="pilcrow" href="#section-67">&#182;</a>
               </div>
               <p>Convert a context to an image, executing function f on completion.
 Generally can skip callback but see <a href="http://goo.gl/kIk2U">stackoverflow</a>
@@ -1287,11 +1319,11 @@ Fix: use ctx.canvas for programatic imaging.</p>
         </li>
         
         
-        <li id="section-67">
+        <li id="section-68">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-67">&#182;</a>
+                <a class="pilcrow" href="#section-68">&#182;</a>
               </div>
               <p>Convert a ctx to an imageData object</p>
 
@@ -1302,11 +1334,11 @@ Fix: use ctx.canvas for programatic imaging.</p>
         </li>
         
         
-        <li id="section-68">
+        <li id="section-69">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-68">&#182;</a>
+                <a class="pilcrow" href="#section-69">&#182;</a>
               </div>
               <p>Canvas versions of above</p>
 
@@ -1319,11 +1351,11 @@ Fix: use ctx.canvas for programatic imaging.</p>
         </li>
         
         
-        <li id="section-69">
+        <li id="section-70">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-69">&#182;</a>
+                <a class="pilcrow" href="#section-70">&#182;</a>
               </div>
               <p>Draw an image centered at x, y w/ image size dx, dy.
 See <a href="http://goo.gl/VUlhY">this tutorial</a>.</p>
@@ -1338,11 +1370,11 @@ See <a href="http://goo.gl/VUlhY">this tutorial</a>.</p>
         </li>
         
         
-        <li id="section-70">
+        <li id="section-71">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-70">&#182;</a>
+                <a class="pilcrow" href="#section-71">&#182;</a>
               </div>
               <p>Duplicate a ctx&#39;s image.  Returns the new ctx, use ctx.canvas for canvas.</p>
 
@@ -1356,11 +1388,11 @@ See <a href="http://goo.gl/VUlhY">this tutorial</a>.</p>
         </li>
         
         
-        <li id="section-71">
+        <li id="section-72">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-71">&#182;</a>
+                <a class="pilcrow" href="#section-72">&#182;</a>
               </div>
               <p>Resize a ctx/canvas and preserve data.</p>
 

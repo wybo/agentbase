@@ -17,7 +17,7 @@
         @agents.setDefaultShape("circle")
         @agents.setDefaultColor([210,0,0])
         @agents.setDefaultSize(.4)
-        @agents.setDefaultPen(2.5, true)
+        @agents.setDefaultPen(2.5)
         @agents.setDefaultHeading(0) # override promotion to random angle
 
         @anim.setRate 10
@@ -27,6 +27,9 @@
           p.occupied = false
         @drawGrid [0,0,0]
         @walker = @agents.create(1)[0]
+        p0 = @patches[0]
+        @walker.setXY p0.x, p0.y
+        @walker.penDown = true
         # @walker.color = [210,0,0]
         # @walker.shape = "circle"
         # @walker.size = .4
@@ -63,7 +66,7 @@
       
       floodFill: ->
         p.ok = false for p in @patches
-        pset = [@patches.last()]
+        pset = [@patches.last()] # [@patches.patchXY @patches.maxX, @patches.maxY] # [@patches.last()]
         while pset.length > 0
           p.ok = true for p in pset
           pnext = @asSet u.flatten (p.n4 for p in pset)

@@ -547,6 +547,34 @@
       }
       return false;
     },
+    xhrLoadFile: function(name, type, f) {
+      var okStatus, xhr;
+
+      if (type == null) {
+        type = "text";
+      }
+      if (f == null) {
+        f = null;
+      }
+      xhr = new XMLHttpRequest();
+      xhr.open("GET", name, f != null);
+      xhr.responseType = type;
+      xhr.onload = function() {
+        if (f != null) {
+          return f(xhr.response);
+        }
+      };
+      xhr.send();
+      if (f != null) {
+        return xhr;
+      }
+      okStatus = document.location.protocol === "file:" ? 0 : 200;
+      if (xhr.status === okStatus) {
+        return xhr.response;
+      } else {
+        return null;
+      }
+    },
     createCanvas: function(width, height) {
       var can;
 
@@ -1464,7 +1492,7 @@
       }
       ABM.world.numX = this.numX = this.maxX - this.minX + 1;
       ABM.world.numY = this.numY = this.maxY - this.minY + 1;
-      for (y = _i = _ref1 = this.minY, _ref2 = this.maxY; _i <= _ref2; y = _i += 1) {
+      for (y = _i = _ref1 = this.maxY, _ref2 = this.minY; _i >= _ref2; y = _i += -1) {
         for (x = _j = _ref3 = this.minX, _ref4 = this.maxX; _j <= _ref4; x = _j += 1) {
           this.add(new ABM.Patch(x, y));
         }
@@ -1571,8 +1599,12 @@
       }
     };
 
+    Patches.prototype.patchIndex = function(x, y) {
+      return x - this.minX + this.numX * (this.maxY - y);
+    };
+
     Patches.prototype.patchXY = function(x, y) {
-      return this[x - this.minX + this.numX * (y - this.minY)];
+      return this[this.patchIndex(x, y)];
     };
 
     Patches.prototype.clamp = function(x, y) {
@@ -1626,7 +1658,7 @@
       if (meToo == null) {
         meToo = false;
       }
-      if ((p.pRect != null) && p.pRect.radius === dx && p.pRect.radius === dy) {
+      if ((p.pRect != null) && p.pRect.radius === dx) {
         return p.pRect;
       }
       rect = [];
@@ -1679,7 +1711,7 @@
     };
 
     Patches.prototype.pixelIndex = function(p) {
-      return ((p.x - this.minX) + (this.maxY - p.y) * this.numX) * 4;
+      return 4 * p.id;
     };
 
     Patches.prototype.importColors = function(imageSrc, f) {
@@ -1689,31 +1721,18 @@
         f = null;
       }
       return u.importImage(imageSrc, function(img) {
-        var data, i, j, p, _i, _len;
+        var data, i, p, _i, _len;
 
-        if (img.width !== _this.numX || img.height !== _this.numY) {
-          _this.pixelsCtx.drawImage(img, 0, 0, _this.numX, _this.numY);
-        } else {
-          _this.pixelsCtx.drawImage(img, 0, 0);
-        }
+        _this.pixelsCtx.drawImage(img, 0, 0, _this.numX, _this.numY);
         data = _this.pixelsCtx.getImageData(0, 0, _this.numX, _this.numY).data;
         for (_i = 0, _len = _this.length; _i < _len; _i++) {
           p = _this[_i];
           i = _this.pixelIndex(p);
-          p.color = (function() {
-            var _j, _results;
-
-            _results = [];
-            for (j = _j = 0; _j <= 2; j = ++_j) {
-              _results.push(data[i + j]);
-            }
-            return _results;
-          })();
+          p.color = [data[i++], data[i++], data[i]];
         }
         if (f != null) {
-          f();
+          return f();
         }
-        return null;
       });
     };
 
@@ -1734,7 +1753,7 @@
       maxY = this.maxY;
       for (_i = 0, _len = this.length; _i < _len; _i++) {
         p = this[_i];
-        i = ((p.x - minX) + (maxY - p.y) * numX) * 4;
+        i = this.pixelIndex(p);
         c = p.color;
         for (j = _j = 0; _j <= 2; j = ++_j) {
           data[i + j] = c[j];
@@ -1757,7 +1776,7 @@
       maxY = this.maxY;
       for (_i = 0, _len = this.length; _i < _len; _i++) {
         p = this[_i];
-        i = (p.x - minX) + (maxY - p.y) * numX;
+        i = this.pixelIndex(p);
         c = p.color;
         a = c.length === 4 ? c[3] : 255;
         if (this.pixelsAreLittleEndian) {
@@ -2820,7 +2839,7 @@
       root.u = ABM.util;
       root.sh = ABM.shapes;
       root.app = this;
-      root.cs = this.contexts;
+      root.cx = this.contexts;
       root.ab = ABM.agentBreeds;
       root.lb = ABM.linkBreeds;
       root.an = this.anim;
