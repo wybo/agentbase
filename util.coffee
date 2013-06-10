@@ -23,10 +23,7 @@ do ->
 
 # Shim for `Array.indexOf` if not implemented.
 # Use [es5-shim](https://github.com/kriskowal/es5-shim) if additional shims needed.
-Array::indexOf or= (item) -> # shim for IE8
-  for x, i in this
-    return i if x is item
-  return -1
+Array::indexOf or= (item) -> return i if x is item for x, i in @; -1
 
 
 # **ABM.util** contains the general utilities for the project. Note that within
@@ -53,10 +50,15 @@ ABM.util = u =
     !!(obj is '' or (obj and obj.charCodeAt and obj.substr))
   
 # ### Numeric Operations
-  
+
   # Return random int in [0,max) or [min,max)
   randomInt: (max) -> Math.floor(Math.random() * max)
   randomInt2: (min, max) -> min + Math.floor(Math.random() * (max-min))
+  # Return float Gaussian normal with given mean, std deviation.
+  randomNormal: (mean = 0.0, sigma = 1.0) -> # Box-Muller
+    u1 = 1.0-Math.random(); u2 = Math.random() # u1 in (0,1]
+    norm = Math.sqrt(-2.0*Math.log(u1)) * Math.cos(2.0*Math.PI*u2)
+    norm*sigma + mean
   # Return float in [0,max) or [min,max) or [-r/2,r/2)
   randomFloat: (max) -> Math.random() * max
   randomFloat2: (min, max) -> min + Math.random() * (max-min)
@@ -64,7 +66,7 @@ ABM.util = u =
   # Return log n where base is 10, base, e respectively
   log10: (n) -> Math.log(n)/Math.LN10
   logN: (n, base) -> Math.log(n)/Math.log(base)
-  ln: (n) -> Math.log n
+  # Note: ln: (n) -> Math.log n
   # Return true [mod functin](http://goo.gl/spr24), % is remainder, not mod.
   mod: (v, n) -> ((v % n) + n) % n
   # Return v to be between min, max via mod fcn
@@ -72,9 +74,9 @@ ABM.util = u =
   # Return v to be between min, max via clamping with min/max
   clamp: (v, min, max) -> Math.max(Math.min(v,max),min)
   # Return sign of a number as +/- 1
-  sign: (v) -> return (if v<0 then -1 else 1)
-  # Return a string float array for printing using given precision and separator
-  aToFixed: (a,p=2,s=", ") -> "[#{(i.toFixed p for i in a).join(s)}]"
+  sign: (v) -> return (if v<0 then -1 else 1) # retrun exp: force ?: JS form
+  # Return a float array with given precision; useful for printing
+  aToFixed: (a, p=2) -> (i.toFixed p for i in a)
 
 # ### Color and Angle Operations
 # Our colors are r,g,b,[a] arrays, with an optional color.str HTML
@@ -359,7 +361,7 @@ ABM.util = u =
       f(img) if f?
     else
       img = new Image()
-      img.onload = -> f(img) if f?
+      (img.onload = -> f(img)) if f?
       img.src = name
       @fileIndex[name] = img
     img
@@ -373,7 +375,7 @@ ABM.util = u =
       xhr = new XMLHttpRequest()
       xhr.open "GET", name, f?
       xhr.responseType = type
-      xhr.onload = -> f(xhr.response) if f?
+      (xhr.onload = -> f(xhr.response)) if f?
       xhr.send()
       @fileIndex[name] = xhr
     xhr
@@ -388,8 +390,8 @@ ABM.util = u =
   # As above, but returing the context object.
   # Note ctx.canvas is the canvas for the ctx, and can be use as an image.
   createCtx: (width, height, ctxType="2d") ->
-    can = @createCanvas width, height; can.ctxType = ctxType
-    can.ctx = if ctxType is "2d" 
+    can = @createCanvas width, height
+    if ctxType is "2d" 
     then can.getContext "2d" 
     else can.getContext("webgl") ? can.getContext("experimental-webgl")
 
@@ -458,7 +460,7 @@ ABM.util = u =
   # Fix: use ctx.canvas for programatic imaging.
   ctxToImage: (ctx, f) ->
     img = new Image()
-    img.onload = -> f(img) if f?
+    (img.onload = -> f(img)) if f?
     img.src = ctx.canvas.toDataURL "image/png"
   # Convert a ctx to an imageData object
   ctxToImageData: (ctx) -> ctx.getImageData 0, 0, ctx.canvas.width, ctx.canvas.height

@@ -28,7 +28,7 @@ class ABM.Patch
 
   # Return a string representation of the patch.
   toString: ->
-    "{id:#{@id} xy:#{u.aToFixed [@x,@y]} c:#{@color}}"
+    "{id:#{@id} xy:#{[@x,@y]} c:#{@color}}"
 
   # Set patch color to `c` scaled by `s`. Usage:
   #

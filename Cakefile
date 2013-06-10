@@ -8,6 +8,12 @@ appFiles = [
   'agentsets.coffee'
   'model.coffee'
 ]
+files="util.coffee
+ shapes.coffee
+ agentset.coffee
+ agentsets.coffee
+ model.coffee"
+
 appFile = 'agentscript.coffee'
 
 task 'build', 'Build single application file from source files', ->
@@ -28,3 +34,6 @@ task 'build', 'Build single application file from source files', ->
       #   fs.unlink 'lib/app.coffee', (err) ->
       #     throw err if err
       #     console.log 'Done.'
+
+task 'cat', 'concatenate the app files', ->
+  exec "cat #{files} > #{appFile}"

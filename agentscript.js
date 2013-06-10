@@ -35,13 +35,19 @@
   })();
 
   (_base = Array.prototype).indexOf || (_base.indexOf = function(item) {
-    var i, x, _i, _len;
+    var i, x;
 
-    for (i = _i = 0, _len = this.length; _i < _len; i = ++_i) {
-      x = this[i];
-      if (x === item) {
-        return i;
+    if ((function() {
+      var _i, _len, _results;
+
+      _results = [];
+      for (i = _i = 0, _len = this.length; _i < _len; i = ++_i) {
+        x = this[i];
+        _results.push(x === item);
       }
+      return _results;
+    }).call(this)) {
+      return i;
     }
     return -1;
   });
@@ -65,6 +71,20 @@
     randomInt2: function(min, max) {
       return min + Math.floor(Math.random() * (max - min));
     },
+    randomNormal: function(mean, sigma) {
+      var norm, u1, u2;
+
+      if (mean == null) {
+        mean = 0.0;
+      }
+      if (sigma == null) {
+        sigma = 1.0;
+      }
+      u1 = 1.0 - Math.random();
+      u2 = Math.random();
+      norm = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+      return norm * sigma + mean;
+    },
     randomFloat: function(max) {
       return Math.random() * max;
     },
@@ -80,9 +100,6 @@
     logN: function(n, base) {
       return Math.log(n) / Math.log(base);
     },
-    ln: function(n) {
-      return Math.log(n);
-    },
     mod: function(v, n) {
       return ((v % n) + n) % n;
     },
@@ -95,25 +112,18 @@
     sign: function(v) {
       return (v < 0 ? -1 : 1);
     },
-    aToFixed: function(a, p, s) {
-      var i;
+    aToFixed: function(a, p) {
+      var i, _i, _len, _results;
 
       if (p == null) {
         p = 2;
       }
-      if (s == null) {
-        s = ", ";
+      _results = [];
+      for (_i = 0, _len = a.length; _i < _len; _i++) {
+        i = a[_i];
+        _results.push(i.toFixed(p));
       }
-      return "[" + (((function() {
-        var _i, _len, _results;
-
-        _results = [];
-        for (_i = 0, _len = a.length; _i < _len; _i++) {
-          i = a[_i];
-          _results.push(i.toFixed(p));
-        }
-        return _results;
-      })()).join(s)) + "]";
+      return _results;
     },
     randomColor: function(c) {
       var i, _i;
@@ -619,11 +629,11 @@
         }
       } else {
         img = new Image();
-        img.onload = function() {
-          if (f != null) {
+        if (f != null) {
+          img.onload = function() {
             return f(img);
-          }
-        };
+          };
+        }
         img.src = name;
         this.fileIndex[name] = img;
       }
@@ -643,11 +653,11 @@
         xhr = new XMLHttpRequest();
         xhr.open("GET", name, f != null);
         xhr.responseType = type;
-        xhr.onload = function() {
-          if (f != null) {
+        if (f != null) {
+          xhr.onload = function() {
             return f(xhr.response);
-          }
-        };
+          };
+        }
         xhr.send();
         this.fileIndex[name] = xhr;
       }
@@ -668,8 +678,11 @@
         ctxType = "2d";
       }
       can = this.createCanvas(width, height);
-      can.ctxType = ctxType;
-      return can.ctx = ctxType === "2d" ? can.getContext("2d") : (_ref = can.getContext("webgl")) != null ? _ref : can.getContext("experimental-webgl");
+      if (ctxType === "2d") {
+        return can.getContext("2d");
+      } else {
+        return (_ref = can.getContext("webgl")) != null ? _ref : can.getContext("experimental-webgl");
+      }
     },
     createLayer: function(div, width, height, z, ctx) {
       if (ctx == null) {
@@ -738,11 +751,11 @@
       var img;
 
       img = new Image();
-      img.onload = function() {
-        if (f != null) {
+      if (f != null) {
+        img.onload = function() {
           return f(img);
-        }
-      };
+        };
+      }
       return img.src = ctx.canvas.toDataURL("image/png");
     },
     ctxToImageData: function(ctx) {
@@ -1461,7 +1474,7 @@
     }
 
     Patch.prototype.toString = function() {
-      return "{id:" + this.id + " xy:" + (u.aToFixed([this.x, this.y])) + " c:" + this.color + "}";
+      return "{id:" + this.id + " xy:" + [this.x, this.y] + " c:" + this.color + "}";
     };
 
     Patch.prototype.scaleColor = function(c, s) {
