@@ -86,11 +86,8 @@ Similarly, the models will print to the "javascript console" while they run. (Go
     coffee-script.js    Coffeescript.org browser compiler
     docs                Dir for docco documentation
     models              Dir for example models
-    nlmodels            Dir for example NL models
-    nlwebgl             Dir for webgl diffusion experiment
     src                 Dir for agentscript.coffee files
     template.html       Sample model
-    testmodels          Tests of CS/NL semantics
 
 #### License
 
