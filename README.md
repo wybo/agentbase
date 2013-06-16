@@ -4,18 +4,7 @@ AgentScript is a minimalist Agent Based Modeling (ABM) framework based on [NetLo
 
 #### Build
 
-Currently we use a very simple build process using the coffeescript -wj
-command which "joins" the individual coffeescript files, compiling
-them on change, creating agentscript.js.
-
-    files="\
-      util.coffee \
-      shapes.coffee \
-      agentset.coffee \
-      agentsets.coffee \
-      model.coffee \
-    "
-    coffee -wj agentscript.js -c $files &
+Cake is used to build agentscript.coffee from individual source files, and to compile into agentscript.min.js and agentscript[.min].js
 
 See the template.html and models/*.html files for example models.  The individual
 .coffee files are documented via Jeremy Ashkenas's
@@ -88,26 +77,20 @@ Similarly, the models will print to the "javascript console" while they run. (Go
 
 #### Files
 
+    Cakefile            cake file for build, docs etc.
     LICENSE             GPLv3 License
     README.md           This file
-    agentscript.coffee  Join of core .coffee files
+    agentscript.coffee  Join of src files
     agentscript.js      Coffeescript generated files
     agentscript.min.js  Uglified agentscript.js
-    agentscript.sh      Script for uglify etc
-    agentset.coffee     Base agentset implementation
-    agentsets.coffee    Subclasses of agentset for Agents, Patches, Links
     coffee-script.js    Coffeescript.org browser compiler
-    doc.sh              Script to generate docco documentation
     docs                Dir for docco documentation
-    model.coffee        Base model class
     models              Dir for example models
     nlmodels            Dir for example NL models
     nlwebgl             Dir for webgl diffusion experiment
-    shapes.coffee       Core shapes module
+    src                 Dir for agentscript.coffee files
     template.html       Sample model
     testmodels          Tests of CS/NL semantics
-    util.coffee         Base utility model
-    watch.sh            Coffeescript "watch" script
 
 #### License
 

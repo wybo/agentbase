@@ -82,9 +82,10 @@ and <code>setup</code> will be called by <code>Model.constructor</code>. See:</p
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>u = ABM.util <span class="comment"># ABM.util alias, u.s is also ABM.shape accessor.</span>
-<span class="function"><span class="title">log</span></span> = (arg) -&gt; console.log arg
-<span class="class"><span class="keyword">class</span> <span class="title">MyModel</span> <span class="keyword">extends</span> <span class="title">ABM</span>.<span class="title">Model</span></span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>    
+    u = ABM.util <span class="comment"># ABM.util alias, u.s is also ABM.shape accessor.</span>
+    <span class="function"><span class="title">log</span></span> = (arg) -&gt; console.log arg
+    <span class="class"><span class="keyword">class</span> <span class="title">MyModel</span> <span class="keyword">extends</span> <span class="title">ABM</span>.<span class="title">Model</span></span></pre></div></div>
             
         </li>
         
@@ -102,7 +103,7 @@ We also periodically change the patch colors to random gray values.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  setup: -&gt; <span class="comment"># called by Model.constructor        </span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>      setup: -&gt; <span class="comment"># called by Model.constructor        </span></pre></div></div>
             
         </li>
         
@@ -119,12 +120,12 @@ an external UI to setup for us.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="property">@population</span> = <span class="number">100</span>
-    <span class="property">@size</span> = <span class="number">1.5</span>   <span class="comment"># size in patch coords</span>
-    <span class="property">@speed</span> = <span class="number">.5</span>   <span class="comment"># move forward this amount in patch coords</span>
-    <span class="property">@wiggle</span> = u.degToRad(<span class="number">30</span>) <span class="comment"># degrees/radians to wiggle</span>
-    <span class="property">@startCircle</span> = <span class="literal">true</span>  <span class="comment"># initialize agents randomly or in circle</span>
-    <span class="property">@debug</span> = <span class="literal">true</span> <span class="comment"># turn on/off use of setRootVars() below</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>        <span class="property">@population</span> = <span class="number">100</span>
+        <span class="property">@size</span> = <span class="number">1.5</span>   <span class="comment"># size in patch coords</span>
+        <span class="property">@speed</span> = <span class="number">.5</span>   <span class="comment"># move forward this amount in patch coords</span>
+        <span class="property">@wiggle</span> = u.degToRad(<span class="number">30</span>) <span class="comment"># degrees/radians to wiggle</span>
+        <span class="property">@startCircle</span> = <span class="literal">true</span>  <span class="comment"># initialize agents randomly or in circle</span>
+        <span class="property">@debug</span> = <span class="literal">true</span> <span class="comment"># turn on/off use of setRootVars() below</span></pre></div></div>
             
         </li>
         
@@ -139,7 +140,7 @@ an external UI to setup for us.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="property">@agents</span>.setDefaultSize(<span class="property">@size</span>)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>        <span class="property">@agents</span>.setDefaultSize(<span class="property">@size</span>)</pre></div></div>
             
         </li>
         
@@ -154,7 +155,7 @@ an external UI to setup for us.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="property">@agents</span>.setUseSprites()</pre></div></div>
+            <div class="content"><div class='highlight'><pre>        <span class="property">@agents</span>.setUseSprites()</pre></div></div>
             
         </li>
         
@@ -169,9 +170,9 @@ an external UI to setup for us.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    u.s.add <span class="string">"cc"</span>, <span class="literal">true</span>, u.importImage(<span class="string">"http://backspaces.net/media/CCt.png"</span>)
-    u.s.add <span class="string">"redfish"</span>, <span class="literal">false</span>, u.importImage(<span class="string">"http://backspaces.net/media/redfish64t.png"</span>)
-    u.s.add <span class="string">"bowtie"</span>, <span class="literal">true</span>, (c) -&gt; u.s.poly c, [[-<span class="number">.5</span>,-<span class="number">.5</span>],[<span class="number">.5</span>,<span class="number">.5</span>],[-<span class="number">.5</span>,<span class="number">.5</span>],[<span class="number">.5</span>,-<span class="number">.5</span>]]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>        u.s.add <span class="string">"cc"</span>, <span class="literal">true</span>, u.importImage(<span class="string">"http://backspaces.net/media/CCt.png"</span>)
+        u.s.add <span class="string">"redfish"</span>, <span class="literal">false</span>, u.importImage(<span class="string">"http://backspaces.net/media/redfish64t.png"</span>)
+        u.s.add <span class="string">"bowtie"</span>, <span class="literal">true</span>, (c) -&gt; u.s.poly c, [[-<span class="number">.5</span>,-<span class="number">.5</span>],[<span class="number">.5</span>,<span class="number">.5</span>],[-<span class="number">.5</span>,<span class="number">.5</span>],[<span class="number">.5</span>,-<span class="number">.5</span>]]</pre></div></div>
             
         </li>
         
@@ -186,7 +187,7 @@ an external UI to setup for us.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="property">@anim</span>.setRate <span class="number">60</span>, <span class="literal">false</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>        <span class="property">@anim</span>.setRate <span class="number">60</span>, <span class="literal">false</span></pre></div></div>
             
         </li>
         
@@ -204,8 +205,8 @@ random gray value.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">for</span> p <span class="keyword">in</span> <span class="property">@patches</span>
-      p.color = u.randomGray()</pre></div></div>
+            <div class="content"><div class='highlight'><pre>        <span class="keyword">for</span> p <span class="keyword">in</span> <span class="property">@patches</span>
+          p.color = u.randomGray()</pre></div></div>
             
         </li>
         
@@ -220,7 +221,7 @@ random gray value.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      p.color = [<span class="number">255</span>,<span class="number">0</span>,<span class="number">0</span>] <span class="keyword">if</span> p.x <span class="keyword">is</span> <span class="number">0</span> <span class="keyword">or</span> p.y <span class="keyword">is</span> <span class="number">0</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>          p.color = [<span class="number">255</span>,<span class="number">0</span>,<span class="number">0</span>] <span class="keyword">if</span> p.x <span class="keyword">is</span> <span class="number">0</span> <span class="keyword">or</span> p.y <span class="keyword">is</span> <span class="number">0</span></pre></div></div>
             
         </li>
         
@@ -239,12 +240,12 @@ on our modeel&#39;s <code>startCircle</code> variable.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">for</span> a <span class="keyword">in</span> <span class="property">@agents</span>.create <span class="property">@population</span>
-      a.shape = u.oneOf u.s.names() <span class="comment"># random shapes</span>
-      <span class="keyword">if</span> <span class="property">@startCircle</span>
-        a.forward <span class="property">@patches</span>.maxX/<span class="number">2</span> <span class="comment"># start in circle</span>
-      <span class="keyword">else</span>
-        a.setXY <span class="property">@patches</span>.randomPt()... <span class="comment"># set random location</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>        <span class="keyword">for</span> a <span class="keyword">in</span> <span class="property">@agents</span>.create <span class="property">@population</span>
+          a.shape = u.oneOf u.s.names() <span class="comment"># random shapes</span>
+          <span class="keyword">if</span> <span class="property">@startCircle</span>
+            a.forward <span class="property">@patches</span>.maxX/<span class="number">2</span> <span class="comment"># start in circle</span>
+          <span class="keyword">else</span>
+            a.setXY <span class="property">@patches</span>.randomPt()... <span class="comment"># set random location</span></pre></div></div>
             
         </li>
         
@@ -261,7 +262,7 @@ Note CoffeeScript
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    log <span class="string">"total agents: <span class="subst">#{@agents.length}</span>, total patches: <span class="subst">#{@patches.length}</span>"</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>        log <span class="string">"total agents: <span class="subst">#{@agents.length}</span>, total patches: <span class="subst">#{@patches.length}</span>"</span></pre></div></div>
             
         </li>
         
@@ -276,9 +277,9 @@ Note CoffeeScript
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">for</span> s <span class="keyword">in</span> u.s.names()
-      num = <span class="property">@agents</span>.getPropWith(<span class="string">"shape"</span>, s).length
-      log <span class="string">"<span class="subst">#{num}</span> <span class="subst">#{s}</span>"</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>        <span class="keyword">for</span> s <span class="keyword">in</span> u.s.names()
+          num = <span class="property">@agents</span>.getPropWith(<span class="string">"shape"</span>, s).length
+          log <span class="string">"<span class="subst">#{num}</span> <span class="subst">#{s}</span>"</span></pre></div></div>
             
         </li>
         
@@ -293,7 +294,7 @@ Note CoffeeScript
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  step: -&gt;  <span class="comment"># called by Model.animate</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>      step: -&gt;  <span class="comment"># called by Model.animate</span></pre></div></div>
             
         </li>
         
@@ -308,7 +309,7 @@ Note CoffeeScript
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="property">@updateAgents</span>(a) <span class="keyword">for</span> a <span class="keyword">in</span> <span class="property">@agents</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>        <span class="property">@updateAgents</span>(a) <span class="keyword">for</span> a <span class="keyword">in</span> <span class="property">@agents</span></pre></div></div>
             
         </li>
         
@@ -325,10 +326,10 @@ the patches. Otherwise don&#39;t refresh.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">if</span> <span class="property">@anim</span>.ticks % <span class="number">100</span> <span class="keyword">is</span> <span class="number">0</span>
-      <span class="property">@updatePatches</span>(p) <span class="keyword">for</span> p <span class="keyword">in</span> <span class="property">@patches</span>
-      <span class="property">@reportInfo</span>() 
-      <span class="property">@refreshPatches</span> = <span class="literal">true</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>        <span class="keyword">if</span> <span class="property">@anim</span>.ticks % <span class="number">100</span> <span class="keyword">is</span> <span class="number">0</span>
+          <span class="property">@updatePatches</span>(p) <span class="keyword">for</span> p <span class="keyword">in</span> <span class="property">@patches</span>
+          <span class="property">@reportInfo</span>() 
+          <span class="property">@refreshPatches</span> = <span class="literal">true</span></pre></div></div>
             
         </li>
         
@@ -343,16 +344,16 @@ the patches. Otherwise don&#39;t refresh.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      <span class="property">@setSpotlight</span> <span class="property">@agents</span>.oneOf() <span class="keyword">if</span> <span class="property">@anim</span>.ticks <span class="keyword">is</span> <span class="number">300</span>
-      <span class="property">@setSpotlight</span> <span class="literal">null</span> <span class="keyword">if</span> <span class="property">@anim</span>.ticks <span class="keyword">is</span> <span class="number">600</span>
-    <span class="keyword">else</span>
-      <span class="property">@refreshPatches</span> = <span class="literal">false</span>
-    <span class="keyword">if</span> <span class="property">@anim</span>.draws <span class="keyword">is</span> <span class="number">2</span> <span class="comment"># Show the sprite sheet if there is one after first draw</span>
-      sheet = u.last(u.s.spriteSheets) <span class="keyword">if</span> u.s.spriteSheets.length <span class="keyword">isnt</span> <span class="number">0</span>
-      <span class="keyword">if</span> sheet?
-        log sheet
-        document.getElementById(<span class="string">"play"</span>).appendChild(sheet.canvas)
-    log <span class="property">@anim</span>.toString() <span class="keyword">if</span> <span class="property">@anim</span>.ticks % <span class="number">100</span> <span class="keyword">is</span> <span class="number">0</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>          <span class="property">@setSpotlight</span> <span class="property">@agents</span>.oneOf() <span class="keyword">if</span> <span class="property">@anim</span>.ticks <span class="keyword">is</span> <span class="number">300</span>
+          <span class="property">@setSpotlight</span> <span class="literal">null</span> <span class="keyword">if</span> <span class="property">@anim</span>.ticks <span class="keyword">is</span> <span class="number">600</span>
+        <span class="keyword">else</span>
+          <span class="property">@refreshPatches</span> = <span class="literal">false</span>
+        <span class="keyword">if</span> <span class="property">@anim</span>.draws <span class="keyword">is</span> <span class="number">2</span> <span class="comment"># Show the sprite sheet if there is one after first draw</span>
+          sheet = u.last(u.s.spriteSheets) <span class="keyword">if</span> u.s.spriteSheets.length <span class="keyword">isnt</span> <span class="number">0</span>
+          <span class="keyword">if</span> sheet?
+            log sheet
+            document.getElementById(<span class="string">"play"</span>).appendChild(sheet.canvas)
+        log <span class="property">@anim</span>.toString() <span class="keyword">if</span> <span class="property">@anim</span>.ticks % <span class="number">100</span> <span class="keyword">is</span> <span class="number">0</span></pre></div></div>
             
         </li>
         
@@ -367,9 +368,9 @@ the patches. Otherwise don&#39;t refresh.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">if</span> <span class="property">@anim</span>.ticks <span class="keyword">is</span> <span class="number">1000</span>
-      log <span class="string">"..stopping, restart by ABM.model.start()"</span>
-      <span class="property">@stop</span>()</pre></div></div>
+            <div class="content"><div class='highlight'><pre>        <span class="keyword">if</span> <span class="property">@anim</span>.ticks <span class="keyword">is</span> <span class="number">1000</span>
+          log <span class="string">"..stopping, restart by ABM.model.start()"</span>
+          <span class="property">@stop</span>()</pre></div></div>
             
         </li>
         
@@ -385,7 +386,7 @@ and report model state.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  updateAgents: (a) -&gt; <span class="comment"># a is agent</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>      updateAgents: (a) -&gt; <span class="comment"># a is agent</span></pre></div></div>
             
         </li>
         
@@ -401,7 +402,7 @@ our heading by +/- <code>wiggle/2</code> radians</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    a.rotate u.randomCentered <span class="property">@wiggle</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>        a.rotate u.randomCentered <span class="property">@wiggle</span></pre></div></div>
             
         </li>
         
@@ -416,8 +417,8 @@ our heading by +/- <code>wiggle/2</code> radians</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    a.forward <span class="property">@speed</span>
-  updatePatches: (p) -&gt; <span class="comment"># p is patch</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>        a.forward <span class="property">@speed</span>
+      updatePatches: (p) -&gt; <span class="comment"># p is patch</span></pre></div></div>
             
         </li>
         
@@ -433,8 +434,8 @@ Note we modify the existing color, GC minimization.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    u.randomGray(p.color) <span class="keyword">if</span> p.x <span class="keyword">isnt</span> <span class="number">0</span> <span class="keyword">and</span> p.y <span class="keyword">isnt</span> <span class="number">0</span> <span class="comment"># aviod GC, reuse color</span>
-  reportInfo: -&gt;</pre></div></div>
+            <div class="content"><div class='highlight'><pre>        u.randomGray(p.color) <span class="keyword">if</span> p.x <span class="keyword">isnt</span> <span class="number">0</span> <span class="keyword">and</span> p.y <span class="keyword">isnt</span> <span class="number">0</span> <span class="comment"># aviod GC, reuse color</span>
+      reportInfo: -&gt;</pre></div></div>
             
         </li>
         
@@ -449,8 +450,8 @@ Note we modify the existing color, GC minimization.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    headings = <span class="property">@agents</span>.getProp <span class="string">"heading"</span>
-    <span class="function"><span class="title">avgHeading</span></span> = (headings.reduce (a,b)-&gt;a+b) / <span class="property">@agents</span>.length</pre></div></div>
+            <div class="content"><div class='highlight'><pre>        headings = <span class="property">@agents</span>.getProp <span class="string">"heading"</span>
+        <span class="function"><span class="title">avgHeading</span></span> = (headings.reduce (a,b)-&gt;a+b) / <span class="property">@agents</span>.length</pre></div></div>
             
         </li>
         
@@ -465,7 +466,7 @@ Note we modify the existing color, GC minimization.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    log <span class="string">"
+            <div class="content"><div class='highlight'><pre>        log <span class="string">"
 average heading of agents: 
 <span class="subst">#{avgHeading.toFixed(<span class="number">2</span>)}</span> radians, 
 <span class="subst">#{u.radToDeg(avgHeading).toFixed(<span class="number">2</span>)}</span> degrees"</span></pre></div></div>
@@ -488,7 +489,7 @@ for patchSize, minX, maxX, minY, maxY</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>APP = <span class="keyword">new</span> MyModel <span class="string">"layers"</span>, <span class="number">13</span>, -<span class="number">16</span>, <span class="number">16</span>, -<span class="number">16</span>, <span class="number">16</span>, <span class="literal">true</span>, <span class="literal">false</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>    APP = <span class="keyword">new</span> MyModel <span class="string">"layers"</span>, <span class="number">13</span>, -<span class="number">16</span>, <span class="number">16</span>, -<span class="number">16</span>, <span class="number">16</span>, <span class="literal">true</span>, <span class="literal">false</span></pre></div></div>
             
         </li>
         
@@ -503,7 +504,7 @@ for patchSize, minX, maxX, minY, maxY</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>APP.setRootVars() <span class="comment"># Put Model vars in global name space -- only for demo &amp; debug</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>    APP.setRootVars() <span class="comment"># Put Model vars in global name space -- only for demo &amp; debug</span></pre></div></div>
             
         </li>
         

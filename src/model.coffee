@@ -287,7 +287,6 @@ class ABM.Model
     root.dr  = @drawing
     root.u   = ABM.util
     root.sh  = ABM.shapes
-    root.app = @
     root.cx  = @contexts
     root.ab  = ABM.agentBreeds
     root.lb  = ABM.linkBreeds
@@ -295,5 +294,4 @@ class ABM.Model
     root.wd  = ABM.world
     root.gl  = @globals
     root.root= root
-    null
-  
+    root.app = @

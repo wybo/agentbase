@@ -5,7 +5,7 @@
 # Create the namespace **ABM** for our project.
 # Note here `this` or `@` == window due to coffeescript wrapper call.
 # Thus @ABM is placed in the global scope.
-@ABM={}
+@ABM={} 
 
 root = @ # Keep a private copy of global object
 

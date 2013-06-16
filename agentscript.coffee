@@ -5,7 +5,7 @@
 # Create the namespace **ABM** for our project.
 # Note here `this` or `@` == window due to coffeescript wrapper call.
 # Thus @ABM is placed in the global scope.
-@ABM={}
+@ABM={} 
 
 root = @ # Keep a private copy of global object
 
@@ -491,6 +491,7 @@ ABM.util = u =
 
     
   
+
 # A *very* simple shapes module for drawing
 # [NetLogo-like](http://ccl.northwestern.edu/netlogo/docs/) agents.
 
@@ -666,6 +667,7 @@ ABM.shapes = ABM.util.s = do ->
     ctx.nextX++; slot
 
     
+
 
 # An **AgentSet** is an array, along with a class, agentClass, whose instances
 # are the items of the array.  Instances of the class are created
@@ -981,6 +983,7 @@ class ABM.AgentSet extends Array
 # random run, captured so we can reuse.
 #
 #     AS.add new XY(pt...) for pt in [[0,1],[8,0],[6,4],[1,3],[1,1]]
+
 # There are three agentsets and their corresponding 
 # agents: Patches/Patch, Agents/Agent, and Links/Link.
 
@@ -1650,6 +1653,7 @@ class ABM.Links extends ABM.AgentSet
       a.forward radius
     null
       
+
 # Class Model is the control center for our AgentSets: Patches, Agents and Links.
 # Creating new models is done by subclassing class Model and overriding two 
 # virtual/abstract methods: `setup()` and `step()`
@@ -1939,7 +1943,6 @@ class ABM.Model
     root.dr  = @drawing
     root.u   = ABM.util
     root.sh  = ABM.shapes
-    root.app = @
     root.cx  = @contexts
     root.ab  = ABM.agentBreeds
     root.lb  = ABM.linkBreeds
@@ -1947,5 +1950,4 @@ class ABM.Model
     root.wd  = ABM.world
     root.gl  = @globals
     root.root= root
-    null
-  
+    root.app = @
