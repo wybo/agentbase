@@ -4,7 +4,7 @@ AgentScript is a minimalist Agent Based Modeling (ABM) framework based on [NetLo
 
 #### Build
 
-Cake is used to build agentscript.coffee from individual source files, and to compile into agentscript.min.js and agentscript[.min].js
+Cake is used to build agentscript.coffee from individual source files, and to compile into agentscript.js and agentscript.min.js
 
 See the template.html and models/*.html files for example models.  The individual
 .coffee files are documented via Jeremy Ashkenas's
