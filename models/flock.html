@@ -1,8 +1,8 @@
 <html>
   <head>
     <title>AgentScript Model</title>
-    <script src="../agentscript.js"></script>
-    <script src="../coffee-script.js"></script>
+    <script src="../lib/agentscript.js"></script>
+    <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
     
     u = ABM.util # ABM.util alias, u.s is also ABM.shape accessor.
@@ -35,7 +35,6 @@
           a.setXY @patches.randomPt()...
           a.color = u.randomMapColor() # u.randomColor() # u.randomBrightColor()
 
-      # draw: -> # headless test .. max fps
       step: ->
         console.log @anim.toString() if @anim.ticks % 100 is 0
         @flock(a) for a in @agents
@@ -77,12 +76,13 @@
         dx = (Math.sin f.towards a for f in flockmates).reduce (x,y) -> x+y
         dy = (Math.cos f.towards a for f in flockmates).reduce (x,y) -> x+y
         @safeAtan dy, dx
-      safeAtan: (x,y) -> if x is 0 and y is 0 then 0 else Math.atan y/x # atan ok if x 0
+      safeAtan: (x,y) -> Math.atan2 y, x # if x is 0 and y is 0 then 0 else Math.atan2 y, x # atan ok if x 0
       
       reportFlockVectorSize: ->
         dx = (Math.sin a.heading for a in @agents).reduce (x,y) -> x+y
         dy = (Math.cos a.heading for a in @agents).reduce (x,y) -> x+y
         alignment = Math.sqrt(dx*dx + dy*dy)/@population
+        console.log alignment
 
     # div, patchSize, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true
     #   NL Defaults: 13, -16, 16, -16, 16

@@ -94,7 +94,8 @@ ABM.util = u =
     r=@randomInt2 min,max
     c[i] = r for i in [0..2]
     c
-  # Random color from a colormap set of r,g,b values, default is one of 125 (5^3) colors
+  # Random color from a colormap set of r,g,b values.
+  # Default is one of 125 (5^3) colors
   randomMapColor: (c = [], set = [0,63,127,191,255]) -> 
     @setColor c, u.oneOf(set), u.oneOf(set), u.oneOf(set)
   randomBrightColor: (c=[]) -> @randomMapColor c, [0,127,255]
@@ -103,6 +104,7 @@ ABM.util = u =
     c.str = null if c.str?
     c[0] = r; c[1] = g; c[2] = b; c[3] = a if a?
     c
+  setGray: (c, g, a) -> @setColor c, g, g, g, a
   # Return new color, c, by scaling each value of the rgb color max.
   scaleColor: (max, s, c = []) -> 
     c.str = null if c.str?
@@ -114,6 +116,8 @@ ABM.util = u =
     c.str = if c.length is 3 then "rgb(#{c})" else "rgba(#{c})"
   # Compare two colors.  Alas, there is no array.Equal operator.
   colorsEqual: (c1, c2) -> c1.toString() is c2.toString()
+  # Convert r,g,b to a gray value (not color array). Round for 0-255 int.
+  rgbToGray: (c) -> 0.2126*c[0] + 0.7152*c[1] + 0.0722*c[2]
     
   # Return little/big endian-ness of hardware. 
   # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq)
@@ -166,7 +170,8 @@ ABM.util = u =
     @error "removeItem: item not found" if i < 0
     i
     
-  # Randomize the elements of array.  Clever! See [cookbook](http://goo.gl/TT2SY)
+  # Randomize the elements of array.
+  # Clever! See [cookbook](http://goo.gl/TT2SY)
   shuffle: (array) -> array.sort -> 0.5 - Math.random()
 
   # Return o when f(o) min/max in array. Error if array empty.
@@ -244,8 +249,11 @@ ABM.util = u =
   aMax: (array) -> array.reduce (a,b) -> Math.max a,b
   aMin: (array) -> array.reduce (a,b) -> Math.min a,b
   aSum: (array) -> array.reduce (a,b) -> a+b
-  aMul: (array) -> array.reduce (a,b) -> a*b
   aAvg: (array) -> @aSum(array)/array.length
+  # Modify each member of an array; clone.
+  # Clone first if you want to preserve the original array.
+  aMod: (array, f) -> array[i] = f(a) for a,i in array;array
+  
   # Return array composed of f pairwise on both arrays
   aPairwise: (a1, a2, f) -> v=0; f(v,a2[i]) for v,i in a1 
   aPairSum: (a1, a2) -> @aPairwise a1, a2, (a,b)->a+b
@@ -255,11 +263,15 @@ ABM.util = u =
   # Return a JS array given a TypedArray
   typedToJS: (typedArray) -> (i for i in typedArray)
   
-  # Return an array with values in [0,norm], defaults to [0,1).
-  # Note: to have a half-open interval, [0,norm), use something like norm-.00009
-  normalize: (array, norm=.999999999) ->
-    min = @aMin array; scale = (norm)/(@aMax(array) - min)
-    (num-min)*scale for num in array    
+  # Return a linear interpolation between from and to.
+  # Scale is in [0-1], and the result is in [from,to]
+  # (Name history:)[http://en.wikipedia.org/wiki/Lerp_(computing)]
+  lerp: (scale, from, to) -> from + (to-from)*scale
+  # Return an array with values in [from,to], defaults to [0,1].
+  # Note: to have a half-open interval, [from,to), try to=to-.00009
+  normalize: (array, from = 0, to = 1) ->
+    min = @aMin array; max = @aMax array; scale = 1/(max-min)
+    (@lerp(scale*(num-min), from, to) for num in array)
 
   # Binary search of a sorted array, adapted from [jaskenas](http://goo.gl/ozAZH).
   # Search for index of value with items array, using fcn for item value.
@@ -277,14 +289,12 @@ ABM.util = u =
 
 # ### Topology Operations
   
-  # Return angle in (-pi,pi] radians from x1,y1 to x2,y2.
-  radsToward: (x1, y1, x2, y2) -> 
-    PI = Math.PI; dx = x2-x1; dy = y2-y1
-    if dx is 0 then return 3*PI/2 if dy < 0; return PI/2 if dy > 0; return 0
-    else return Math.atan(dy/dx) + if dx < 0 then PI else 0
+  # Return angle in [-pi,pi] radians from x1,y1 to x2,y2
+  # (Math.atan2)[http://goo.gl/JS8DF]
+  radsToward: (x1, y1, x2, y2) -> Math.atan2 y2-y1, x2-x1
   # Return true if x2,y2 is in cone radians around heading radians from x1,x2
   # and within distance radius from x1,x2.
-  # I.e. is p2 in cone/heading/radius from p1
+  # I.e. is p2 in cone/heading/radius from p1?
   inCone: (heading, cone, radius, x1, y1, x2, y2) ->
     if radius < @distance x1, y1, x2, y2 then return false
     angle12 = @radsToward x1, y1, x2, y2 # angle from 1 to 2

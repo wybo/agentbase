@@ -1,7 +1,10 @@
 # See: https://help.github.com/articles/ignoring-files
 notes
-tests
-testmodels
+misc
 *-
+*.js
+*.map
+*.coffee
+*.html
 .DS_Store
 .DS_Store?

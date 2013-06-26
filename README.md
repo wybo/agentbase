@@ -8,7 +8,7 @@ Cake is used to build agentscript.coffee from individual source files, and to co
 
 See the template.html and models/*.html files for example models.  The individual
 .coffee files are documented via Jeremy Ashkenas's
-[docco](http://jashkenas.github.com/docco/) in the docs/ dir using the method suggested [here](https://github.com/jashkenas/coffee-script/wiki/[HowTo]-Compiling-and-Setting-Up-Build-Tools).
+[docco](http://jashkenas.github.com/docco/) in the docs/ dir. See the Cakefile for details.
 
 #### Documentation
 
@@ -24,7 +24,7 @@ Currently the documentation is hosted directly on github via the [rawgithub](htt
 
 [**model.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/5-model.html) is the top level integration for all the agentsets and is subclassed by all user models. 
 
-[**template.html**](https://rawgithub.com/backspaces/agentscript/master/docs/6-template.html) is a trivial subclass of Model showing the basic structure how you build your own models.  In addition, the models/ directory contains 10 simple models used in teaching NetLogo. You can [run the model here.](https://rawgithub.com/backspaces/agentscript/master/template.html) 
+[**template.html**](https://rawgithub.com/backspaces/agentscript/master/docs/6-template.html) is a trivial subclass of Model showing the basic structure how you build your own models.  In addition, the models/ directory contains 10 simple models used in teaching NetLogo. You can [run the model here.](https://rawgithub.com/backspaces/agentscript/master/models/template.html) 
 
 #### Sample Models
 
@@ -76,19 +76,17 @@ You may see this by running a sample model, then use the browser's View Page Sou
 Similarly, the models will print to the "javascript console" while they run. (Google "view javascript console `<`my browser`>`")
 
 #### Files
-
+    
     Cakefile            cake file for build, docs etc.
     LICENSE             GPLv3 License
     README.md           This file
-    agentscript.coffee  Join of src files
-    agentscript.js      Coffeescript generated files
-    agentscript.min.js  Uglified agentscript.js
-    coffee-script.js    Coffeescript.org browser compiler
-    docs                Dir for docco documentation
-    models              Dir for example models
-    src                 Dir for agentscript.coffee files
-    template.html       Sample model
-
+    docs/               Docco documentation
+    extras/             AgentScript extensions
+    lib/                All .js/min.js and .map files
+    models/             Sample models
+    src/                Component .coffee files for agentscript.coffee
+    tools/              coffee-script.js and others
+    
 #### License
 
 Copyright Owen Densmore, RedfishGroup LLC, 2012, 2013<br>

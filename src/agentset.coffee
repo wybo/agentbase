@@ -57,7 +57,7 @@ class ABM.AgentSet extends Array
   constructor: (@agentClass, @name, @mainSet) ->
     super()
     @agentClass::breed = @ # let the breed know I'm it's agentSet
-    @ownVariables = []
+    @ownVariables = [] # keep list of user variables
     @ID = 0 if not @mainSet? # Do not set ID if I'm a subset
 
   # Abstract method used by subclasses to create and add their instances.
@@ -94,11 +94,12 @@ class ABM.AgentSet extends Array
     u.error "setDefault: name is not a string" if typeof name isnt "string"
     @agentClass::[name] = value
 
-  own: (nameValueList...) ->
-    u.error "own: odd number of arguments" if nameValueList.length % 2 isnt 0
-    for name, i in nameValueList by 2
-      @setDefault name, nameValueList[i+1]
+  own: (vars...) ->
+    for name in vars
+      val = null; [name,val] = name if u.isArray name
+      @setDefault name, val
       @ownVariables.push name
+    null
   
 
   # Remove adjacent duplicates, by reference, in a sorted agentset.
@@ -160,21 +161,28 @@ class ABM.AgentSet extends Array
   #     [{id:4,x:1,y:3},{id:5,x:1,y:1}]
   getPropWith: (prop, value) -> @asSet (o for o in @ when o[prop] is value)
 
-  # Set the property of the agents to a given value
+  # Set the property of the agents to a given value.  If value
+  # is an array, its values will be used, indexed by agentSet's index.
+  # This is generally used via: getProp, modify results, setProp
   #
   #     # increment x for agents with x=1
   #     AS1 = ABM.AgentSet.asSet AS.getPropWith("x",1)
   #     AS1.setProp "x", 2 # {id:4,x:2,y:3},{id:5,x:2,y:1}
   #
   # Note this changes the last two objects in the original AS above
-  setProp: (prop, value) -> o[prop] = value for o in @; @
+  setProp: (prop, value) ->
+    if u.isArray value
+    then o[prop] = value[i] for o,i in @; @
+    else o[prop] = value for o in @; @
+  
+  setProps: (prop, values) -> o[prop] = values[i] for o,i in @; @
 
   # Get the agent with the min/max prop value in the agentset
   #
   #     min = AS.minProp "y"  # 0
   #     max = AS.maxProp "y"  # 4
-  maxProp: (prop) -> Math.max @getProp(prop)...
-  minProp: (prop) -> Math.min @getProp(prop)...
+  maxProp: (prop) -> u.aMax @getProp(prop)
+  minProp: (prop) -> u.aMin @getProp(prop)
   
 # ### Array Utilities, often from ABM.util
 

@@ -92,8 +92,7 @@ class ABM.Patches extends ABM.AgentSet
       for x in [@minX..@maxX] by 1
         @add new ABM.Patch x, y
     @setNeighbors() if @hasNeighbors
-    @setPixels() 
-    @drawWithPixels = @size is 1 # if size is 1, default to true, otherwise false
+    @setPixels() # setup off-page canvas for pixel ops
   
   # Set the default color for new Patch instances.
   # Note coffeescript :: which refers to the Patch prototype.
@@ -129,8 +128,10 @@ class ABM.Patches extends ABM.AgentSet
       p.n4 = @asSet (n for n in p.n when n.x is p.x or n.y is p.y)
 
   # Setup pixels used for `drawScaledPixels` and `importColors`
+  # 
   setPixels: ->
     if @size is 1
+      @usePixels()
       @pixelsCtx = ABM.contexts.patches
     else
       can = document.createElement 'canvas'  # small pixel grid for patch colors
@@ -258,7 +259,7 @@ class ABM.Patches extends ABM.AgentSet
       c = p.color
       data[i+j] = c[j] for j in [0..2] 
       data[i+3] = if c.length is 4 then c[3] else 255
-    @pixelsCtx.putImageData(@pixelsImageData, 0, 0)
+    @pixelsCtx.putImageData @pixelsImageData, 0, 0
     return if @size is 1
     ctx.drawImage @pixelsCtx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height
   # The 32-bit version of drawScaledPixels, with both little and big endian hardware.

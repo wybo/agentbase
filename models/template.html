@@ -1,8 +1,8 @@
 <html>
   <head>
     <title>AgentScript Model</title>
-    <script src="agentscript.js"></script>
-    <script src="coffee-script.js"></script>
+    <script src="../lib/agentscript.js"></script>
+    <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
     # This is a general template for creating models.
     #
@@ -140,7 +140,7 @@ average heading of agents:
     # for patchSize, minX, maxX, minY, maxY
     APP = new MyModel "layers", 13, -16, 16, -16, 16, true, false
     # Set useful global variables for debugging
-    APP.setRootVars() # Put Model vars in global name space -- only for demo & debug
+    APP.setRootVars() if APP.debug # Put Model vars in global name space for debug
     
     </script>
   </head>
