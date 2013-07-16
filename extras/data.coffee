@@ -1,3 +1,4 @@
+u = ABM.util
 class ABM.DataSet
   # Static members
   @patchDataSet: (name) ->
@@ -17,6 +18,17 @@ class ABM.DataSet
           jsdata.push ta[i]<<16 | ta[i+1]<<8 | ta[i+2]
       ds.reset ctx.canvas.width, ctx.canvas.height, jsdata
     ds
+  @ascDataSet: (str) ->
+    textData = str.split "\n"; gisData = {}; gisData.data = []
+    for i in [0..5]
+      keyVal = textData[i].split /\s+/
+      gisData[keyVal[0].toLowerCase()] = parseFloat keyVal[1]
+    for i in [0...gisData.nrows] by 1
+      nums = textData[6+i].trim().split(" ")
+      nums[i] = parseFloat nums[i] for i in [0...nums.length]
+      gisData.data = gisData.data.concat nums
+    new DataSet gisData.ncols, gisData.nrows, gisData.data
+
 
   # 2D Dataset: width/height and an array with length = width*height
   constructor: (width=0, height=0, data=[]) -> @reset width, height, data
@@ -27,10 +39,8 @@ class ABM.DataSet
       """
   # x,y are floats, from top-left of data set.
   checkXY: (x,y) ->
-    # u.error "x,y out of range" if not ((0<=x<=@width-1) and (0<=y<=@height-1))
     u.error "x,y out of range: #{x},#{y}" if not (0<=x<=@width-1 and 0<=y<=@height-1)
   nearest: (x,y) -> 
-    # @checkXY x,y; x = Math.round x; y = Math.round y; @data[x + y*@height]
     @getXY Math.round(x), Math.round(y)
   bilinear: (x,y) -> # http://en.wikipedia.org/wiki/Bilinear_interpolation
     @checkXY x,y

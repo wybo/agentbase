@@ -122,12 +122,11 @@
     # div, patchSize, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true
     #   NL Defaults: 13, -16, 16, -16, 16
     APP=new MyModel "layers", 6, -40, 40, -40, 40, false
-    APP.setRootVars() # Put Model vars in global name space -- only for demo & debug
+    APP.setRootVars() # Debug: Put Model vars in global name space
     </script>
 
   </head>
   <body onload="ABM.model.start()">
-    <canvas id="test" style="height:0;width:0">Browser doesn't support HTML5 Canvas</canvas>
     <div id="layers" style="position:relative;padding:20;"></div>
   </body>
 </html>

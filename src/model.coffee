@@ -94,7 +94,7 @@ class ABM.Model
     @div, size, minX, maxX, minY, maxY,
     isTorus=true, hasNeighbors=true
   ) ->
-    ABM.model = @ #; numX = maxX-minX+1; numY = maxY-minY+1    
+    ABM.model = @
     @setWorld size, minX, maxX, minY, maxY, isTorus, hasNeighbors
     @contexts = ABM.contexts = {}
     
@@ -109,7 +109,7 @@ class ABM.Model
     #     ctx.restore() # restore patch coord system
     
     for own k,v of @contextsInit
-      @contexts[k] = ctx = u.createLayer div, @world.width, @world.height, v.z, v.ctx
+      @contexts[k] = ctx = u.createLayer div, @world.pxWidth, @world.pxHeight, v.z, v.ctx
       @setCtxTransform(ctx)
 
     # One of the layers is used for drawing only, not an agentset:
@@ -129,9 +129,7 @@ class ABM.Model
     @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
     @links = ABM.links = new ABM.Links ABM.Link, "links"
 
-    # Call the models setup function. Set the list of global variables to
-    # the new variables created by setup(). Do not include agentsets, they
-    # are available in the ABM global.
+    # Call the models setup function.
     @setup()
   
   # Stop and reset the model
@@ -146,13 +144,15 @@ class ABM.Model
   restart: -> @reset(); @setup(); @start()
   # Initialize/reset world parameters.
   setWorld: (size, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true) ->
-    numX = maxX-minX+1; numY = maxY-minY+1; width = numX*size; height = numY*size
-    ABM.world = @world = {size,minX,maxX,minY,maxY,numX,numY,width,height,isTorus,hasNeighbors}
+    numX = maxX-minX+1; numY = maxY-minY+1; pxWidth = numX*size; pxHeight = numY*size
+    minXcor=minX-.5; maxXcor=maxX+.5; minYcor=minY-.5; maxYcor=maxY+.5
+    ABM.world = @world = {size,minX,maxX,minY,maxY,minXcor,maxXcor,minYcor,maxYcor,
+      numX,numY,pxWidth,pxHeight,isTorus,hasNeighbors}
   setCtxTransform: (ctx) ->
-    ctx.canvas.width = @world.width; ctx.canvas.height = @world.height
+    ctx.canvas.width = @world.pxWidth; ctx.canvas.height = @world.pxHeight
     ctx.save()
     ctx.scale @world.size, -@world.size
-    ctx.translate -(@world.minX-.5), -(@world.maxY+.5)
+    ctx.translate -(@world.minXcor), -(@world.maxYcor)
   
 
 #### Optimizations:
@@ -270,8 +270,7 @@ class ABM.Model
   #
   #     even = @asSet (a for a in @agents when a.id % 2 is 0)
   #     even.shuffle().getProp("id") # [6, 0, 4, 2, 8]
-  asSet: (a) -> # turns an array into an agent set
-    ABM.AgentSet.asSet(a)
+  asSet: (a, setType = ABM.AgentSet) -> ABM.AgentSet.asSet a, setType
 
   # A simple debug aid which places short names in the global name space.
   # Note we avoid using the actual name, such as "patches" because this

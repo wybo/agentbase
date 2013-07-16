@@ -10,42 +10,37 @@ shell  = require 'shelljs'
 
 srcDir = "src/"
 extrasDir = "extras/"
-toolsPath = 'tools/'
-libPath = 'lib/'
+toolsDir = 'tools/'
+libDir = 'lib/'
 ASNames = "util shapes agentset agentsets model".split(" ")
 ASPaths = ("#{srcDir}#{f}.coffee" for f in ASNames)
 ASPath = "#{srcDir}agentscript.coffee"
-XNames = "data".split(" ")
+XNames = "data mouse".split(" ")
 XPaths = ("#{extrasDir}#{f}.coffee" for f in XNames)
 JSNames = XNames.concat ["agentscript"]
 
 task 'all', 'Compile, minify, create docs', ->
   invoke 'build'
   invoke 'doc'
-  #invoke 'map:off'
   console.log "checking models for map use" # until maps work correctly
   shell.exec "grep '\\.\\./agentscript.js' models/*.html"
   invoke 'wc'
   invoke 'minify'
   
-compileFile = (path) -> # Until map works: compile to top level dir then cp js/map to lib
+compileFile = (path) ->
   console.log "Compiling #{path}"
   coffeeName = path.replace /^.*\//, ''
-  baseName = coffeeName.replace /.coffee/, ''
+  coffeeDir = path.replace /\/[^/]*$/, ''
   shell.exec """
-    cp #{path} .
-    coffee --map --compile #{coffeeName}
-    cp #{baseName}.js #{baseName}.map #{libPath}
-  """, ->
-
+    cd #{coffeeDir}
+    coffee --map --compile --output ../#{libDir} #{coffeeName}
+  """ , ->
 task 'build', 'Compile agentscript and libraries from source files', ->
   invoke 'build:agentscript'
   invoke 'build:extras'
-
 task 'build:agentscript', 'Compile agentscript from source files', ->
   invoke 'cat'
   compileFile ASPath
-
 task 'build:extras', 'Compile all libraries from their source file', ->
   compileFile name for name in XPaths
 
@@ -65,24 +60,21 @@ task 'doc', 'Create documentation from source files', ->
     docco #{tmpfiles.join(" ")} -o docs
   """, ->
 
-task 'map:off', 'Map disable: Remove top level lib/src/extras files', ->
-  coffeeFiles = (f.replace(/^[^ ]*\//,'') for f in XPaths.concat(ASPath)).join(" ")
-  libFiles = shell.ls("lib/*").join(" ").
-    replace(/lib\/[^ ]*min\.js/g,'').replace(/lib\//g,'')
-  shell.exec "rm #{coffeeFiles} #{libFiles}", ->  
-task 'map:on', 'Map enable: Copy lib/src/extras to top level', ->
-  coffeeFiles = XPaths.concat(ASPath).join " "
-  libFiles = shell.ls("lib/*").join(" ").replace(/lib\/[^ ]*min\.js/g,'')
-  shell.exec "cp #{coffeeFiles} .;cp #{libFiles} .", ->
+task 'git:diff', 'git diff the core and extras .coffee files', ->
+  shell.exec """
+    outfile=/tmp/gitdiff-`date +"%m.%d:%H.%M"`; echo $outfile
+    git diff #{ASPaths.concat(XPaths).join(' ')} > $outfile
+    mate $outfile
+  """, ->
 
 task 'minify', 'Create minified version of coffeescript.js', ->
   console.log "uglify javascript files"
   for file in JSNames
-    shell.exec "uglifyjs #{libPath}#{file}.js -c -m -o #{libPath}#{file}.min.js", ->
+    shell.exec "uglifyjs #{libDir}#{file}.js -c -m -o #{libDir}#{file}.min.js", ->
   
 task 'update:cs', 'Update coffee-script.js', ->
   url = "http://jashkenas.github.io/coffee-script/extras/coffee-script.js"
-  shell.exec "cd tools; curl #{url} -O", 
+  shell.exec "cd #{toolsDir}; curl #{url} -O", 
     -> console.log shell.grep(/^ \* /, "tools/coffee-script.js")
 
 task 'watch', 'Watch for source file updates, invoke builds', ->
@@ -92,24 +84,26 @@ task 'watch', 'Watch for source file updates, invoke builds', ->
     fs.watchFile path, (curr, prev) ->
       if +curr.mtime isnt +prev.mtime
         console.log "#{path}: #{curr.mtime}"
-        invoke 'build:as'
+        invoke 'build:agentscript'
   invoke 'build:extras'
   for path in XPaths then do (path) ->
     fs.watchFile path, (curr, prev) ->
       if +curr.mtime isnt +prev.mtime
         console.log "#{path}: #{curr.mtime}"
         compileFile path
+
 wcCode = (file) ->
   shell.grep('-v',/^ *[#/]|^ *$|^ *root|setRootVars/, file).split('\n').length
 task 'wc', 'Count the lines of coffeescript & javascript', ->
-  console.log "code: agentscript.coffee: #{wcCode('agentscript.coffee')}"
-  console.log "code: agentscript.js: #{wcCode('agentscript.js')}"
+  jsPath = ASPath.replace("#{srcDir}","#{libDir}").replace('coffee','js')
+  console.log "code: #{ASPath}: #{wcCode(ASPath)}"
+  console.log "code: #{jsPath}: #{wcCode(jsPath)}"
 
 
   
 task 'test', 'Testing 1,2,3...', ->
-  coffeeFiles = XPaths.concat(ASPath).join " "
-  libFiles = shell.ls("lib/*").join(" ").replace /lib\/[^ ]*min\.js/g,''
+  # coffeeFiles = XPaths.concat(ASPath).join " "
+  # libFiles = shell.ls("lib/*").join(" ").replace /lib\/[^ ]*min\.js/g,''
 
   # coffeeFiles = (p.replace(/^.*\//, '') for p in coffeePaths)
   # 
@@ -126,10 +120,15 @@ task 'test', 'Testing 1,2,3...', ->
         
   # libFiles = coffeePaths.replace /extras/g, 'lib'
   
-  shell.exec """
-    cp #{coffeeFiles} .
-    cp #{libFiles} .
-  """, ->
+  # shell.exec """
+  #   cp #{coffeeFiles} .
+  #   cp #{libFiles} .
+  # """, ->
+  coffeeFiles = ASPaths.concat(XPaths).join(' ')
+  exec """
+    git diff #{coffeeFiles} | mate
+  """
+  
   
 
 
@@ -146,5 +145,5 @@ task 'test', 'Testing 1,2,3...', ->
 # shell.exec([
 #   "cp #{path} ."
 #   "coffee --map --compile #{coffeeName}"
-#   "cp #{baseName}.* #{libPath}"
+#   "cp #{baseName}.* #{libDir}"
 # ].join(' && '))

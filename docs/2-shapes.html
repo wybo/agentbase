@@ -205,7 +205,7 @@ Useful for shortcuts</p>
   pyramid:
     rotate: <span class="literal">false</span>
     draw: (c) -&gt; poly c, [[<span class="number">0</span>,<span class="number">.5</span>],[-<span class="number">.433</span>,-<span class="number">.25</span>],[<span class="number">.433</span>,-<span class="number">.25</span>]]
-  circle:
+  circle: <span class="comment"># Note: NetLogo's dot is simply circle with a small size</span>
     shortcut: (c,x,y,s) -&gt; c.beginPath(); circ c,x,y,s; c.closePath(); c.fill()
     rotate: <span class="literal">false</span>
     draw: (c) -&gt; circ c,<span class="number">0</span>,<span class="number">0</span>,<span class="number">1</span> <span class="comment"># c.arc 0,0,.5,0,2*Math.PI</span>

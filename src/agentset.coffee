@@ -130,7 +130,7 @@ class ABM.AgentSet extends Array
 
   # The static `ABM.AgentSet.asSet` as a method.
   # Used by agentset methods creating new agentsets.
-  asSet: (a) -> ABM.AgentSet.asSet a # , @
+  asSet: (a, setType = ABM.AgentSet) -> ABM.AgentSet.asSet a, setType
 
   # Similar to above but sorted via `id`.
   asOrderedSet: (a) -> @asSet(a).sortById()

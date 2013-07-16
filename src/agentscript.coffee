@@ -66,7 +66,7 @@ ABM.util = u =
   # Return log n where base is 10, base, e respectively
   log10: (n) -> Math.log(n)/Math.LN10
   logN: (n, base) -> Math.log(n)/Math.log(base)
-  # Note: ln: (n) -> Math.log n
+  ln: (n) -> Math.log n
   # Return true [mod functin](http://goo.gl/spr24), % is remainder, not mod.
   mod: (v, n) -> ((v % n) + n) % n
   # Return v to be between min, max via mod fcn
@@ -118,14 +118,40 @@ ABM.util = u =
   colorsEqual: (c1, c2) -> c1.toString() is c2.toString()
   # Convert r,g,b to a gray value (not color array). Round for 0-255 int.
   rgbToGray: (c) -> 0.2126*c[0] + 0.7152*c[1] + 0.0722*c[2]
+  # RGB <> HSB (HSV) conversions.
+  # RGB in [0-255], HSB in [0-1]
+  # See (Wikipedia)[http://en.wikipedia.org/wiki/HSV_color_space]
+  # and (Blog Post)[http://axonflux.com/handy-rgb-to-hsl-and-rgb-to-hsv-color-model-c]
+  rgbToHsb: (c) ->
+    r=c[0]/255; g=c[1]/255; b=c[2]/255
+    max = Math.max(r,g,b); min = Math.min(r,g,b); v = max
+    h = 0; d = max-min; s = if max is 0 then 0 else d/max
+    if max isnt min then switch max
+      when r then h = (g - b) / d + (if g < b then 6 else 0)
+      when g then h = (b - r) / d + 2
+      when b then h = (r - g) / d + 4
+    [h/6, s, v]
+  hsbToRgb: (c) ->
+    h=c[0]; s=c[1]; v=c[2]; i = Math.floor(h*6)
+    f = h * 6 - i;        p = v * (1 - s)
+    q = v * (1 - f * s);  t = v * (1 - (1 - f) * s)
+    switch(i % 6)
+      when 0 then r = v; g = t; b = p
+      when 1 then r = q; g = v; b = p
+      when 2 then r = p; g = v; b = t
+      when 3 then r = p; g = q; b = v
+      when 4 then r = t; g = p; b = v
+      when 5 then r = v; g = p; b = q
+    [Math.round(r*255), Math.round(g*255), Math.round(b*255)]
+    
     
   # Return little/big endian-ness of hardware. 
   # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq)
   isLittleEndian: ->
-    d8 = new Uint8ClampedArray 4
-    d32 = new Uint32Array d8.buffer
-    d32[0] = 0x01020304
-    d8[0] is 4
+    # convert 1-int array to typed array
+    d32 = new Uint32Array [0x01020304]
+    # return true if byte order reversed
+    (new Uint8ClampedArray d32.buffer)[0] is 4
   # Convert between degrees and radians.  We/Math package use radians.
   degToRad: (degrees) -> degrees * Math.PI / 180
   radToDeg: (radians) -> radians * 180 / Math.PI
@@ -266,12 +292,12 @@ ABM.util = u =
   # Return a linear interpolation between from and to.
   # Scale is in [0-1], and the result is in [from,to]
   # (Name history:)[http://en.wikipedia.org/wiki/Lerp_(computing)]
-  lerp: (scale, from, to) -> from + (to-from)*scale
+  lerp: (from, to, scale) -> from + (to-from)*u.clamp(scale, 0, 1)
   # Return an array with values in [from,to], defaults to [0,1].
   # Note: to have a half-open interval, [from,to), try to=to-.00009
   normalize: (array, from = 0, to = 1) ->
     min = @aMin array; max = @aMax array; scale = 1/(max-min)
-    (@lerp(scale*(num-min), from, to) for num in array)
+    (@lerp(from, to, scale*(num-min)) for num in array)
 
   # Binary search of a sorted array, adapted from [jaskenas](http://goo.gl/ozAZH).
   # Search for index of value with items array, using fcn for item value.
@@ -567,7 +593,7 @@ ABM.shapes = ABM.util.s = do ->
   pyramid:
     rotate: false
     draw: (c) -> poly c, [[0,.5],[-.433,-.25],[.433,-.25]]
-  circle:
+  circle: # Note: NetLogo's dot is simply circle with a small size
     shortcut: (c,x,y,s) -> c.beginPath(); circ c,x,y,s; c.closePath(); c.fill()
     rotate: false
     draw: (c) -> circ c,0,0,1 # c.arc 0,0,.5,0,2*Math.PI
@@ -811,7 +837,7 @@ class ABM.AgentSet extends Array
 
   # The static `ABM.AgentSet.asSet` as a method.
   # Used by agentset methods creating new agentsets.
-  asSet: (a) -> ABM.AgentSet.asSet a # , @
+  asSet: (a, setType = ABM.AgentSet) -> ABM.AgentSet.asSet a, setType
 
   # Similar to above but sorted via `id`.
   asOrderedSet: (a) -> @asSet(a).sortById()
@@ -1160,10 +1186,10 @@ class ABM.Patches extends ABM.AgentSet
   patchXY: (x,y) -> @[@patchIndex x,y]
   
   # Return x,y float values to be between min/max patch coord values
-  clamp: (x,y) -> [u.clamp(x, @minX-.5, @maxX+.5), u.clamp(y, @minY-.5, @maxY+.5)]
+  clamp: (x,y) -> [u.clamp(x, @minXcor, @maxXcor), u.clamp(y, @minYcor, @maxYcor)]
   
   # Return x,y float values to be modulo min/max patch coord values.
-  wrap: (x,y)  -> [u.wrap(x, @minX-.5, @maxX+.5),  u.wrap(y, @minY-.5, @maxY+.5)]
+  wrap: (x,y)  -> [u.wrap(x, @minXcor, @maxXcor),  u.wrap(y, @minYcor, @maxYcor)]
   
   # Return x,y float values to be between min/max patch values
   # using either clamp/wrap above according to isTorus topology.
@@ -1178,7 +1204,7 @@ class ABM.Patches extends ABM.AgentSet
     @patchXY x, y
   
   # Return a random valid float x,y point in patch space
-  randomPt: -> [u.randomFloat2(@minX-.5,@maxX+.5), u.randomFloat2(@minY-.5,@maxY+.5)]
+  randomPt: -> [u.randomFloat2(@minXcor,@maxXcor), u.randomFloat2(@minYcor,@maxYcor)]
 
 # #### Patch metrics
   
@@ -1233,6 +1259,8 @@ class ABM.Patches extends ABM.AgentSet
   # The top-left order simplifies finding pixels in data sets
   pixelByteIndex: (p) -> 4*p.id # Uint8
   pixelWordIndex: (p) -> p.id   # Uint32
+  pixelXYtoPatchXY: (x,y) ->
+    px = @minXcor+(x/@size); py = @maxYcor-(y/@size); [px,py]
     
   # Draws, or "imports" an image URL into the patches as their color property.
   # The drawing is scaled to the number of x,y patches, thus one pixel
@@ -1251,18 +1279,14 @@ class ABM.Patches extends ABM.AgentSet
   # Draw the patches via pixel manipulation rather than 2D drawRect.
   # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq)
   drawScaledPixels: (ctx) -> 
-    if @pixelsData32?
-      @drawScaledPixels32 ctx
-    else
-      @drawScaledPixels8 ctx
+    if @pixelsData32? then @drawScaledPixels32 ctx else @drawScaledPixels8 ctx
   # The 8-bit version for drawScaledPixels.  Used for systems w/o typed arrays
   drawScaledPixels8: (ctx) ->
     data = @pixelsData
     for p in @
-      i = @pixelByteIndex p
-      c = p.color
-      data[i+j] = c[j] for j in [0..2] 
-      data[i+3] = if c.length is 4 then c[3] else 255
+      i = @pixelByteIndex p; c = p.color
+      a = if c.length is 4 then c[3] else 255
+      data[i+j] = c[j] for j in [0..2]; data[i+3] = a
     @pixelsCtx.putImageData @pixelsImageData, 0, 0
     return if @size is 1
     ctx.drawImage @pixelsCtx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height
@@ -1270,22 +1294,12 @@ class ABM.Patches extends ABM.AgentSet
   drawScaledPixels32: (ctx) ->
     data = @pixelsData32
     for p in @
-      i = @pixelWordIndex p
-      c = p.color
+      i = @pixelWordIndex p; c = p.color
       a = if c.length is 4 then c[3] else 255
       if @pixelsAreLittleEndian
-        data[i] = 
-          (a    << 24) |  # alpha
-          (c[2] << 16) |  # blue
-          (c[1] << 8)  |  # green
-          c[0];           # red
-      else
-        data[i] = 
-          (c[0] << 24) |  # red
-          (c[1] << 16) |  # green
-          (c[2] << 8)  |  # blue
-          a;              # alpha
-    @pixelsCtx.putImageData(@pixelsImageData, 0, 0)
+      then data[i] = (a << 24) | (c[2] << 16) | (c[1] << 8) | c[0]
+      else data[i] = (c[0] << 24) | (c[1] << 16) | (c[2] << 8) | a
+    @pixelsCtx.putImageData @pixelsImageData, 0, 0
     return if @size is 1
     ctx.drawImage @pixelsCtx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height
       
@@ -1769,7 +1783,7 @@ class ABM.Model
     @div, size, minX, maxX, minY, maxY,
     isTorus=true, hasNeighbors=true
   ) ->
-    ABM.model = @ #; numX = maxX-minX+1; numY = maxY-minY+1    
+    ABM.model = @
     @setWorld size, minX, maxX, minY, maxY, isTorus, hasNeighbors
     @contexts = ABM.contexts = {}
     
@@ -1784,7 +1798,7 @@ class ABM.Model
     #     ctx.restore() # restore patch coord system
     
     for own k,v of @contextsInit
-      @contexts[k] = ctx = u.createLayer div, @world.width, @world.height, v.z, v.ctx
+      @contexts[k] = ctx = u.createLayer div, @world.pxWidth, @world.pxHeight, v.z, v.ctx
       @setCtxTransform(ctx)
 
     # One of the layers is used for drawing only, not an agentset:
@@ -1804,9 +1818,7 @@ class ABM.Model
     @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
     @links = ABM.links = new ABM.Links ABM.Link, "links"
 
-    # Call the models setup function. Set the list of global variables to
-    # the new variables created by setup(). Do not include agentsets, they
-    # are available in the ABM global.
+    # Call the models setup function.
     @setup()
   
   # Stop and reset the model
@@ -1821,13 +1833,15 @@ class ABM.Model
   restart: -> @reset(); @setup(); @start()
   # Initialize/reset world parameters.
   setWorld: (size, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true) ->
-    numX = maxX-minX+1; numY = maxY-minY+1; width = numX*size; height = numY*size
-    ABM.world = @world = {size,minX,maxX,minY,maxY,numX,numY,width,height,isTorus,hasNeighbors}
+    numX = maxX-minX+1; numY = maxY-minY+1; pxWidth = numX*size; pxHeight = numY*size
+    minXcor=minX-.5; maxXcor=maxX+.5; minYcor=minY-.5; maxYcor=maxY+.5
+    ABM.world = @world = {size,minX,maxX,minY,maxY,minXcor,maxXcor,minYcor,maxYcor,
+      numX,numY,pxWidth,pxHeight,isTorus,hasNeighbors}
   setCtxTransform: (ctx) ->
-    ctx.canvas.width = @world.width; ctx.canvas.height = @world.height
+    ctx.canvas.width = @world.pxWidth; ctx.canvas.height = @world.pxHeight
     ctx.save()
     ctx.scale @world.size, -@world.size
-    ctx.translate -(@world.minX-.5), -(@world.maxY+.5)
+    ctx.translate -(@world.minXcor), -(@world.maxYcor)
   
 
 #### Optimizations:
@@ -1945,8 +1959,7 @@ class ABM.Model
   #
   #     even = @asSet (a for a in @agents when a.id % 2 is 0)
   #     even.shuffle().getProp("id") # [6, 0, 4, 2, 8]
-  asSet: (a) -> # turns an array into an agent set
-    ABM.AgentSet.asSet(a)
+  asSet: (a, setType = ABM.AgentSet) -> ABM.AgentSet.asSet a, setType
 
   # A simple debug aid which places short names in the global name space.
   # Note we avoid using the actual name, such as "patches" because this

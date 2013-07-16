@@ -491,7 +491,7 @@ x &amp; y are both valid integer patch coordinates.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  clamp: (x,y) -&gt; [u.clamp(x, <span class="property">@minX</span>-<span class="number">.5</span>, <span class="property">@maxX</span>+<span class="number">.5</span>), u.clamp(y, <span class="property">@minY</span>-<span class="number">.5</span>, <span class="property">@maxY</span>+<span class="number">.5</span>)]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  clamp: (x,y) -&gt; [u.clamp(x, <span class="property">@minXcor</span>, <span class="property">@maxXcor</span>), u.clamp(y, <span class="property">@minYcor</span>, <span class="property">@maxYcor</span>)]</pre></div></div>
             
         </li>
         
@@ -506,7 +506,7 @@ x &amp; y are both valid integer patch coordinates.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  wrap: (x,y)  -&gt; [u.wrap(x, <span class="property">@minX</span>-<span class="number">.5</span>, <span class="property">@maxX</span>+<span class="number">.5</span>),  u.wrap(y, <span class="property">@minY</span>-<span class="number">.5</span>, <span class="property">@maxY</span>+<span class="number">.5</span>)]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  wrap: (x,y)  -&gt; [u.wrap(x, <span class="property">@minXcor</span>, <span class="property">@maxXcor</span>),  u.wrap(y, <span class="property">@minYcor</span>, <span class="property">@maxYcor</span>)]</pre></div></div>
             
         </li>
         
@@ -557,7 +557,7 @@ using either clamp/wrap above according to isTorus topology.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  randomPt: -&gt; [u.randomFloat2(<span class="property">@minX</span>-<span class="number">.5</span>,<span class="property">@maxX</span>+<span class="number">.5</span>), u.randomFloat2(<span class="property">@minY</span>-<span class="number">.5</span>,<span class="property">@maxY</span>+<span class="number">.5</span>)]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  randomPt: -&gt; [u.randomFloat2(<span class="property">@minXcor</span>,<span class="property">@maxXcor</span>), u.randomFloat2(<span class="property">@minYcor</span>,<span class="property">@maxYcor</span>)]</pre></div></div>
             
         </li>
         
@@ -693,7 +693,9 @@ The top-left order simplifies finding pixels in data sets</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  pixelByteIndex: (p) -&gt; <span class="number">4</span>*p.id <span class="comment"># Uint8</span>
-  pixelWordIndex: (p) -&gt; p.id   <span class="comment"># Uint32</span></pre></div></div>
+  pixelWordIndex: (p) -&gt; p.id   <span class="comment"># Uint32</span>
+  pixelXYtoPatchXY: (x,y) -&gt;
+    px = <span class="property">@minXcor</span>+(x<span class="regexp">/@size); py = @maxYcor-(y/</span><span class="property">@size</span>); [px,py]</pre></div></div>
             
         </li>
         
@@ -736,10 +738,7 @@ See Mozilla pixel <a href="http://goo.gl/Lxliq">manipulation article</a></p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  drawScaledPixels: (ctx) -&gt; 
-    <span class="keyword">if</span> <span class="property">@pixelsData32</span>?
-      <span class="property">@drawScaledPixels32</span> ctx
-    <span class="keyword">else</span>
-      <span class="property">@drawScaledPixels8</span> ctx</pre></div></div>
+    <span class="keyword">if</span> <span class="property">@pixelsData32</span>? <span class="keyword">then</span> <span class="property">@drawScaledPixels32</span> ctx <span class="keyword">else</span> <span class="property">@drawScaledPixels8</span> ctx</pre></div></div>
             
         </li>
         
@@ -757,10 +756,9 @@ See Mozilla pixel <a href="http://goo.gl/Lxliq">manipulation article</a></p>
             <div class="content"><div class='highlight'><pre>  drawScaledPixels8: (ctx) -&gt;
     data = <span class="property">@pixelsData</span>
     <span class="keyword">for</span> p <span class="keyword">in</span> @
-      i = <span class="property">@pixelByteIndex</span> p
-      c = p.color
-      data[i+j] = c[j] <span class="keyword">for</span> j <span class="keyword">in</span> [<span class="number">0.</span><span class="number">.2</span>] 
-      data[i+<span class="number">3</span>] = <span class="keyword">if</span> c.length <span class="keyword">is</span> <span class="number">4</span> <span class="keyword">then</span> c[<span class="number">3</span>] <span class="keyword">else</span> <span class="number">255</span>
+      i = <span class="property">@pixelByteIndex</span> p; c = p.color
+      a = <span class="keyword">if</span> c.length <span class="keyword">is</span> <span class="number">4</span> <span class="keyword">then</span> c[<span class="number">3</span>] <span class="keyword">else</span> <span class="number">255</span>
+      data[i+j] = c[j] <span class="keyword">for</span> j <span class="keyword">in</span> [<span class="number">0.</span><span class="number">.2</span>]; data[i+<span class="number">3</span>] = a
     <span class="property">@pixelsCtx</span>.putImageData <span class="property">@pixelsImageData</span>, <span class="number">0</span>, <span class="number">0</span>
     <span class="keyword">return</span> <span class="keyword">if</span> <span class="property">@size</span> <span class="keyword">is</span> <span class="number">1</span>
     ctx.drawImage <span class="property">@pixelsCtx</span>.canvas, <span class="number">0</span>, <span class="number">0</span>, ctx.canvas.width, ctx.canvas.height</pre></div></div>
@@ -781,22 +779,12 @@ See Mozilla pixel <a href="http://goo.gl/Lxliq">manipulation article</a></p>
             <div class="content"><div class='highlight'><pre>  drawScaledPixels32: (ctx) -&gt;
     data = <span class="property">@pixelsData32</span>
     <span class="keyword">for</span> p <span class="keyword">in</span> @
-      i = <span class="property">@pixelWordIndex</span> p
-      c = p.color
+      i = <span class="property">@pixelWordIndex</span> p; c = p.color
       a = <span class="keyword">if</span> c.length <span class="keyword">is</span> <span class="number">4</span> <span class="keyword">then</span> c[<span class="number">3</span>] <span class="keyword">else</span> <span class="number">255</span>
       <span class="keyword">if</span> <span class="property">@pixelsAreLittleEndian</span>
-        data[i] = 
-          (a    &lt;&lt; <span class="number">24</span>) |  <span class="comment"># alpha</span>
-          (c[<span class="number">2</span>] &lt;&lt; <span class="number">16</span>) |  <span class="comment"># blue</span>
-          (c[<span class="number">1</span>] &lt;&lt; <span class="number">8</span>)  |  <span class="comment"># green</span>
-          c[<span class="number">0</span>];           <span class="comment"># red</span>
-      <span class="keyword">else</span>
-        data[i] = 
-          (c[<span class="number">0</span>] &lt;&lt; <span class="number">24</span>) |  <span class="comment"># red</span>
-          (c[<span class="number">1</span>] &lt;&lt; <span class="number">16</span>) |  <span class="comment"># green</span>
-          (c[<span class="number">2</span>] &lt;&lt; <span class="number">8</span>)  |  <span class="comment"># blue</span>
-          a;              <span class="comment"># alpha</span>
-    <span class="property">@pixelsCtx</span>.putImageData(<span class="property">@pixelsImageData</span>, <span class="number">0</span>, <span class="number">0</span>)
+      <span class="keyword">then</span> data[i] = (a &lt;&lt; <span class="number">24</span>) | (c[<span class="number">2</span>] &lt;&lt; <span class="number">16</span>) | (c[<span class="number">1</span>] &lt;&lt; <span class="number">8</span>) | c[<span class="number">0</span>]
+      <span class="keyword">else</span> data[i] = (c[<span class="number">0</span>] &lt;&lt; <span class="number">24</span>) | (c[<span class="number">1</span>] &lt;&lt; <span class="number">16</span>) | (c[<span class="number">2</span>] &lt;&lt; <span class="number">8</span>) | a
+    <span class="property">@pixelsCtx</span>.putImageData <span class="property">@pixelsImageData</span>, <span class="number">0</span>, <span class="number">0</span>
     <span class="keyword">return</span> <span class="keyword">if</span> <span class="property">@size</span> <span class="keyword">is</span> <span class="number">1</span>
     ctx.drawImage <span class="property">@pixelsCtx</span>.canvas, <span class="number">0</span>, <span class="number">0</span>, ctx.canvas.width, ctx.canvas.height</pre></div></div>
             

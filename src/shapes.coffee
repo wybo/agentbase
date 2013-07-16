@@ -63,7 +63,7 @@ ABM.shapes = ABM.util.s = do ->
   pyramid:
     rotate: false
     draw: (c) -> poly c, [[0,.5],[-.433,-.25],[.433,-.25]]
-  circle:
+  circle: # Note: NetLogo's dot is simply circle with a small size
     shortcut: (c,x,y,s) -> c.beginPath(); circ c,x,y,s; c.closePath(); c.fill()
     rotate: false
     draw: (c) -> circ c,0,0,1 # c.arc 0,0,.5,0,2*Math.PI

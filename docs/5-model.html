@@ -344,7 +344,7 @@ Example:</p>
     <span class="property">@div</span>, size, minX, maxX, minY, maxY,
     isTorus=<span class="literal">true</span>, hasNeighbors=<span class="literal">true</span>
   ) -&gt;
-    ABM.model = @ <span class="comment">#; numX = maxX-minX+1; numY = maxY-minY+1    </span>
+    ABM.model = @
     <span class="property">@setWorld</span> size, minX, maxX, minY, maxY, isTorus, hasNeighbors
     <span class="property">@contexts</span> = ABM.contexts = {}</pre></div></div>
             
@@ -371,7 +371,7 @@ ctx.restore() # restore patch coord system</code></pre>
             
             <div class="content"><div class='highlight'><pre>    
     <span class="keyword">for</span> own k,v <span class="keyword">of</span> <span class="property">@contextsInit</span>
-      <span class="property">@contexts</span>[k] = ctx = u.createLayer div, <span class="property">@world</span>.width, <span class="property">@world</span>.height, v.z, v.ctx
+      <span class="property">@contexts</span>[k] = ctx = u.createLayer div, <span class="property">@world</span>.pxWidth, <span class="property">@world</span>.pxHeight, v.z, v.ctx
       <span class="property">@setCtxTransform</span>(ctx)</pre></div></div>
             
         </li>
@@ -462,9 +462,7 @@ agentset is drawn only once, remaining static after that.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
-              <p>Call the models setup function. Set the list of global variables to
-the new variables created by setup(). Do not include agentsets, they
-are available in the ABM global.</p>
+              <p>Call the models setup function.</p>
 
             </div>
             
@@ -520,13 +518,15 @@ are available in the ABM global.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  setWorld: (size, minX, maxX, minY, maxY, isTorus=<span class="literal">true</span>, hasNeighbors=<span class="literal">true</span>) -&gt;
-    numX = maxX-minX+<span class="number">1</span>; numY = maxY-minY+<span class="number">1</span>; width = numX*size; height = numY*size
-    ABM.world = <span class="property">@world</span> = {size,minX,maxX,minY,maxY,numX,numY,width,height,isTorus,hasNeighbors}
+    numX = maxX-minX+<span class="number">1</span>; numY = maxY-minY+<span class="number">1</span>; pxWidth = numX*size; pxHeight = numY*size
+    minXcor=minX-<span class="number">.5</span>; maxXcor=maxX+<span class="number">.5</span>; minYcor=minY-<span class="number">.5</span>; maxYcor=maxY+<span class="number">.5</span>
+    ABM.world = <span class="property">@world</span> = {size,minX,maxX,minY,maxY,minXcor,maxXcor,minYcor,maxYcor,
+      numX,numY,pxWidth,pxHeight,isTorus,hasNeighbors}
   setCtxTransform: (ctx) -&gt;
-    ctx.canvas.width = <span class="property">@world</span>.width; ctx.canvas.height = <span class="property">@world</span>.height
+    ctx.canvas.width = <span class="property">@world</span>.pxWidth; ctx.canvas.height = <span class="property">@world</span>.pxHeight
     ctx.save()
     ctx.scale <span class="property">@world</span>.size, -<span class="property">@world</span>.size
-    ctx.translate -(<span class="property">@world</span>.minX-<span class="number">.5</span>), -(<span class="property">@world</span>.maxY+<span class="number">.5</span>)</pre></div></div>
+    ctx.translate -(<span class="property">@world</span>.minXcor), -(<span class="property">@world</span>.maxYcor)</pre></div></div>
             
         </li>
         
@@ -844,8 +844,7 @@ even.shuffle().getProp(&quot;id&quot;) # [6, 0, 4, 2, 8]</code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  asSet: (a) -&gt; <span class="comment"># turns an array into an agent set</span>
-    ABM.AgentSet.asSet(a)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  asSet: (a, setType = ABM.AgentSet) -&gt; ABM.AgentSet.asSet a, setType</pre></div></div>
             
         </li>
         

@@ -156,10 +156,10 @@ class ABM.Patches extends ABM.AgentSet
   patchXY: (x,y) -> @[@patchIndex x,y]
   
   # Return x,y float values to be between min/max patch coord values
-  clamp: (x,y) -> [u.clamp(x, @minX-.5, @maxX+.5), u.clamp(y, @minY-.5, @maxY+.5)]
+  clamp: (x,y) -> [u.clamp(x, @minXcor, @maxXcor), u.clamp(y, @minYcor, @maxYcor)]
   
   # Return x,y float values to be modulo min/max patch coord values.
-  wrap: (x,y)  -> [u.wrap(x, @minX-.5, @maxX+.5),  u.wrap(y, @minY-.5, @maxY+.5)]
+  wrap: (x,y)  -> [u.wrap(x, @minXcor, @maxXcor),  u.wrap(y, @minYcor, @maxYcor)]
   
   # Return x,y float values to be between min/max patch values
   # using either clamp/wrap above according to isTorus topology.
@@ -174,7 +174,7 @@ class ABM.Patches extends ABM.AgentSet
     @patchXY x, y
   
   # Return a random valid float x,y point in patch space
-  randomPt: -> [u.randomFloat2(@minX-.5,@maxX+.5), u.randomFloat2(@minY-.5,@maxY+.5)]
+  randomPt: -> [u.randomFloat2(@minXcor,@maxXcor), u.randomFloat2(@minYcor,@maxYcor)]
 
 # #### Patch metrics
   
@@ -229,6 +229,8 @@ class ABM.Patches extends ABM.AgentSet
   # The top-left order simplifies finding pixels in data sets
   pixelByteIndex: (p) -> 4*p.id # Uint8
   pixelWordIndex: (p) -> p.id   # Uint32
+  pixelXYtoPatchXY: (x,y) ->
+    px = @minXcor+(x/@size); py = @maxYcor-(y/@size); [px,py]
     
   # Draws, or "imports" an image URL into the patches as their color property.
   # The drawing is scaled to the number of x,y patches, thus one pixel
@@ -247,18 +249,14 @@ class ABM.Patches extends ABM.AgentSet
   # Draw the patches via pixel manipulation rather than 2D drawRect.
   # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq)
   drawScaledPixels: (ctx) -> 
-    if @pixelsData32?
-      @drawScaledPixels32 ctx
-    else
-      @drawScaledPixels8 ctx
+    if @pixelsData32? then @drawScaledPixels32 ctx else @drawScaledPixels8 ctx
   # The 8-bit version for drawScaledPixels.  Used for systems w/o typed arrays
   drawScaledPixels8: (ctx) ->
     data = @pixelsData
     for p in @
-      i = @pixelByteIndex p
-      c = p.color
-      data[i+j] = c[j] for j in [0..2] 
-      data[i+3] = if c.length is 4 then c[3] else 255
+      i = @pixelByteIndex p; c = p.color
+      a = if c.length is 4 then c[3] else 255
+      data[i+j] = c[j] for j in [0..2]; data[i+3] = a
     @pixelsCtx.putImageData @pixelsImageData, 0, 0
     return if @size is 1
     ctx.drawImage @pixelsCtx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height
@@ -266,22 +264,12 @@ class ABM.Patches extends ABM.AgentSet
   drawScaledPixels32: (ctx) ->
     data = @pixelsData32
     for p in @
-      i = @pixelWordIndex p
-      c = p.color
+      i = @pixelWordIndex p; c = p.color
       a = if c.length is 4 then c[3] else 255
       if @pixelsAreLittleEndian
-        data[i] = 
-          (a    << 24) |  # alpha
-          (c[2] << 16) |  # blue
-          (c[1] << 8)  |  # green
-          c[0];           # red
-      else
-        data[i] = 
-          (c[0] << 24) |  # red
-          (c[1] << 16) |  # green
-          (c[2] << 8)  |  # blue
-          a;              # alpha
-    @pixelsCtx.putImageData(@pixelsImageData, 0, 0)
+      then data[i] = (a << 24) | (c[2] << 16) | (c[1] << 8) | c[0]
+      else data[i] = (c[0] << 24) | (c[1] << 16) | (c[2] << 8) | a
+    @pixelsCtx.putImageData @pixelsImageData, 0, 0
     return if @size is 1
     ctx.drawImage @pixelsCtx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height
       

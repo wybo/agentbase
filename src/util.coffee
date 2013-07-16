@@ -66,7 +66,7 @@ ABM.util = u =
   # Return log n where base is 10, base, e respectively
   log10: (n) -> Math.log(n)/Math.LN10
   logN: (n, base) -> Math.log(n)/Math.log(base)
-  # Note: ln: (n) -> Math.log n
+  ln: (n) -> Math.log n
   # Return true [mod functin](http://goo.gl/spr24), % is remainder, not mod.
   mod: (v, n) -> ((v % n) + n) % n
   # Return v to be between min, max via mod fcn
@@ -118,14 +118,40 @@ ABM.util = u =
   colorsEqual: (c1, c2) -> c1.toString() is c2.toString()
   # Convert r,g,b to a gray value (not color array). Round for 0-255 int.
   rgbToGray: (c) -> 0.2126*c[0] + 0.7152*c[1] + 0.0722*c[2]
+  # RGB <> HSB (HSV) conversions.
+  # RGB in [0-255], HSB in [0-1]
+  # See (Wikipedia)[http://en.wikipedia.org/wiki/HSV_color_space]
+  # and (Blog Post)[http://axonflux.com/handy-rgb-to-hsl-and-rgb-to-hsv-color-model-c]
+  rgbToHsb: (c) ->
+    r=c[0]/255; g=c[1]/255; b=c[2]/255
+    max = Math.max(r,g,b); min = Math.min(r,g,b); v = max
+    h = 0; d = max-min; s = if max is 0 then 0 else d/max
+    if max isnt min then switch max
+      when r then h = (g - b) / d + (if g < b then 6 else 0)
+      when g then h = (b - r) / d + 2
+      when b then h = (r - g) / d + 4
+    [h/6, s, v]
+  hsbToRgb: (c) ->
+    h=c[0]; s=c[1]; v=c[2]; i = Math.floor(h*6)
+    f = h * 6 - i;        p = v * (1 - s)
+    q = v * (1 - f * s);  t = v * (1 - (1 - f) * s)
+    switch(i % 6)
+      when 0 then r = v; g = t; b = p
+      when 1 then r = q; g = v; b = p
+      when 2 then r = p; g = v; b = t
+      when 3 then r = p; g = q; b = v
+      when 4 then r = t; g = p; b = v
+      when 5 then r = v; g = p; b = q
+    [Math.round(r*255), Math.round(g*255), Math.round(b*255)]
+    
     
   # Return little/big endian-ness of hardware. 
   # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq)
   isLittleEndian: ->
-    d8 = new Uint8ClampedArray 4
-    d32 = new Uint32Array d8.buffer
-    d32[0] = 0x01020304
-    d8[0] is 4
+    # convert 1-int array to typed array
+    d32 = new Uint32Array [0x01020304]
+    # return true if byte order reversed
+    (new Uint8ClampedArray d32.buffer)[0] is 4
   # Convert between degrees and radians.  We/Math package use radians.
   degToRad: (degrees) -> degrees * Math.PI / 180
   radToDeg: (radians) -> radians * 180 / Math.PI
@@ -266,12 +292,12 @@ ABM.util = u =
   # Return a linear interpolation between from and to.
   # Scale is in [0-1], and the result is in [from,to]
   # (Name history:)[http://en.wikipedia.org/wiki/Lerp_(computing)]
-  lerp: (scale, from, to) -> from + (to-from)*scale
+  lerp: (from, to, scale) -> from + (to-from)*u.clamp(scale, 0, 1)
   # Return an array with values in [from,to], defaults to [0,1].
   # Note: to have a half-open interval, [from,to), try to=to-.00009
   normalize: (array, from = 0, to = 1) ->
     min = @aMin array; max = @aMax array; scale = 1/(max-min)
-    (@lerp(scale*(num-min), from, to) for num in array)
+    (@lerp(from, to, scale*(num-min)) for num in array)
 
   # Binary search of a sorted array, adapted from [jaskenas](http://goo.gl/ozAZH).
   # Search for index of value with items array, using fcn for item value.
