@@ -7,7 +7,7 @@
     
     u = ABM.util # ABM.util alias, u.s is also ABM.shape accessor.
     class MyModel extends ABM.Model
-      setup: -> # called by Model ctor
+      setup: ->
         @refreshPatches = false # for static patches
         
         # globals
@@ -49,12 +49,13 @@
         
     # div, patchSize, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true
     #   NL Defaults: 13, -16, 16, -16, 16
-    APP=new MyModel "layers", 2, -120, 120, -100, 100, false, false
+    APP = new MyModel "layers", 2, -120, 120, -100, 100, false, false
     APP.setRootVars() # Debug: Put Model vars in global name space
+    APP.setupAndGo() # Run model immediately after startup initialization
     
     </script>
   </head>
-  <body onload="ABM.model.start()">
+  <body>
     <div id="layers" style="position:relative;padding:20;"></div>
   </body>
 </html>

@@ -7,9 +7,7 @@ class ABM.DataSet
   @imageDataSet: (name, gray = false) ->
     ds = new DataSet() # empty data set
     u.importImage name, (img) ->
-      window.img = img # DEBUG
       ctx = u.imageToCtx img; ds.ctx = ctx
-      window.id = id = u.ctxToImageData ctx # DEBUG
       ta = id.data; jsdata = [] # could be ds.data!
       for i in [0...ta.length] by 4
         if gray
@@ -65,26 +63,17 @@ class ABM.DataSet
     idata = ctx.getImageData(0, 0, @width, @height); ta = idata.data
     # norm = u.normalize @data, .9999 + if gray then 255 else Math.pow 2,24
     norm = u.normalize @data, 0, Math.pow(2, if gray then 8 else 24) - 0.000001
-    window.norm = norm # DEBUG
     for num, i in norm
       j=4*i; ta[j+3] = 255
       if gray
         ta[j] = ta[j+1] = ta[j+2] = Math.floor num
       else
         ta[j]=num>>>16; ta[j+1]=(num>>8)&0xff; ta[j+2]=num&0xff
-    window.ta = u.typedToJS ta # DEBUG
     ctx.putImageData idata, 0, 0
     ctx.canvas
-  samplePatchXY: (px,py) ->
-    # console.log [px,py]
-    w = ABM.world
-    px = px-w.minX+.5; py = w.maxY+.5-py # convert to top-left offsets
-    # px *= w.size*@width/w.width; py *= w.size*@height/w.height # scale
-    px *= @width/w.numX; py *= @height/w.numY # scale
-    # console.log [px,py]
-    @nearest px, py # REMIND: bilinear?
   setPatchVar: (name) -> # REMIND: faster to resample and set?
-    p[name] = @samplePatchXY p.x, p.y for p in ABM.patches
+    ds = @resample ABM.patches.numX, ABM.patches.numY
+    p[name] = ds.data[p.id] for p in ABM.patches
   resample: (width,height) ->
     return @ if width is @width and height is @height # REMIND: return new dataset?
     data = []; xScale = (@width-1)/(width-1); yScale = (@height-1)/(height-1)

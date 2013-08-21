@@ -16,14 +16,22 @@
     # CoffeeScript automatically calls `Model.constructor <args>`
     # and `setup` will be called by `Model.constructor`. See:
     #
-    #     APP=new MyModel "layers", 13, -16, 16, -16, 16
+    #     APP = new MyModel "layers", 13, -16, 16, -16, 16
     #
     # below, which passes all its arguments to `Model`
     
-    u = ABM.util # ABM.util alias, u.s is also ABM.shape accessor.
+    u = ABM.util # ABM.util alias, u.s is also ABM.shapes accessor.
     log = (arg) -> console.log arg
     class MyModel extends ABM.Model
-
+      # `startup` initializes resources used by `setup` and `step`.
+      # This is called by the constructor which waits for all files
+      # processed by `starup`.  Useful for large files, but here just
+      # for an example, not needed by simple models.
+      startup: -> # called by constructor
+        # Add a few new shapes; u.s. is ABM.shapes.
+        u.s.add "cc", true, u.importImage("data/coffee.png")
+        u.s.add "redfish", false, u.importImage("data/redfish64t.png")
+        u.s.add "bowtie", true, (c) -> u.s.poly c, [[-.5,-.5],[.5,.5],[-.5,.5],[.5,-.5]]        
       # Initialize our model via the `setup` abstract method.
       # This model simply creates `population` agents with
       # arbitrary shapes with `size` size and `speed` velocity.
@@ -37,19 +45,14 @@
         @speed = .5   # move forward this amount in patch coords
         @wiggle = u.degToRad(30) # degrees/radians to wiggle
         @startCircle = true  # initialize agents randomly or in circle
-        @debug = true # turn on/off use of setRootVars() below
         
         # Set the default agent size (conserves storage)
         @agents.setDefaultSize(@size)
         # Set the agent to convert shape to bitmap for better performance.
         @agents.setUseSprites()
-        # Add a few new shapes; u.s. is ABM.shapes.
-        u.s.add "cc", true, u.importImage("http://backspaces.net/media/CCt.png")
-        u.s.add "redfish", false, u.importImage("http://backspaces.net/media/redfish64t.png")
-        u.s.add "bowtie", true, (c) -> u.s.poly c, [[-.5,-.5],[.5,.5],[-.5,.5],[.5,-.5]]
 
         # Set animation to 30fps, without multiple steps per draw:
-        @anim.setRate 60, false
+        @anim.setRate 30, false
 
         # The patch grid will have been setup for us.  Here we initialize
         # patch variables, either built-in ones or any new patch variables
@@ -139,12 +142,12 @@ average heading of agents:
     # Note: Netlogo defaults 13, -16, 16, -16, 16 <br>
     # for patchSize, minX, maxX, minY, maxY
     APP = new MyModel "layers", 13, -16, 16, -16, 16, true, false
-    # Set useful global variables for debugging
-    APP.setRootVars() if APP.debug # Put Model vars in global name space for debug
+    APP.setRootVars() # Debug: Put Model vars in global name space
+    APP.setupAndGo() # Run model immediately after startup initialization
     
     </script>
   </head>
-  <body onload="ABM.model.start()">
+  <body>
     <div id="layers" style="position:relative;padding:20;"></div>
     <div id="play" style="float:right;"></div>
   </body>

@@ -50,6 +50,8 @@ The models/ directory contains tiny models used to test the system and offer exa
 
 [**tspga.html**](https://rawgithub.com/backspaces/agentscript/master/models/tspga.html) A Traveling Sales Person solution via a Genetic Algorithm showing the rapid conversion of stochastic methods.
 
+[**gis.html**](https://rawgithub.com/backspaces/agentscript/master/models/gis.html) A GIS model using an elevation (asc) data for showing water flowing downhill.  Uses the dataset extras library.
+
 #### Sample Models Format
 
 Our example models use CoffeeScript directly within the browser via `text/coffeescript` [script tags](http://coffeescript.org/#scripts):
@@ -62,11 +64,11 @@ Our example models use CoffeeScript directly within the browser via `text/coffee
         <script type="text/coffeescript">
         class MyModel extends ABM.Model
               ...
-        APP=new MyModel "layers", 13, -16, 16, -16, 16
+        APP = new MyModel "layers", 13, -16, 16, -16, 16
               ...
         </script>
       </head>
-      <body onload="ABM.model.start()">
+      <body>
         <div id="layers" style="position:relative;padding:20;"></div>
       </body>
     </html>

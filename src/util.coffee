@@ -75,7 +75,9 @@ ABM.util = u =
   clamp: (v, min, max) -> Math.max(Math.min(v,max),min)
   # Return sign of a number as +/- 1
   sign: (v) -> return (if v<0 then -1 else 1) # retrun exp: force ?: JS form
-  # Return a float array with given precision; useful for printing
+  # Return n to given precision, default 2
+  fixed: (n,p=2) -> p = Math.pow(10,p); Math.round(n*p)/p
+  # Return an array of floating pt numbers as strings at given precision; useful for printing
   aToFixed: (a, p=2) -> (i.toFixed p for i in a)
 
 # ### Color and Angle Operations
@@ -162,9 +164,9 @@ ABM.util = u =
   
 # ### Object Operations
   
-  # Return object's own variable names, less function in second version
-  ownKeys: (obj) -> key for own key, value of obj
-  ownVarKeys: (obj) -> key for own key, value of obj when not @isFunction value
+  # Return object's own key or variable values
+  ownKeys: (obj) -> (key for own key, value of obj)
+  ownValues: (obj) -> (value for own key, value of obj)
 
 # ### Array Operations
   
@@ -392,29 +394,39 @@ ABM.util = u =
   # Cache of file names used by file imports below
   fileIndex: {}
   # Import an image, executing (async) optional function f(img) on completion
-  importImage: (name, f) ->
-    if (img=@fileIndex[name])? or ((img=name).width and img.height)
-      f(img) if f?
+  importImage: (name, f = ->) ->
+    if img=@fileIndex[name]? # wtf? or ((img=name).width and img.height)
+      f(img) if img.isDone
     else
-      img = new Image()
-      (img.onload = -> f(img)) if f?
+      @fileIndex[name] = img = new Image()
+      img.isDone = false
+      img.onload = -> f(img); img.isDone = true
       img.src = name
-      @fileIndex[name] = img
     img
     
-  # Use XMLHttpRequest to fetch data of several types.
-  # Data Types: text, arraybuffer, blob, json, document, [Specification:](http://goo.gl/y3r3h)
-  xhrLoadFile: (name, type="text", f) -> # AJAX request, sync if f is null
+  # Use XMLHttpRequest to fetch data of several types. Data Types: text,
+  # arraybuffer, blob, json, document, [Specification:](http://goo.gl/y3r3h)
+  xhrLoadFile: (name, type="text", f = ->) -> # AJAX async request
     if (xhr=@fileIndex[name])?
-      f(xhr.response) if f?
+      f(xhr.response)
     else
-      xhr = new XMLHttpRequest()
-      xhr.open "GET", name, f?
+      @fileIndex[name] = xhr = new XMLHttpRequest()
+      xhr.isDone = false
+      xhr.open "POST", name # POST vs GET best for big files?
       xhr.responseType = type
-      (xhr.onload = -> f(xhr.response)) if f?
+      xhr.onload = -> f(xhr.response); xhr.isDone = true
       xhr.send()
-      @fileIndex[name] = xhr
     xhr
+  
+  # Return true if all files are loaded.
+  filesLoaded: (files = @fileIndex) ->
+    array = (v.isDone for v in (@ownValues files))
+    array.reduce ((a,b)->a and b), true
+  # Wait for files to be loaded before executing callback f
+  waitOnFiles: (f, files = @fileIndex) -> @waitOn (=> @filesLoaded files), f
+  # Wait for function done() to return true before calling callback f
+  waitOn: (done, f) ->
+    if done() then f() else setTimeout (=> @waitOn(done, f)), 1000
 
 # ### Canvas/Context Operations
   

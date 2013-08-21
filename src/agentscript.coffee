@@ -75,7 +75,9 @@ ABM.util = u =
   clamp: (v, min, max) -> Math.max(Math.min(v,max),min)
   # Return sign of a number as +/- 1
   sign: (v) -> return (if v<0 then -1 else 1) # retrun exp: force ?: JS form
-  # Return a float array with given precision; useful for printing
+  # Return n to given precision, default 2
+  fixed: (n,p=2) -> p = Math.pow(10,p); Math.round(n*p)/p
+  # Return an array of floating pt numbers as strings at given precision; useful for printing
   aToFixed: (a, p=2) -> (i.toFixed p for i in a)
 
 # ### Color and Angle Operations
@@ -162,9 +164,9 @@ ABM.util = u =
   
 # ### Object Operations
   
-  # Return object's own variable names, less function in second version
-  ownKeys: (obj) -> key for own key, value of obj
-  ownVarKeys: (obj) -> key for own key, value of obj when not @isFunction value
+  # Return object's own key or variable values
+  ownKeys: (obj) -> (key for own key, value of obj)
+  ownValues: (obj) -> (value for own key, value of obj)
 
 # ### Array Operations
   
@@ -392,29 +394,39 @@ ABM.util = u =
   # Cache of file names used by file imports below
   fileIndex: {}
   # Import an image, executing (async) optional function f(img) on completion
-  importImage: (name, f) ->
-    if (img=@fileIndex[name])? or ((img=name).width and img.height)
-      f(img) if f?
+  importImage: (name, f = ->) ->
+    if img=@fileIndex[name]? # wtf? or ((img=name).width and img.height)
+      f(img) if img.isDone
     else
-      img = new Image()
-      (img.onload = -> f(img)) if f?
+      @fileIndex[name] = img = new Image()
+      img.isDone = false
+      img.onload = -> f(img); img.isDone = true
       img.src = name
-      @fileIndex[name] = img
     img
     
-  # Use XMLHttpRequest to fetch data of several types.
-  # Data Types: text, arraybuffer, blob, json, document, [Specification:](http://goo.gl/y3r3h)
-  xhrLoadFile: (name, type="text", f) -> # AJAX request, sync if f is null
+  # Use XMLHttpRequest to fetch data of several types. Data Types: text,
+  # arraybuffer, blob, json, document, [Specification:](http://goo.gl/y3r3h)
+  xhrLoadFile: (name, type="text", f = ->) -> # AJAX async request
     if (xhr=@fileIndex[name])?
-      f(xhr.response) if f?
+      f(xhr.response)
     else
-      xhr = new XMLHttpRequest()
-      xhr.open "GET", name, f?
+      @fileIndex[name] = xhr = new XMLHttpRequest()
+      xhr.isDone = false
+      xhr.open "POST", name # POST vs GET best for big files?
       xhr.responseType = type
-      (xhr.onload = -> f(xhr.response)) if f?
+      xhr.onload = -> f(xhr.response); xhr.isDone = true
       xhr.send()
-      @fileIndex[name] = xhr
     xhr
+  
+  # Return true if all files are loaded.
+  filesLoaded: (files = @fileIndex) ->
+    array = (v.isDone for v in (@ownValues files))
+    array.reduce ((a,b)->a and b), true
+  # Wait for files to be loaded before executing callback f
+  waitOnFiles: (f, files = @fileIndex) -> @waitOn (=> @filesLoaded files), f
+  # Wait for function done() to return true before calling callback f
+  waitOn: (done, f) ->
+    if done() then f() else setTimeout (=> @waitOn(done, f)), 1000
 
 # ### Canvas/Context Operations
   
@@ -607,11 +619,6 @@ ABM.shapes = ABM.util.s = do ->
   ring:
     rotate: false
     draw: (c) -> circ c,0,0,1; c.closePath(); ccirc c,0,0,.6
-  cup: # an image shape, using coffeescript logo
-    shortcut: (c,x,y,s) -> cimg c,x,y,s,@img
-    rotate: false
-    img: u.importImage "http://goo.gl/LTIyR"
-    draw: (c) -> cimg c,.5,.5,1,@img
   person:
     rotate: false
     draw: (c) ->
@@ -629,7 +636,7 @@ ABM.shapes = ABM.util.s = do ->
   #       ABM.shapes.poly c, [[-.5,-.5],[.5,.5],[-.5,.5],[.5,-.5]]
   #
   # Note: an image that is not rotated automatically gets a shortcut. 
-  add: (name, rotate, draw, shortcut) ->
+  add: (name, rotate, draw, shortcut) -> # draw can be an image, shortcut defaults to null
     s = @[name] =
       if u.isFunction draw then {rotate,draw} else {rotate,img:draw,draw:(c)->cimg c,.5,.5,1,@img}
     (s.shortcut = (c,x,y,s) -> cimg c,x,y,s,@img) if s.img? and not s.rotate
@@ -774,7 +781,7 @@ class ABM.AgentSet extends Array
   # the `id` property to all agents. Increment `ID`.
   # Returns the object for chaining. The set will be sorted by `id`.
   #
-  # By "agent" we mean an instance of `Patch`, `Agent` and `Link`.
+  # By "agent" we mean an instance of `Patch`, `Agent` and `Link` and their breeds
   add: (o) ->
     if @mainSet? then @mainSet.add o else o.id = @ID++
     @push o; o
@@ -1078,7 +1085,7 @@ class ABM.Patch
       [x,y] = ctx.labelXY
       ctx.save() # bug: fonts don't scale for size < 1
       ctx.translate @x, @y
-      ctx.scale 1/ABM.patches.size, -1/ABM.patches.size # revert to identity for text use
+      ctx.scale 1/@breed.size, -1/@breed.size # revert to identity for text use
       u.ctxDrawText ctx, @label, [x,y], ctx.labelColor
       ctx.restore()
   
@@ -1091,8 +1098,8 @@ class ABM.Patch
   
   # Returns true if this patch is on the edge of the grid.
   isOnEdge: ->
-    @x is ABM.patches.minX or @x is ABM.patches.maxX or \
-    @y is ABM.patches.minY or @y is ABM.patches.maxY
+    @x is @breed.minX or @x is @breed.maxX or \
+    @y is @breed.minY or @y is @breed.maxY
   
   # Factory: Create num new agents on this patch. The optional init
   # proc is called on the new agent after inserting in its agentSet.
@@ -1120,14 +1127,14 @@ class ABM.Patches extends ABM.AgentSet
     @[k] = v for own k,v of ABM.world # add world items to patches
     for y in [@maxY..@minY] by -1
       for x in [@minX..@maxX] by 1
-        @add new ABM.Patch x, y
+        @add new @agentClass x, y
     @setNeighbors() if @hasNeighbors
     @setPixels() # setup off-page canvas for pixel ops
   
   # Set the default color for new Patch instances.
   # Note coffeescript :: which refers to the Patch prototype.
   # This is the usual way to modify class variables.
-  setDefaultColor: (color) -> ABM.Patch::color = color
+  setDefaultColor: (color) -> @agentClass::color = color
   
   # Have patches cache the agents currently on them.
   # Optimizes p.agentsHere method.
@@ -1175,7 +1182,11 @@ class ABM.Patches extends ABM.AgentSet
   
   # If using scaled pixels, use pixel manipulation below, or use default agentSet
   # draw which iterates over the patches, drawing rectangles.
-  draw: (ctx) -> if @drawWithPixels then @drawScaledPixels ctx else super ctx
+  draw: (ctx) ->
+    if @agentClass::color? and not @[0].hasOwnProperty "color"
+      u.fillCtx ctx, @agentClass::color
+      console.log "draw: fill used."
+    else if @drawWithPixels then @drawScaledPixels ctx else super ctx
 
 # #### Patch grid coord system utilities:
   
@@ -1248,10 +1259,7 @@ class ABM.Patches extends ABM.AgentSet
     ctx.restore() # restore patch transform
   importDrawing: (imageSrc, f) ->
     u.importImage imageSrc, (img) ->
-      ctx = ABM.drawing
-      u.setIdentity ctx
-      ctx.drawImage img, 0, 0, ctx.canvas.width, ctx.canvas.height
-      ctx.restore() # restore patch transform
+      @installDrawing img
       f() if f?
   
   # Utility function for pixel manipulation.  Given a patch, returns the 
@@ -1516,7 +1524,7 @@ class ABM.Agents extends ABM.AgentSet
 
   # Have agents cache the links with them as a node.
   # Optimizes Agent a.myLinks method. Call before any agents created.
-  cacheLinks: -> ABM.Agent::cacheLinks = true # all agents, not individual breeds
+  cacheLinks: -> @agentClass::cacheLinks = true # all agents, not individual breeds
 
   # Methods to change the default Agent class variables.
   setDefaultColor:  (color) -> @agentClass::color = color
@@ -1704,20 +1712,19 @@ class ABM.Links extends ABM.AgentSet
 # * [Events and timing in depth](http://javascript.info/tutorial/events-and-timing-depth)
   
 class ABM.Animator
-  # Create initial animator for the model, specifying default rate (fps) and multiStep (async).
-  # If multiStep, run the draw() and step() methods asynchronously by draw() using
+  # Create initial animator for the model, specifying default rate (fps) and multiStep.
+  # If multiStep, run the draw() and step() methods separately by draw() using
   # requestAnimFrame and step() using setTimeout.
-  constructor: (@model, @rate=30, @multiStep=false) -> @reset() # init all animation state
-  # Adjust animator.  This is used by programmer as the default animator will already have
-  # been created by the time her model runs.
-  setRate: (@rate, @multiStep=false) -> @resetAnim()
+  constructor: (@model, @rate=30, @multiStep=false) -> @reset()
+  # Adjust animator.  Call before start(). Model creates animator, thus available in setup().
+  setRate: (@rate, @multiStep=false) -> @resetTimes() # why? .. change rate while running?
   # start/stop model, often used for debugging
   start: ->
-    if not @animStop then return # avoid multiple animates
-    @resetAnim()
+    return if not @animStop # avoid multiple animates
+    @resetTimes()
     @animStop = false
     @animate()
-  resetAnim: ->
+  resetTimes: ->
     @startMS = @now()
     @startTick = @ticks
     @startDraw = @draws
@@ -1728,7 +1735,6 @@ class ABM.Animator
     if @intervalHandle? then clearInterval @intervalHandle
     @animHandle = @timerHandle = @intervalHandle = null
   reset: -> @stop(); @ticks = @draws = 0
-  # step/draw the model.  Note ticks/draws counters separate due to async.
   step: -> @ticks++; @model.step()
   draw: -> @draws++; @model.draw()
   # step and draw the model once, mainly debugging
@@ -1737,7 +1743,7 @@ class ABM.Animator
   now: -> (performance ? Date).now()
   # Time in ms since starting animator
   ms: -> @now()-@startMS
-  # Get the number of ticks/draws per second.  They will differ if async
+  # Get ticks/draws per second.  They will differ if async. "if" to protect from ms=0
   ticksPerSec: -> if (elapsed = @ticks-@startTick) is 0 then 0 else Math.round elapsed*1000/@ms()
   drawsPerSec: -> if (elapsed = @draws-@startDraw) is 0 then 0 else Math.round elapsed*1000/@ms()
   # Return a status string for debugging and logging performance
@@ -1752,8 +1758,7 @@ class ABM.Animator
       @draw()
     @animHandle = requestAnimFrame @animateDraws unless @animStop
   animate: ->
-    if @multiStep
-      @animateSteps()
+    @animateSteps() if @multiStep
     @animateDraws()
 
 # ### Class Model
@@ -1807,7 +1812,7 @@ class ABM.Model
     @contexts.spotlight.globalCompositeOperation = "xor"
 
     # Initialize animator to default: 30fps, not async
-    @anim = new ABM.Animator(@)
+    @anim = new ABM.Animator @
     # Set drawing controls.  Default to drawing each agentset.
     # Optimization: If any of these is set to false, the associated
     # agentset is drawn only once, remaining static after that.
@@ -1818,9 +1823,13 @@ class ABM.Model
     @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
     @links = ABM.links = new ABM.Links ABM.Link, "links"
 
-    # Call the models setup function.
-    @setup()
-  
+    # Initialize model global resources
+    @modelReady = false
+    @startup()
+    u.waitOnFiles (=> @modelReady = true)
+
+  # Convenience method to start the model after startup initialization.
+  setupAndGo: () -> u.waitOn (=> @modelReady), (=> @setup(); @start())
   # Stop and reset the model
   reset: () -> 
     @anim.reset() # stop & reset ticks/steps counters
@@ -1878,8 +1887,10 @@ class ABM.Model
 # A user's model is made by subclassing Model and over-riding these
 # two abstract methods. `super` need not be called.
   
+  # Initialize model resources (images, files) here.
+  startup: -> # called by constructor
   # Initialize your model here.
-  setup: -> # called at the end of model creation
+  setup: ->
   # Update/step your model here
   step: -> # called each step of the animation
 

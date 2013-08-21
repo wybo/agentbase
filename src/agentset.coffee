@@ -67,7 +67,7 @@ class ABM.AgentSet extends Array
   # the `id` property to all agents. Increment `ID`.
   # Returns the object for chaining. The set will be sorted by `id`.
   #
-  # By "agent" we mean an instance of `Patch`, `Agent` and `Link`.
+  # By "agent" we mean an instance of `Patch`, `Agent` and `Link` and their breeds
   add: (o) ->
     if @mainSet? then @mainSet.add o else o.id = @ID++
     @push o; o

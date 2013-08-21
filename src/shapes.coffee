@@ -77,11 +77,6 @@ ABM.shapes = ABM.util.s = do ->
   ring:
     rotate: false
     draw: (c) -> circ c,0,0,1; c.closePath(); ccirc c,0,0,.6
-  cup: # an image shape, using coffeescript logo
-    shortcut: (c,x,y,s) -> cimg c,x,y,s,@img
-    rotate: false
-    img: u.importImage "http://goo.gl/LTIyR"
-    draw: (c) -> cimg c,.5,.5,1,@img
   person:
     rotate: false
     draw: (c) ->
@@ -99,7 +94,7 @@ ABM.shapes = ABM.util.s = do ->
   #       ABM.shapes.poly c, [[-.5,-.5],[.5,.5],[-.5,.5],[.5,-.5]]
   #
   # Note: an image that is not rotated automatically gets a shortcut. 
-  add: (name, rotate, draw, shortcut) ->
+  add: (name, rotate, draw, shortcut) -> # draw can be an image, shortcut defaults to null
     s = @[name] =
       if u.isFunction draw then {rotate,draw} else {rotate,img:draw,draw:(c)->cimg c,.5,.5,1,@img}
     (s.shortcut = (c,x,y,s) -> cimg c,x,y,s,@img) if s.img? and not s.rotate

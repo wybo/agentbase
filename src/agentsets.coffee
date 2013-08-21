@@ -48,7 +48,7 @@ class ABM.Patch
       [x,y] = ctx.labelXY
       ctx.save() # bug: fonts don't scale for size < 1
       ctx.translate @x, @y
-      ctx.scale 1/ABM.patches.size, -1/ABM.patches.size # revert to identity for text use
+      ctx.scale 1/@breed.size, -1/@breed.size # revert to identity for text use
       u.ctxDrawText ctx, @label, [x,y], ctx.labelColor
       ctx.restore()
   
@@ -61,8 +61,8 @@ class ABM.Patch
   
   # Returns true if this patch is on the edge of the grid.
   isOnEdge: ->
-    @x is ABM.patches.minX or @x is ABM.patches.maxX or \
-    @y is ABM.patches.minY or @y is ABM.patches.maxY
+    @x is @breed.minX or @x is @breed.maxX or \
+    @y is @breed.minY or @y is @breed.maxY
   
   # Factory: Create num new agents on this patch. The optional init
   # proc is called on the new agent after inserting in its agentSet.
@@ -90,14 +90,14 @@ class ABM.Patches extends ABM.AgentSet
     @[k] = v for own k,v of ABM.world # add world items to patches
     for y in [@maxY..@minY] by -1
       for x in [@minX..@maxX] by 1
-        @add new ABM.Patch x, y
+        @add new @agentClass x, y
     @setNeighbors() if @hasNeighbors
     @setPixels() # setup off-page canvas for pixel ops
   
   # Set the default color for new Patch instances.
   # Note coffeescript :: which refers to the Patch prototype.
   # This is the usual way to modify class variables.
-  setDefaultColor: (color) -> ABM.Patch::color = color
+  setDefaultColor: (color) -> @agentClass::color = color
   
   # Have patches cache the agents currently on them.
   # Optimizes p.agentsHere method.
@@ -145,7 +145,11 @@ class ABM.Patches extends ABM.AgentSet
   
   # If using scaled pixels, use pixel manipulation below, or use default agentSet
   # draw which iterates over the patches, drawing rectangles.
-  draw: (ctx) -> if @drawWithPixels then @drawScaledPixels ctx else super ctx
+  draw: (ctx) ->
+    if @agentClass::color? and not @[0].hasOwnProperty "color"
+      u.fillCtx ctx, @agentClass::color
+      console.log "draw: fill used."
+    else if @drawWithPixels then @drawScaledPixels ctx else super ctx
 
 # #### Patch grid coord system utilities:
   
@@ -218,10 +222,7 @@ class ABM.Patches extends ABM.AgentSet
     ctx.restore() # restore patch transform
   importDrawing: (imageSrc, f) ->
     u.importImage imageSrc, (img) ->
-      ctx = ABM.drawing
-      u.setIdentity ctx
-      ctx.drawImage img, 0, 0, ctx.canvas.width, ctx.canvas.height
-      ctx.restore() # restore patch transform
+      @installDrawing img
       f() if f?
   
   # Utility function for pixel manipulation.  Given a patch, returns the 
@@ -486,7 +487,7 @@ class ABM.Agents extends ABM.AgentSet
 
   # Have agents cache the links with them as a node.
   # Optimizes Agent a.myLinks method. Call before any agents created.
-  cacheLinks: -> ABM.Agent::cacheLinks = true # all agents, not individual breeds
+  cacheLinks: -> @agentClass::cacheLinks = true # all agents, not individual breeds
 
   # Methods to change the default Agent class variables.
   setDefaultColor:  (color) -> @agentClass::color = color

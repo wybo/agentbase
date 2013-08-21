@@ -191,7 +191,7 @@ p.scaleColor @foodColor, p.foodPheromone # ants model</code></pre>
       [x,y] = ctx.labelXY
       ctx.save() <span class="comment"># bug: fonts don't scale for size &lt; 1</span>
       ctx.translate <span class="property">@x</span>, <span class="property">@y</span>
-      ctx.scale <span class="number">1</span><span class="regexp">/ABM.patches.size, -1/</span>ABM.patches.size <span class="comment"># revert to identity for text use</span>
+      ctx.scale <span class="number">1</span><span class="regexp">/@breed.size, -1/</span><span class="property">@breed</span>.size <span class="comment"># revert to identity for text use</span>
       u.ctxDrawText ctx, <span class="property">@label</span>, [x,y], ctx.labelColor
       ctx.restore()</pre></div></div>
             
@@ -228,8 +228,8 @@ as they move from patch to patch.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  isOnEdge: -&gt;
-    <span class="property">@x</span> <span class="keyword">is</span> ABM.patches.minX <span class="keyword">or</span> <span class="property">@x</span> <span class="keyword">is</span> ABM.patches.maxX <span class="keyword">or</span> \
-    <span class="property">@y</span> <span class="keyword">is</span> ABM.patches.minY <span class="keyword">or</span> <span class="property">@y</span> <span class="keyword">is</span> ABM.patches.maxY</pre></div></div>
+    <span class="property">@x</span> <span class="keyword">is</span> <span class="property">@breed</span>.minX <span class="keyword">or</span> <span class="property">@x</span> <span class="keyword">is</span> <span class="property">@breed</span>.maxX <span class="keyword">or</span> \
+    <span class="property">@y</span> <span class="keyword">is</span> <span class="property">@breed</span>.minY <span class="keyword">or</span> <span class="property">@y</span> <span class="keyword">is</span> <span class="property">@breed</span>.maxY</pre></div></div>
             
         </li>
         
@@ -294,7 +294,7 @@ Patches are created from top-left to bottom-right to match data sets.</p>
     @[k] = v <span class="keyword">for</span> own k,v <span class="keyword">of</span> ABM.world <span class="comment"># add world items to patches</span>
     <span class="keyword">for</span> y <span class="keyword">in</span> [<span class="property">@maxY</span>..<span class="property">@minY</span>] <span class="keyword">by</span> -<span class="number">1</span>
       <span class="keyword">for</span> x <span class="keyword">in</span> [<span class="property">@minX</span>..<span class="property">@maxX</span>] <span class="keyword">by</span> <span class="number">1</span>
-        <span class="property">@add</span> <span class="keyword">new</span> ABM.Patch x, y
+        <span class="property">@add</span> <span class="keyword">new</span> <span class="property">@agentClass</span> x, y
     <span class="property">@setNeighbors</span>() <span class="keyword">if</span> <span class="property">@hasNeighbors</span>
     <span class="property">@setPixels</span>() <span class="comment"># setup off-page canvas for pixel ops</span></pre></div></div>
             
@@ -313,7 +313,7 @@ This is the usual way to modify class variables.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  setDefaultColor: (color) -&gt; ABM.Patch::color = color</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  setDefaultColor: (color) -&gt; <span class="property">@agentClass</span>::color = color</pre></div></div>
             
         </li>
         
@@ -432,7 +432,11 @@ draw which iterates over the patches, drawing rectangles.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  draw: (ctx) -&gt; <span class="keyword">if</span> <span class="property">@drawWithPixels</span> <span class="keyword">then</span> <span class="property">@drawScaledPixels</span> ctx <span class="keyword">else</span> <span class="keyword">super</span> ctx</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  draw: (ctx) -&gt;
+    <span class="keyword">if</span> <span class="property">@agentClass</span>::color? <span class="keyword">and</span> <span class="keyword">not</span> @[<span class="number">0</span>].hasOwnProperty <span class="string">"color"</span>
+      u.fillCtx ctx, <span class="property">@agentClass</span>::color
+      console.log <span class="string">"draw: fill used."</span>
+    <span class="keyword">else</span> <span class="keyword">if</span> <span class="property">@drawWithPixels</span> <span class="keyword">then</span> <span class="property">@drawScaledPixels</span> ctx <span class="keyword">else</span> <span class="keyword">super</span> ctx</pre></div></div>
             
         </li>
         
@@ -671,10 +675,7 @@ soon as the onload callback executes.</p>
     ctx.restore() <span class="comment"># restore patch transform</span>
   importDrawing: (imageSrc, f) -&gt;
     u.importImage imageSrc, (img) -&gt;
-      ctx = ABM.drawing
-      u.setIdentity ctx
-      ctx.drawImage img, <span class="number">0</span>, <span class="number">0</span>, ctx.canvas.width, ctx.canvas.height
-      ctx.restore() <span class="comment"># restore patch transform</span>
+      <span class="property">@installDrawing</span> img
       f() <span class="keyword">if</span> f?</pre></div></div>
             
         </li>
@@ -1450,7 +1451,7 @@ Optimizes Agent a.myLinks method. Call before any agents created.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  cacheLinks: -&gt; ABM.Agent::cacheLinks = <span class="literal">true</span> <span class="comment"># all agents, not individual breeds</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  cacheLinks: -&gt; <span class="property">@agentClass</span>::cacheLinks = <span class="literal">true</span> <span class="comment"># all agents, not individual breeds</span></pre></div></div>
             
         </li>
         

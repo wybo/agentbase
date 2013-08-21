@@ -15,20 +15,19 @@
 # * [Events and timing in depth](http://javascript.info/tutorial/events-and-timing-depth)
   
 class ABM.Animator
-  # Create initial animator for the model, specifying default rate (fps) and multiStep (async).
-  # If multiStep, run the draw() and step() methods asynchronously by draw() using
+  # Create initial animator for the model, specifying default rate (fps) and multiStep.
+  # If multiStep, run the draw() and step() methods separately by draw() using
   # requestAnimFrame and step() using setTimeout.
-  constructor: (@model, @rate=30, @multiStep=false) -> @reset() # init all animation state
-  # Adjust animator.  This is used by programmer as the default animator will already have
-  # been created by the time her model runs.
-  setRate: (@rate, @multiStep=false) -> @resetAnim()
+  constructor: (@model, @rate=30, @multiStep=false) -> @reset()
+  # Adjust animator.  Call before start(). Model creates animator, thus available in setup().
+  setRate: (@rate, @multiStep=false) -> @resetTimes() # why? .. change rate while running?
   # start/stop model, often used for debugging
   start: ->
-    if not @animStop then return # avoid multiple animates
-    @resetAnim()
+    return if not @animStop # avoid multiple animates
+    @resetTimes()
     @animStop = false
     @animate()
-  resetAnim: ->
+  resetTimes: ->
     @startMS = @now()
     @startTick = @ticks
     @startDraw = @draws
@@ -39,7 +38,6 @@ class ABM.Animator
     if @intervalHandle? then clearInterval @intervalHandle
     @animHandle = @timerHandle = @intervalHandle = null
   reset: -> @stop(); @ticks = @draws = 0
-  # step/draw the model.  Note ticks/draws counters separate due to async.
   step: -> @ticks++; @model.step()
   draw: -> @draws++; @model.draw()
   # step and draw the model once, mainly debugging
@@ -48,7 +46,7 @@ class ABM.Animator
   now: -> (performance ? Date).now()
   # Time in ms since starting animator
   ms: -> @now()-@startMS
-  # Get the number of ticks/draws per second.  They will differ if async
+  # Get ticks/draws per second.  They will differ if async. "if" to protect from ms=0
   ticksPerSec: -> if (elapsed = @ticks-@startTick) is 0 then 0 else Math.round elapsed*1000/@ms()
   drawsPerSec: -> if (elapsed = @draws-@startDraw) is 0 then 0 else Math.round elapsed*1000/@ms()
   # Return a status string for debugging and logging performance
@@ -63,8 +61,7 @@ class ABM.Animator
       @draw()
     @animHandle = requestAnimFrame @animateDraws unless @animStop
   animate: ->
-    if @multiStep
-      @animateSteps()
+    @animateSteps() if @multiStep
     @animateDraws()
 
 # ### Class Model
@@ -118,7 +115,7 @@ class ABM.Model
     @contexts.spotlight.globalCompositeOperation = "xor"
 
     # Initialize animator to default: 30fps, not async
-    @anim = new ABM.Animator(@)
+    @anim = new ABM.Animator @
     # Set drawing controls.  Default to drawing each agentset.
     # Optimization: If any of these is set to false, the associated
     # agentset is drawn only once, remaining static after that.
@@ -129,9 +126,13 @@ class ABM.Model
     @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
     @links = ABM.links = new ABM.Links ABM.Link, "links"
 
-    # Call the models setup function.
-    @setup()
-  
+    # Initialize model global resources
+    @modelReady = false
+    @startup()
+    u.waitOnFiles (=> @modelReady = true)
+
+  # Convenience method to start the model after startup initialization.
+  setupAndGo: () -> u.waitOn (=> @modelReady), (=> @setup(); @start())
   # Stop and reset the model
   reset: () -> 
     @anim.reset() # stop & reset ticks/steps counters
@@ -189,8 +190,10 @@ class ABM.Model
 # A user's model is made by subclassing Model and over-riding these
 # two abstract methods. `super` need not be called.
   
+  # Initialize model resources (images, files) here.
+  startup: -> # called by constructor
   # Initialize your model here.
-  setup: -> # called at the end of model creation
+  setup: ->
   # Update/step your model here
   step: -> # called each step of the animation
 

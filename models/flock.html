@@ -7,7 +7,7 @@
     
     u = ABM.util # ABM.util alias, u.s is also ABM.shape accessor.
     class MyModel extends ABM.Model
-      setup: -> # called by Model ctor
+      setup: ->
       
         @refreshPatches = false # <3fps->4fps agents larger part of drawing 
         # No optimizations: 4fps
@@ -86,13 +86,14 @@
 
     # div, patchSize, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true
     #   NL Defaults: 13, -16, 16, -16, 16
-    APP=new MyModel "layers", 15, -16, 16, -16, 16, true, false
-    # APP=new MyModel "layers", 16, 0, 78, 0, 40, true, false
+    APP = new MyModel "layers", 15, -16, 16, -16, 16, true, false
+    # APP = new MyModel "layers", 16, 0, 78, 0, 40, true, false
     APP.setRootVars() # Debug: Put Model vars in global name space
+    APP.setupAndGo() # Run model immediately after startup initialization
 
     </script>
   </head>
-  <body onload="ABM.model.start()">
+  <body>
     <div id="layers" style="position:relative;padding:20;"></div>
     <div id="play" style="float:right;"></div>
   </body>
