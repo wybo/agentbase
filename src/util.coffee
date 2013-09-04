@@ -122,8 +122,8 @@ ABM.util = u =
   rgbToGray: (c) -> 0.2126*c[0] + 0.7152*c[1] + 0.0722*c[2]
   # RGB <> HSB (HSV) conversions.
   # RGB in [0-255], HSB in [0-1]
-  # See (Wikipedia)[http://en.wikipedia.org/wiki/HSV_color_space]
-  # and (Blog Post)[http://axonflux.com/handy-rgb-to-hsl-and-rgb-to-hsv-color-model-c]
+  # See [Wikipedia](http://en.wikipedia.org/wiki/HSV_color_space)
+  # and [Blog Post](http://axonflux.com/handy-rgb-to-hsl-and-rgb-to-hsv-color-model-c)
   rgbToHsb: (c) ->
     r=c[0]/255; g=c[1]/255; b=c[2]/255
     max = Math.max(r,g,b); min = Math.min(r,g,b); v = max
@@ -293,7 +293,7 @@ ABM.util = u =
   
   # Return a linear interpolation between from and to.
   # Scale is in [0-1], and the result is in [from,to]
-  # (Name history:)[http://en.wikipedia.org/wiki/Lerp_(computing)]
+  # [Why `lerp`?](http://goo.gl/QrzMc)
   lerp: (from, to, scale) -> from + (to-from)*u.clamp(scale, 0, 1)
   # Return an array with values in [from,to], defaults to [0,1].
   # Note: to have a half-open interval, [from,to), try to=to-.00009
@@ -318,7 +318,7 @@ ABM.util = u =
 # ### Topology Operations
   
   # Return angle in [-pi,pi] radians from x1,y1 to x2,y2
-  # (Math.atan2)[http://goo.gl/JS8DF]
+  # [See: Math.atan2](http://goo.gl/JS8DF)
   radsToward: (x1, y1, x2, y2) -> Math.atan2 y2-y1, x2-x1
   # Return true if x2,y2 is in cone radians around heading radians from x1,x2
   # and within distance radius from x1,x2.
@@ -405,7 +405,7 @@ ABM.util = u =
     img
     
   # Use XMLHttpRequest to fetch data of several types. Data Types: text,
-  # arraybuffer, blob, json, document, [Specification:](http://goo.gl/y3r3h)
+  # arraybuffer, blob, json, document, [See specification](http://goo.gl/y3r3h)
   xhrLoadFile: (name, type="text", f = ->) -> # AJAX async request
     if (xhr=@fileIndex[name])?
       f(xhr.response)
@@ -429,7 +429,7 @@ ABM.util = u =
     if done() then f() else setTimeout (=> @waitOn(done, f)), 1000
 
 # ### Canvas/Context Operations
-  
+
   # Create a new canvas of given width/height
   createCanvas: (width, height) ->
     can = document.createElement 'canvas'

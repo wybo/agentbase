@@ -19,25 +19,29 @@ class ABM.Animator
   # If multiStep, run the draw() and step() methods separately by draw() using
   # requestAnimFrame and step() using setTimeout.
   constructor: (@model, @rate=30, @multiStep=false) -> @reset()
-  # Adjust animator.  Call before start(). Model creates animator, thus available in setup().
-  setRate: (@rate, @multiStep=false) -> @resetTimes() # why? .. change rate while running?
-  # start/stop model, often used for debugging
+  # Adjust animator.  Call before model.start()
+  # in setup() to change default settings
+  setRate: (@rate, @multiStep=false) -> @resetTimes() # Change rate while running?
+  # start/stop model, often used for debugging and resetting model
   start: ->
-    return if not @animStop # avoid multiple animates
+    return if not @stopped # avoid multiple animates
     @resetTimes()
-    @animStop = false
+    @stopped = false
     @animate()
-  resetTimes: ->
-    @startMS = @now()
-    @startTick = @ticks
-    @startDraw = @draws
   stop: ->
-    @animStop = true
+    @stopped = true
     if @animHandle? then cancelAnimFrame @animHandle
     if @timeoutHandle? then clearTimeout @timeoutHandle
     if @intervalHandle? then clearInterval @intervalHandle
     @animHandle = @timerHandle = @intervalHandle = null
+  # Internal util: reset time instance variables
+  resetTimes: ->
+    @startMS = @now()
+    @startTick = @ticks
+    @startDraw = @draws
+  # Reset used by model.reset when resetting model.
   reset: -> @stop(); @ticks = @draws = 0
+  # Two handlers used by animation loop
   step: -> @ticks++; @model.step()
   draw: -> @draws++; @model.draw()
   # step and draw the model once, mainly debugging
@@ -46,7 +50,8 @@ class ABM.Animator
   now: -> (performance ? Date).now()
   # Time in ms since starting animator
   ms: -> @now()-@startMS
-  # Get ticks/draws per second.  They will differ if async. "if" to protect from ms=0
+  # Get ticks/draws per second. They will differ if multiStep.
+  # The "if" is to avoid from ms=0
   ticksPerSec: -> if (elapsed = @ticks-@startTick) is 0 then 0 else Math.round elapsed*1000/@ms()
   drawsPerSec: -> if (elapsed = @draws-@startDraw) is 0 then 0 else Math.round elapsed*1000/@ms()
   # Return a status string for debugging and logging performance
@@ -54,12 +59,12 @@ class ABM.Animator
   # Animation via setTimeout and requestAnimFrame
   animateSteps: =>
     @step()
-    @timeoutHandle = setTimeout @animateSteps, 10 unless @animStop
+    @timeoutHandle = setTimeout @animateSteps, 10 unless @stopped
   animateDraws: =>
     if @drawsPerSec() <= @rate
       @step() if not @multiStep
       @draw()
-    @animHandle = requestAnimFrame @animateDraws unless @animStop
+    @animHandle = requestAnimFrame @animateDraws unless @stopped
   animate: ->
     @animateSteps() if @multiStep
     @animateDraws()
@@ -94,7 +99,7 @@ class ABM.Model
     ABM.model = @
     @setWorld size, minX, maxX, minY, maxY, isTorus, hasNeighbors
     @contexts = ABM.contexts = {}
-    
+        
     # * Create 2D canvas contexts layered on top of each other.
     # * Initialize a patch coord transform for each layer.
     # 
@@ -108,6 +113,7 @@ class ABM.Model
     for own k,v of @contextsInit
       @contexts[k] = ctx = u.createLayer div, @world.pxWidth, @world.pxHeight, v.z, v.ctx
       @setCtxTransform(ctx)
+    u.fillCtx @contexts.patches, [0,0,0]
 
     # One of the layers is used for drawing only, not an agentset:
     @drawing = ABM.drawing = @contexts.drawing
@@ -129,20 +135,8 @@ class ABM.Model
     # Initialize model global resources
     @modelReady = false
     @startup()
-    u.waitOnFiles (=> @modelReady = true)
+    u.waitOnFiles (=> @modelReady = true; @setup())
 
-  # Convenience method to start the model after startup initialization.
-  setupAndGo: () -> u.waitOn (=> @modelReady), (=> @setup(); @start())
-  # Stop and reset the model
-  reset: () -> 
-    @anim.reset() # stop & reset ticks/steps counters
-    @patches = ABM.patches = new ABM.Patches ABM.Patch, "patches"
-    @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
-    @links = ABM.links = new ABM.Links ABM.Link, "links"
-    @setCtxTransform v for k,v of @contexts # clear/resize all contexts
-    u.s.spriteSheets.length = 0 # possibly null out entries?
-  # reset, then setup and start the model
-  restart: -> @reset(); @setup(); @start()
   # Initialize/reset world parameters.
   setWorld: (size, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true) ->
     numX = maxX-minX+1; numY = maxY-minY+1; pxWidth = numX*size; pxHeight = numY*size
@@ -190,20 +184,40 @@ class ABM.Model
 # A user's model is made by subclassing Model and over-riding these
 # two abstract methods. `super` need not be called.
   
-  # Initialize model resources (images, files) here.
+  # Initialize model resources (images, files) here.  Can be async.
   startup: -> # called by constructor
-  # Initialize your model here.
+  # Initialize your model variables and defaults here. No async w/o good handlers.
   setup: ->
   # Update/step your model here
   step: -> # called each step of the animation
+
+#### Animation and Reset methods
 
 # Convenience access to animator:
 
   # Start/stop the animation
   start: -> @anim.start()
-  stop: -> @anim.stop()
-  # Animate once by `step(); draw()`. For debugging from console.
-  once: -> @anim.once() 
+  stop:  -> @anim.stop()
+  stopped: -> @anim.stopped
+  toggle: -> if @anim.stopped then @start() else @stop()
+  # Animate once by `step(); draw()`. For UI and debugging from console.
+  once: -> @stop() if not @anim.stopped; @anim.once() 
+
+  # Stop and reset the model, restarting if currently running
+  reset: () -> 
+    running = not @stopped()
+    @anim.reset() # stop & reset ticks/steps counters
+    @patches = ABM.patches = new ABM.Patches ABM.Patch, "patches"
+    @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
+    @links = ABM.links = new ABM.Links ABM.Link, "links"
+    @setCtxTransform v for k,v of @contexts # clear/resize all contexts
+    u.fillCtx @contexts.patches, [0,0,0]
+    u.s.spriteSheets.length = 0 # possibly null out entries?
+    @setup()
+    @start() if running
+  # Convenience method to reset/start/run the model after startup initialization.
+  setupAndGo: () -> 
+    u.waitOn (=> @modelReady), (=> @start())
 
 #### Animation.
   

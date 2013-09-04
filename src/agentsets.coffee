@@ -119,7 +119,8 @@ class ABM.Patches extends ABM.AgentSet
   cacheRect: (radius, meToo=false) ->
     for p in @
       p.pRect = @patchRect p, radius, radius, meToo
-      p.pRect.radius = radius; p.pRect.meToo = meToo
+      p.pRect.radius = radius#; p.pRect.meToo = meToo
+    radius
 
   # Install neighborhoods in patches
   setNeighbors: -> 
@@ -148,7 +149,6 @@ class ABM.Patches extends ABM.AgentSet
   draw: (ctx) ->
     if @agentClass::color? and not @[0].hasOwnProperty "color"
       u.fillCtx ctx, @agentClass::color
-      console.log "draw: fill used."
     else if @drawWithPixels then @drawScaledPixels ctx else super ctx
 
 # #### Patch grid coord system utilities:
@@ -193,8 +193,7 @@ class ABM.Patches extends ABM.AgentSet
   # patch `p`, dx, dy units to the right/left and up/down. 
   # Exclude `p` unless meToo is true, default false.
   patchRect: (p, dx, dy, meToo=false) ->
-    if p.pRect? and p.pRect.radius is dx # and p.pRect.radius is dy
-      return p.pRect
+    return p.pRect if p.pRect? and p.pRect.radius is dx # and p.pRect.radius is dy
     rect = []; # REMIND: optimize if no wrapping, rect inside patch boundaries
     for y in [p.y-dy..p.y+dy] by 1 # by 1: perf: avoid bidir JS for loop
       for x in [p.x-dx..p.x+dx] by 1
@@ -212,7 +211,7 @@ class ABM.Patches extends ABM.AgentSet
   # Draws, or "imports" an image URL into the drawing layer.
   # The image is scaled to fit the drawing layer.
   #
-  # This is an async load, see this
+  # This is an async load, see
   # [new Image()](http://javascript.mfields.org/2011/creating-an-image-in-javascript/)
   # tutorial.  We draw the image into the drawing layer as
   # soon as the onload callback executes.

@@ -122,8 +122,8 @@ ABM.util = u =
   rgbToGray: (c) -> 0.2126*c[0] + 0.7152*c[1] + 0.0722*c[2]
   # RGB <> HSB (HSV) conversions.
   # RGB in [0-255], HSB in [0-1]
-  # See (Wikipedia)[http://en.wikipedia.org/wiki/HSV_color_space]
-  # and (Blog Post)[http://axonflux.com/handy-rgb-to-hsl-and-rgb-to-hsv-color-model-c]
+  # See [Wikipedia](http://en.wikipedia.org/wiki/HSV_color_space)
+  # and [Blog Post](http://axonflux.com/handy-rgb-to-hsl-and-rgb-to-hsv-color-model-c)
   rgbToHsb: (c) ->
     r=c[0]/255; g=c[1]/255; b=c[2]/255
     max = Math.max(r,g,b); min = Math.min(r,g,b); v = max
@@ -293,7 +293,7 @@ ABM.util = u =
   
   # Return a linear interpolation between from and to.
   # Scale is in [0-1], and the result is in [from,to]
-  # (Name history:)[http://en.wikipedia.org/wiki/Lerp_(computing)]
+  # [Why `lerp`?](http://goo.gl/QrzMc)
   lerp: (from, to, scale) -> from + (to-from)*u.clamp(scale, 0, 1)
   # Return an array with values in [from,to], defaults to [0,1].
   # Note: to have a half-open interval, [from,to), try to=to-.00009
@@ -318,7 +318,7 @@ ABM.util = u =
 # ### Topology Operations
   
   # Return angle in [-pi,pi] radians from x1,y1 to x2,y2
-  # (Math.atan2)[http://goo.gl/JS8DF]
+  # [See: Math.atan2](http://goo.gl/JS8DF)
   radsToward: (x1, y1, x2, y2) -> Math.atan2 y2-y1, x2-x1
   # Return true if x2,y2 is in cone radians around heading radians from x1,x2
   # and within distance radius from x1,x2.
@@ -405,7 +405,7 @@ ABM.util = u =
     img
     
   # Use XMLHttpRequest to fetch data of several types. Data Types: text,
-  # arraybuffer, blob, json, document, [Specification:](http://goo.gl/y3r3h)
+  # arraybuffer, blob, json, document, [See specification](http://goo.gl/y3r3h)
   xhrLoadFile: (name, type="text", f = ->) -> # AJAX async request
     if (xhr=@fileIndex[name])?
       f(xhr.response)
@@ -429,7 +429,7 @@ ABM.util = u =
     if done() then f() else setTimeout (=> @waitOn(done, f)), 1000
 
 # ### Canvas/Context Operations
-  
+
   # Create a new canvas of given width/height
   createCanvas: (width, height) ->
     can = document.createElement 'canvas'
@@ -759,7 +759,6 @@ class ABM.AgentSet extends Array
   #     AS = for i in [1..5] # long form comprehension
   #       {id:i, x:u.randomInt(10), y:u.randomInt(10)}
   #     ABM.AgentSet.asSet AS # Convert AS to AgentSet in place
-  #     # .. produced
   #        [{id:1,x:0,y:1}, {id:2,x:8,y:0}, {id:3,x:6,y:4},
   #         {id:4,x:1,y:3}, {id:5,x:1,y:1}]
 
@@ -1156,7 +1155,8 @@ class ABM.Patches extends ABM.AgentSet
   cacheRect: (radius, meToo=false) ->
     for p in @
       p.pRect = @patchRect p, radius, radius, meToo
-      p.pRect.radius = radius; p.pRect.meToo = meToo
+      p.pRect.radius = radius#; p.pRect.meToo = meToo
+    radius
 
   # Install neighborhoods in patches
   setNeighbors: -> 
@@ -1185,7 +1185,6 @@ class ABM.Patches extends ABM.AgentSet
   draw: (ctx) ->
     if @agentClass::color? and not @[0].hasOwnProperty "color"
       u.fillCtx ctx, @agentClass::color
-      console.log "draw: fill used."
     else if @drawWithPixels then @drawScaledPixels ctx else super ctx
 
 # #### Patch grid coord system utilities:
@@ -1230,8 +1229,7 @@ class ABM.Patches extends ABM.AgentSet
   # patch `p`, dx, dy units to the right/left and up/down. 
   # Exclude `p` unless meToo is true, default false.
   patchRect: (p, dx, dy, meToo=false) ->
-    if p.pRect? and p.pRect.radius is dx # and p.pRect.radius is dy
-      return p.pRect
+    return p.pRect if p.pRect? and p.pRect.radius is dx # and p.pRect.radius is dy
     rect = []; # REMIND: optimize if no wrapping, rect inside patch boundaries
     for y in [p.y-dy..p.y+dy] by 1 # by 1: perf: avoid bidir JS for loop
       for x in [p.x-dx..p.x+dx] by 1
@@ -1249,7 +1247,7 @@ class ABM.Patches extends ABM.AgentSet
   # Draws, or "imports" an image URL into the drawing layer.
   # The image is scaled to fit the drawing layer.
   #
-  # This is an async load, see this
+  # This is an async load, see
   # [new Image()](http://javascript.mfields.org/2011/creating-an-image-in-javascript/)
   # tutorial.  We draw the image into the drawing layer as
   # soon as the onload callback executes.
@@ -1716,25 +1714,29 @@ class ABM.Animator
   # If multiStep, run the draw() and step() methods separately by draw() using
   # requestAnimFrame and step() using setTimeout.
   constructor: (@model, @rate=30, @multiStep=false) -> @reset()
-  # Adjust animator.  Call before start(). Model creates animator, thus available in setup().
-  setRate: (@rate, @multiStep=false) -> @resetTimes() # why? .. change rate while running?
-  # start/stop model, often used for debugging
+  # Adjust animator.  Call before model.start()
+  # in setup() to change default settings
+  setRate: (@rate, @multiStep=false) -> @resetTimes() # Change rate while running?
+  # start/stop model, often used for debugging and resetting model
   start: ->
-    return if not @animStop # avoid multiple animates
+    return if not @stopped # avoid multiple animates
     @resetTimes()
-    @animStop = false
+    @stopped = false
     @animate()
-  resetTimes: ->
-    @startMS = @now()
-    @startTick = @ticks
-    @startDraw = @draws
   stop: ->
-    @animStop = true
+    @stopped = true
     if @animHandle? then cancelAnimFrame @animHandle
     if @timeoutHandle? then clearTimeout @timeoutHandle
     if @intervalHandle? then clearInterval @intervalHandle
     @animHandle = @timerHandle = @intervalHandle = null
+  # Internal util: reset time instance variables
+  resetTimes: ->
+    @startMS = @now()
+    @startTick = @ticks
+    @startDraw = @draws
+  # Reset used by model.reset when resetting model.
   reset: -> @stop(); @ticks = @draws = 0
+  # Two handlers used by animation loop
   step: -> @ticks++; @model.step()
   draw: -> @draws++; @model.draw()
   # step and draw the model once, mainly debugging
@@ -1743,7 +1745,8 @@ class ABM.Animator
   now: -> (performance ? Date).now()
   # Time in ms since starting animator
   ms: -> @now()-@startMS
-  # Get ticks/draws per second.  They will differ if async. "if" to protect from ms=0
+  # Get ticks/draws per second. They will differ if multiStep.
+  # The "if" is to avoid from ms=0
   ticksPerSec: -> if (elapsed = @ticks-@startTick) is 0 then 0 else Math.round elapsed*1000/@ms()
   drawsPerSec: -> if (elapsed = @draws-@startDraw) is 0 then 0 else Math.round elapsed*1000/@ms()
   # Return a status string for debugging and logging performance
@@ -1751,12 +1754,12 @@ class ABM.Animator
   # Animation via setTimeout and requestAnimFrame
   animateSteps: =>
     @step()
-    @timeoutHandle = setTimeout @animateSteps, 10 unless @animStop
+    @timeoutHandle = setTimeout @animateSteps, 10 unless @stopped
   animateDraws: =>
     if @drawsPerSec() <= @rate
       @step() if not @multiStep
       @draw()
-    @animHandle = requestAnimFrame @animateDraws unless @animStop
+    @animHandle = requestAnimFrame @animateDraws unless @stopped
   animate: ->
     @animateSteps() if @multiStep
     @animateDraws()
@@ -1791,7 +1794,7 @@ class ABM.Model
     ABM.model = @
     @setWorld size, minX, maxX, minY, maxY, isTorus, hasNeighbors
     @contexts = ABM.contexts = {}
-    
+        
     # * Create 2D canvas contexts layered on top of each other.
     # * Initialize a patch coord transform for each layer.
     # 
@@ -1805,6 +1808,7 @@ class ABM.Model
     for own k,v of @contextsInit
       @contexts[k] = ctx = u.createLayer div, @world.pxWidth, @world.pxHeight, v.z, v.ctx
       @setCtxTransform(ctx)
+    u.fillCtx @contexts.patches, [0,0,0]
 
     # One of the layers is used for drawing only, not an agentset:
     @drawing = ABM.drawing = @contexts.drawing
@@ -1826,20 +1830,8 @@ class ABM.Model
     # Initialize model global resources
     @modelReady = false
     @startup()
-    u.waitOnFiles (=> @modelReady = true)
+    u.waitOnFiles (=> @modelReady = true; @setup())
 
-  # Convenience method to start the model after startup initialization.
-  setupAndGo: () -> u.waitOn (=> @modelReady), (=> @setup(); @start())
-  # Stop and reset the model
-  reset: () -> 
-    @anim.reset() # stop & reset ticks/steps counters
-    @patches = ABM.patches = new ABM.Patches ABM.Patch, "patches"
-    @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
-    @links = ABM.links = new ABM.Links ABM.Link, "links"
-    @setCtxTransform v for k,v of @contexts # clear/resize all contexts
-    u.s.spriteSheets.length = 0 # possibly null out entries?
-  # reset, then setup and start the model
-  restart: -> @reset(); @setup(); @start()
   # Initialize/reset world parameters.
   setWorld: (size, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true) ->
     numX = maxX-minX+1; numY = maxY-minY+1; pxWidth = numX*size; pxHeight = numY*size
@@ -1887,20 +1879,40 @@ class ABM.Model
 # A user's model is made by subclassing Model and over-riding these
 # two abstract methods. `super` need not be called.
   
-  # Initialize model resources (images, files) here.
+  # Initialize model resources (images, files) here.  Can be async.
   startup: -> # called by constructor
-  # Initialize your model here.
+  # Initialize your model variables and defaults here. No async w/o good handlers.
   setup: ->
   # Update/step your model here
   step: -> # called each step of the animation
+
+#### Animation and Reset methods
 
 # Convenience access to animator:
 
   # Start/stop the animation
   start: -> @anim.start()
-  stop: -> @anim.stop()
-  # Animate once by `step(); draw()`. For debugging from console.
-  once: -> @anim.once() 
+  stop:  -> @anim.stop()
+  stopped: -> @anim.stopped
+  toggle: -> if @anim.stopped then @start() else @stop()
+  # Animate once by `step(); draw()`. For UI and debugging from console.
+  once: -> @stop() if not @anim.stopped; @anim.once() 
+
+  # Stop and reset the model, restarting if currently running
+  reset: () -> 
+    running = not @stopped()
+    @anim.reset() # stop & reset ticks/steps counters
+    @patches = ABM.patches = new ABM.Patches ABM.Patch, "patches"
+    @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
+    @links = ABM.links = new ABM.Links ABM.Link, "links"
+    @setCtxTransform v for k,v of @contexts # clear/resize all contexts
+    u.fillCtx @contexts.patches, [0,0,0]
+    u.s.spriteSheets.length = 0 # possibly null out entries?
+    @setup()
+    @start() if running
+  # Convenience method to reset/start/run the model after startup initialization.
+  setupAndGo: () -> 
+    u.waitOn (=> @modelReady), (=> @start())
 
 #### Animation.
   

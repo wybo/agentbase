@@ -77,7 +77,7 @@ for explanation of context of a class and its constructor.</p>
 <p>We do not provide a constructor of our own. 
 CoffeeScript automatically calls <code>Model.constructor &lt;args&gt;</code>
 and <code>setup</code> will be called by <code>Model.constructor</code>. See:</p>
-<pre><code>APP = new MyModel &quot;layers&quot;, 13, -16, 16, -16, 16</code></pre>
+<pre><code>model = new MyModel &quot;layers&quot;, 13, -16, 16, -16, 16</code></pre>
 <p>below, which passes all its arguments to <code>Model</code></p>
 
             </div>
@@ -506,9 +506,9 @@ for patchSize, minX, maxX, minY, maxY</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    APP = <span class="keyword">new</span> MyModel <span class="string">"layers"</span>, <span class="number">13</span>, -<span class="number">16</span>, <span class="number">16</span>, -<span class="number">16</span>, <span class="number">16</span>, <span class="literal">true</span>, <span class="literal">false</span>
-    APP.setRootVars() <span class="comment"># Debug: Put Model vars in global name space</span>
-    APP.setupAndGo() <span class="comment"># Run model immediately after startup initialization</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>    model = <span class="keyword">new</span> MyModel <span class="string">"layers"</span>, <span class="number">13</span>, -<span class="number">16</span>, <span class="number">16</span>, -<span class="number">16</span>, <span class="number">16</span>, <span class="literal">true</span>, <span class="literal">false</span>
+    model.setRootVars() <span class="comment"># Debug: Put Model vars in global name space</span>
+    model.setupAndGo() <span class="comment"># Run model immediately after startup initialization</span></pre></div></div>
             
         </li>
         

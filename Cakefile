@@ -15,7 +15,7 @@ libDir = 'lib/'
 ASNames = "util shapes agentset agentsets model".split(" ")
 ASPaths = ("#{srcDir}#{f}.coffee" for f in ASNames)
 ASPath = "#{srcDir}agentscript.coffee"
-XNames = "data mouse".split(" ")
+XNames = "data mouse fbui".split(" ")
 XPaths = ("#{extrasDir}#{f}.coffee" for f in XNames)
 JSNames = XNames.concat ["agentscript"]
 
@@ -58,7 +58,12 @@ task 'doc', 'Create documentation from source files', ->
     grep -v '^ *<' < models/template.html > #{template}
     #{cpfiles}
     docco #{tmpfiles.join(" ")} -o docs
+    docco #{XPaths.join(" ")} -o docs
   """, ->
+# task 'xdoc', 'Create documentation for addons', ->
+#   shell.exec """
+#     docco #{XPaths.join(" ")} -o docs
+#   """, ->
 
 task 'git:diff', 'git diff the core and extras .coffee files', ->
   shell.exec """

@@ -16,7 +16,7 @@
     # CoffeeScript automatically calls `Model.constructor <args>`
     # and `setup` will be called by `Model.constructor`. See:
     #
-    #     APP = new MyModel "layers", 13, -16, 16, -16, 16
+    #     model = new MyModel "layers", 13, -16, 16, -16, 16
     #
     # below, which passes all its arguments to `Model`
     
@@ -141,9 +141,9 @@ average heading of agents:
     #
     # Note: Netlogo defaults 13, -16, 16, -16, 16 <br>
     # for patchSize, minX, maxX, minY, maxY
-    APP = new MyModel "layers", 13, -16, 16, -16, 16, true, false
-    APP.setRootVars() # Debug: Put Model vars in global name space
-    APP.setupAndGo() # Run model immediately after startup initialization
+    model = new MyModel "layers", 13, -16, 16, -16, 16, true, false
+    model.setRootVars() # Debug: Put Model vars in global name space
+    model.setupAndGo() # Run model immediately after startup initialization
     
     </script>
   </head>

@@ -1,0 +1,63 @@
+<html>
+  <head>
+    <title>AgentScript Model</title>
+    <script src="../lib/agentscript.js"></script>
+    <script src="../lib/data.js"></script>
+    <script src="../tools/coffee-script.js"></script>
+    <script type="text/coffeescript">
+
+    u = ABM.util; DataSet = ABM.DataSet # aliases
+
+    class MyModel extends ABM.Model
+      startup: ->
+        console.log "startup: elevation"
+        @elevation = DataSet.importAscDataSet "data/nldroplets.asc", (ds)=>
+          console.log "importAscDataSet: installing drawing"
+          img = @elevation.toDrawing(true)
+          console.log "importAscDataSet: installing colors"
+          @patches.installColors img
+          console.log "importAscDataSet: installing p.elevation from p.color[0]"
+          p.elevation = p.color[0] for p in @patches
+        
+      setup: ->
+        console.log "setup"
+        @refreshPatches = @refreshLinks = false
+        
+        @vision = 5
+        @speed = .25
+        
+        @agents.setDefaultShape "square"
+        @agents.setDefaultSize .5
+        @agents.setDefaultColor [100,100,150]
+        @patches.cacheRect @vision, false # cache inRadius @vision
+        
+        p.sprout 1 for p in @patches
+        console.log "patches: #{@patches.length}, agents: #{@agents.length}"      
+              
+      step: -> # stop: just one tick
+        console.log @anim.toString() if @anim.ticks % 100 is 0
+        if not @patches[0].elevation?
+          console.log "image not in yet"; return
+        moved = 0
+        for a in @agents
+          n = a.p.pRect.minOneOf "elevation" # cached vision rect
+          if a.p.elevation > n.elevation
+            a.face n
+            a.forward @speed
+            moved++
+        if moved is 0
+          console.log "done, ticks: #{@anim.ticks}"
+          @stop()
+    
+    # div, patchSize, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true
+    #   NL Defaults: 13, -16, 16, -16, 16
+    model = new MyModel "layers", 6, 0,80, 0,80, false
+    model.setRootVars() # Debug: Put Model vars in global name space
+    model.setupAndGo() # Run model immediately after startup initialization
+    
+    </script>
+  </head>
+  <body>
+    <div id="layers" style="position:relative;padding:20;"></div>
+  </body>
+</html>

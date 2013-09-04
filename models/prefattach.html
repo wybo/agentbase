@@ -37,9 +37,9 @@
 
     # div, patchSize, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true
     #   NL Defaults: 13, -16, 16, -16, 16
-    APP = new MyModel "layers", 5, -45, 45, -45, 45, false, false
-    APP.setRootVars() # Debug: Put Model vars in global name space
-    APP.setupAndGo() # Run model immediately after startup initialization
+    model = new MyModel "layers", 5, -45, 45, -45, 45, false, false
+    model.setRootVars() # Debug: Put Model vars in global name space
+    model.setupAndGo() # Run model immediately after startup initialization
 
     </script>
   </head>

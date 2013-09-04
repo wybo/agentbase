@@ -45,7 +45,6 @@ class ABM.AgentSet extends Array
   #     AS = for i in [1..5] # long form comprehension
   #       {id:i, x:u.randomInt(10), y:u.randomInt(10)}
   #     ABM.AgentSet.asSet AS # Convert AS to AgentSet in place
-  #     # .. produced
   #        [{id:1,x:0,y:1}, {id:2,x:8,y:0}, {id:3,x:6,y:4},
   #         {id:4,x:1,y:3}, {id:5,x:1,y:1}]
 

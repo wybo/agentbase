@@ -7,6 +7,10 @@
     
     u = ABM.util # ABM.util alias, u.s is also ABM.shape accessor.
     class MyModel extends ABM.Model
+      
+      setVision: (@vision) -> @patches.cacheRect @vision, true
+      setMaxTurn: (@maxTurn) -> @maxTurn = u.degToRad(@maxTurn)
+      toggleConsole: () -> @useConsole = not @useConsole
       setup: ->
       
         @refreshPatches = false # <3fps->4fps agents larger part of drawing 
@@ -14,16 +18,15 @@
         # @patches.usePixels() # 4fps same as refresh off
         @patches.cacheAgentsHere() # 17fps, big help for inRadius
         # w/ refresh off and two optimizations, 22-23fps
-        @patches.cacheRect @vision, true # 22/23 -> 24; only +1+
         @agents.setUseSprites() # 24 -> 36
         
         @anim.setRate 60, false
         
+        @useConsole = true
         @population = 500     # agents
-        @vision = 3.0         # patches
+        @setVision 3          # patches & set patch rect
         @minSeparation = 0.75 # patches
-        @maxTurn = 3.0        # degrees
-        @maxTurn = u.degToRad(@maxTurn) # radians
+        @setMaxTurn(3.0)      # degrees -> radians
       
         # defaults
         @agents.setDefaultSize(1.5)
@@ -36,9 +39,9 @@
           a.color = u.randomMapColor() # u.randomColor() # u.randomBrightColor()
 
       step: ->
-        console.log @anim.toString() if @anim.ticks % 100 is 0
+        console.log @anim.toString() if @useConsole and @anim.ticks % 100 is 0
         @flock(a) for a in @agents
-        @reportFlockVectorSize() if @anim.ticks % 10 is 0
+        @reportFlockVectorSize() if @useConsole and @anim.ticks % 10 is 0
         if @anim.draws is 2 # Show the sprite sheet if there is one after first draw
           sheet = u.last(u.s.spriteSheets) if u.s.spriteSheets.length isnt 0
           if sheet?
@@ -86,10 +89,10 @@
 
     # div, patchSize, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true
     #   NL Defaults: 13, -16, 16, -16, 16
-    APP = new MyModel "layers", 15, -16, 16, -16, 16, true, false
-    # APP = new MyModel "layers", 16, 0, 78, 0, 40, true, false
-    APP.setRootVars() # Debug: Put Model vars in global name space
-    APP.setupAndGo() # Run model immediately after startup initialization
+    model = new MyModel "layers", 15, -16, 16, -16, 16, true, false
+    # model = new MyModel "layers", 16, 0, 78, 0, 40, true, false
+    model.setRootVars() # Debug: Put Model vars in global name space
+    model.setupAndGo() # Run model immediately after startup initialization
 
     </script>
   </head>
