@@ -1,61 +1,41 @@
-# DataSet is an addon for managing data arrays.  The datasets do not need
-# to be the same size as the patch sets.  Rather they have multiple methods
-# for sampling and creating new datasets of any width/height.  They also cam
-# set patch variables resampled to the patch width/height.
+# DataSet is an addon for managing data arrays.
+#
+# DataSets do not need to be the same size as the patch sets. Rather they have
+# methods for sampling and creating new datasets of any width/height.
+# They also cam set patch variables resampled to the patch width/height.
 # Several utilities are provided for creating datasets from Image and
 # XmlHTTPRequest inputs, and for drawing into the patch drawing layer.
 
+# Two specific subclasses are provided for Asc GIS elevation data,
+# and an image-as-data class.
+
 u = ABM.util
-class ABM.DataSet
+ABM.DataSet = class DataSet
   # Static members:
   
   # Create a new dataset from patch variable "name"
   @patchDataSet: (name) ->
-    ps = ABM.patches
-    new DataSet ps.numX, ps.numY, (p[name] for p in ps)
+    new DataSet (ps=ABM.patches).numX, ps.numY, (p[name] for p in ps)
   
-  # Create a new dataset from an image. If `gray` is true, uses only 
-  # (high order) R byte.  If not, creates either a 24 bit integer (alpha false)
-  # or a 32 bit integer (alpha true).
-  # Create dataset from image file name. Async.
-  @importImageDataSet: (name, gray = false, alpha = false, f) ->
-    ds = new DataSet() # empty data set
-    u.importImage name, (img) =>
-      @imageDataSet img, gray, alpha, ds
+  # Create a new dataset from an image file name.
+  # Note that datasets can be built in two steps:
+  # An empty constructor which then can be completed by an
+  # async array, Image or XHR response.
+  @importImageDataSet: (name, fmt=3, f) ->
+    ds = new ImageDataSet() # empty dataset
+    u.importImage name, (img) -> # => not needed
+      ds.parse img
       f(ds) if f?
-    ds # async: ds will be empty until importImage finishes
-  # Create dataset from existing image.  Not async, useful with importImage
-  @imageDataSet: (img, gray = false, alpha = false, ds = new DataSet()) ->
-    ctx = u.imageToCtx img #; ds.ctx = ctx .. useful?
-    id = u.ctxToImageData ctx
-    ta = id.data; jsdata = []
-    for i in [0...ta.length] by 4
-      if gray
-        jsdata.push ta[i]
-      else
-        if alpha
-        then jsdata.push ta[i]<<24 | ta[i+1]<<16 | ta[i+2]<<8 | ta[i+3]
-        else jsdata.push ta[i]<<16 | ta[i+1]<<8 | ta[i+2]
-    ds.reset ctx.canvas.width, ctx.canvas.height, jsdata
+    ds # async: ds will be empty until import finishes
   
-  # GIS helper: import a .asc file as dataset. Async
+  # Create a new dataset from an Asc GIS file.
+  # The parse method converts a string into a dataset. Async
   @importAscDataSet: (name, f) ->
-    ds = new DataSet() # empty data set
-    u.xhrLoadFile name, "text", (response) =>
-      @ascDataSet response, ds
+    ds = new AscDataSet() # empty dataset
+    u.xhrLoadFile name, "text", (response) -> # => not needed
+      ds.parse response # complete the empty dataset
       f(ds) if f?
-    ds # async: ds will be empty until importImage finishes
-  # Create a .asc file from string. Not async, useful with xhrLoadFile
-  @ascDataSet: (str, ds = new DataSet()) ->
-    textData = str.split "\n"; gisData = {}; gisData.data = []
-    for i in [0..5]
-      keyVal = textData[i].split /\s+/
-      gisData[keyVal[0].toLowerCase()] = parseFloat keyVal[1]
-    for i in [0...gisData.nrows] by 1
-      nums = textData[6+i].trim().split(" ")
-      nums[i] = parseFloat nums[i] for i in [0...nums.length]
-      gisData.data = gisData.data.concat nums
-    ds.reset gisData.ncols, gisData.nrows, gisData.data
+    ds # async: ds will be empty until import finishes
 
   # 2D Dataset: width/height and an array with length = width*height
   constructor: (width=0, height=0, data=[]) -> @reset width, height, data
@@ -67,7 +47,7 @@ class ABM.DataSet
       data.length: #{@data.length} width: #{@width} height: #{@height}
       """
     @
-  # Check that x,y are valid coords (floats), from top-left of data set.
+  # Check that x,y are valid coords (floats), from top-left of dataset.
   checkXY: (x,y) ->
     u.error "x,y out of range: #{x},#{y}" if not (0<=x<=@width-1 and 0<=y<=@height-1)
   # Sample dataset using nearest neighbor. x,y floats in range
@@ -113,7 +93,7 @@ class ABM.DataSet
   # Show dataset as image in patch drawing layer, return image
   toDrawing: (gray=true) -> ABM.patches.installDrawing (img=@toImage gray); img
   # Resample dataset to patch width/height and set named patch variable.
-  setPatchVar: (name) ->
+  toPatchVar: (name) ->
     ds = @resample ABM.patches.numX, ABM.patches.numY
     p[name] = ds.data[p.id] for p in ABM.patches
   # Resample dataset to new width, height
@@ -152,4 +132,86 @@ class ABM.DataSet
       for i in [x...x+width] by 1
         data.push @getXY i,j
     new DataSet width, height, data
-        
+
+ABM.AscDataSet = class AscDataSet extends DataSet
+  # An .asc GIS file a text file with a header:
+  #
+  #     ncols 195
+  #     nrows 195
+  #     xllcorner -84.355652
+  #     yllcorner 39.177963
+  #     cellsize 0.000093
+  #     NODATA_value -9999
+  #
+  # ..followed by a ncols X nrows matrix of numbers
+  
+  # Constructor takes a string generally via an xhr request.
+  # It can be "empty" .. i.e. needing a second parse() call
+  # so that it can be used in an async file operation.
+  constructor: (@str="") ->
+    super() # start out as an empty dataset
+    return if @str.length is 0
+    @parse @str
+  # Complete an initial, empty dataset object who's string
+  # is read via an xhr request.
+  parse: (@str) ->
+    textData = str.split "\n"; @header = {}; #gisData.data = []
+    for i in [0..5]
+      keyVal = textData[i].split /\s+/
+      @header[keyVal[0].toLowerCase()] = parseFloat keyVal[1]
+    for i in [0...@header.nrows] by 1
+      nums = textData[6+i].trim().split(" ")
+      nums[i] = parseFloat nums[i] for i in [0...nums.length]
+      @data = @data.concat nums
+    @reset @header.ncols, @header.nrows, @data
+  # Create two new datasets, slope and aspect, common in
+  # the use of an elevation data set.
+  slopeAndAspect: () -> # http://goo.gl/apnur http://goo.gl/x7QYm
+    dzdx = @convolve([-1,0,1,-2,0,2,-1,0,1])
+    dzdy = @convolve([-1,-2,-1,0,0,0,1,2,1])
+    aspect = []; slope = [] #; minX = .01; maxAtan = Math.PI/4
+    for y in [0...@height] by 1
+      for x in [0...@width] by 1
+        gx = dzdx.getXY(x,y); gy = dzdy.getXY(x,y)
+        slope.push Math.sqrt gx*gx + gy*gy
+        rad = Math.PI/2 + Math.atan2 gy,-gx
+        rad += 2*Math.PI if rad < 0
+        aspect.push rad
+    @slope = new DataSet @width, @height, slope
+    @aspect = new DataSet @width, @height, aspect
+    [@slope, @aspect]
+
+ABM.ImageDataSet = class ImageDataSet extends DataSet
+  # An image-as-data dataset.  The parser takes an image
+  # data Uint8Array, enumerates it in 4-byte segments converting
+  # the segment into an unsigned 32 bit int dataset entry.
+  constructor: (@img, @byteFmt=3) -> # default 24 bit int
+    super() # start out as an empty dataset
+    return if not @img?
+    @parse @img
+  # The byte format can be:
+  #
+  #     int 1-4 or 8,16,24,32: number of bytes/bits of data
+  #       std layout: B, GB, RGB, ARGB for 1-4 bytes
+  #     array of length 1-4: non-standard layout of RGB bytes
+  #       ex: [1,2] -> 16 bits G<<8 | B
+  ByteFmts: [[2],[1,2],[0,1,2],[3,0,1,2]]
+  checkByteFmt: () ->
+    if u.isArray @byteFmt
+      if @byteFmt.length>4 or u.aMax(@byteFmt)>3 or u.aMin(@byteFmt)<0
+        u.error "bad ImageDataSet byte format array: #{@byteFmt}"
+    else
+      if @byteFmt not in [1,2,3,4,8,16,24,32]
+        u.error "bad ImageDataSet byte/bit format int: #{@byteFmt}"
+      @byteFmt = @byteFmt/8 if @byteFmt > 4 # convert bits to bytes
+      @byteFmt = @ByteFmts[@byteFmt-1]
+  parse: (@img) ->
+    @checkByteFmt @byteFmt
+    @ctx = u.imageToCtx @img # keep context for possible later use
+    ta = u.ctxToImageData(@ctx).data # Uint8 typed array of image data
+    for i in [0...ta.length] by 4
+      # Note: do not use bitwise operations: keep value positive int
+      val = 0; val = val*256 + ta[i+j] for j in @byteFmt
+      @data.push val
+    @reset @ctx.canvas.width, @ctx.canvas.height, @data
+    

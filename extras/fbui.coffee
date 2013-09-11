@@ -20,7 +20,6 @@ class ABM.FirebaseUI
   # * The button's setter is called on the false -> true transition
   
   constructor: (@fbname, @model, @ui) ->
-    window.fbui = @
     @fb = new Firebase fbname
     @refs = {}; @refs[k] = @fb.child(k) for k,v of @ui
     @vals = {}; @vals[k] = v.val for k,v of @ui

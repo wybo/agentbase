@@ -495,9 +495,11 @@ agentset is drawn only once, remaining static after that.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="property">@modelReady</span> = <span class="literal">false</span>
+            <div class="content"><div class='highlight'><pre>    <span class="property">@modelReady</span> = <span class="literal">false</span>;
+    <span class="property">@globalNames</span> = (u.ownKeys @).concat <span class="string">"globalNames"</span>
+    <span class="property">@globalNames</span>.set = <span class="literal">false</span>
     <span class="property">@startup</span>()
-    u.waitOnFiles (=&gt; <span class="property">@modelReady</span> = <span class="literal">true</span>; <span class="property">@setup</span>())</pre></div></div>
+    u.waitOnFiles =&gt; <span class="property">@modelReady</span>=<span class="literal">true</span>; <span class="property">@setup</span>(); <span class="property">@globals</span>() <span class="keyword">if</span> <span class="keyword">not</span> <span class="property">@globalNames</span>.set</pre></div></div>
             
         </li>
         
@@ -521,7 +523,11 @@ agentset is drawn only once, remaining static after that.</p>
     ctx.canvas.width = <span class="property">@world</span>.pxWidth; ctx.canvas.height = <span class="property">@world</span>.pxHeight
     ctx.save()
     ctx.scale <span class="property">@world</span>.size, -<span class="property">@world</span>.size
-    ctx.translate -(<span class="property">@world</span>.minXcor), -(<span class="property">@world</span>.maxYcor)</pre></div></div>
+    ctx.translate -(<span class="property">@world</span>.minXcor), -(<span class="property">@world</span>.maxYcor)
+  globals: (globalNames) -&gt;
+    <span class="keyword">if</span> globalNames? 
+    <span class="keyword">then</span> <span class="property">@globalNames</span> = globalNames; <span class="property">@globalNames</span>.set = <span class="literal">true</span>
+    <span class="keyword">else</span> <span class="property">@globalNames</span> = u.removeItems u.ownKeys(@), <span class="property">@globalNames</span></pre></div></div>
             
         </li>
         

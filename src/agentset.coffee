@@ -93,7 +93,7 @@ class ABM.AgentSet extends Array
     u.error "setDefault: name is not a string" if typeof name isnt "string"
     @agentClass::[name] = value
 
-  own: (vars...) ->
+  own: (vars...) -> # maybe not set default if val is null?
     for name in vars
       val = null; [name,val] = name if u.isArray name
       @setDefault name, val

@@ -90,7 +90,6 @@ Our UI via Firebase is &quot;alpha&quot; at this point and uses the NetLogo desi
             
             <div class="content"><div class='highlight'><pre>  
   constructor: (<span class="property">@fbname</span>, <span class="property">@model</span>, <span class="property">@ui</span>) -&gt;
-    window.fbui = @
     <span class="property">@fb</span> = <span class="keyword">new</span> Firebase fbname
     <span class="property">@refs</span> = {}; <span class="property">@refs</span>[k] = <span class="property">@fb</span>.child(k) <span class="keyword">for</span> k,v <span class="keyword">of</span> <span class="property">@ui</span>
     <span class="property">@vals</span> = {}; <span class="property">@vals</span>[k] = v.val <span class="keyword">for</span> k,v <span class="keyword">of</span> <span class="property">@ui</span>

@@ -133,9 +133,11 @@ class ABM.Model
     @links = ABM.links = new ABM.Links ABM.Link, "links"
 
     # Initialize model global resources
-    @modelReady = false
+    @modelReady = false;
+    @globalNames = (u.ownKeys @).concat "globalNames"
+    @globalNames.set = false
     @startup()
-    u.waitOnFiles (=> @modelReady = true; @setup())
+    u.waitOnFiles => @modelReady=true; @setup(); @globals() if not @globalNames.set
 
   # Initialize/reset world parameters.
   setWorld: (size, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true) ->
@@ -148,7 +150,10 @@ class ABM.Model
     ctx.save()
     ctx.scale @world.size, -@world.size
     ctx.translate -(@world.minXcor), -(@world.maxYcor)
-  
+  globals: (globalNames) ->
+    if globalNames? 
+    then @globalNames = globalNames; @globalNames.set = true
+    else @globalNames = u.removeItems u.ownKeys(@), @globalNames
 
 #### Optimizations:
   

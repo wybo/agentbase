@@ -53,17 +53,19 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
-              <p>DataSet is an addon for managing data arrays.  The datasets do not need
-to be the same size as the patch sets.  Rather they have multiple methods
-for sampling and creating new datasets of any width/height.  They also cam
-set patch variables resampled to the patch width/height.
+              <p>DataSet is an addon for managing data arrays.</p>
+<p>DataSets do not need to be the same size as the patch sets. Rather they have
+methods for sampling and creating new datasets of any width/height.
+They also cam set patch variables resampled to the patch width/height.
 Several utilities are provided for creating datasets from Image and
 XmlHTTPRequest inputs, and for drawing into the patch drawing layer.</p>
+<p>Two specific subclasses are provided for Asc GIS elevation data,
+and an image-as-data class.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>u = ABM.util
-<span class="class"><span class="keyword">class</span> <span class="title">ABM</span>.<span class="title">DataSet</span></span></pre></div></div>
+ABM.DataSet = <span class="class"><span class="keyword">class</span> <span class="title">DataSet</span></span></pre></div></div>
             
         </li>
         
@@ -92,8 +94,7 @@ XmlHTTPRequest inputs, and for drawing into the patch drawing layer.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  <span class="property">@patchDataSet</span>: (name) -&gt;
-    ps = ABM.patches
-    <span class="keyword">new</span> DataSet ps.numX, ps.numY, (p[name] <span class="keyword">for</span> p <span class="keyword">in</span> ps)</pre></div></div>
+    <span class="keyword">new</span> DataSet (ps=ABM.patches).numX, ps.numY, (p[name] <span class="keyword">for</span> p <span class="keyword">in</span> ps)</pre></div></div>
             
         </li>
         
@@ -104,19 +105,19 @@ XmlHTTPRequest inputs, and for drawing into the patch drawing layer.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
-              <p>Create a new dataset from an image. If <code>gray</code> is true, uses only 
-(high order) R byte.  If not, creates either a 24 bit integer (alpha false)
-or a 32 bit integer (alpha true).
-Create dataset from image file name. Async.</p>
+              <p>Create a new dataset from an image file name.
+Note that datasets can be built in two steps:
+An empty constructor which then can be completed by an
+async array, Image or XHR response.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="property">@importImageDataSet</span>: (name, gray = <span class="literal">false</span>, alpha = <span class="literal">false</span>, f) -&gt;
-    ds = <span class="keyword">new</span> DataSet() <span class="comment"># empty data set</span>
-    u.importImage name, (img) =&gt;
-      <span class="property">@imageDataSet</span> img, gray, alpha, ds
+            <div class="content"><div class='highlight'><pre>  <span class="property">@importImageDataSet</span>: (name, fmt=<span class="number">3</span>, f) -&gt;
+    ds = <span class="keyword">new</span> ImageDataSet() <span class="comment"># empty dataset</span>
+    u.importImage name, (img) -&gt; <span class="comment"># =&gt; not needed</span>
+      ds.parse img
       f(ds) <span class="keyword">if</span> f?
-    ds <span class="comment"># async: ds will be empty until importImage finishes</span></pre></div></div>
+    ds <span class="comment"># async: ds will be empty until import finishes</span></pre></div></div>
             
         </li>
         
@@ -127,22 +128,17 @@ Create dataset from image file name. Async.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
-              <p>Create dataset from existing image.  Not async, useful with importImage</p>
+              <p>Create a new dataset from an Asc GIS file.
+The parse method converts a string into a dataset. Async</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="property">@imageDataSet</span>: (img, gray = <span class="literal">false</span>, alpha = <span class="literal">false</span>, ds = <span class="keyword">new</span> DataSet()) -&gt;
-    ctx = u.imageToCtx img <span class="comment">#; ds.ctx = ctx .. useful?</span>
-    id = u.ctxToImageData ctx
-    ta = id.data; jsdata = []
-    <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span>..ta.length] <span class="keyword">by</span> <span class="number">4</span>
-      <span class="keyword">if</span> gray
-        jsdata.push ta[i]
-      <span class="keyword">else</span>
-        <span class="keyword">if</span> alpha
-        <span class="keyword">then</span> jsdata.push ta[i]&lt;&lt;<span class="number">24</span> | ta[i+<span class="number">1</span>]&lt;&lt;<span class="number">16</span> | ta[i+<span class="number">2</span>]&lt;&lt;<span class="number">8</span> | ta[i+<span class="number">3</span>]
-        <span class="keyword">else</span> jsdata.push ta[i]&lt;&lt;<span class="number">16</span> | ta[i+<span class="number">1</span>]&lt;&lt;<span class="number">8</span> | ta[i+<span class="number">2</span>]
-    ds.reset ctx.canvas.width, ctx.canvas.height, jsdata</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="property">@importAscDataSet</span>: (name, f) -&gt;
+    ds = <span class="keyword">new</span> AscDataSet() <span class="comment"># empty dataset</span>
+    u.xhrLoadFile name, <span class="string">"text"</span>, (response) -&gt; <span class="comment"># =&gt; not needed</span>
+      ds.parse response <span class="comment"># complete the empty dataset</span>
+      f(ds) <span class="keyword">if</span> f?
+    ds <span class="comment"># async: ds will be empty until import finishes</span></pre></div></div>
             
         </li>
         
@@ -153,50 +149,6 @@ Create dataset from image file name. Async.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
-              <p>GIS helper: import a .asc file as dataset. Async</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  <span class="property">@importAscDataSet</span>: (name, f) -&gt;
-    ds = <span class="keyword">new</span> DataSet() <span class="comment"># empty data set</span>
-    u.xhrLoadFile name, <span class="string">"text"</span>, (response) =&gt;
-      <span class="property">@ascDataSet</span> response, ds
-      f(ds) <span class="keyword">if</span> f?
-    ds <span class="comment"># async: ds will be empty until importImage finishes</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-7">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-7">&#182;</a>
-              </div>
-              <p>Create a .asc file from string. Not async, useful with xhrLoadFile</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  <span class="property">@ascDataSet</span>: (str, ds = <span class="keyword">new</span> DataSet()) -&gt;
-    textData = str.split <span class="string">"\n"</span>; gisData = {}; gisData.data = []
-    <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span><span class="number">.5</span>]
-      keyVal = textData[i].split <span class="regexp">/\s+/</span>
-      gisData[keyVal[<span class="number">0</span>].toLowerCase()] = parseFloat keyVal[<span class="number">1</span>]
-    <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span>..gisData.nrows] <span class="keyword">by</span> <span class="number">1</span>
-      nums = textData[<span class="number">6</span>+i].trim().split(<span class="string">" "</span>)
-      nums[i] = parseFloat nums[i] <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span>..nums.length]
-      gisData.data = gisData.data.concat nums
-    ds.reset gisData.ncols, gisData.nrows, gisData.data</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-8">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-8">&#182;</a>
-              </div>
               <p>2D Dataset: width/height and an array with length = width*height</p>
 
             </div>
@@ -206,11 +158,11 @@ Create dataset from image file name. Async.</p>
         </li>
         
         
-        <li id="section-9">
+        <li id="section-7">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-9">&#182;</a>
+                <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
               <p>Reset a dataset to have new width, height and data.  Allows creating
 an empty dataset and having it filled by another function.</p>
@@ -227,13 +179,13 @@ an empty dataset and having it filled by another function.</p>
         </li>
         
         
-        <li id="section-10">
+        <li id="section-8">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
+                <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
-              <p>Check that x,y are valid coords (floats), from top-left of data set.</p>
+              <p>Check that x,y are valid coords (floats), from top-left of dataset.</p>
 
             </div>
             
@@ -243,11 +195,11 @@ an empty dataset and having it filled by another function.</p>
         </li>
         
         
-        <li id="section-11">
+        <li id="section-9">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-11">&#182;</a>
+                <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
               <p>Sample dataset using nearest neighbor. x,y floats in range</p>
 
@@ -259,11 +211,11 @@ an empty dataset and having it filled by another function.</p>
         </li>
         
         
-        <li id="section-12">
+        <li id="section-10">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
+                <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
               <p>Sample dataset using bilinear (2D) interpolation. x,y floats in range</p>
 
@@ -276,11 +228,11 @@ an empty dataset and having it filled by another function.</p>
         </li>
         
         
-        <li id="section-13">
+        <li id="section-11">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-13">&#182;</a>
+                <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
               <p>Edge case: If x is width-1, x0 is width-1, x is 0, dx is 1</p>
 
@@ -291,11 +243,11 @@ an empty dataset and having it filled by another function.</p>
         </li>
         
         
-        <li id="section-14">
+        <li id="section-12">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-14">&#182;</a>
+                <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
               <p>Edge case: fij is 0 if beyond data array; undefined -&gt; 0
 if fij wrap on x, x is 0, dx is 1; return f00<em>dy+f01</em>y, linear on y</p>
@@ -308,11 +260,11 @@ if fij wrap on x, x is 0, dx is 1; return f00<em>dy+f01</em>y, linear on y</p>
         </li>
         
         
-        <li id="section-15">
+        <li id="section-13">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
+                <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
               <p>Convert x,y ints to index into data array</p>
 
@@ -323,11 +275,11 @@ if fij wrap on x, x is 0, dx is 1; return f00<em>dy+f01</em>y, linear on y</p>
         </li>
         
         
-        <li id="section-16">
+        <li id="section-14">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+                <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
               <p>Convert int index into data array into x,y ints</p>
 
@@ -338,11 +290,11 @@ if fij wrap on x, x is 0, dx is 1; return f00<em>dy+f01</em>y, linear on y</p>
         </li>
         
         
-        <li id="section-17">
+        <li id="section-15">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
               <p>Get data at x,y int offset into data array</p>
 
@@ -353,11 +305,11 @@ if fij wrap on x, x is 0, dx is 1; return f00<em>dy+f01</em>y, linear on y</p>
         </li>
         
         
-        <li id="section-18">
+        <li id="section-16">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <p>Set the data and int x,y coord of data array</p>
 
@@ -368,11 +320,11 @@ if fij wrap on x, x is 0, dx is 1; return f00<em>dy+f01</em>y, linear on y</p>
         </li>
         
         
-        <li id="section-19">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <p>Return a printable string for dataset.
 If fixed, truncate fraction to p precision</p>
@@ -388,11 +340,11 @@ If fixed, truncate fraction to p precision</p>
         </li>
         
         
-        <li id="section-20">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>Convert dataset into an image. Normalize data to be alowable image data</p>
 
@@ -413,11 +365,11 @@ If fixed, truncate fraction to p precision</p>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>Show dataset as image in patch drawing layer, return image</p>
 
@@ -428,28 +380,28 @@ If fixed, truncate fraction to p precision</p>
         </li>
         
         
-        <li id="section-22">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>Resample dataset to patch width/height and set named patch variable.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  setPatchVar: (name) -&gt;
+            <div class="content"><div class='highlight'><pre>  toPatchVar: (name) -&gt;
     ds = <span class="property">@resample</span> ABM.patches.numX, ABM.patches.numY
     p[name] = ds.data[p.id] <span class="keyword">for</span> p <span class="keyword">in</span> ABM.patches</pre></div></div>
             
         </li>
         
         
-        <li id="section-23">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>Resample dataset to new width, height</p>
 
@@ -469,11 +421,11 @@ If fixed, truncate fraction to p precision</p>
         </li>
         
         
-        <li id="section-24">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>Return neighbor values of the given x,y of the dataset</p>
 
@@ -491,11 +443,11 @@ If fixed, truncate fraction to p precision</p>
         </li>
         
         
-        <li id="section-25">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>Return a new dataset of same size convolved with the given kernel 3x3 matrix</p>
 
@@ -512,11 +464,11 @@ If fixed, truncate fraction to p precision</p>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>Return a subset of the dataset. x,y,width,height integers</p>
 
@@ -528,7 +480,175 @@ If fixed, truncate fraction to p precision</p>
     <span class="keyword">for</span> j <span class="keyword">in</span> [y...y+height] <span class="keyword">by</span> <span class="number">1</span>
       <span class="keyword">for</span> i <span class="keyword">in</span> [x...x+width] <span class="keyword">by</span> <span class="number">1</span>
         data.push <span class="property">@getXY</span> i,j
-    <span class="keyword">new</span> DataSet width, height, data</pre></div></div>
+    <span class="keyword">new</span> DataSet width, height, data
+
+ABM.AscDataSet = <span class="class"><span class="keyword">class</span> <span class="title">AscDataSet</span> <span class="keyword">extends</span> <span class="title">DataSet</span></span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>
+              <p>An .asc GIS file a text file with a header:</p>
+<pre><code>ncols 195
+nrows 195
+xllcorner -84.355652
+yllcorner 39.177963
+cellsize 0.000093
+NODATA_value -9999</code></pre>
+<p>..followed by a ncols X nrows matrix of numbers</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-26">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>
+              <p>Constructor takes a string generally via an xhr request.
+It can be &quot;empty&quot; .. i.e. needing a second parse() call
+so that it can be used in an async file operation.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  constructor: (<span class="property">@str</span>=<span class="string">""</span>) -&gt;
+    <span class="keyword">super</span>() <span class="comment"># start out as an empty dataset</span>
+    <span class="keyword">return</span> <span class="keyword">if</span> <span class="property">@str</span>.length <span class="keyword">is</span> <span class="number">0</span>
+    <span class="property">@parse</span> <span class="property">@str</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-27">&#182;</a>
+              </div>
+              <p>Complete an initial, empty dataset object who&#39;s string
+is read via an xhr request.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  parse: (<span class="property">@str</span>) -&gt;
+    textData = str.split <span class="string">"\n"</span>; <span class="property">@header</span> = {}; <span class="comment">#gisData.data = []</span>
+    <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span><span class="number">.5</span>]
+      keyVal = textData[i].split <span class="regexp">/\s+/</span>
+      <span class="property">@header</span>[keyVal[<span class="number">0</span>].toLowerCase()] = parseFloat keyVal[<span class="number">1</span>]
+    <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span>..<span class="property">@header</span>.nrows] <span class="keyword">by</span> <span class="number">1</span>
+      nums = textData[<span class="number">6</span>+i].trim().split(<span class="string">" "</span>)
+      nums[i] = parseFloat nums[i] <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span>..nums.length]
+      <span class="property">@data</span> = <span class="property">@data</span>.concat nums
+    <span class="property">@reset</span> <span class="property">@header</span>.ncols, <span class="property">@header</span>.nrows, <span class="property">@data</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-28">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>
+              <p>Create two new datasets, slope and aspect, common in
+the use of an elevation data set.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  slopeAndAspect: () -&gt; <span class="comment"># http://goo.gl/apnur http://goo.gl/x7QYm</span>
+    dzdx = <span class="property">@convolve</span>([-<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,-<span class="number">2</span>,<span class="number">0</span>,<span class="number">2</span>,-<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>])
+    dzdy = <span class="property">@convolve</span>([-<span class="number">1</span>,-<span class="number">2</span>,-<span class="number">1</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">2</span>,<span class="number">1</span>])
+    aspect = []; slope = [] <span class="comment">#; minX = .01; maxAtan = Math.PI/4</span>
+    <span class="keyword">for</span> y <span class="keyword">in</span> [<span class="number">0.</span>..<span class="property">@height</span>] <span class="keyword">by</span> <span class="number">1</span>
+      <span class="keyword">for</span> x <span class="keyword">in</span> [<span class="number">0.</span>..<span class="property">@width</span>] <span class="keyword">by</span> <span class="number">1</span>
+        gx = dzdx.getXY(x,y); gy = dzdy.getXY(x,y)
+        slope.push Math.sqrt gx*gx + gy*gy
+        rad = Math.PI/<span class="number">2</span> + Math.atan2 gy,-gx
+        rad += <span class="number">2</span>*Math.PI <span class="keyword">if</span> rad &lt; <span class="number">0</span>
+        aspect.push rad
+    <span class="property">@slope</span> = <span class="keyword">new</span> DataSet <span class="property">@width</span>, <span class="property">@height</span>, slope
+    <span class="property">@aspect</span> = <span class="keyword">new</span> DataSet <span class="property">@width</span>, <span class="property">@height</span>, aspect
+    [<span class="property">@slope</span>, <span class="property">@aspect</span>]
+
+ABM.ImageDataSet = <span class="class"><span class="keyword">class</span> <span class="title">ImageDataSet</span> <span class="keyword">extends</span> <span class="title">DataSet</span></span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-29">&#182;</a>
+              </div>
+              <p>An image-as-data dataset.  The parser takes an image
+data Uint8Array, enumerates it in 4-byte segments converting
+the segment into an unsigned 32 bit int dataset entry.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  constructor: (<span class="property">@img</span>, <span class="property">@byteFmt</span>=<span class="number">3</span>) -&gt; <span class="comment"># default 24 bit int</span>
+    <span class="keyword">super</span>() <span class="comment"># start out as an empty dataset</span>
+    <span class="keyword">return</span> <span class="keyword">if</span> <span class="keyword">not</span> <span class="property">@img</span>?
+    <span class="property">@parse</span> <span class="property">@img</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-30">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-30">&#182;</a>
+              </div>
+              <p>The byte format can be:</p>
+<pre><code>int 1-4 or 8,16,24,32: number of bytes/bits of data
+  std layout: B, GB, RGB, ARGB for 1-4 bytes
+array of length 1-4: non-standard layout of RGB bytes
+  ex: [1,2] -&gt; 16 bits G&lt;&lt;8 | B</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  ByteFmts: [[<span class="number">2</span>],[<span class="number">1</span>,<span class="number">2</span>],[<span class="number">0</span>,<span class="number">1</span>,<span class="number">2</span>],[<span class="number">3</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">2</span>]]
+  checkByteFmt: () -&gt;
+    <span class="keyword">if</span> u.isArray <span class="property">@byteFmt</span>
+      <span class="keyword">if</span> <span class="property">@byteFmt</span>.length&gt;<span class="number">4</span> <span class="keyword">or</span> u.aMax(<span class="property">@byteFmt</span>)&gt;<span class="number">3</span> <span class="keyword">or</span> u.aMin(<span class="property">@byteFmt</span>)&lt;<span class="number">0</span>
+        u.error <span class="string">"bad ImageDataSet byte format array: <span class="subst">#{@byteFmt}</span>"</span>
+    <span class="keyword">else</span>
+      <span class="keyword">if</span> <span class="property">@byteFmt</span> <span class="keyword">not</span> <span class="keyword">in</span> [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">8</span>,<span class="number">16</span>,<span class="number">24</span>,<span class="number">32</span>]
+        u.error <span class="string">"bad ImageDataSet byte/bit format int: <span class="subst">#{@byteFmt}</span>"</span>
+      <span class="property">@byteFmt</span> = <span class="property">@byteFmt</span>/<span class="number">8</span> <span class="keyword">if</span> <span class="property">@byteFmt</span> &gt; <span class="number">4</span> <span class="comment"># convert bits to bytes</span>
+      <span class="property">@byteFmt</span> = <span class="property">@ByteFmts</span>[<span class="property">@byteFmt</span>-<span class="number">1</span>]
+  parse: (<span class="property">@img</span>) -&gt;
+    <span class="property">@checkByteFmt</span> <span class="property">@byteFmt</span>
+    <span class="property">@ctx</span> = u.imageToCtx <span class="property">@img</span> <span class="comment"># keep context for possible later use</span>
+    ta = u.ctxToImageData(<span class="property">@ctx</span>).data <span class="comment"># Uint8 typed array of image data</span>
+    <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span>..ta.length] <span class="keyword">by</span> <span class="number">4</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-31">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-31">&#182;</a>
+              </div>
+              <p>Note: do not use bitwise operations: keep value positive int</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      val = <span class="number">0</span>; val = val*<span class="number">256</span> + ta[i+j] <span class="keyword">for</span> j <span class="keyword">in</span> <span class="property">@byteFmt</span>
+      <span class="property">@data</span>.push val
+    <span class="property">@reset</span> <span class="property">@ctx</span>.canvas.width, <span class="property">@ctx</span>.canvas.height, <span class="property">@data</span></pre></div></div>
             
         </li>
         

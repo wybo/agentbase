@@ -40,9 +40,14 @@ ABM.util = u =
   #     error("wtf? foo=#{foo}") if fooProblem
   error: (s) -> throw new Error s
   
+  # Two max/min int values. One for 2^53, largest int in float64, other for
+  # bitwise ops which are 32 bit. See [discussion](http://goo.gl/WpAzT)
+  MaxINT: Math.pow(2,53); MinINT: -Math.pow(2,53) # -@MaxINT fails, @ not defined yet
+  MaxINT32: 0|0x7fffffff; MinINT32: 0|0x80000000
+  
   # Good replacements for Javascript's badly broken`typeof` and `instanceof`
   # See [underscore.coffee](http://goo.gl/L0umK)
-  isArray: Array.isArray or # works with agentSets too
+  isArray: Array.isArray or
     (obj) -> !!(obj and obj.concat and obj.unshift and not obj.callee)
   isFunction: (obj) -> 
     !!(obj and obj.constructor and obj.call and obj.apply)
@@ -74,10 +79,11 @@ ABM.util = u =
   # Return v to be between min, max via clamping with min/max
   clamp: (v, min, max) -> Math.max(Math.min(v,max),min)
   # Return sign of a number as +/- 1
-  sign: (v) -> return (if v<0 then -1 else 1) # retrun exp: force ?: JS form
+  sign: (v) -> if v<0 then -1 else 1
   # Return n to given precision, default 2
   fixed: (n,p=2) -> p = Math.pow(10,p); Math.round(n*p)/p
-  # Return an array of floating pt numbers as strings at given precision; useful for printing
+  # Return an array of floating pt numbers as strings at given precision;
+  # useful for printing
   aToFixed: (a, p=2) -> (i.toFixed p for i in a)
 
 # ### Color and Angle Operations
@@ -99,7 +105,7 @@ ABM.util = u =
   # Random color from a colormap set of r,g,b values.
   # Default is one of 125 (5^3) colors
   randomMapColor: (c = [], set = [0,63,127,191,255]) -> 
-    @setColor c, u.oneOf(set), u.oneOf(set), u.oneOf(set)
+    @setColor c, @oneOf(set), @oneOf(set), @oneOf(set)
   randomBrightColor: (c=[]) -> @randomMapColor c, [0,127,255]
   # Modify an existing color. Modifying an existing array minimizes GC overhead
   setColor: (c, r, g, b, a) ->
@@ -195,8 +201,9 @@ ABM.util = u =
   # Remove an item from an array. Error if item not in array.
   removeItem: (array, item) ->
     array.splice i, 1 if (i = array.indexOf item) isnt -1
-    @error "removeItem: item not found" if i < 0
-    i
+    @error "removeItem: item not found" if i < 0; array
+  # Remove all items from an array. Error if an item not in array.
+  removeItems: (array, items) -> @removeItem(array,i) for i in items; array
     
   # Randomize the elements of array.
   # Clever! See [cookbook](http://goo.gl/TT2SY)
@@ -294,7 +301,7 @@ ABM.util = u =
   # Return a linear interpolation between from and to.
   # Scale is in [0-1], and the result is in [from,to]
   # [Why `lerp`?](http://goo.gl/QrzMc)
-  lerp: (from, to, scale) -> from + (to-from)*u.clamp(scale, 0, 1)
+  lerp: (from, to, scale) -> from + (to-from)*@clamp(scale, 0, 1)
   # Return an array with values in [from,to], defaults to [0,1].
   # Note: to have a half-open interval, [from,to), try to=to-.00009
   normalize: (array, from = 0, to = 1) ->
@@ -807,7 +814,7 @@ class ABM.AgentSet extends Array
     u.error "setDefault: name is not a string" if typeof name isnt "string"
     @agentClass::[name] = value
 
-  own: (vars...) ->
+  own: (vars...) -> # maybe not set default if val is null?
     for name in vars
       val = null; [name,val] = name if u.isArray name
       @setDefault name, val
@@ -1828,9 +1835,11 @@ class ABM.Model
     @links = ABM.links = new ABM.Links ABM.Link, "links"
 
     # Initialize model global resources
-    @modelReady = false
+    @modelReady = false;
+    @globalNames = (u.ownKeys @).concat "globalNames"
+    @globalNames.set = false
     @startup()
-    u.waitOnFiles (=> @modelReady = true; @setup())
+    u.waitOnFiles => @modelReady=true; @setup(); @globals() if not @globalNames.set
 
   # Initialize/reset world parameters.
   setWorld: (size, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true) ->
@@ -1843,7 +1852,10 @@ class ABM.Model
     ctx.save()
     ctx.scale @world.size, -@world.size
     ctx.translate -(@world.minXcor), -(@world.maxYcor)
-  
+  globals: (globalNames) ->
+    if globalNames? 
+    then @globalNames = globalNames; @globalNames.set = true
+    else @globalNames = u.removeItems u.ownKeys(@), @globalNames
 
 #### Optimizations:
   

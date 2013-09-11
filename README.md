@@ -26,6 +26,16 @@ Currently the documentation is hosted directly on github via the [rawgithub](htt
 
 [**template.html**](https://rawgithub.com/backspaces/agentscript/master/docs/6-template.html) is a trivial subclass of Model showing the basic structure how you build your own models.  In addition, the models/ directory contains 10 simple models used in teaching NetLogo. You can [run the model here.](https://rawgithub.com/backspaces/agentscript/master/models/template.html) 
 
+#### Add-ons
+
+The extras/ directory contains libraries that are too specialized to be in the core AgentScript but are essential for certain applications.
+
+[**data.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/data.html) A 2D DataSet library for data best expressed as an array of numbers.  It includes the ability to treat Images as data, to parse GIS elevation .asc files, to create datasets from patch variables etc.  It includes analytic abilities like nearest neighbor and bilinear sampling, convolution with 3x3 kernels, and resampling datasets to different resolutions.
+
+[**fbui.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/fbui.html) A simple start at a User Interface abstraction, with JSON representing buttons, sliders, switches and menus.  Each item in the JSON tree modifies the state of the model, either directly by setting Model variables or indirectly by calling a method in class Model.
+
+[**mouse.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/mouse.html) A trivial event based interface to the mouse, mainly for direct interaction with the model's graphic layers.  It converts the mouse raw coordinates into patch coordinates.
+
 #### Sample Models
 
 The models/ directory contains tiny models used to test the system and offer examples to get started with.  I also use the rawgithub project to view directly on github.  These usually print to the console.log, so opening the developer's javascript console will show model information.
