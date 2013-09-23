@@ -17,8 +17,8 @@
         @gravExp = -2
         
         # defaults
-        @agents.setDefaultShape("circle")
-        @agents.setDefaultHeading(0) # override promotion to random angle
+        @agents.setDefault "shape", "circle"
+        @agents.setDefault "heading", 0 # override promotion to random angle
 
         # window.foo = @patches.nOf(@population)
         for p in @patches.nOf(@population)
@@ -32,7 +32,9 @@
               # a.penDown = true
             a.size = 3 * u.log10(a.mass)
 
-        @agents.setDefaultPen(1, true)
+        # @agents.setDefaultPen(1, true)
+        @agents.setDefault "penSize", 1 #Pen(1, true)
+        @agents.setDefault "penDown", true #Pen(1, true)
       step: ->
         for a in @agents
           for a1 in @agents.other(a)
@@ -47,15 +49,15 @@
           # a.setXY 0,0 if @sun and a.id is 0
         null
         
-    # div, patchSize, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true
-    #   NL Defaults: 13, -16, 16, -16, 16
+    # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors
+    #   Defaults: 13, -16, 16, -16, 16, false, true
     model = new MyModel "layers", 2, -120, 120, -100, 100, false, false
-    model.setRootVars() # Debug: Put Model vars in global name space
-    model.setupAndGo() # Run model immediately after startup initialization
+    model.debug() # Debug: Put Model vars in global name space
+    model.start() # Run model immediately after startup initialization
     
     </script>
   </head>
   <body>
-    <div id="layers" style="position:relative;padding:20;"></div>
+    <div id="layers" style="padding:20"></div>
   </body>
 </html>

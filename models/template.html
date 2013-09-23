@@ -47,7 +47,7 @@
         @startCircle = true  # initialize agents randomly or in circle
         
         # Set the default agent size (conserves storage)
-        @agents.setDefaultSize(@size)
+        @agents.setDefault "size", @size
         # Set the agent to convert shape to bitmap for better performance.
         @agents.setUseSprites()
 
@@ -137,18 +137,18 @@ average heading of agents:
     # constructor arguments:
     #
     #     divName, patchSize, minX, maxX, minY, maxY,
-    #     isTorus = true, hasNeighbors = true
+    #     isTorus = false, hasNeighbors = true
     #
     # Note: Netlogo defaults 13, -16, 16, -16, 16 <br>
     # for patchSize, minX, maxX, minY, maxY
     model = new MyModel "layers", 13, -16, 16, -16, 16, true, false
-    model.setRootVars() # Debug: Put Model vars in global name space
-    model.setupAndGo() # Run model immediately after startup initialization
+    model.debug() # Debug: Put Model vars in global name space
+    model.start() # Run model immediately after startup initialization
     
     </script>
   </head>
   <body>
-    <div id="layers" style="position:relative;padding:20;"></div>
+    <div id="layers" style="padding:20"></div>
     <div id="play" style="float:right;"></div>
   </body>
 </html>

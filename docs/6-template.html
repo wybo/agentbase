@@ -174,7 +174,7 @@ an external UI to setup for us.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        <span class="property">@agents</span>.setDefaultSize(<span class="property">@size</span>)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>        <span class="property">@agents</span>.setDefault <span class="string">"size"</span>, <span class="property">@size</span></pre></div></div>
             
         </li>
         
@@ -500,15 +500,15 @@ average heading of agents:
               <p>Now that we&#39;ve build our class, we call it with Model&#39;s
 constructor arguments:</p>
 <pre><code>divName, patchSize, minX, maxX, minY, maxY,
-isTorus = true, hasNeighbors = true</code></pre>
+isTorus = false, hasNeighbors = true</code></pre>
 <p>Note: Netlogo defaults 13, -16, 16, -16, 16 <br>
 for patchSize, minX, maxX, minY, maxY</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>    model = <span class="keyword">new</span> MyModel <span class="string">"layers"</span>, <span class="number">13</span>, -<span class="number">16</span>, <span class="number">16</span>, -<span class="number">16</span>, <span class="number">16</span>, <span class="literal">true</span>, <span class="literal">false</span>
-    model.setRootVars() <span class="comment"># Debug: Put Model vars in global name space</span>
-    model.setupAndGo() <span class="comment"># Run model immediately after startup initialization</span></pre></div></div>
+    model.debug() <span class="comment"># Debug: Put Model vars in global name space</span>
+    model.start() <span class="comment"># Run model immediately after startup initialization</span></pre></div></div>
             
         </li>
         

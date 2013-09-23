@@ -107,7 +107,8 @@ ABM.util = u =
   randomMapColor: (c = [], set = [0,63,127,191,255]) -> 
     @setColor c, @oneOf(set), @oneOf(set), @oneOf(set)
   randomBrightColor: (c=[]) -> @randomMapColor c, [0,127,255]
-  # Modify an existing color. Modifying an existing array minimizes GC overhead
+  # Modify an existing rgb or gray color.  Alpha optional, not set if not provided.
+  # Modifying an existing array minimizes GC overhead
   setColor: (c, r, g, b, a) ->
     c.str = null if c.str?
     c[0] = r; c[1] = g; c[2] = b; c[3] = a if a?
@@ -181,7 +182,8 @@ ABM.util = u =
   empty: (array) -> array.length is 0
   # Make a copy of the array. Needed when you don't want to modify the given
   # array with mutator methods like sort, splice or your own functions.
-  clone: (array) -> array.slice 0
+  # By giving begin/arguments, retrieve a subset of the array
+  clone: (array, begin, end) -> if begin? then array.slice begin, end else array.slice 0
   # Return last element of array.  Error if empty.
   last: (array) -> 
     @error "last: empty array" if @empty array
@@ -190,10 +192,10 @@ ABM.util = u =
   oneOf: (array) -> 
     @error "oneOf: empty array" if @empty array
     array[@randomInt array.length]
-  # Return n random elements of array.  Error if n > array size.
+  # Return n random elements of array. n can be float.  Error if n > array size.
   nOf: (array, n) -> # Note: clone, shuffle then first n may be better
     @error "nOf: n > length" if n > array.length
-    r = []; while r.length < n
+    r = []; while r.length < n # n can be float, ceil n will be chosen
       o = @oneOf(array)
       r.push o unless o in r
     r
@@ -243,7 +245,7 @@ ABM.util = u =
   #     b = ({id:i} for i in a)
   #     h = histOf b, 2, (o) -> o.id
   #     h = histOf b, 2, "id"
-  histOf: (array, bin, f) ->
+  histOf: (array, bin=1, f=(i)->i) ->
     r = []; (s=f; f = ((o)->o[s])) if @isString f
     for a in array
       i = Math.floor f(a)/bin
@@ -280,14 +282,14 @@ ABM.util = u =
   #     [[1,2,3],[4,5,6]] to [1,2,3,4,5,6]
   flatten: (matrix) -> matrix.reduce( (a,b) -> a.concat b )
   
+  # Return array of property values of given array of objects
+  aProp: (array, prop) -> (a[prop] for a in array)
+
   # Return max/min/sum/avg of numeric array
   aMax: (array) -> array.reduce (a,b) -> Math.max a,b
   aMin: (array) -> array.reduce (a,b) -> Math.min a,b
   aSum: (array) -> array.reduce (a,b) -> a+b
   aAvg: (array) -> @aSum(array)/array.length
-  # Modify each member of an array; clone.
-  # Clone first if you want to preserve the original array.
-  aMod: (array, f) -> array[i] = f(a) for a,i in array;array
   
   # Return array composed of f pairwise on both arrays
   aPairwise: (a1, a2, f) -> v=0; f(v,a2[i]) for v,i in a1 
@@ -298,15 +300,17 @@ ABM.util = u =
   # Return a JS array given a TypedArray
   typedToJS: (typedArray) -> (i for i in typedArray)
   
-  # Return a linear interpolation between from and to.
-  # Scale is in [0-1], and the result is in [from,to]
-  # [Why `lerp`?](http://goo.gl/QrzMc)
-  lerp: (from, to, scale) -> from + (to-from)*@clamp(scale, 0, 1)
-  # Return an array with values in [from,to], defaults to [0,1].
-  # Note: to have a half-open interval, [from,to), try to=to-.00009
-  normalize: (array, from = 0, to = 1) ->
+  # Return a linear interpolation between lo and hi.
+  # Scale is in [0-1], and the result is in [lo,hi]
+  # [Why the name `lerp`?](http://goo.gl/QrzMc)
+  lerp: (lo, hi, scale) -> lo + (hi-lo)*scale # @clamp(scale, 0, 1)
+  # Return point interpolated between two points.
+  lerp2: (x0, y0, x1, y1, scale) -> [@lerp(x0,x1,scale), @lerp(y0,y1,scale)]
+  # Return an array with values in [lo,hi], defaults to [0,1].
+  # Note: to have a half-open interval, [lo,hi), try hi=hi-.00009
+  normalize: (array, lo = 0, hi = 1) ->
     min = @aMin array; max = @aMax array; scale = 1/(max-min)
-    (@lerp(from, to, scale*(num-min)) for num in array)
+    (@lerp(lo, hi, scale*(num-min)) for num in array)
 
   # Binary search of a sorted array, adapted from [jaskenas](http://goo.gl/ozAZH).
   # Search for index of value with items array, using fcn for item value.
@@ -402,8 +406,8 @@ ABM.util = u =
   fileIndex: {}
   # Import an image, executing (async) optional function f(img) on completion
   importImage: (name, f = ->) ->
-    if img=@fileIndex[name]? # wtf? or ((img=name).width and img.height)
-      f(img) if img.isDone
+    if (img=@fileIndex[name])? # wtf? or ((img=name).width and img.height)
+      f(img) #if img.isDone
     else
       @fileIndex[name] = img = new Image()
       img.isDone = false
@@ -446,7 +450,7 @@ ABM.util = u =
   # Note ctx.canvas is the canvas for the ctx, and can be use as an image.
   createCtx: (width, height, ctxType="2d") ->
     can = @createCanvas width, height
-    if ctxType is "2d" 
+    can.ctx = if ctxType is "2d" 
     then can.getContext "2d" 
     else can.getContext("webgl") ? can.getContext("experimental-webgl")
 
@@ -484,11 +488,12 @@ ABM.util = u =
     else # 3D
       ctx.clearColor color..., 1 # alpha = 1 unless color is rgba
       ctx.clear ctx.COLOR_BUFFER_BIT | ctx.DEPTH_BUFFER_BIT
-  # Draw string of the given color at the xy location.
-  # Note that this will follow the existing transform.
-  ctxDrawText: (ctx, string, xy, color = [0,0,0]) -> 
-    ctx.fillStyle = @colorStr color
-    ctx.fillText(string, xy[0], xy[1])
+  # Draw string of the given color at the xy location, in ctx pixel coords.
+  # Use setIdentity .. reset if a transform is being used by caller.
+  ctxDrawText: (ctx, string, x, y, color = [0,0,0], setIdentity = true) ->
+    @setIdentity(ctx) if setIdentity
+    ctx.fillStyle = @colorStr color;  ctx.fillText(string, x, y)
+    ctx.restore() if setIdentity
   # Set the canvas text align and baseline drawing parameters
   #
   # * font is a HTML/CSS string like: "9px sans-serif"
@@ -498,10 +503,6 @@ ABM.util = u =
   # See [reference](http://goo.gl/AvEAq) for details.
   ctxTextParams: (ctx, font, align = "center", baseline = "middle") -> 
     ctx.font = font; ctx.textAlign = align; ctx.textBaseline = baseline
-  # 2D: Store the default color and xy offset for text labels for agentsets.
-  # This is simply using the ctx object for convenient storage.
-  ctxLabelParams: (ctx, color, xy) -> # patches/agents defaults
-    ctx.labelColor = color; ctx.labelXY = xy
 
   # Convert an image to a context. ctx.canvas gives the created canvas.
   imageToCtx: (image) ->
@@ -810,16 +811,15 @@ class ABM.AgentSet extends Array
       u.error "remove: indexOfID not in list" if i is -1
     @
 
-  setDefault: (name, value) ->
-    u.error "setDefault: name is not a string" if typeof name isnt "string"
-    @agentClass::[name] = value
-
-  own: (vars...) -> # maybe not set default if val is null?
-    for name in vars
-      val = null; [name,val] = name if u.isArray name
-      @setDefault name, val
+  # Set the default value of a agent class, return agetnset
+  setDefault: (name, value) -> @agentClass::[name] = value; @
+  # Declare variables of an agent class. Vars = a string of space separated names.
+  # Return agentset.
+  own: (vars) -> # maybe not set default if val is null?
+    for name in vars.split(" ")
+      @setDefault name, null
       @ownVariables.push name
-    null
+    @
   
 
   # Remove adjacent duplicates, by reference, in a sorted agentset.
@@ -866,15 +866,6 @@ class ABM.AgentSet extends Array
   #      AS.getProp "x" # [0, 8, 6, 1, 1]
   getProp: (prop) -> o[prop] for o in @
 
-  # Return an array of arrays of props, given as a string or an array of strings.
-  #
-  #     AS.getProps "id x y"
-  #     AS.getProps ["id", "x", "y"]
-  #     [[1,0,1],[2,8,0],[3,6,4],[4,1,3],[5,1,1]]
-  getProps: (props) -> 
-    props = props.split(" ") if u.isString props
-    (o[p] for p in props) for o in @
-
   # Return an array of agents with the property equal to the given value
   #
   #     AS.getPropWith "x", 1
@@ -895,8 +886,6 @@ class ABM.AgentSet extends Array
     then o[prop] = value[i] for o,i in @; @
     else o[prop] = value for o in @; @
   
-  setProps: (prop, values) -> o[prop] = values[i] for o,i in @; @
-
   # Get the agent with the min/max prop value in the agentset
   #
   #     min = AS.minProp "y"  # 0
@@ -962,10 +951,8 @@ class ABM.AgentSet extends Array
   # 
   #     AS.minOneOf("x") # {id:0,x:0,y:1}
   #     AS.maxOneOf((a)->a.x+a.y, true) # {id:2,x:6,y:4},10 
-  minOneOf: (f, valueToo=false) ->
-    u.minOneOf @, f, valueToo
-  maxOneOf: (f, valueToo=false) ->
-    u.maxOneOf @, f, valueToo
+  minOneOf: (f, valueToo=false) -> u.minOneOf @, f, valueToo
+  maxOneOf: (f, valueToo=false) -> u.maxOneOf @, f, valueToo
 
 # ### Drawing
   
@@ -1064,6 +1051,8 @@ class ABM.Patch
   color: [0,0,0]
   hidden: false
   label: null
+  labelColor: [0,0,0]
+  labelOffset: [0,0]
   breed: null # set by the agentSet owning this patch
   
   # New Patch: Just set x,y. Neighbors set by Patches constructor if needed.
@@ -1088,12 +1077,8 @@ class ABM.Patch
     ctx.fillStyle = u.colorStr @color
     ctx.fillRect @x-.5, @y-.5, 1, 1
     if @label? # REMIND: should be 2nd pass.
-      [x,y] = ctx.labelXY
-      ctx.save() # bug: fonts don't scale for size < 1
-      ctx.translate @x, @y
-      ctx.scale 1/@breed.size, -1/@breed.size # revert to identity for text use
-      u.ctxDrawText ctx, @label, [x,y], ctx.labelColor
-      ctx.restore()
+      [x,y] = @breed.patchXYtoPixelXY @x, @y
+      u.ctxDrawText ctx, @label, x+@labelOffset[0], y+@labelOffset[1], @labelColor
   
   # Return an array of the agents on this patch.
   # If patches.cacheAgentsHere has created an @agents instance
@@ -1137,11 +1122,6 @@ class ABM.Patches extends ABM.AgentSet
     @setNeighbors() if @hasNeighbors
     @setPixels() # setup off-page canvas for pixel ops
   
-  # Set the default color for new Patch instances.
-  # Note coffeescript :: which refers to the Patch prototype.
-  # This is the usual way to modify class variables.
-  setDefaultColor: (color) -> @agentClass::color = color
-  
   # Have patches cache the agents currently on them.
   # Optimizes p.agentsHere method.
   # Call before first agent is created.
@@ -1175,12 +1155,8 @@ class ABM.Patches extends ABM.AgentSet
   # 
   setPixels: ->
     if @size is 1
-      @usePixels()
-      @pixelsCtx = ABM.contexts.patches
-    else
-      can = document.createElement 'canvas'  # small pixel grid for patch colors
-      can.width = @numX; can.height = @numY
-      @pixelsCtx = can.getContext "2d"
+    then @usePixels(); @pixelsCtx = ABM.contexts.patches
+    else @pixelsCtx = u.createCtx @numX, @numY
     @pixelsImageData = @pixelsCtx.getImageData(0, 0, @numX, @numY)
     @pixelsData = @pixelsImageData.data
     if @pixelsData instanceof Uint8Array # Check for typed arrays
@@ -1254,26 +1230,30 @@ class ABM.Patches extends ABM.AgentSet
   # Draws, or "imports" an image URL into the drawing layer.
   # The image is scaled to fit the drawing layer.
   #
-  # This is an async load, see
+  # This is an async load, see this
   # [new Image()](http://javascript.mfields.org/2011/creating-an-image-in-javascript/)
   # tutorial.  We draw the image into the drawing layer as
   # soon as the onload callback executes.
+  importDrawing: (imageSrc, f) ->
+    u.importImage imageSrc, (img) => # fat arrow, this context
+      @installDrawing img
+      f() if f?
+  # Direct install image into the given context, not async.
   installDrawing: (img, ctx=ABM.contexts.drawing) ->
     u.setIdentity ctx
     ctx.drawImage img, 0, 0, ctx.canvas.width, ctx.canvas.height
     ctx.restore() # restore patch transform
-  importDrawing: (imageSrc, f) ->
-    u.importImage imageSrc, (img) ->
-      @installDrawing img
-      f() if f?
   
   # Utility function for pixel manipulation.  Given a patch, returns the 
   # native canvas index i into the pixel data.
   # The top-left order simplifies finding pixels in data sets
   pixelByteIndex: (p) -> 4*p.id # Uint8
   pixelWordIndex: (p) -> p.id   # Uint32
-  pixelXYtoPatchXY: (x,y) ->
-    px = @minXcor+(x/@size); py = @maxYcor-(y/@size); [px,py]
+  # Convert pixel location (top/left offset i.e. mouse) to patch coords (float)
+  pixelXYtoPatchXY: (x,y) -> [@minXcor+(x/@size), @maxYcor-(y/@size)]
+  # Convert patch coords (float) to pixel location (top/left offset i.e. mouse)
+  patchXYtoPixelXY: (x,y) -> [(x-@minXcor)*@size, (@maxYcor-y)*@size]
+  
     
   # Draws, or "imports" an image URL into the patches as their color property.
   # The drawing is scaled to the number of x,y patches, thus one pixel
@@ -1357,6 +1337,9 @@ class ABM.Agent
   shape: "default"
   breed: null # set by the agentSet owning this agent
   hidden: false
+  label: null
+  labelColor: [0,0,0]
+  labelOffset: [0,0]
   size: 1
   penDown: false
   penSize: 1 # pixels
@@ -1425,6 +1408,9 @@ class ABM.Agent
       ABM.shapes.drawSprite ctx, @sprite, @x, @y, @size, rad
     else
       ABM.shapes.draw ctx, shape, @x, @y, @size, rad, @color
+    if @label?
+      [x,y] = ABM.patches.patchXYtoPixelXY @x, @y
+      u.ctxDrawText ctx, @label, x+@labelOffset[0], y+@labelOffset[1], @labelColor
   
   # Set an individual agent's sprite, synching its color, shape, size
   setSprite: (sprite)->
@@ -1531,19 +1517,6 @@ class ABM.Agents extends ABM.AgentSet
   # Optimizes Agent a.myLinks method. Call before any agents created.
   cacheLinks: -> @agentClass::cacheLinks = true # all agents, not individual breeds
 
-  # Methods to change the default Agent class variables.
-  setDefaultColor:  (color) -> @agentClass::color = color
-  setDefaultShape:  (shape) -> @agentClass::shape = shape
-  setDefaultSize:   (size)  -> @agentClass::size = size
-  setDefaultHeading:(heading)-> @agentClass::heading = heading
-  setDefaultHidden: (hidden)-> @agentClass::hidden = hidden
-  setDefaultSprite: (sprite)-> 
-    @setDefaultColor sprite.color; @setDefaultShape sprite.shape; @setDefaultSize sprite.size
-    @agentClass::sprite = sprite
-  setDefaultPen:   (size, down=false) -> 
-    @agentClass::penSize = size
-    @agentClass::penDown = down
-  
   # Use sprites rather than drawing
   setUseSprites: (@useSprites=true) ->
   
@@ -1600,6 +1573,9 @@ class ABM.Link
   color: [130, 130, 130]
   thickness: 2
   hidden: false
+  label: null
+  labelColor: [0,0,0]
+  labelOffset: [0,0]
   constructor: (@end1, @end2) ->
     if @end1.links?
       @end1.links.push @
@@ -1627,6 +1603,10 @@ class ABM.Link
     ctx.closePath()
     ctx.stroke()
     ctx.restore()
+    if @label?
+      [x0, y0]  = u.lerp2 @end1.x, @end1.y, @end2.x, @end2.y, .5
+      [x,y] = ABM.patches.patchXYtoPixelXY x0, y0
+      u.ctxDrawText ctx, @label, x+@labelOffset[0], y+@labelOffset[1], @labelColor
   
   # Remove this link from the agent set
   die: ->
@@ -1653,11 +1633,6 @@ class ABM.Links extends ABM.AgentSet
   # the agentClass (breed) variable shared by all the Links in this set.
   constructor: -> # agentClass, name, mainSet
     super # call super with all the args I was called with
-
-  # Methods to change the default Link class variables.
-  setDefaultColor:     (color)      -> @agentClass::color = color
-  setDefaultThickness: (thickness)  -> @agentClass::thickness = thickness
-  setDefaultHidden:    (hidden)     -> @agentClass::hidden = hidden
 
   # Factory: Add 1 or more links from the from agent to the to agent(s) which
   # can be a single agent or an array of agents. The optional init
@@ -1773,6 +1748,7 @@ class ABM.Animator
 
 # ### Class Model
 
+ABM.models = {} # user space, put your models here
 class ABM.Model  
   
   # Class variable for layers parameters. 
@@ -1795,12 +1771,13 @@ class ABM.Model
   # * intialize various instance variables
   # * call `setup` abstract method
   constructor: (
-    @div, size, minX, maxX, minY, maxY,
-    isTorus=true, hasNeighbors=true
+    @div, size=13, minX=-16, maxX=16, minY=-16, maxY=16,
+    isTorus=false, hasNeighbors=true
   ) ->
     ABM.model = @
     @setWorld size, minX, maxX, minY, maxY, isTorus, hasNeighbors
     @contexts = ABM.contexts = {}
+    document.getElementById(div).setAttribute 'style', "position:relative"
         
     # * Create 2D canvas contexts layered on top of each other.
     # * Initialize a patch coord transform for each layer.
@@ -1814,11 +1791,13 @@ class ABM.Model
     
     for own k,v of @contextsInit
       @contexts[k] = ctx = u.createLayer div, @world.pxWidth, @world.pxHeight, v.z, v.ctx
-      @setCtxTransform(ctx)
-    u.fillCtx @contexts.patches, [0,0,0]
+      @setCtxTransform ctx
+      u.ctxTextParams ctx, "10px sans-serif", "center", "middle"
+    u.fillCtx @contexts.patches, [100, 100, 100]
 
     # One of the layers is used for drawing only, not an agentset:
     @drawing = ABM.drawing = @contexts.drawing
+    @drawing.clear = => u.clearCtx @drawing
     # Setup spotlight layer, also not an agentset:
     @contexts.spotlight.globalCompositeOperation = "xor"
 
@@ -1878,14 +1857,6 @@ class ABM.Model
   # Have patches cache the given patchRect.
   # Optimizes patchRect, inRadius and inCone
   setCachePatchRects: (radius, meToo=false) -> @patches.cacheRect radius, meToo
-
-#### Text Utilities:
-  
-  # Set the text parameters for an agentset's context.  See ABM.util.
-  setTextParams: (agentset, domFont, align="center", baseline="middle") ->
-    u.ctxTextParams @contexts[agentset.name], domFont, align, baseline
-  setLabelParams: (agentset, color, xy) ->
-    u.ctxLabelParams @contexts[agentset.name], color, xy
   
 #### User Model Creation
 # A user's model is made by subclassing Model and over-riding these
@@ -1903,7 +1874,7 @@ class ABM.Model
 # Convenience access to animator:
 
   # Start/stop the animation
-  start: -> @anim.start()
+  start: -> u.waitOn (=> @modelReady), (=> @anim.start()); @
   stop:  -> @anim.stop()
   stopped: -> @anim.stopped
   toggle: -> if @anim.stopped then @start() else @stop()
@@ -1918,23 +1889,19 @@ class ABM.Model
     @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
     @links = ABM.links = new ABM.Links ABM.Link, "links"
     @setCtxTransform v for k,v of @contexts # clear/resize all contexts
-    u.fillCtx @contexts.patches, [0,0,0]
     u.s.spriteSheets.length = 0 # possibly null out entries?
     @setup()
     @start() if running
-  # Convenience method to reset/start/run the model after startup initialization.
-  setupAndGo: () -> 
-    u.waitOn (=> @modelReady), (=> @start())
 
 #### Animation.
   
 # Call the agentset draw methods if either the first draw call or
 # their "refresh" flags are set.  The latter are simple optimizations
 # to avoid redrawing the same static scene. Called by animator.
-  draw: ->
-    @patches.draw @contexts.patches  if @refreshPatches or @anim.draws is 1
-    @links.draw   @contexts.links    if @refreshLinks   or @anim.draws is 1
-    @agents.draw  @contexts.agents   if @refreshAgents  or @anim.draws is 1
+  draw: (force=@anim.stopped) ->
+    @patches.draw @contexts.patches  if force or @refreshPatches or @anim.draws is 1
+    @links.draw   @contexts.links    if force or @refreshLinks   or @anim.draws is 1
+    @agents.draw  @contexts.agents   if force or @refreshAgents  or @anim.draws is 1
     @drawSpotlight @spotlightAgent, @contexts.spotlight  if @spotlightAgent?
 
 # Creates a spotlight effect on an agent, so we can follow it throughout the model.
@@ -1972,9 +1939,10 @@ class ABM.Model
 # Use of <breed>.setDefault methods work as for agents/links, creating default
 # values for the breed set:
 #
-#     @embers.setDefaultColor [255,0,0]
+#     @embers.setDefault "color", [255,0,0]
 #
-# ..will set the default color for just the embers.
+# ..will set the default color for just the embers. Note: patch breeds are currently
+# not usable due to the patches being prebuilt.  Stay tuned.
   
   createBreeds: (s, agentClass, breedSet) ->
     breeds = []; breeds.classes = {}; breeds.sets = {}
@@ -2000,6 +1968,7 @@ class ABM.Model
   # Note we avoid using the actual name, such as "patches" because this
   # can cause our modules to mistakenly depend on a global name.
   # See [CoffeeConsole](http://goo.gl/1i7bd) Chrome extension too.
+  debug: (@debugging = true)-> @setRootVars()
   setRootVars: ->
     root.ps  = @patches
     root.p0  = @patches[0]
@@ -2009,12 +1978,10 @@ class ABM.Model
     root.l0  = @links[0]
     root.dr  = @drawing
     root.u   = ABM.util
-    root.sh  = ABM.shapes
     root.cx  = @contexts
-    root.ab  = ABM.agentBreeds
-    root.lb  = ABM.linkBreeds
     root.an  = @anim
     root.wd  = ABM.world
     root.gl  = @globals
     root.root= root
     root.app = @
+    @

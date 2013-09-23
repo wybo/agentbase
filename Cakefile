@@ -98,7 +98,7 @@ task 'watch', 'Watch for source file updates, invoke builds', ->
         compileFile path
 
 wcCode = (file) ->
-  shell.grep('-v',/^ *[#/]|^ *$|^ *root|setRootVars/, file).split('\n').length
+  shell.grep('-v',/^ *[#/]|^ *$|^ *root|setRootVars|^ *console/, file).split('\n').length
 task 'wc', 'Count the lines of coffeescript & javascript', ->
   jsPath = ASPath.replace("#{srcDir}","#{libDir}").replace('coffee','js')
   console.log "code: #{ASPath}: #{wcCode(ASPath)}"

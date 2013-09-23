@@ -26,9 +26,9 @@
         @vision = 5
         @speed = .25
         
-        @agents.setDefaultShape "square"
-        @agents.setDefaultSize .5
-        @agents.setDefaultColor [100,100,150]
+        @agents.setDefault "shape", "square"
+        @agents.setDefault "size", .5
+        @agents.setDefault "color", [100,100,150]
         @patches.cacheRect @vision, false # cache inRadius @vision
         
         p.sprout 1 for p in @patches
@@ -49,15 +49,15 @@
           console.log "done, ticks: #{@anim.ticks}"
           @stop()
     
-    # div, patchSize, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true
-    #   NL Defaults: 13, -16, 16, -16, 16
-    model = new MyModel "layers", 6, 0,80, 0,80, false
-    model.setRootVars() # Debug: Put Model vars in global name space
-    model.setupAndGo() # Run model immediately after startup initialization
+    # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors
+    #   Defaults: 13, -16, 16, -16, 16, false, true
+    model = new MyModel "layers", 6, 0,80, 0,80
+    model.debug() # Debug: Put Model vars in global name space
+    model.start() # Run model immediately after startup initialization
     
     </script>
   </head>
   <body>
-    <div id="layers" style="position:relative;padding:20;"></div>
+    <div id="layers" style="padding:20"></div>
   </body>
 </html>

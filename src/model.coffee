@@ -71,6 +71,7 @@ class ABM.Animator
 
 # ### Class Model
 
+ABM.models = {} # user space, put your models here
 class ABM.Model  
   
   # Class variable for layers parameters. 
@@ -93,12 +94,13 @@ class ABM.Model
   # * intialize various instance variables
   # * call `setup` abstract method
   constructor: (
-    @div, size, minX, maxX, minY, maxY,
-    isTorus=true, hasNeighbors=true
+    @div, size=13, minX=-16, maxX=16, minY=-16, maxY=16,
+    isTorus=false, hasNeighbors=true
   ) ->
     ABM.model = @
     @setWorld size, minX, maxX, minY, maxY, isTorus, hasNeighbors
     @contexts = ABM.contexts = {}
+    document.getElementById(div).setAttribute 'style', "position:relative"
         
     # * Create 2D canvas contexts layered on top of each other.
     # * Initialize a patch coord transform for each layer.
@@ -112,11 +114,13 @@ class ABM.Model
     
     for own k,v of @contextsInit
       @contexts[k] = ctx = u.createLayer div, @world.pxWidth, @world.pxHeight, v.z, v.ctx
-      @setCtxTransform(ctx)
-    u.fillCtx @contexts.patches, [0,0,0]
+      @setCtxTransform ctx
+      u.ctxTextParams ctx, "10px sans-serif", "center", "middle"
+    u.fillCtx @contexts.patches, [100, 100, 100]
 
     # One of the layers is used for drawing only, not an agentset:
     @drawing = ABM.drawing = @contexts.drawing
+    @drawing.clear = => u.clearCtx @drawing
     # Setup spotlight layer, also not an agentset:
     @contexts.spotlight.globalCompositeOperation = "xor"
 
@@ -176,14 +180,6 @@ class ABM.Model
   # Have patches cache the given patchRect.
   # Optimizes patchRect, inRadius and inCone
   setCachePatchRects: (radius, meToo=false) -> @patches.cacheRect radius, meToo
-
-#### Text Utilities:
-  
-  # Set the text parameters for an agentset's context.  See ABM.util.
-  setTextParams: (agentset, domFont, align="center", baseline="middle") ->
-    u.ctxTextParams @contexts[agentset.name], domFont, align, baseline
-  setLabelParams: (agentset, color, xy) ->
-    u.ctxLabelParams @contexts[agentset.name], color, xy
   
 #### User Model Creation
 # A user's model is made by subclassing Model and over-riding these
@@ -201,7 +197,7 @@ class ABM.Model
 # Convenience access to animator:
 
   # Start/stop the animation
-  start: -> @anim.start()
+  start: -> u.waitOn (=> @modelReady), (=> @anim.start()); @
   stop:  -> @anim.stop()
   stopped: -> @anim.stopped
   toggle: -> if @anim.stopped then @start() else @stop()
@@ -216,23 +212,19 @@ class ABM.Model
     @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
     @links = ABM.links = new ABM.Links ABM.Link, "links"
     @setCtxTransform v for k,v of @contexts # clear/resize all contexts
-    u.fillCtx @contexts.patches, [0,0,0]
     u.s.spriteSheets.length = 0 # possibly null out entries?
     @setup()
     @start() if running
-  # Convenience method to reset/start/run the model after startup initialization.
-  setupAndGo: () -> 
-    u.waitOn (=> @modelReady), (=> @start())
 
 #### Animation.
   
 # Call the agentset draw methods if either the first draw call or
 # their "refresh" flags are set.  The latter are simple optimizations
 # to avoid redrawing the same static scene. Called by animator.
-  draw: ->
-    @patches.draw @contexts.patches  if @refreshPatches or @anim.draws is 1
-    @links.draw   @contexts.links    if @refreshLinks   or @anim.draws is 1
-    @agents.draw  @contexts.agents   if @refreshAgents  or @anim.draws is 1
+  draw: (force=@anim.stopped) ->
+    @patches.draw @contexts.patches  if force or @refreshPatches or @anim.draws is 1
+    @links.draw   @contexts.links    if force or @refreshLinks   or @anim.draws is 1
+    @agents.draw  @contexts.agents   if force or @refreshAgents  or @anim.draws is 1
     @drawSpotlight @spotlightAgent, @contexts.spotlight  if @spotlightAgent?
 
 # Creates a spotlight effect on an agent, so we can follow it throughout the model.
@@ -270,9 +262,10 @@ class ABM.Model
 # Use of <breed>.setDefault methods work as for agents/links, creating default
 # values for the breed set:
 #
-#     @embers.setDefaultColor [255,0,0]
+#     @embers.setDefault "color", [255,0,0]
 #
-# ..will set the default color for just the embers.
+# ..will set the default color for just the embers. Note: patch breeds are currently
+# not usable due to the patches being prebuilt.  Stay tuned.
   
   createBreeds: (s, agentClass, breedSet) ->
     breeds = []; breeds.classes = {}; breeds.sets = {}
@@ -298,6 +291,7 @@ class ABM.Model
   # Note we avoid using the actual name, such as "patches" because this
   # can cause our modules to mistakenly depend on a global name.
   # See [CoffeeConsole](http://goo.gl/1i7bd) Chrome extension too.
+  debug: (@debugging = true)-> @setRootVars()
   setRootVars: ->
     root.ps  = @patches
     root.p0  = @patches[0]
@@ -307,12 +301,10 @@ class ABM.Model
     root.l0  = @links[0]
     root.dr  = @drawing
     root.u   = ABM.util
-    root.sh  = ABM.shapes
     root.cx  = @contexts
-    root.ab  = ABM.agentBreeds
-    root.lb  = ABM.linkBreeds
     root.an  = @anim
     root.wd  = ABM.world
     root.gl  = @globals
     root.root= root
     root.app = @
+    @

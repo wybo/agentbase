@@ -16,10 +16,10 @@
         @cluster = 0
         
         # defaults
-        @agents.setDefaultShape "circle"
-        @agents.setDefaultSize 1.5
-        @agents.setDefaultHeading 0 # override promotion to random angle
-        @links.setDefaultThickness .5 # 2.5
+        @agents.setDefault "shape", "circle"
+        @agents.setDefault "size", 1.5
+        @agents.setDefault "heading", 0 # override promotion to random angle
+        @links.setDefault "thickness", .5 # 2.5
         
         
         @agents.create @buttons, (a) => # fat arrow for @patches etc
@@ -55,15 +55,15 @@
         @markNeighbors n for n in unMarked
 
 
-    # div, patchSize, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true
-    #   NL Defaults: 13, -16, 16, -16, 16
+    # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors
+    #   Defaults: 13, -16, 16, -16, 16, false, true
     model = new MyModel "layers", 13, -16, 16, -16, 16, false, false
-    model.setRootVars() # Debug: Put Model vars in global name space
-    model.setupAndGo() # Run model immediately after startup initialization
+    model.debug() # Debug: Put Model vars in global name space
+    model.start() # Run model immediately after startup initialization
 
     </script>
   </head>
   <body>
-    <div id="layers" style="position:relative;padding:20;"></div>
+    <div id="layers" style="padding:20"></div>
   </body>
 </html>

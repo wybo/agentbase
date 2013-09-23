@@ -24,7 +24,7 @@
         @anim.setRate 30, true
         
         # defaults
-        @agents.setDefaultSize(1.5)
+        @agents.setDefault "size", 1.5
 
         @agents.create @population
         # @agents.create @population, (a) => # fat arrow for @patches etc
@@ -42,15 +42,15 @@
         @patches.diffuse "heat", @diffusionRate, [255,0,0]
         # @stop() # debug: one step
 
-    # div, patchSize, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true
-    #   NL Defaults: 13, -16, 16, -16, 16
-    model = new MyModel "layers", 10, -25, 25, -20, 20
-    model.setRootVars() # Debug: Put Model vars in global name space
-    model.setupAndGo() # Run model immediately after startup initialization
+    # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors
+    #   Defaults: 13, -16, 16, -16, 16, false, true
+    model = new MyModel "layers", 10, -25, 25, -20, 20, true
+    model.debug() # Debug: Put Model vars in global name space
+    model.start() # Run model immediately after startup initialization
 
     </script>
   </head>
   <body>
-    <div id="layers" style="position:relative;padding:20;"></div>
+    <div id="layers" style="padding:20"></div>
   </body>
 </html>

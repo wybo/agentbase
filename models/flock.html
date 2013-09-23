@@ -29,8 +29,8 @@
         @setMaxTurn(3.0)      # degrees -> radians
       
         # defaults
-        @agents.setDefaultSize(1.5)
-        # @agents.setDefaultColor([255,0,0]) # slightly faster! ->38/39 ??
+        @agents.setDefault "size", 1.5
+        # @agents.setDefault "color", [255,0,0] # slightly faster! ->38/39 ??
 
         p.color = u.randomGray 0, 100 for p in @patches
         @agents.create @population, (a) => # fat arrow for @patches
@@ -87,17 +87,17 @@
         alignment = Math.sqrt(dx*dx + dy*dy)/@population
         console.log alignment
 
-    # div, patchSize, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true
-    #   NL Defaults: 13, -16, 16, -16, 16
+    # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors
+    #   Defaults: 13, -16, 16, -16, 16, false, true
     model = new MyModel "layers", 15, -16, 16, -16, 16, true, false
     # model = new MyModel "layers", 16, 0, 78, 0, 40, true, false
-    model.setRootVars() # Debug: Put Model vars in global name space
-    model.setupAndGo() # Run model immediately after startup initialization
+    model.debug() # Debug: Put Model vars in global name space
+    model.start() # Run model immediately after startup initialization
 
     </script>
   </head>
   <body>
-    <div id="layers" style="position:relative;padding:20;"></div>
+    <div id="layers" style="padding:20"></div>
     <div id="play" style="float:right;"></div>
   </body>
 </html>

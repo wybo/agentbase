@@ -30,15 +30,15 @@
         # @anim.setRate 60, false
         
         # defaults
-        @patches.setDefaultColor [250, 250, 0]
-        # @agents.setDefaultShape "circle"
-        # @agents.setDefaultColor [255,0,0]
-        # @agents.setDefaultHeading 0 # override promotion to random angle
-        @nodes.setDefaultShape "circle"
-        @nodes.setDefaultColor [255,0,0]
-        @nodes.setDefaultHeading 0 # override promotion to random angle
-        @travelers.setDefaultHidden true
-        @links.setDefaultColor [255,0,0]
+        @patches.setDefault "color", [250, 250, 0]
+        # @agents.setDefault "shape", "circle"
+        # @agents.setDefault "color", [255,0,0]
+        # @agents.setDefault "heading", 0 # override promotion to random angle
+        @nodes.setDefault "shape", "circle"
+        @nodes.setDefault "color", [255,0,0]
+        @nodes.setDefault "heading", 0 # override promotion to random angle
+        @travelers.setDefault "hidden", true
+        @links.setDefault "color", [255,0,0]
 
         # p.color = [250, 250, 0] for p in @patches
         
@@ -114,15 +114,15 @@
       reportNewTour: (a) ->
         console.log "new best tour at tick #{@anim.ticks}: #{a.tourLength} by traveler #{a.id}"
         
-    # div, patchSize, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true
-    #   NL Defaults: 13, -16, 16, -16, 16
+    # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors
+    #   Defaults: 13, -16, 16, -16, 16, false, true
     model = new MyModel "layers", 16, -14, 14, -14, 14, false, false
-    model.setRootVars() # Debug: Put Model vars in global name space
-    model.setupAndGo() # Run model immediately after startup initialization
+    model.debug() # Debug: Put Model vars in global name space
+    model.start() # Run model immediately after startup initialization
     
     </script>
   </head>
   <body>
-    <div id="layers" style="position:relative;padding:20;"></div>
+    <div id="layers" style="padding:20"></div>
   </body>
 </html>

@@ -89,16 +89,15 @@ class ABM.AgentSet extends Array
       u.error "remove: indexOfID not in list" if i is -1
     @
 
-  setDefault: (name, value) ->
-    u.error "setDefault: name is not a string" if typeof name isnt "string"
-    @agentClass::[name] = value
-
-  own: (vars...) -> # maybe not set default if val is null?
-    for name in vars
-      val = null; [name,val] = name if u.isArray name
-      @setDefault name, val
+  # Set the default value of a agent class, return agetnset
+  setDefault: (name, value) -> @agentClass::[name] = value; @
+  # Declare variables of an agent class. Vars = a string of space separated names.
+  # Return agentset.
+  own: (vars) -> # maybe not set default if val is null?
+    for name in vars.split(" ")
+      @setDefault name, null
       @ownVariables.push name
-    null
+    @
   
 
   # Remove adjacent duplicates, by reference, in a sorted agentset.
@@ -145,15 +144,6 @@ class ABM.AgentSet extends Array
   #      AS.getProp "x" # [0, 8, 6, 1, 1]
   getProp: (prop) -> o[prop] for o in @
 
-  # Return an array of arrays of props, given as a string or an array of strings.
-  #
-  #     AS.getProps "id x y"
-  #     AS.getProps ["id", "x", "y"]
-  #     [[1,0,1],[2,8,0],[3,6,4],[4,1,3],[5,1,1]]
-  getProps: (props) -> 
-    props = props.split(" ") if u.isString props
-    (o[p] for p in props) for o in @
-
   # Return an array of agents with the property equal to the given value
   #
   #     AS.getPropWith "x", 1
@@ -174,8 +164,6 @@ class ABM.AgentSet extends Array
     then o[prop] = value[i] for o,i in @; @
     else o[prop] = value for o in @; @
   
-  setProps: (prop, values) -> o[prop] = values[i] for o,i in @; @
-
   # Get the agent with the min/max prop value in the agentset
   #
   #     min = AS.minProp "y"  # 0
@@ -241,10 +229,8 @@ class ABM.AgentSet extends Array
   # 
   #     AS.minOneOf("x") # {id:0,x:0,y:1}
   #     AS.maxOneOf((a)->a.x+a.y, true) # {id:2,x:6,y:4},10 
-  minOneOf: (f, valueToo=false) ->
-    u.minOneOf @, f, valueToo
-  maxOneOf: (f, valueToo=false) ->
-    u.maxOneOf @, f, valueToo
+  minOneOf: (f, valueToo=false) -> u.minOneOf @, f, valueToo
+  maxOneOf: (f, valueToo=false) -> u.maxOneOf @, f, valueToo
 
 # ### Drawing
   

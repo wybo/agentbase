@@ -21,6 +21,8 @@ class ABM.Patch
   color: [0,0,0]
   hidden: false
   label: null
+  labelColor: [0,0,0]
+  labelOffset: [0,0]
   breed: null # set by the agentSet owning this patch
   
   # New Patch: Just set x,y. Neighbors set by Patches constructor if needed.
@@ -45,12 +47,8 @@ class ABM.Patch
     ctx.fillStyle = u.colorStr @color
     ctx.fillRect @x-.5, @y-.5, 1, 1
     if @label? # REMIND: should be 2nd pass.
-      [x,y] = ctx.labelXY
-      ctx.save() # bug: fonts don't scale for size < 1
-      ctx.translate @x, @y
-      ctx.scale 1/@breed.size, -1/@breed.size # revert to identity for text use
-      u.ctxDrawText ctx, @label, [x,y], ctx.labelColor
-      ctx.restore()
+      [x,y] = @breed.patchXYtoPixelXY @x, @y
+      u.ctxDrawText ctx, @label, x+@labelOffset[0], y+@labelOffset[1], @labelColor
   
   # Return an array of the agents on this patch.
   # If patches.cacheAgentsHere has created an @agents instance
@@ -94,11 +92,6 @@ class ABM.Patches extends ABM.AgentSet
     @setNeighbors() if @hasNeighbors
     @setPixels() # setup off-page canvas for pixel ops
   
-  # Set the default color for new Patch instances.
-  # Note coffeescript :: which refers to the Patch prototype.
-  # This is the usual way to modify class variables.
-  setDefaultColor: (color) -> @agentClass::color = color
-  
   # Have patches cache the agents currently on them.
   # Optimizes p.agentsHere method.
   # Call before first agent is created.
@@ -132,12 +125,8 @@ class ABM.Patches extends ABM.AgentSet
   # 
   setPixels: ->
     if @size is 1
-      @usePixels()
-      @pixelsCtx = ABM.contexts.patches
-    else
-      can = document.createElement 'canvas'  # small pixel grid for patch colors
-      can.width = @numX; can.height = @numY
-      @pixelsCtx = can.getContext "2d"
+    then @usePixels(); @pixelsCtx = ABM.contexts.patches
+    else @pixelsCtx = u.createCtx @numX, @numY
     @pixelsImageData = @pixelsCtx.getImageData(0, 0, @numX, @numY)
     @pixelsData = @pixelsImageData.data
     if @pixelsData instanceof Uint8Array # Check for typed arrays
@@ -211,26 +200,30 @@ class ABM.Patches extends ABM.AgentSet
   # Draws, or "imports" an image URL into the drawing layer.
   # The image is scaled to fit the drawing layer.
   #
-  # This is an async load, see
+  # This is an async load, see this
   # [new Image()](http://javascript.mfields.org/2011/creating-an-image-in-javascript/)
   # tutorial.  We draw the image into the drawing layer as
   # soon as the onload callback executes.
+  importDrawing: (imageSrc, f) ->
+    u.importImage imageSrc, (img) => # fat arrow, this context
+      @installDrawing img
+      f() if f?
+  # Direct install image into the given context, not async.
   installDrawing: (img, ctx=ABM.contexts.drawing) ->
     u.setIdentity ctx
     ctx.drawImage img, 0, 0, ctx.canvas.width, ctx.canvas.height
     ctx.restore() # restore patch transform
-  importDrawing: (imageSrc, f) ->
-    u.importImage imageSrc, (img) ->
-      @installDrawing img
-      f() if f?
   
   # Utility function for pixel manipulation.  Given a patch, returns the 
   # native canvas index i into the pixel data.
   # The top-left order simplifies finding pixels in data sets
   pixelByteIndex: (p) -> 4*p.id # Uint8
   pixelWordIndex: (p) -> p.id   # Uint32
-  pixelXYtoPatchXY: (x,y) ->
-    px = @minXcor+(x/@size); py = @maxYcor-(y/@size); [px,py]
+  # Convert pixel location (top/left offset i.e. mouse) to patch coords (float)
+  pixelXYtoPatchXY: (x,y) -> [@minXcor+(x/@size), @maxYcor-(y/@size)]
+  # Convert patch coords (float) to pixel location (top/left offset i.e. mouse)
+  patchXYtoPixelXY: (x,y) -> [(x-@minXcor)*@size, (@maxYcor-y)*@size]
+  
     
   # Draws, or "imports" an image URL into the patches as their color property.
   # The drawing is scaled to the number of x,y patches, thus one pixel
@@ -314,6 +307,9 @@ class ABM.Agent
   shape: "default"
   breed: null # set by the agentSet owning this agent
   hidden: false
+  label: null
+  labelColor: [0,0,0]
+  labelOffset: [0,0]
   size: 1
   penDown: false
   penSize: 1 # pixels
@@ -382,6 +378,9 @@ class ABM.Agent
       ABM.shapes.drawSprite ctx, @sprite, @x, @y, @size, rad
     else
       ABM.shapes.draw ctx, shape, @x, @y, @size, rad, @color
+    if @label?
+      [x,y] = ABM.patches.patchXYtoPixelXY @x, @y
+      u.ctxDrawText ctx, @label, x+@labelOffset[0], y+@labelOffset[1], @labelColor
   
   # Set an individual agent's sprite, synching its color, shape, size
   setSprite: (sprite)->
@@ -488,19 +487,6 @@ class ABM.Agents extends ABM.AgentSet
   # Optimizes Agent a.myLinks method. Call before any agents created.
   cacheLinks: -> @agentClass::cacheLinks = true # all agents, not individual breeds
 
-  # Methods to change the default Agent class variables.
-  setDefaultColor:  (color) -> @agentClass::color = color
-  setDefaultShape:  (shape) -> @agentClass::shape = shape
-  setDefaultSize:   (size)  -> @agentClass::size = size
-  setDefaultHeading:(heading)-> @agentClass::heading = heading
-  setDefaultHidden: (hidden)-> @agentClass::hidden = hidden
-  setDefaultSprite: (sprite)-> 
-    @setDefaultColor sprite.color; @setDefaultShape sprite.shape; @setDefaultSize sprite.size
-    @agentClass::sprite = sprite
-  setDefaultPen:   (size, down=false) -> 
-    @agentClass::penSize = size
-    @agentClass::penDown = down
-  
   # Use sprites rather than drawing
   setUseSprites: (@useSprites=true) ->
   
@@ -557,6 +543,9 @@ class ABM.Link
   color: [130, 130, 130]
   thickness: 2
   hidden: false
+  label: null
+  labelColor: [0,0,0]
+  labelOffset: [0,0]
   constructor: (@end1, @end2) ->
     if @end1.links?
       @end1.links.push @
@@ -584,6 +573,10 @@ class ABM.Link
     ctx.closePath()
     ctx.stroke()
     ctx.restore()
+    if @label?
+      [x0, y0]  = u.lerp2 @end1.x, @end1.y, @end2.x, @end2.y, .5
+      [x,y] = ABM.patches.patchXYtoPixelXY x0, y0
+      u.ctxDrawText ctx, @label, x+@labelOffset[0], y+@labelOffset[1], @labelColor
   
   # Remove this link from the agent set
   die: ->
@@ -610,11 +603,6 @@ class ABM.Links extends ABM.AgentSet
   # the agentClass (breed) variable shared by all the Links in this set.
   constructor: -> # agentClass, name, mainSet
     super # call super with all the args I was called with
-
-  # Methods to change the default Link class variables.
-  setDefaultColor:     (color)      -> @agentClass::color = color
-  setDefaultThickness: (thickness)  -> @agentClass::thickness = thickness
-  setDefaultHidden:    (hidden)     -> @agentClass::hidden = hidden
 
   # Factory: Add 1 or more links from the from agent to the to agent(s) which
   # can be a single agent or an array of agents. The optional init

@@ -107,7 +107,8 @@ ABM.util = u =
   randomMapColor: (c = [], set = [0,63,127,191,255]) -> 
     @setColor c, @oneOf(set), @oneOf(set), @oneOf(set)
   randomBrightColor: (c=[]) -> @randomMapColor c, [0,127,255]
-  # Modify an existing color. Modifying an existing array minimizes GC overhead
+  # Modify an existing rgb or gray color.  Alpha optional, not set if not provided.
+  # Modifying an existing array minimizes GC overhead
   setColor: (c, r, g, b, a) ->
     c.str = null if c.str?
     c[0] = r; c[1] = g; c[2] = b; c[3] = a if a?
@@ -181,7 +182,8 @@ ABM.util = u =
   empty: (array) -> array.length is 0
   # Make a copy of the array. Needed when you don't want to modify the given
   # array with mutator methods like sort, splice or your own functions.
-  clone: (array) -> array.slice 0
+  # By giving begin/arguments, retrieve a subset of the array
+  clone: (array, begin, end) -> if begin? then array.slice begin, end else array.slice 0
   # Return last element of array.  Error if empty.
   last: (array) -> 
     @error "last: empty array" if @empty array
@@ -190,10 +192,10 @@ ABM.util = u =
   oneOf: (array) -> 
     @error "oneOf: empty array" if @empty array
     array[@randomInt array.length]
-  # Return n random elements of array.  Error if n > array size.
+  # Return n random elements of array. n can be float.  Error if n > array size.
   nOf: (array, n) -> # Note: clone, shuffle then first n may be better
     @error "nOf: n > length" if n > array.length
-    r = []; while r.length < n
+    r = []; while r.length < n # n can be float, ceil n will be chosen
       o = @oneOf(array)
       r.push o unless o in r
     r
@@ -243,7 +245,7 @@ ABM.util = u =
   #     b = ({id:i} for i in a)
   #     h = histOf b, 2, (o) -> o.id
   #     h = histOf b, 2, "id"
-  histOf: (array, bin, f) ->
+  histOf: (array, bin=1, f=(i)->i) ->
     r = []; (s=f; f = ((o)->o[s])) if @isString f
     for a in array
       i = Math.floor f(a)/bin
@@ -280,14 +282,14 @@ ABM.util = u =
   #     [[1,2,3],[4,5,6]] to [1,2,3,4,5,6]
   flatten: (matrix) -> matrix.reduce( (a,b) -> a.concat b )
   
+  # Return array of property values of given array of objects
+  aProp: (array, prop) -> (a[prop] for a in array)
+
   # Return max/min/sum/avg of numeric array
   aMax: (array) -> array.reduce (a,b) -> Math.max a,b
   aMin: (array) -> array.reduce (a,b) -> Math.min a,b
   aSum: (array) -> array.reduce (a,b) -> a+b
   aAvg: (array) -> @aSum(array)/array.length
-  # Modify each member of an array; clone.
-  # Clone first if you want to preserve the original array.
-  aMod: (array, f) -> array[i] = f(a) for a,i in array;array
   
   # Return array composed of f pairwise on both arrays
   aPairwise: (a1, a2, f) -> v=0; f(v,a2[i]) for v,i in a1 
@@ -298,15 +300,17 @@ ABM.util = u =
   # Return a JS array given a TypedArray
   typedToJS: (typedArray) -> (i for i in typedArray)
   
-  # Return a linear interpolation between from and to.
-  # Scale is in [0-1], and the result is in [from,to]
-  # [Why `lerp`?](http://goo.gl/QrzMc)
-  lerp: (from, to, scale) -> from + (to-from)*@clamp(scale, 0, 1)
-  # Return an array with values in [from,to], defaults to [0,1].
-  # Note: to have a half-open interval, [from,to), try to=to-.00009
-  normalize: (array, from = 0, to = 1) ->
+  # Return a linear interpolation between lo and hi.
+  # Scale is in [0-1], and the result is in [lo,hi]
+  # [Why the name `lerp`?](http://goo.gl/QrzMc)
+  lerp: (lo, hi, scale) -> lo + (hi-lo)*scale # @clamp(scale, 0, 1)
+  # Return point interpolated between two points.
+  lerp2: (x0, y0, x1, y1, scale) -> [@lerp(x0,x1,scale), @lerp(y0,y1,scale)]
+  # Return an array with values in [lo,hi], defaults to [0,1].
+  # Note: to have a half-open interval, [lo,hi), try hi=hi-.00009
+  normalize: (array, lo = 0, hi = 1) ->
     min = @aMin array; max = @aMax array; scale = 1/(max-min)
-    (@lerp(from, to, scale*(num-min)) for num in array)
+    (@lerp(lo, hi, scale*(num-min)) for num in array)
 
   # Binary search of a sorted array, adapted from [jaskenas](http://goo.gl/ozAZH).
   # Search for index of value with items array, using fcn for item value.
@@ -402,8 +406,8 @@ ABM.util = u =
   fileIndex: {}
   # Import an image, executing (async) optional function f(img) on completion
   importImage: (name, f = ->) ->
-    if img=@fileIndex[name]? # wtf? or ((img=name).width and img.height)
-      f(img) if img.isDone
+    if (img=@fileIndex[name])? # wtf? or ((img=name).width and img.height)
+      f(img) #if img.isDone
     else
       @fileIndex[name] = img = new Image()
       img.isDone = false
@@ -446,7 +450,7 @@ ABM.util = u =
   # Note ctx.canvas is the canvas for the ctx, and can be use as an image.
   createCtx: (width, height, ctxType="2d") ->
     can = @createCanvas width, height
-    if ctxType is "2d" 
+    can.ctx = if ctxType is "2d" 
     then can.getContext "2d" 
     else can.getContext("webgl") ? can.getContext("experimental-webgl")
 
@@ -484,11 +488,12 @@ ABM.util = u =
     else # 3D
       ctx.clearColor color..., 1 # alpha = 1 unless color is rgba
       ctx.clear ctx.COLOR_BUFFER_BIT | ctx.DEPTH_BUFFER_BIT
-  # Draw string of the given color at the xy location.
-  # Note that this will follow the existing transform.
-  ctxDrawText: (ctx, string, xy, color = [0,0,0]) -> 
-    ctx.fillStyle = @colorStr color
-    ctx.fillText(string, xy[0], xy[1])
+  # Draw string of the given color at the xy location, in ctx pixel coords.
+  # Use setIdentity .. reset if a transform is being used by caller.
+  ctxDrawText: (ctx, string, x, y, color = [0,0,0], setIdentity = true) ->
+    @setIdentity(ctx) if setIdentity
+    ctx.fillStyle = @colorStr color;  ctx.fillText(string, x, y)
+    ctx.restore() if setIdentity
   # Set the canvas text align and baseline drawing parameters
   #
   # * font is a HTML/CSS string like: "9px sans-serif"
@@ -498,10 +503,6 @@ ABM.util = u =
   # See [reference](http://goo.gl/AvEAq) for details.
   ctxTextParams: (ctx, font, align = "center", baseline = "middle") -> 
     ctx.font = font; ctx.textAlign = align; ctx.textBaseline = baseline
-  # 2D: Store the default color and xy offset for text labels for agentsets.
-  # This is simply using the ctx object for convenient storage.
-  ctxLabelParams: (ctx, color, xy) -> # patches/agents defaults
-    ctx.labelColor = color; ctx.labelXY = xy
 
   # Convert an image to a context. ctx.canvas gives the created canvas.
   imageToCtx: (image) ->

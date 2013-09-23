@@ -23,9 +23,9 @@
         @foodColor = [0,0,255]    # blue
 
         # defaults
-        @agents.setDefaultShape("bug")
-        @agents.setDefaultColor(@foodColor) # so default sprite not random color
-        @agents.setDefaultSize(3)
+        @agents.setDefault "shape", "bug"
+        @agents.setDefault "color", @foodColor # so default sprite not random color
+        @agents.setDefault "size", 3
         
         # UI globals:
         @population = 255
@@ -119,15 +119,15 @@
       patchRect: (x, y, dw, dh) ->
         @patches.patchRect @patches.patch(x,y), dw, dh, true
 
-    # div, patchSize, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true
-    #   NL Defaults: 13, -16, 16, -16, 16
-    model = new MyModel "layers", 6, -40, 40, -40, 40, false
-    model.setRootVars() # Debug: Put Model vars in global name space
-    model.setupAndGo() # Run model immediately after startup initialization
+    # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors
+    #   Defaults: 13, -16, 16, -16, 16, false, true
+    model = new MyModel "layers", 6, -40, 40, -40, 40
+    model.debug() # Debug: Put Model vars in global name space
+    model.start() # Run model immediately after startup initialization
     </script>
 
   </head>
   <body>
-    <div id="layers" style="position:relative;padding:20;"></div>
+    <div id="layers" style="padding:20"></div>
   </body>
 </html>

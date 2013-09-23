@@ -9,9 +9,9 @@
     class MyModel extends ABM.Model
       setup: ->
         @agentBreeds "nodes drivers"
-        @nodes.setDefaultShape "circle"
-        @nodes.setDefaultSize .3
-        @drivers.setDefaultSize 1.5
+        @nodes.setDefault "shape", "circle"
+        @nodes.setDefault "size", .3
+        @drivers.setDefault "size", 1.5
         
         # 40-44fps->58+fps
         @refreshPatches = false # 56fps
@@ -32,6 +32,8 @@
         @baseVelocity = 0.1 # patchs
         @velocityDelta = 0.1 # patches
         
+        @links.setDefault "labelColor", [255,0,0]
+        
         p.color = u.randomGray 10, 50 for p in @patches
         for p in @patches.nOf @numNodes
           p.sprout 1, @nodes, (a) => 
@@ -39,6 +41,9 @@
               @links.create a, @nodes.other(a).oneOf() # @links.create a, @nodes().other(a).oneOf()
         
         if @layoutCircle then @links.layoutCircle @nodes, @patches.maxX - 1
+        
+        # Test labels
+        # l.label = l.length().toFixed(0) for l in @links
         
         # no defaults, hatch copies its values to new agent
         
@@ -60,15 +65,15 @@
             d.toNode = u.oneOf d.toNode.linkNeighbors() #.oneOf()
         null # avoid returning "for" results above
 
-    # div, patchSize, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true
-    #   NL Defaults: 13, -16, 16, -16, 16
+    # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors
+    #   Defaults: 13, -16, 16, -16, 16, false, true
     model = new MyModel "layers", 13, -16, 16, -16, 16, false, false
-    model.setRootVars() # Debug: Put Model vars in global name space
-    model.setupAndGo() # Run model immediately after startup initialization
+    model.debug() # Debug: Put Model vars in global name space
+    model.start() # Run model immediately after startup initialization
 
     </script>
   </head>
   <body>
-    <div id="layers" style="position:relative;padding:20;"></div>
+    <div id="layers" style="padding:20"></div>
   </body>
 </html>

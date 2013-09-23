@@ -38,7 +38,9 @@ ABM.DataSet = class DataSet
     ds # async: ds will be empty until import finishes
 
   # 2D Dataset: width/height and an array with length = width*height
-  constructor: (width=0, height=0, data=[]) -> @reset width, height, data
+  constructor: (width=0, height=0, data=[]) -> 
+    @useNearest=false
+    @reset width, height, data
   # Reset a dataset to have new width, height and data.  Allows creating
   # an empty dataset and having it filled by another function.
   reset: (@width, @height, @data) ->
@@ -50,9 +52,11 @@ ABM.DataSet = class DataSet
   # Check that x,y are valid coords (floats), from top-left of dataset.
   checkXY: (x,y) ->
     u.error "x,y out of range: #{x},#{y}" if not (0<=x<=@width-1 and 0<=y<=@height-1)
+  # Sample the dataset.
+  setSampler: (@useNearest) ->
+  sample: (x,y) -> if @useNearest then @nearest x,y else @bilinear x,y
   # Sample dataset using nearest neighbor. x,y floats in range
-  nearest: (x,y) -> 
-    @getXY Math.round(x), Math.round(y)
+  nearest: (x,y) -> @getXY Math.round(x), Math.round(y)
   # Sample dataset using bilinear (2D) interpolation. x,y floats in range
   bilinear: (x,y) -> # http://en.wikipedia.org/wiki/Bilinear_interpolation
     @checkXY x,y
@@ -72,42 +76,58 @@ ABM.DataSet = class DataSet
   # Set the data and int x,y coord of data array
   setXY: (x,y,num) -> @checkXY x,y; @data[@toIndex x,y] = num
   # Return a printable string for dataset.
-  # If fixed, truncate fraction to p precision
-  toString: (fixed = false, p=2)->
+  # If p < 0, print data, otherwise use toFixed to truncate to p precision
+  toString: (p=2, sep=", ")->
     s = "width: #{@width} height: #{@height} data:"
-    data = if fixed then u.aToFixed @data, p else @data
-    s += "\n" + "#{i}: #{data.slice i*@width, (i+1)*@width}" for i in [0...@height]
-    s
-  # Convert dataset into an image. Normalize data to be alowable image data
-  toImage: (gray = true)->
+    data = if p<0 then @data else u.aToFixed @data, p
+    for i in [0...@height]
+      s += "\n" + "#{i}: #{data.slice i*@width, (i+1)*@width}"
+    s.replace /,/g, sep
+  # Convert dataset into an image. Normalize data to be allowable image data
+  toImage: (gray = true, normalize = true, alpha = 255)->
     ctx = u.createCtx @width, @height
     idata = ctx.getImageData(0, 0, @width, @height); ta = idata.data
-    norm = u.normalize @data, 0, Math.pow(2, if gray then 8 else 24) - 0.000001
+    max = Math.pow(2, if gray then 8 else 24)
+    norm = if normalize
+    then u.normalize @data, 0, max - 0.000001
+    else (u.clamp Math.round(d), 0, max-1 for d in @data)
     for num, i in norm
-      j=4*i; ta[j+3] = 255
+      j=4*i; ta[j+3] = alpha
       if gray
       then ta[j] = ta[j+1] = ta[j+2] = Math.floor num
       else ta[j]=num>>>16; ta[j+1]=(num>>8)&0xff; ta[j+2]=num&0xff
     ctx.putImageData idata, 0, 0
     ctx.canvas
-  # Show dataset as image in patch drawing layer, return image
+  # Show dataset as image in patch drawing layer or patch colors, return image
   toDrawing: (gray=true) -> ABM.patches.installDrawing (img=@toImage gray); img
+  toPatchColors: (gray=true) -> ABM.patches.installColors (img=@toImage gray); img
   # Resample dataset to patch width/height and set named patch variable.
+  # Note this "insets" the dataset so the variable is sampled the center of the patch.
+  # The dataset can be sampled directly to its edges .. i.e. in agent coords.
   toPatchVar: (name) ->
-    ds = @resample ABM.patches.numX, ABM.patches.numY
-    p[name] = ds.data[p.id] for p in ABM.patches
+    data = (p[name] = @patchSample p.x, p.y for p in ABM.patches)
+    new DataSet ABM.patches.numX, ABM.patches.numY, data
+  
+  # Sample via transformed coords.
+  # x,y is in topleft-bottomright box: [tlx,tly,tlx+w,tly-h]
+  coordSample: (x, y, tlx, tly, w, h) -> #brx, bry) ->
+    xs=(x-tlx)*(@width-1)/w;  ys=(tly-y)*(@height-1)/h # convert to sample space
+    @sample xs,ys
+  patchSample: (px, py) ->
+    w=ABM.world
+    @coordSample px, py, w.minXcor, w.maxYcor, w.numX, w.numY
+  
   # Resample dataset to new width, height
-  resample: (width,height) ->
-    return @ if width is @width and height is @height # REMIND: return new dataset?
+  resample: (width, height) ->
+    return new DataSet width,height,@data if width is @width and height is @height
     data = []; xScale = (@width-1)/(width-1); yScale = (@height-1)/(height-1)
-    downSample = (xScale >= 1) or (yScale >= 1)
     for y in [0...height] by 1
       for x in [0...width] by 1
         xs=x*xScale; ys=y*yScale
-        s = if downSample then @nearest xs,ys else @bilinear xs,ys
-        data.push s
+        data.push @sample xs,ys
     new DataSet width, height, data
-  # Return neighbor values of the given x,y of the dataset
+  # Return neighbor values of the given x,y of the dataset.
+  # Off-edge neighbors revert to nearest edge value.
   neighborhood: (x,y,array=[]) -> # return 3x3 neighborhood
     array.length = 0 # in case user supplied an array
     for dy in [-1..1]
@@ -116,14 +136,34 @@ ABM.DataSet = class DataSet
         y0=u.clamp y+dy, 0, @height-1
         array.push @data[@toIndex x0, y0]
     array
-  # Return a new dataset of same size convolved with the given kernel 3x3 matrix
-  convolve: (kernel) -> # Factory: return new convolved dataset
+  # Return a new dataset of same size convolved with the given kernel 3x3 matrix.
+  # See [Convolution article](http://goo.gl/ubFiji)
+  convolve: (kernel,factor=1) -> # Factory: return new convolved dataset
     array = []; n = []
     for y in [0...@height] by 1
       for x in [0...@width] by 1
         @neighborhood x,y,n
-        array.push u.aSum(u.aPairMul(kernel, n))
+        array.push u.aSum(u.aPairMul(kernel, n))*factor
     new DataSet @width, @height, array
+  # Create two new convolved datasets, slope and aspect, common in
+  # the use of an elevation data set. See Esri tutorials for 
+  # [slope](http://goo.gl/ZcOl08) and [aspect](http://goo.gl/KoI4y5)
+  # It also returns the two derivitive DataSets, dzdx, dzdy for
+  # those wanting to use the results of the two convolutions.
+  slopeAndAspect: (cellsize=1, posRadians=false) -> 
+    dzdx = @convolve([-1,0,1,-2,0,2,-1,0,1],1/8) # sub left z from right
+    dzdy = @convolve([1,2,1,0,0,0,-1,-2,-1],1/8) # sub bottom z from top
+    aspect = []; slope = [] #; minX = .01; maxAtan = Math.PI/4
+    for y in [0...@height] by 1
+      for x in [0...@width] by 1
+        gx = dzdx.getXY(x,y); gy = dzdy.getXY(x,y)
+        slope.push Math.atan(Math.sqrt(gx*gx + gy*gy)/(cellsize)) # radians
+        rad = if gx is gy is 0 then NaN else Math.atan2 -gy,-gx # radians in [-PI,PI], downhill
+        rad += 2*Math.PI if posRadians and rad < 0 # positive number, rad in [0,2PI]
+        aspect.push rad
+    slope = new DataSet @width, @height, slope
+    aspect = new DataSet @width, @height, aspect
+    [slope, aspect, dzdx, dzdy]
   # Return a subset of the dataset. x,y,width,height integers
   subset: (x, y, width, height) ->
     u.error "subSet: params out of range" if x+width>@width or y+height>@height
@@ -164,22 +204,6 @@ ABM.AscDataSet = class AscDataSet extends DataSet
       nums[i] = parseFloat nums[i] for i in [0...nums.length]
       @data = @data.concat nums
     @reset @header.ncols, @header.nrows, @data
-  # Create two new datasets, slope and aspect, common in
-  # the use of an elevation data set.
-  slopeAndAspect: () -> # http://goo.gl/apnur http://goo.gl/x7QYm
-    dzdx = @convolve([-1,0,1,-2,0,2,-1,0,1])
-    dzdy = @convolve([-1,-2,-1,0,0,0,1,2,1])
-    aspect = []; slope = [] #; minX = .01; maxAtan = Math.PI/4
-    for y in [0...@height] by 1
-      for x in [0...@width] by 1
-        gx = dzdx.getXY(x,y); gy = dzdy.getXY(x,y)
-        slope.push Math.sqrt gx*gx + gy*gy
-        rad = Math.PI/2 + Math.atan2 gy,-gx
-        rad += 2*Math.PI if rad < 0
-        aspect.push rad
-    @slope = new DataSet @width, @height, slope
-    @aspect = new DataSet @width, @height, aspect
-    [@slope, @aspect]
 
 ABM.ImageDataSet = class ImageDataSet extends DataSet
   # An image-as-data dataset.  The parser takes an image

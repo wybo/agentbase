@@ -4,7 +4,7 @@ AgentScript is a minimalist Agent Based Modeling (ABM) framework based on [NetLo
 
 #### Build
 
-Cake is used to build agentscript.coffee from individual source files, and to compile into agentscript.js and agentscript.min.js
+Cake is used to build agentscript.coffee from individual source files, and to compile into agentscript.js, agentscript.min.js, and agentscript.map.  The map file allows debugging in Chrome via CS source.
 
 See the template.html and models/*.html files for example models.  The individual
 .coffee files are documented via Jeremy Ashkenas's
@@ -28,7 +28,7 @@ Currently the documentation is hosted directly on github via the [rawgithub](htt
 
 #### Add-ons
 
-The extras/ directory contains libraries that are too specialized to be in the core AgentScript but are essential for certain applications.
+The extras/ directory contains libraries that are too specialized to be in the core AgentScript but are essential for certain applications.  They are compiled to JS in the lib/ directory.
 
 [**data.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/data.html) A 2D DataSet library for data best expressed as an array of numbers.  It includes the ability to treat Images as data, to parse GIS elevation .asc files, to create datasets from patch variables etc.  It includes analytic abilities like nearest neighbor and bilinear sampling, convolution with 3x3 kernels, and resampling datasets to different resolutions.
 
@@ -77,13 +77,13 @@ Our example models use CoffeeScript directly within the browser via `text/coffee
         </script>
       </head>
       <body>
-        <div id="layers" style="position:relative;padding:20;"></div>
+        <div id="layers" style="padding:20"></div>
       </body>
     </html>
 
-You may see this by running a sample model, then use the browser's View Page Source.  (Google "view page source `<`my browser`>`")
+You may see this by running a sample model, then use the browser's View Page Source.  (Google "view page source")
 
-Similarly, the models will print to the "javascript console" while they run. (Google "view javascript console `<`my browser`>`")
+Similarly, the models will print to the "javascript console" while they run. (Google "view javascript console")
 
 #### Files
     

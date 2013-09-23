@@ -16,8 +16,8 @@
         @stopTick = 400
         
         # defaults
-        @agents.setDefaultShape "circle"
-        @links.setDefaultThickness .75 # Easier to see thiner link
+        @agents.setDefault "shape", "circle"
+        @links.setDefault "thickness", .75 # Easier to see thiner link
         
         @agents.create 1; @makeNode @agents[0]
       step: ->
@@ -35,15 +35,15 @@
       findPartner: ->
         u.oneOf @links.oneOf().bothEnds() # or @links.allEnds().oneOf()
 
-    # div, patchSize, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true
-    #   NL Defaults: 13, -16, 16, -16, 16
+    # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors
+    #   Defaults: 13, -16, 16, -16, 16, false, true
     model = new MyModel "layers", 5, -45, 45, -45, 45, false, false
-    model.setRootVars() # Debug: Put Model vars in global name space
-    model.setupAndGo() # Run model immediately after startup initialization
+    model.debug() # Debug: Put Model vars in global name space
+    model.start() # Run model immediately after startup initialization
 
     </script>
   </head>
   <body>
-    <div id="layers" style="position:relative;padding:20;"></div>
+    <div id="layers" style="padding:20"></div>
   </body>
 </html>

@@ -434,7 +434,8 @@ Default is one of 125 (5^3) colors</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
-              <p>Modify an existing color. Modifying an existing array minimizes GC overhead</p>
+              <p>Modify an existing rgb or gray color.  Alpha optional, not set if not provided.
+Modifying an existing array minimizes GC overhead</p>
 
             </div>
             
@@ -694,11 +695,12 @@ See Mozilla pixel <a href="http://goo.gl/Lxliq">manipulation article</a></p>
                 <a class="pilcrow" href="#section-37">&#182;</a>
               </div>
               <p>Make a copy of the array. Needed when you don&#39;t want to modify the given
-array with mutator methods like sort, splice or your own functions.</p>
+array with mutator methods like sort, splice or your own functions.
+By giving begin/arguments, retrieve a subset of the array</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  clone: (array) -&gt; array.slice <span class="number">0</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  clone: (array, begin, end) -&gt; <span class="keyword">if</span> begin? <span class="keyword">then</span> array.slice begin, end <span class="keyword">else</span> array.slice <span class="number">0</span></pre></div></div>
             
         </li>
         
@@ -743,13 +745,13 @@ array with mutator methods like sort, splice or your own functions.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-40">&#182;</a>
               </div>
-              <p>Return n random elements of array.  Error if n &gt; array size.</p>
+              <p>Return n random elements of array. n can be float.  Error if n &gt; array size.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>  nOf: (array, n) -&gt; <span class="comment"># Note: clone, shuffle then first n may be better</span>
     <span class="property">@error</span> <span class="string">"nOf: n &gt; length"</span> <span class="keyword">if</span> n &gt; array.length
-    r = []; <span class="keyword">while</span> r.length &lt; n
+    r = []; <span class="keyword">while</span> r.length &lt; n <span class="comment"># n can be float, ceil n will be chosen</span>
       o = <span class="property">@oneOf</span>(array)
       r.push o <span class="keyword">unless</span> o <span class="keyword">in</span> r
     r
@@ -858,7 +860,7 @@ h = histOf b, 2, &quot;id&quot;</code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  histOf: (array, bin, f) -&gt;
+            <div class="content"><div class='highlight'><pre>  histOf: (array, bin=<span class="number">1</span>, <span class="function"><span class="title">f</span></span>=(i)-&gt;i) -&gt;
     r = []; (s=f; <span class="function"><span class="title">f</span></span> = ((o)-&gt;o[s])) <span class="keyword">if</span> <span class="property">@isString</span> f
     <span class="keyword">for</span> a <span class="keyword">in</span> array
       i = Math.floor f(a)/bin
@@ -937,14 +939,11 @@ uniq b
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-49">&#182;</a>
               </div>
-              <p>Return max/min/sum/avg of numeric array</p>
+              <p>Return array of property values of given array of objects</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  aMax: (array) -&gt; array.reduce (a,b) -&gt; Math.max a,b
-  aMin: (array) -&gt; array.reduce (a,b) -&gt; Math.min a,b
-  aSum: (array) -&gt; array.reduce (a,b) -&gt; a+b
-  aAvg: (array) -&gt; <span class="property">@aSum</span>(array)/array.length</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  aProp: (array, prop) -&gt; (a[prop] <span class="keyword">for</span> a <span class="keyword">in</span> array)</pre></div></div>
             
         </li>
         
@@ -955,12 +954,14 @@ uniq b
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-50">&#182;</a>
               </div>
-              <p>Modify each member of an array; clone.
-Clone first if you want to preserve the original array.</p>
+              <p>Return max/min/sum/avg of numeric array</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  aMod: (array, f) -&gt; array[i] = f(a) <span class="keyword">for</span> a,i <span class="keyword">in</span> array;array</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  aMax: (array) -&gt; array.reduce (a,b) -&gt; Math.max a,b
+  aMin: (array) -&gt; array.reduce (a,b) -&gt; Math.min a,b
+  aSum: (array) -&gt; array.reduce (a,b) -&gt; a+b
+  aAvg: (array) -&gt; <span class="property">@aSum</span>(array)/array.length</pre></div></div>
             
         </li>
         
@@ -1004,13 +1005,13 @@ Clone first if you want to preserve the original array.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-53">&#182;</a>
               </div>
-              <p>Return a linear interpolation between from and to.
-Scale is in [0-1], and the result is in [from,to]
-<a href="http://goo.gl/QrzMc">Why <code>lerp</code>?</a></p>
+              <p>Return a linear interpolation between lo and hi.
+Scale is in [0-1], and the result is in [lo,hi]
+<a href="http://goo.gl/QrzMc">Why the name <code>lerp</code>?</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  lerp: (from, to, scale) -&gt; from + (to-from)*<span class="property">@clamp</span>(scale, <span class="number">0</span>, <span class="number">1</span>)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  lerp: (lo, hi, scale) -&gt; lo + (hi-lo)*scale <span class="comment"># @clamp(scale, 0, 1)</span></pre></div></div>
             
         </li>
         
@@ -1021,14 +1022,11 @@ Scale is in [0-1], and the result is in [from,to]
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-54">&#182;</a>
               </div>
-              <p>Return an array with values in [from,to], defaults to [0,1].
-Note: to have a half-open interval, [from,to), try to=to-.00009</p>
+              <p>Return point interpolated between two points.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  normalize: (array, from = <span class="number">0</span>, to = <span class="number">1</span>) -&gt;
-    min = <span class="property">@aMin</span> array; max = <span class="property">@aMax</span> array; scale = <span class="number">1</span>/(max-min)
-    (<span class="property">@lerp</span>(from, to, scale*(num-min)) <span class="keyword">for</span> num <span class="keyword">in</span> array)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  lerp2: (x0, y0, x1, y1, scale) -&gt; [<span class="property">@lerp</span>(x0,x1,scale), <span class="property">@lerp</span>(y0,y1,scale)]</pre></div></div>
             
         </li>
         
@@ -1038,6 +1036,24 @@ Note: to have a half-open interval, [from,to), try to=to-.00009</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-55">&#182;</a>
+              </div>
+              <p>Return an array with values in [lo,hi], defaults to [0,1].
+Note: to have a half-open interval, [lo,hi), try hi=hi-.00009</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  normalize: (array, lo = <span class="number">0</span>, hi = <span class="number">1</span>) -&gt;
+    min = <span class="property">@aMin</span> array; max = <span class="property">@aMax</span> array; scale = <span class="number">1</span>/(max-min)
+    (<span class="property">@lerp</span>(lo, hi, scale*(num-min)) <span class="keyword">for</span> num <span class="keyword">in</span> array)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-56">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-56">&#182;</a>
               </div>
               <p>Binary search of a sorted array, adapted from <a href="http://goo.gl/ozAZH">jaskenas</a>.
 Search for index of value with items array, using fcn for item value.
@@ -1058,11 +1074,11 @@ Return -1 if not found.</p>
         </li>
         
         
-        <li id="section-56">
+        <li id="section-57">
             <div class="annotation">
               
               <div class="pilwrap for-h3">
-                <a class="pilcrow" href="#section-56">&#182;</a>
+                <a class="pilcrow" href="#section-57">&#182;</a>
               </div>
               <h3>Topology Operations</h3>
 
@@ -1071,11 +1087,11 @@ Return -1 if not found.</p>
         </li>
         
         
-        <li id="section-57">
+        <li id="section-58">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-57">&#182;</a>
+                <a class="pilcrow" href="#section-58">&#182;</a>
               </div>
               <p>Return angle in [-pi,pi] radians from x1,y1 to x2,y2
 <a href="http://goo.gl/JS8DF">See: Math.atan2</a></p>
@@ -1087,11 +1103,11 @@ Return -1 if not found.</p>
         </li>
         
         
-        <li id="section-58">
+        <li id="section-59">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-58">&#182;</a>
+                <a class="pilcrow" href="#section-59">&#182;</a>
               </div>
               <p>Return true if x2,y2 is in cone radians around heading radians from x1,x2
 and within distance radius from x1,x2.
@@ -1107,11 +1123,11 @@ I.e. is p2 in cone/heading/radius from p1?</p>
         </li>
         
         
-        <li id="section-59">
+        <li id="section-60">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-59">&#182;</a>
+                <a class="pilcrow" href="#section-60">&#182;</a>
               </div>
               <p>Return the Euclidean distance and distance squared between x1,y1, x2,y2.
 The squared distance is used for comparisons to avoid the Math.sqrt fcn.</p>
@@ -1124,11 +1140,11 @@ The squared distance is used for comparisons to avoid the Math.sqrt fcn.</p>
         </li>
         
         
-        <li id="section-60">
+        <li id="section-61">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-60">&#182;</a>
+                <a class="pilcrow" href="#section-61">&#182;</a>
               </div>
               <p>Return the <a href="http://goo.gl/PgJ5N">torus distance</a> and distance squared
 between two points A(x1,y1) and B(x2,y2):</p>
@@ -1163,11 +1179,11 @@ A and B must also include the towards-reflections around A, thus 4 points.</p>
         </li>
         
         
-        <li id="section-61">
+        <li id="section-62">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-61">&#182;</a>
+                <a class="pilcrow" href="#section-62">&#182;</a>
               </div>
               <p>Return true if closest path between x1,y1 &amp; x2,y2 wraps around the torus.</p>
 
@@ -1180,11 +1196,11 @@ A and B must also include the towards-reflections around A, thus 4 points.</p>
         </li>
         
         
-        <li id="section-62">
+        <li id="section-63">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-62">&#182;</a>
+                <a class="pilcrow" href="#section-63">&#182;</a>
               </div>
               <p>Return 4 torus point reflections of x2,y2 around x1,y1</p>
 
@@ -1198,11 +1214,11 @@ A and B must also include the towards-reflections around A, thus 4 points.</p>
         </li>
         
         
-        <li id="section-63">
+        <li id="section-64">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-63">&#182;</a>
+                <a class="pilcrow" href="#section-64">&#182;</a>
               </div>
               <p>Return closest of 4 torus pts from A to B</p>
 
@@ -1218,11 +1234,11 @@ A and B must also include the towards-reflections around A, thus 4 points.</p>
         </li>
         
         
-        <li id="section-64">
+        <li id="section-65">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-64">&#182;</a>
+                <a class="pilcrow" href="#section-65">&#182;</a>
               </div>
               <p>Return the angle from x1,y1 to x2.y2 on torus using shortest reflection.</p>
 
@@ -1235,11 +1251,11 @@ A and B must also include the towards-reflections around A, thus 4 points.</p>
         </li>
         
         
-        <li id="section-65">
+        <li id="section-66">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-65">&#182;</a>
+                <a class="pilcrow" href="#section-66">&#182;</a>
               </div>
               <p>Return true if x2,y2 is in cone radians around heading radians from x1,x2
 and within distance radius from x1,x2 considering all torus reflections.</p>
@@ -1254,11 +1270,11 @@ and within distance radius from x1,x2 considering all torus reflections.</p>
         </li>
         
         
-        <li id="section-66">
+        <li id="section-67">
             <div class="annotation">
               
               <div class="pilwrap for-h3">
-                <a class="pilcrow" href="#section-66">&#182;</a>
+                <a class="pilcrow" href="#section-67">&#182;</a>
               </div>
               <h3>File I/O</h3>
 <p>Cache of file names used by file imports below</p>
@@ -1270,19 +1286,19 @@ and within distance radius from x1,x2 considering all torus reflections.</p>
         </li>
         
         
-        <li id="section-67">
+        <li id="section-68">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-67">&#182;</a>
+                <a class="pilcrow" href="#section-68">&#182;</a>
               </div>
               <p>Import an image, executing (async) optional function f(img) on completion</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>  importImage: (name, <span class="function"><span class="title">f</span></span> = -&gt;) -&gt;
-    <span class="keyword">if</span> img=<span class="property">@fileIndex</span>[name]? <span class="comment"># wtf? or ((img=name).width and img.height)</span>
-      f(img) <span class="keyword">if</span> img.isDone
+    <span class="keyword">if</span> (img=<span class="property">@fileIndex</span>[name])? <span class="comment"># wtf? or ((img=name).width and img.height)</span>
+      f(img) <span class="comment">#if img.isDone</span>
     <span class="keyword">else</span>
       <span class="property">@fileIndex</span>[name] = img = <span class="keyword">new</span> Image()
       img.isDone = <span class="literal">false</span>
@@ -1293,11 +1309,11 @@ and within distance radius from x1,x2 considering all torus reflections.</p>
         </li>
         
         
-        <li id="section-68">
+        <li id="section-69">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-68">&#182;</a>
+                <a class="pilcrow" href="#section-69">&#182;</a>
               </div>
               <p>Use XMLHttpRequest to fetch data of several types. Data Types: text,
 arraybuffer, blob, json, document, <a href="http://goo.gl/y3r3h">See specification</a></p>
@@ -1319,11 +1335,11 @@ arraybuffer, blob, json, document, <a href="http://goo.gl/y3r3h">See specificati
         </li>
         
         
-        <li id="section-69">
+        <li id="section-70">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-69">&#182;</a>
+                <a class="pilcrow" href="#section-70">&#182;</a>
               </div>
               <p>Return true if all files are loaded.</p>
 
@@ -1336,11 +1352,11 @@ arraybuffer, blob, json, document, <a href="http://goo.gl/y3r3h">See specificati
         </li>
         
         
-        <li id="section-70">
+        <li id="section-71">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-70">&#182;</a>
+                <a class="pilcrow" href="#section-71">&#182;</a>
               </div>
               <p>Wait for files to be loaded before executing callback f</p>
 
@@ -1351,11 +1367,11 @@ arraybuffer, blob, json, document, <a href="http://goo.gl/y3r3h">See specificati
         </li>
         
         
-        <li id="section-71">
+        <li id="section-72">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-71">&#182;</a>
+                <a class="pilcrow" href="#section-72">&#182;</a>
               </div>
               <p>Wait for function done() to return true before calling callback f</p>
 
@@ -1367,11 +1383,11 @@ arraybuffer, blob, json, document, <a href="http://goo.gl/y3r3h">See specificati
         </li>
         
         
-        <li id="section-72">
+        <li id="section-73">
             <div class="annotation">
               
               <div class="pilwrap for-h3">
-                <a class="pilcrow" href="#section-72">&#182;</a>
+                <a class="pilcrow" href="#section-73">&#182;</a>
               </div>
               <h3>Canvas/Context Operations</h3>
 <p>Create a new canvas of given width/height</p>
@@ -1386,11 +1402,11 @@ arraybuffer, blob, json, document, <a href="http://goo.gl/y3r3h">See specificati
         </li>
         
         
-        <li id="section-73">
+        <li id="section-74">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-73">&#182;</a>
+                <a class="pilcrow" href="#section-74">&#182;</a>
               </div>
               <p>As above, but returing the context object.
 Note ctx.canvas is the canvas for the ctx, and can be use as an image.</p>
@@ -1399,18 +1415,18 @@ Note ctx.canvas is the canvas for the ctx, and can be use as an image.</p>
             
             <div class="content"><div class='highlight'><pre>  createCtx: (width, height, ctxType=<span class="string">"2d"</span>) -&gt;
     can = <span class="property">@createCanvas</span> width, height
-    <span class="keyword">if</span> ctxType <span class="keyword">is</span> <span class="string">"2d"</span> 
+    can.ctx = <span class="keyword">if</span> ctxType <span class="keyword">is</span> <span class="string">"2d"</span> 
     <span class="keyword">then</span> can.getContext <span class="string">"2d"</span> 
     <span class="keyword">else</span> can.getContext(<span class="string">"webgl"</span>) ? can.getContext(<span class="string">"experimental-webgl"</span>)</pre></div></div>
             
         </li>
         
         
-        <li id="section-74">
+        <li id="section-75">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-74">&#182;</a>
+                <a class="pilcrow" href="#section-75">&#182;</a>
               </div>
               <p>Return a &quot;layer&quot; 2D/3D rendering context within the specified HTML <code>&lt;div&gt;</code>,
 with the given width/height positioned absolutely at top/left within the div,
@@ -1428,11 +1444,11 @@ and with the z-index of z.</p>
         </li>
         
         
-        <li id="section-75">
+        <li id="section-76">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-75">&#182;</a>
+                <a class="pilcrow" href="#section-76">&#182;</a>
               </div>
               <p>Install identity transform.  Call ctx.restore() to revert to previous transform</p>
 
@@ -1445,11 +1461,11 @@ and with the z-index of z.</p>
         </li>
         
         
-        <li id="section-76">
+        <li id="section-77">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-76">&#182;</a>
+                <a class="pilcrow" href="#section-77">&#182;</a>
               </div>
               <p>Clear the 2D/3D layer to be transparent. Note this <a href="http://goo.gl/qekXS">discussion</a>.</p>
 
@@ -1467,11 +1483,11 @@ and with the z-index of z.</p>
         </li>
         
         
-        <li id="section-77">
+        <li id="section-78">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-77">&#182;</a>
+                <a class="pilcrow" href="#section-78">&#182;</a>
               </div>
               <p>Fill the 2D/3D layer with the given color</p>
 
@@ -1490,29 +1506,30 @@ and with the z-index of z.</p>
         </li>
         
         
-        <li id="section-78">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-78">&#182;</a>
-              </div>
-              <p>Draw string of the given color at the xy location.
-Note that this will follow the existing transform.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  ctxDrawText: (ctx, string, xy, color = [<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>]) -&gt; 
-    ctx.fillStyle = <span class="property">@colorStr</span> color
-    ctx.fillText(string, xy[<span class="number">0</span>], xy[<span class="number">1</span>])</pre></div></div>
-            
-        </li>
-        
-        
         <li id="section-79">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-79">&#182;</a>
+              </div>
+              <p>Draw string of the given color at the xy location, in ctx pixel coords.
+Use setIdentity .. reset if a transform is being used by caller.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  ctxDrawText: (ctx, string, x, y, color = [<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>], setIdentity = <span class="literal">true</span>) -&gt;
+    <span class="property">@setIdentity</span>(ctx) <span class="keyword">if</span> setIdentity
+    ctx.fillStyle = <span class="property">@colorStr</span> color;  ctx.fillText(string, x, y)
+    ctx.restore() <span class="keyword">if</span> setIdentity</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-80">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-80">&#182;</a>
               </div>
               <p>Set the canvas text align and baseline drawing parameters</p>
 <ul>
@@ -1526,23 +1543,6 @@ Note that this will follow the existing transform.</p>
             
             <div class="content"><div class='highlight'><pre>  ctxTextParams: (ctx, font, align = <span class="string">"center"</span>, baseline = <span class="string">"middle"</span>) -&gt; 
     ctx.font = font; ctx.textAlign = align; ctx.textBaseline = baseline</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-80">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-80">&#182;</a>
-              </div>
-              <p>2D: Store the default color and xy offset for text labels for agentsets.
-This is simply using the ctx object for convenient storage.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  ctxLabelParams: (ctx, color, xy) -&gt; <span class="comment"># patches/agents defaults</span>
-    ctx.labelColor = color; ctx.labelXY = xy</pre></div></div>
             
         </li>
         
