@@ -109,7 +109,7 @@
           p.foodPheromone *= (1 - @evaporationRate)
           p.nestPheromone *= (1 - @evaporationRate)
           p.foodPheromone = p.nestPheromone = 0 if p.isOnEdge()
-          if not (p.isNest or p.isFood) #  or p.isOnEdge()
+          unless (p.isNest or p.isFood) #  or p.isOnEdge()
             if p.foodPheromone > p.nestPheromone
             then p.scaleColor @foodColor, p.foodPheromone
             else p.scaleColor @nestColor, p.nestPheromone

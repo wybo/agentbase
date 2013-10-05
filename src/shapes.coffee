@@ -107,7 +107,7 @@ ABM.shapes = ABM.util.s = do ->
   # Two draw procedures, one for shapes, the other for sprites made from shapes.
   draw: (ctx, shape, x, y, size, rad, color) ->
     if shape.shortcut?
-      ctx.fillStyle = u.colorStr color if not shape.img?
+      ctx.fillStyle = u.colorStr color unless shape.img?
       shape.shortcut ctx,x,y,size
     else
       ctx.save()
@@ -140,7 +140,7 @@ ABM.shapes = ABM.util.s = do ->
     index = if shape.img? then name else "#{name}-#{u.colorStr(color)}"
     ctx = spriteSheets[bits]
     # Create sheet for this bit size if it does not yet exist
-    if not ctx?
+    unless ctx?
       spriteSheets[bits] = ctx = u.createCtx bits*10, bits
       ctx.nextX = 0; ctx.nextY = 0; ctx.index = {}
     # Return matching sprite if index match found

@@ -36,7 +36,7 @@
               
       step: -> # stop: just one tick
         console.log @anim.toString() if @anim.ticks % 100 is 0
-        if not @patches[0].elevation?
+        unless @patches[0].elevation?
           console.log "image not in yet"; return
         moved = 0
         for a in @agents

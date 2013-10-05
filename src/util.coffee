@@ -81,6 +81,7 @@ ABM.util = u =
   # Return sign of a number as +/- 1
   sign: (v) -> if v<0 then -1 else 1
   # Return n to given precision, default 2
+  # Considerably faster than equivalent: Number(n.toFixed(p))
   fixed: (n,p=2) -> p = Math.pow(10,p); Math.round(n*p)/p
   # Return an array of floating pt numbers as strings at given precision;
   # useful for printing
@@ -173,6 +174,7 @@ ABM.util = u =
   
   # Return object's own key or variable values
   ownKeys: (obj) -> (key for own key, value of obj)
+  ownVarKeys: (obj) -> (key for own key, value of obj when not @isFunction value)
   ownValues: (obj) -> (value for own key, value of obj)
 
 # ### Array Operations
@@ -183,7 +185,8 @@ ABM.util = u =
   # Make a copy of the array. Needed when you don't want to modify the given
   # array with mutator methods like sort, splice or your own functions.
   # By giving begin/arguments, retrieve a subset of the array
-  clone: (array, begin, end) -> if begin? then array.slice begin, end else array.slice 0
+  clone: (array, begin, end) ->
+    if begin? then array.slice begin, end else array.slice 0
   # Return last element of array.  Error if empty.
   last: (array) -> 
     @error "last: empty array" if @empty array
@@ -192,28 +195,38 @@ ABM.util = u =
   oneOf: (array) -> 
     @error "oneOf: empty array" if @empty array
     array[@randomInt array.length]
-  # Return n random elements of array. n can be float.  Error if n > array size.
-  nOf: (array, n) -> # Note: clone, shuffle then first n may be better
-    @error "nOf: n > length" if n > array.length
-    r = []; while r.length < n # n can be float, ceil n will be chosen
-      o = @oneOf(array)
-      r.push o unless o in r
+  # Return n random elements of array. Error if n > length
+  # Note: array elements presumed unique, i.e. objects or distinct primitives
+  nOf: (array, n) -> # Note: clone, shuffle then first n: poor performance
+    n = Math.min(array.length, Math.floor(n)) # OK if n is float
+    r = []; while r.length < n
+      o = @oneOf(array); r.push o unless o in r
     r
-  contains: (array, item) -> -1 isnt array.indexOf item
-  # Remove an item from an array. Error if item not in array.
-  removeItem: (array, item) ->
-    array.splice i, 1 if (i = array.indexOf item) isnt -1
-    @error "removeItem: item not found" if i < 0; array
-  # Remove all items from an array. Error if an item not in array.
-  removeItems: (array, items) -> @removeItem(array,i) for i in items; array
+
+  # True if item is in array. Binary search if f isnt null.
+  contains: (array, item, f) -> @indexOf(array, item, f) >= 0
+  # Remove an item from an array. Binary search if f isnt null.
+  # Error if item not in array.
+  removeItem: (array, item, f) ->
+    unless (i = @indexOf array, item, f) < 0 then array.splice i, 1 
+    else @error "removeItem: item not found" #; array
+  # Remove elements in items from an array. Binary search if f isnt null.
+  # Error if an item not in array.
+  removeItems: (array, items, f) -> @removeItem(array,i,f) for i in items; array
+  # Insert an item in a sorted array
+  insertItem: (array, item, f) ->
+    i = @sortedIndex array, item, f
+    error "insertItem: item already in array" if array[i] is item
+    array.splice i, 0, item
     
-  # Randomize the elements of array.
+  # Randomize the elements of this array.
   # Clever! See [cookbook](http://goo.gl/TT2SY)
   shuffle: (array) -> array.sort -> 0.5 - Math.random()
 
   # Return o when f(o) min/max in array. Error if array empty.
   # If f is a string, return element with max value of that property.
-  # If "valueToo" then return an array of the element and the value.
+  # If "valueToo" then return an array of the element and the value;
+  # used for cases where f is costly function.
   # 
   #     array = [{x:1,y:2}, {x:3,y:4}]
   #     # returns {x: 1, y: 2} 5
@@ -222,13 +235,13 @@ ABM.util = u =
   #     max = maxOneOf array, "x"
   minOneOf: (array, f, valueToo=false) ->
     @error "minOneOf: empty array" if @empty array
-    r = Infinity; o = null; (s=f; f = ((o)->o[s])) if @isString f
+    r = Infinity; o = null; f = @propFcn f if @isString f
     for a in array
       (r = r1; o = a) if (r1=f(a)) < r
     if valueToo then [o, r] else o
   maxOneOf: (array, f, valueToo=false) ->
     @error "maxOneOf: empty array" if @empty array
-    r = -Infinity; o = null; (s=f; f = ((o)->o[s])) if @isString f
+    r = -Infinity; o = null; f = @propFcn f if @isString f
     for a in array
       (r = r1; o = a) if (r1=f(a)) > r
     if valueToo then [o, r] else o
@@ -246,7 +259,7 @@ ABM.util = u =
   #     h = histOf b, 2, (o) -> o.id
   #     h = histOf b, 2, "id"
   histOf: (array, bin=1, f=(i)->i) ->
-    r = []; (s=f; f = ((o)->o[s])) if @isString f
+    r = []; f = @propFcn f if @isString f
     for a in array
       i = Math.floor f(a)/bin
       r[i] = if (ri=r[i])? then ri+1 else 1
@@ -291,6 +304,8 @@ ABM.util = u =
   aSum: (array) -> array.reduce (a,b) -> a+b
   aAvg: (array) -> @aSum(array)/array.length
   
+  aNaNs: (array) -> (i for v,i in array when isNaN v)
+  
   # Return array composed of f pairwise on both arrays
   aPairwise: (a1, a2, f) -> v=0; f(v,a2[i]) for v,i in a1 
   aPairSum: (a1, a2) -> @aPairwise a1, a2, (a,b)->a+b
@@ -312,19 +327,32 @@ ABM.util = u =
     min = @aMin array; max = @aMax array; scale = 1/(max-min)
     (@lerp(lo, hi, scale*(num-min)) for num in array)
 
-  # Binary search of a sorted array, adapted from [jaskenas](http://goo.gl/ozAZH).
-  # Search for index of value with items array, using fcn for item value.
-  # Return -1 if not found.
-  binarySearch: (items, value, fcn = (ex) -> ex) ->
-    start = 0
-    stop  = items.length - 1
-    pivot = Math.floor (start + stop) / 2
-    while (pivotVal = fcn(items[pivot])) isnt value and start < stop
-      stop  = pivot - 1 if value < pivotVal  # Adjust the search area.
-      start = pivot + 1 if value > pivotVal
-      pivot = Math.floor (stop + start) / 2  # Recalculate the pivot.
-    if fcn(items[pivot]) is value then pivot else -1
+  # Return array index of item, or index for item if array to remain sorted.
+  # f is used to return an integer for sorting, primarily for object properties.
+  # If f is a string, it is the object property to sort by.
+  # Adapted from underscore's _.sortedIndex.
+  sortedIndex: (array, item, f=(o)->o) -> # update to _.sortedIndex someday
+    f = @propFcn f if @isString f # use item[f] if f is string
+    # Why not array.length - 1? Because we can insert 1 after end of array.
+    value = f(item); low = 0; high = array.length
+    while low < high
+      mid = (low + high) >>> 1 # floor (low+high)/2
+      if f(array[mid]) < value then low = mid + 1 else high = mid
+    low
 
+  # Return argument unchanged; for primitive arrays or objs sorted by reference
+  identity: (o) -> o
+  # Return a function that returns an object's property.  Property in fcn closure.
+  propFcn: (prop) -> (o)->o[prop]
+  # Return index of value in array or -1 if not found.
+  # If no property given, use Array.indexOf.
+  # If property given, use binary search.
+  # Property can be string or function. If property is "", use identity default.
+  indexOf: (array, item, property)->
+    if property?
+      i = @sortedIndex array, item, if property is "" then null else property
+      if array[i] is item then i else -1
+    else array.indexOf item
 
 # ### Topology Operations
   

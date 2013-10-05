@@ -192,7 +192,7 @@ an empty dataset and having it filled by another function.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  checkXY: (x,y) -&gt;
-    u.error <span class="string">"x,y out of range: <span class="subst">#{x}</span>,<span class="subst">#{y}</span>"</span> <span class="keyword">if</span> <span class="keyword">not</span> (<span class="number">0</span>&lt;=x&lt;=<span class="property">@width</span>-<span class="number">1</span> <span class="keyword">and</span> <span class="number">0</span>&lt;=y&lt;=<span class="property">@height</span>-<span class="number">1</span>)</pre></div></div>
+    u.error <span class="string">"x,y out of range: <span class="subst">#{x}</span>,<span class="subst">#{y}</span>"</span> <span class="keyword">unless</span> (<span class="number">0</span>&lt;=x&lt;=<span class="property">@width</span>-<span class="number">1</span> <span class="keyword">and</span> <span class="number">0</span>&lt;=y&lt;=<span class="property">@height</span>-<span class="number">1</span>)</pre></div></div>
             
         </li>
         
@@ -396,8 +396,8 @@ If p &lt; 0, print data, otherwise use toFixed to truncate to p precision</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  toDrawing: (gray=<span class="literal">true</span>) -&gt; ABM.patches.installDrawing (img=<span class="property">@toImage</span> gray); img
-  toPatchColors: (gray=<span class="literal">true</span>) -&gt; ABM.patches.installColors (img=<span class="property">@toImage</span> gray); img</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  toDrawing: (gray=<span class="literal">true</span>) -&gt; ABM.patches.installDrawing(img=<span class="property">@toImage</span> gray); img
+  toPatchColors: (gray=<span class="literal">true</span>) -&gt; ABM.patches.installColors(img=<span class="property">@toImage</span> gray); img</pre></div></div>
             
         </li>
         
@@ -523,7 +523,7 @@ those wanting to use the results of the two convolutions.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  slopeAndAspect: (cellsize=<span class="number">1</span>, posRadians=<span class="literal">false</span>) -&gt; 
+            <div class="content"><div class='highlight'><pre>  slopeAndAspect: (cellsize=<span class="number">1</span>, noNaNs=<span class="literal">true</span>, posAngle=<span class="literal">false</span>) -&gt; 
     dzdx = <span class="property">@convolve</span>([-<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,-<span class="number">2</span>,<span class="number">0</span>,<span class="number">2</span>,-<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>],<span class="number">1</span>/<span class="number">8</span>) <span class="comment"># sub left z from right</span>
     dzdy = <span class="property">@convolve</span>([<span class="number">1</span>,<span class="number">2</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,-<span class="number">1</span>,-<span class="number">2</span>,-<span class="number">1</span>],<span class="number">1</span>/<span class="number">8</span>) <span class="comment"># sub bottom z from top</span>
     aspect = []; slope = [] <span class="comment">#; minX = .01; maxAtan = Math.PI/4</span>
@@ -531,12 +531,8 @@ those wanting to use the results of the two convolutions.</p>
       <span class="keyword">for</span> x <span class="keyword">in</span> [<span class="number">0.</span>..<span class="property">@width</span>] <span class="keyword">by</span> <span class="number">1</span>
         gx = dzdx.getXY(x,y); gy = dzdy.getXY(x,y)
         slope.push Math.atan(Math.sqrt(gx*gx + gy*gy)/(cellsize)) <span class="comment"># radians</span>
-        rad = <span class="keyword">if</span> gx <span class="keyword">is</span> gy <span class="keyword">is</span> <span class="number">0</span> <span class="keyword">then</span> NaN <span class="keyword">else</span> Math.atan2 -gy,-gx <span class="comment"># radians in [-PI,PI], downhill</span>
-        rad += <span class="number">2</span>*Math.PI <span class="keyword">if</span> posRadians <span class="keyword">and</span> rad &lt; <span class="number">0</span> <span class="comment"># positive number, rad in [0,2PI]</span>
-        aspect.push rad
-    slope = <span class="keyword">new</span> DataSet <span class="property">@width</span>, <span class="property">@height</span>, slope
-    aspect = <span class="keyword">new</span> DataSet <span class="property">@width</span>, <span class="property">@height</span>, aspect
-    [slope, aspect, dzdx, dzdy]</pre></div></div>
+        <span class="keyword">while</span> noNaNs <span class="keyword">and</span> gx <span class="keyword">is</span> gy
+          gx += u.randomNormal <span class="number">0</span>,<span class="number">.01</span>; gy += u.randomNormal <span class="number">0</span>,<span class="number">.01</span></pre></div></div>
             
         </li>
         
@@ -546,6 +542,40 @@ those wanting to use the results of the two convolutions.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-27">&#182;</a>
+              </div>
+              <p>radians in [-PI,PI], downhill</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        rad = <span class="keyword">if</span> gx <span class="keyword">is</span> gy <span class="keyword">is</span> <span class="number">0</span> <span class="keyword">then</span> NaN <span class="keyword">else</span> Math.atan2 -gy,-gx</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-28">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>
+              <p>positive radians in [0,2PI] if desired</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        rad += <span class="number">2</span>*Math.PI <span class="keyword">if</span> posAngle <span class="keyword">and</span> rad &lt; <span class="number">0</span>
+        aspect.push rad
+    slope = <span class="keyword">new</span> DataSet <span class="property">@width</span>, <span class="property">@height</span>, slope
+    aspect = <span class="keyword">new</span> DataSet <span class="property">@width</span>, <span class="property">@height</span>, aspect
+    [slope, aspect, dzdx, dzdy]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>Return a subset of the dataset. x,y,width,height integers</p>
 
@@ -564,11 +594,11 @@ ABM.AscDataSet = <span class="class"><span class="keyword">class</span> <span cl
         </li>
         
         
-        <li id="section-28">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>An .asc GIS file a text file with a header:</p>
 <pre><code>ncols 195
@@ -584,11 +614,11 @@ NODATA_value -9999</code></pre>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <p>Constructor takes a string generally via an xhr request.
 It can be &quot;empty&quot; .. i.e. needing a second parse() call
@@ -604,11 +634,11 @@ so that it can be used in an async file operation.</p>
         </li>
         
         
-        <li id="section-30">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
               <p>Complete an initial, empty dataset object who&#39;s string
 is read via an xhr request.</p>
@@ -631,11 +661,11 @@ ABM.ImageDataSet = <span class="class"><span class="keyword">class</span> <span 
         </li>
         
         
-        <li id="section-31">
+        <li id="section-33">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+                <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
               <p>An image-as-data dataset.  The parser takes an image
 data Uint8Array, enumerates it in 4-byte segments converting
@@ -645,17 +675,17 @@ the segment into an unsigned 32 bit int dataset entry.</p>
             
             <div class="content"><div class='highlight'><pre>  constructor: (<span class="property">@img</span>, <span class="property">@byteFmt</span>=<span class="number">3</span>) -&gt; <span class="comment"># default 24 bit int</span>
     <span class="keyword">super</span>() <span class="comment"># start out as an empty dataset</span>
-    <span class="keyword">return</span> <span class="keyword">if</span> <span class="keyword">not</span> <span class="property">@img</span>?
+    <span class="keyword">return</span> <span class="keyword">unless</span> <span class="property">@img</span>?
     <span class="property">@parse</span> <span class="property">@img</span></pre></div></div>
             
         </li>
         
         
-        <li id="section-32">
+        <li id="section-34">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-32">&#182;</a>
+                <a class="pilcrow" href="#section-34">&#182;</a>
               </div>
               <p>The byte format can be:</p>
 <pre><code>int 1-4 or 8,16,24,32: number of bytes/bits of data
@@ -684,11 +714,11 @@ array of length 1-4: non-standard layout of RGB bytes
         </li>
         
         
-        <li id="section-33">
+        <li id="section-35">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-33">&#182;</a>
+                <a class="pilcrow" href="#section-35">&#182;</a>
               </div>
               <p>Note: do not use bitwise operations: keep value positive int</p>
 

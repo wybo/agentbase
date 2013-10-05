@@ -81,6 +81,7 @@ ABM.util = u =
   # Return sign of a number as +/- 1
   sign: (v) -> if v<0 then -1 else 1
   # Return n to given precision, default 2
+  # Considerably faster than equivalent: Number(n.toFixed(p))
   fixed: (n,p=2) -> p = Math.pow(10,p); Math.round(n*p)/p
   # Return an array of floating pt numbers as strings at given precision;
   # useful for printing
@@ -173,6 +174,7 @@ ABM.util = u =
   
   # Return object's own key or variable values
   ownKeys: (obj) -> (key for own key, value of obj)
+  ownVarKeys: (obj) -> (key for own key, value of obj when not @isFunction value)
   ownValues: (obj) -> (value for own key, value of obj)
 
 # ### Array Operations
@@ -183,7 +185,8 @@ ABM.util = u =
   # Make a copy of the array. Needed when you don't want to modify the given
   # array with mutator methods like sort, splice or your own functions.
   # By giving begin/arguments, retrieve a subset of the array
-  clone: (array, begin, end) -> if begin? then array.slice begin, end else array.slice 0
+  clone: (array, begin, end) ->
+    if begin? then array.slice begin, end else array.slice 0
   # Return last element of array.  Error if empty.
   last: (array) -> 
     @error "last: empty array" if @empty array
@@ -192,28 +195,38 @@ ABM.util = u =
   oneOf: (array) -> 
     @error "oneOf: empty array" if @empty array
     array[@randomInt array.length]
-  # Return n random elements of array. n can be float.  Error if n > array size.
-  nOf: (array, n) -> # Note: clone, shuffle then first n may be better
-    @error "nOf: n > length" if n > array.length
-    r = []; while r.length < n # n can be float, ceil n will be chosen
-      o = @oneOf(array)
-      r.push o unless o in r
+  # Return n random elements of array. Error if n > length
+  # Note: array elements presumed unique, i.e. objects or distinct primitives
+  nOf: (array, n) -> # Note: clone, shuffle then first n: poor performance
+    n = Math.min(array.length, Math.floor(n)) # OK if n is float
+    r = []; while r.length < n
+      o = @oneOf(array); r.push o unless o in r
     r
-  contains: (array, item) -> -1 isnt array.indexOf item
-  # Remove an item from an array. Error if item not in array.
-  removeItem: (array, item) ->
-    array.splice i, 1 if (i = array.indexOf item) isnt -1
-    @error "removeItem: item not found" if i < 0; array
-  # Remove all items from an array. Error if an item not in array.
-  removeItems: (array, items) -> @removeItem(array,i) for i in items; array
+
+  # True if item is in array. Binary search if f isnt null.
+  contains: (array, item, f) -> @indexOf(array, item, f) >= 0
+  # Remove an item from an array. Binary search if f isnt null.
+  # Error if item not in array.
+  removeItem: (array, item, f) ->
+    unless (i = @indexOf array, item, f) < 0 then array.splice i, 1 
+    else @error "removeItem: item not found" #; array
+  # Remove elements in items from an array. Binary search if f isnt null.
+  # Error if an item not in array.
+  removeItems: (array, items, f) -> @removeItem(array,i,f) for i in items; array
+  # Insert an item in a sorted array
+  insertItem: (array, item, f) ->
+    i = @sortedIndex array, item, f
+    error "insertItem: item already in array" if array[i] is item
+    array.splice i, 0, item
     
-  # Randomize the elements of array.
+  # Randomize the elements of this array.
   # Clever! See [cookbook](http://goo.gl/TT2SY)
   shuffle: (array) -> array.sort -> 0.5 - Math.random()
 
   # Return o when f(o) min/max in array. Error if array empty.
   # If f is a string, return element with max value of that property.
-  # If "valueToo" then return an array of the element and the value.
+  # If "valueToo" then return an array of the element and the value;
+  # used for cases where f is costly function.
   # 
   #     array = [{x:1,y:2}, {x:3,y:4}]
   #     # returns {x: 1, y: 2} 5
@@ -222,13 +235,13 @@ ABM.util = u =
   #     max = maxOneOf array, "x"
   minOneOf: (array, f, valueToo=false) ->
     @error "minOneOf: empty array" if @empty array
-    r = Infinity; o = null; (s=f; f = ((o)->o[s])) if @isString f
+    r = Infinity; o = null; f = @propFcn f if @isString f
     for a in array
       (r = r1; o = a) if (r1=f(a)) < r
     if valueToo then [o, r] else o
   maxOneOf: (array, f, valueToo=false) ->
     @error "maxOneOf: empty array" if @empty array
-    r = -Infinity; o = null; (s=f; f = ((o)->o[s])) if @isString f
+    r = -Infinity; o = null; f = @propFcn f if @isString f
     for a in array
       (r = r1; o = a) if (r1=f(a)) > r
     if valueToo then [o, r] else o
@@ -246,7 +259,7 @@ ABM.util = u =
   #     h = histOf b, 2, (o) -> o.id
   #     h = histOf b, 2, "id"
   histOf: (array, bin=1, f=(i)->i) ->
-    r = []; (s=f; f = ((o)->o[s])) if @isString f
+    r = []; f = @propFcn f if @isString f
     for a in array
       i = Math.floor f(a)/bin
       r[i] = if (ri=r[i])? then ri+1 else 1
@@ -291,6 +304,8 @@ ABM.util = u =
   aSum: (array) -> array.reduce (a,b) -> a+b
   aAvg: (array) -> @aSum(array)/array.length
   
+  aNaNs: (array) -> (i for v,i in array when isNaN v)
+  
   # Return array composed of f pairwise on both arrays
   aPairwise: (a1, a2, f) -> v=0; f(v,a2[i]) for v,i in a1 
   aPairSum: (a1, a2) -> @aPairwise a1, a2, (a,b)->a+b
@@ -312,19 +327,32 @@ ABM.util = u =
     min = @aMin array; max = @aMax array; scale = 1/(max-min)
     (@lerp(lo, hi, scale*(num-min)) for num in array)
 
-  # Binary search of a sorted array, adapted from [jaskenas](http://goo.gl/ozAZH).
-  # Search for index of value with items array, using fcn for item value.
-  # Return -1 if not found.
-  binarySearch: (items, value, fcn = (ex) -> ex) ->
-    start = 0
-    stop  = items.length - 1
-    pivot = Math.floor (start + stop) / 2
-    while (pivotVal = fcn(items[pivot])) isnt value and start < stop
-      stop  = pivot - 1 if value < pivotVal  # Adjust the search area.
-      start = pivot + 1 if value > pivotVal
-      pivot = Math.floor (stop + start) / 2  # Recalculate the pivot.
-    if fcn(items[pivot]) is value then pivot else -1
+  # Return array index of item, or index for item if array to remain sorted.
+  # f is used to return an integer for sorting, primarily for object properties.
+  # If f is a string, it is the object property to sort by.
+  # Adapted from underscore's _.sortedIndex.
+  sortedIndex: (array, item, f=(o)->o) -> # update to _.sortedIndex someday
+    f = @propFcn f if @isString f # use item[f] if f is string
+    # Why not array.length - 1? Because we can insert 1 after end of array.
+    value = f(item); low = 0; high = array.length
+    while low < high
+      mid = (low + high) >>> 1 # floor (low+high)/2
+      if f(array[mid]) < value then low = mid + 1 else high = mid
+    low
 
+  # Return argument unchanged; for primitive arrays or objs sorted by reference
+  identity: (o) -> o
+  # Return a function that returns an object's property.  Property in fcn closure.
+  propFcn: (prop) -> (o)->o[prop]
+  # Return index of value in array or -1 if not found.
+  # If no property given, use Array.indexOf.
+  # If property given, use binary search.
+  # Property can be string or function. If property is "", use identity default.
+  indexOf: (array, item, property)->
+    if property?
+      i = @sortedIndex array, item, if property is "" then null else property
+      if array[i] is item then i else -1
+    else array.indexOf item
 
 # ### Topology Operations
   
@@ -657,7 +685,7 @@ ABM.shapes = ABM.util.s = do ->
   # Two draw procedures, one for shapes, the other for sprites made from shapes.
   draw: (ctx, shape, x, y, size, rad, color) ->
     if shape.shortcut?
-      ctx.fillStyle = u.colorStr color if not shape.img?
+      ctx.fillStyle = u.colorStr color unless shape.img?
       shape.shortcut ctx,x,y,size
     else
       ctx.save()
@@ -690,7 +718,7 @@ ABM.shapes = ABM.util.s = do ->
     index = if shape.img? then name else "#{name}-#{u.colorStr(color)}"
     ctx = spriteSheets[bits]
     # Create sheet for this bit size if it does not yet exist
-    if not ctx?
+    unless ctx?
       spriteSheets[bits] = ctx = u.createCtx bits*10, bits
       ctx.nextX = 0; ctx.nextY = 0; ctx.index = {}
     # Return matching sprite if index match found
@@ -776,10 +804,11 @@ class ABM.AgentSet extends Array
   # If mainSet is supplied, the new agentset is a sub-array of mainSet.
   # This sub-array feature is how breeds are managed, see class `Model`
   constructor: (@agentClass, @name, @mainSet) ->
-    super()
+    super(0) # doesn't yield empty array if already instances in the mainSet
+    @breeds = [] unless @mainSet?
     @agentClass::breed = @ # let the breed know I'm it's agentSet
     @ownVariables = [] # keep list of user variables
-    @ID = 0 if not @mainSet? # Do not set ID if I'm a subset
+    @ID = 0 unless @mainSet? # Do not set ID if I'm a subset
 
   # Abstract method used by subclasses to create and add their instances.
   create: ->
@@ -802,13 +831,8 @@ class ABM.AgentSet extends Array
   #     AS.remove(AS[3]) # [{id:0,x:0,y:1}, {id:1,x:8,y:0},
   #                         {id:2,x:6,y:4}, {id:4,x:1,y:1}] 
   remove: (o) ->
-    @mainSet.remove o if @mainSet?
-    u.error "remove: empty arraySet" if @length is 0
-    if o is @last()
-      @[--@length] = null # set last to null and decrease length (null: GC subtlety)
-    else
-      @splice i, 1 if (i = @indexOfID o.id) isnt -1
-      u.error "remove: indexOfID not in list" if i is -1
+    u.removeItem @mainSet, o if @mainSet?
+    u.removeItem @, o
     @
 
   # Set the default value of a agent class, return agetnset
@@ -820,7 +844,15 @@ class ABM.AgentSet extends Array
       @setDefault name, null
       @ownVariables.push name
     @
-  
+
+  # Move an agent from its AgentSet/breed to be in this AgentSet/breed.
+  # REMIND: match NetLogo sematics in terms of own variables.
+  setBreed: (a) -> # change agent a to be in this breed
+    u.removeItem a.breed, a, "id" if a.breed.mainSet?
+    u.insertItem @, a, "id" if @mainSet?
+    proto = a.__proto__ = @agentClass.prototype
+    delete a[k] for own k,v of a when proto[k]?
+    a
 
   # Remove adjacent duplicates, by reference, in a sorted agentset.
   # Use `sortById` first if agentset not sorted.
@@ -831,22 +863,6 @@ class ABM.AgentSet extends Array
   #     as.sortById().uniq() # [{id:0,x:0,y:1}, {id:1,x:8,y:0}, 
   #                             {id:2,x:6,y:4}]
   uniq: -> u.uniq(@)
-
-  # Return the agent with the given `id` within the sorted agentset.
-  # Uses binary search thus is faster than simple lookup.
-  #
-  #     AS.withID 4 # {id:4,x:1,y:1}
-  withID: (id) -> # null if not found
-    if (i = @indexOfID(id)) isnt -1 then @[i] else null
-
-  # Return the array index of the given agent id in the sorted set.
-  # If agentset is not sorted, call @sortById() first.
-  #
-  #     
-  indexOfID: (id, sorted=true) -> # -1 if not found
-    @sortById() unless sorted
-    return @length-1 if id is @last().id  # no "die" calls yet
-    u.binarySearch @, id, (o)->o.id
 
   # The static `ABM.AgentSet.asSet` as a method.
   # Used by agentset methods creating new agentsets.
@@ -1033,34 +1049,42 @@ class ABM.AgentSet extends Array
 
 # ### Patch and Patches
   
-# Class Patch instances represent a rectangle on a grid with:
-#
-# * id: installed by Patches agentset
-# * x,y: the x,y position within the grid
-# * color: the color of the patch as an RGBA array, A optional.
-# * hidden: whether or not to draw this patch
-# * label: text for the patch
-# * n/n4: adjacent neighbors: n: 8 patches, n4: N,E,S,W patches.
-# * breed: the agentset this patch belongs to
+# Class Patch instances represent a rectangle on a grid.  It holds variables\
+# that are in the patches the agents live on.  The set of all patches (ABM.patches)
+# is the world on which the agents live and the model runs.
 class ABM.Patch
+  # Constructor & Class Variables:
+  #
+  # Constructor & Class Variables:
+  # * id:         unique identifier, promoted by agentset create() factory method
+  # * breed:      the agentset this agent belongs to
+  # * x,y:        position on the patch grid, in patch coordinates
+  # * color:      the color of the patch as an RGBA array, A optional.
+  # * hidden:     whether or not to draw this patch
+  # * label:      text for the patch
+  # * labelColor: the color of my label text
+  # * labelOffset:the x,y offset of my label from my x,y location
+  # * n,n4:       adjacent neighbors: n: 8 patches, n4: N,E,S,W patches.
+  #
   # Patches may not need their neighbors, thus we use a default
   # of none.  n and n4 are promoted by the Patches agent set 
   # if world.neighbors is true, the default.
-  n: null
-  n4: null
-  color: [0,0,0]
-  hidden: false
-  label: null
-  labelColor: [0,0,0]
-  labelOffset: [0,0]
-  breed: null # set by the agentSet owning this patch
+
+  id: null            # unique id, promoted by agentset create factory method
+  breed: null         # set by the agentSet owning this patch
+  x:null; y:null      # The patch position in the patch grid
+  n:null; n4:null     # The neighbors, n: 8, n4: 4. null OK if model doesn't need them.
+  color: [0,0,0]      # The patch color
+  hidden: false       # draw me?
+  label: null         # text for the patch
+  labelColor: [0,0,0] # text color
+  labelOffset: [0,0]  # text offset from the patch center
   
   # New Patch: Just set x,y. Neighbors set by Patches constructor if needed.
   constructor: (@x, @y) ->
 
   # Return a string representation of the patch.
-  toString: ->
-    "{id:#{@id} xy:#{[@x,@y]} c:#{@color}}"
+  toString: -> "{id:#{@id} xy:#{[@x,@y]} c:#{@color}}"
 
   # Set patch color to `c` scaled by `s`. Usage:
   #
@@ -1069,7 +1093,7 @@ class ABM.Patch
   #
   # Promotes color if currently using the default.
   scaleColor: (c, s) -> 
-    @color = u.clone @color if not @.hasOwnProperty("color")
+    @color = u.clone @color unless @.hasOwnProperty("color")
     u.scaleColor c, s, @color
   
   # Draw the patch and its text label if there is one.
@@ -1103,12 +1127,14 @@ class ABM.Patch
 #
 # From ABM.world, set in Model:
 #
-# * size: pixel h/w of each patch.
-# * minX/maxX: min/max x coord in patch coords
-# * minY/maxY: min/max y coord in patch coords
-# * numX/numY: width/height of grid.
-# * isTorus: true if coord system wraps around at edges
+# * size:         pixel h/w of each patch.
+# * minX/maxX:    min/max x coord in patch coords
+# * minY/maxY:    min/max y coord in patch coords
+# * numX/numY:    width/height of grid.
+# * isTorus:      true if coord system wraps around at edges
 # * hasNeighbors: true if each patch caches its neighbors
+
+
 class ABM.Patches extends ABM.AgentSet
   # Constructor: super creates the empty AgentSet instance and installs
   # the agentClass (breed) variable shared by all the Patches in this set.
@@ -1116,12 +1142,18 @@ class ABM.Patches extends ABM.AgentSet
   constructor: -> # agentClass, name, mainSet
     super # call super with all the args I was called with
     @[k] = v for own k,v of ABM.world # add world items to patches
+    @populate() unless @mainSet
+  
+  # Setup patch world from world parameters.
+  # Note that this is done as separate method so like other agentsets,
+  # patches are started up empty and filled by "create" calls.
+  populate: ->
     for y in [@maxY..@minY] by -1
       for x in [@minX..@maxX] by 1
         @add new @agentClass x, y
     @setNeighbors() if @hasNeighbors
     @setPixels() # setup off-page canvas for pixel ops
-  
+    
   # Have patches cache the agents currently on them.
   # Optimizes p.agentsHere method.
   # Call before first agent is created.
@@ -1166,7 +1198,7 @@ class ABM.Patches extends ABM.AgentSet
   # If using scaled pixels, use pixel manipulation below, or use default agentSet
   # draw which iterates over the patches, drawing rectangles.
   draw: (ctx) ->
-    if @agentClass::color? and not @[0].hasOwnProperty "color"
+    if @agentClass::color? and not (@[0].hasOwnProperty "color") and (@breeds.length is 0)
       u.fillCtx ctx, @agentClass::color
     else if @drawWithPixels then @drawScaledPixels ctx else super ctx
 
@@ -1221,7 +1253,7 @@ class ABM.Patches extends ABM.AgentSet
             x+=@numX if x<@minX; x-=@numX if x>@maxX
             y+=@numY if y<@minY; y-=@numY if y>@maxY
           pnext = @patchXY x, y # much faster than coord()
-          if not pnext?
+          unless pnext?
             u.error "patchRect: x,y out of bounds, see console.log"
             console.log "x #{x} y #{y} p.x #{p.x} p.y #{p.y} dx #{dx} dy #{dy}"
           rect.push pnext if (meToo or p isnt pnext)
@@ -1302,7 +1334,7 @@ class ABM.Patches extends ABM.AgentSet
   # less than 8 neighbors, return the extra to the patch.
   diffuse: (v, rate, c) -> # variable name, diffusion rate, max color (optional)
     # zero temp variable if not yet set
-    if not @[0]._diffuseNext?
+    unless @[0]._diffuseNext?
       p._diffuseNext = 0 for p in @
     # pass 1: calculate contribution of all patches to themselves and neighbors
     for p in @
@@ -1319,56 +1351,63 @@ class ABM.Patches extends ABM.AgentSet
 # ### Agent & Agents
   
 # Class Agent instances represent the dynamic, behavioral element of ABM.
+# Each agent knows the patch it is on, and interacts with that and other
+# patches, as well as other agents.
 class ABM.Agent
   # Constructor & Class Variables:
   #
-  # * x,y: position on the patch grid, in patch coordinates, default: 0,0
-  # * color: the color of the agent, default: randomColor
-  # * shape: the shape name of the agent, default: "default"
-  # * heading: direction of the agent, in radians, from x-axis
-  # * hidden: whether or not to draw this agent
-  # * size: size of agent, in patch coords, default: 1
-  # * p: patch at current x,y location
-  # * penDown: true if agent pen is drawing
-  # * penSize: size in pixels of the pen, default: 1 pixel
-  # * breed: the agentset this agent belongs to
-  # * sprite: an image of the agent if non null
-  color: null  # default color, overrides random color if set
-  shape: "default"
-  breed: null # set by the agentSet owning this agent
-  hidden: false
-  label: null
-  labelColor: [0,0,0]
-  labelOffset: [0,0]
-  size: 1
-  penDown: false
-  penSize: 1 # pixels
-  heading: null
-  sprite: null # default sprite, none
-  cacheLinks: false
+  # * id:         unique identifier, promoted by agentset create() factory method
+  # * breed:      the agentset this agent belongs to
+  # * x,y:        position on the patch grid, in patch coordinates, default: 0,0
+  # * size:       size of agent, in patch coords, default: 1
+  # * color:      the color of the agent, default: randomColor
+  # * shape:      the shape name of the agent, default: "default"
+  # * label:      a text label drawn on my instances
+  # * labelColor: the color of my label text
+  # * labelOffset:the x,y offset of my label from my x,y location
+  # * heading:    direction of the agent, in radians, from x-axis
+  # * hidden:     whether or not to draw this agent
+  # * p:          patch at current x,y location
+  # * penDown:    true if agent pen is drawing
+  # * penSize:    size in pixels of the pen, default: 1 pixel
+  # * sprite:     an image of the agent if non null
+  # * cacheLinks: if true, keep array of links in/out of me
+  # * links:      array of links in/out of me.  Only used if @cacheLinks is true
+  #
+  # These class variables are "defaults" and many are "promoted" to instance variables.
+  # To have these be set to a constant for all instances, use breed.setDefault.
+  # This can be a huge savings in memory.
+  id: null            # unique id, promoted by agentset create factory method
+  breed: null         # my agentSet, set by the agentSet owning me
+  x: 0; y:0; p: null  # my location and the patch I'm on
+  size: 1             # my size in patch coords
+  color: null         # default color, overrides random color if set
+  shape: "default"    # my shape
+  hidden: false       # draw me?
+  label: null         # my text
+  labelColor: [0,0,0] # its color
+  labelOffset: [0,0]  # its offset from my x,y
+  penDown: false      # if my pen is down, I draw my path between changes in x,y
+  penSize: 1          # the pen thickness in pixels
+  heading: null       # the direction I'm pointed in, in radians
+  sprite: null        # an image of me for optimized drawing
+  cacheLinks: false   # should I keep links to/from me in links array?.
+  links: null         # array of links to/from me as an endpoint; init by ctor
   constructor: -> # called by agentSets create factory, not user
     @x = @y = 0
-    @color = u.randomColor() if not @color? # promote color if default not set
-    @heading = u.randomFloat(Math.PI*2) if not @heading? 
     @p = ABM.patches.patch @x, @y
+    @color = u.randomColor() unless @color? # promote color if default not set
+    @heading = u.randomFloat(Math.PI*2) unless @heading? 
     @p.agents.push @ if @p.agents? # ABM.patches.cacheAgentsHere
     @links = [] if @cacheLinks
 
-  # Move agent to different breed agentSet.
-  changeBreed: (newBreed) ->
-    u.error "changeBreed: not in agentSet" if not @id?
-    u.error "changeBreed: breed illegally set" if @hasOwnProperty "breed"
-    u.error "changeBreed: breed==newBreed" if @breed is newBreed
-    @die(); newBreed.create 1, (a) => a.setXY @x, @y
-
   # Set agent color to `c` scaled by `s`. Usage: see patch.scaleColor
   scaleColor: (c, s) -> 
-    @color = u.clone @color if not @hasOwnProperty "color" # promote color to inst var
+    @color = u.clone @color unless @hasOwnProperty "color" # promote color to inst var
     u.scaleColor c, s, @color
   
   # Return a string representation of the agent.
-  toString: ->
-    "{id:#{@id} xy:#{u.aToFixed [@x,@y]} c:#{@color} h: #{@heading.toFixed 2}}"
+  toString: -> "{id:#{@id} xy:#{u.aToFixed [@x,@y]} c:#{@color} h: #{@heading.toFixed 2}}"
   
   # Place the agent at the given x,y (floats) in patch coords
   # using patch topology (isTorus)
@@ -1404,7 +1443,7 @@ class ABM.Agent
     shape = ABM.shapes[@shape]
     rad = if shape.rotate then @heading else 0 # radians
     if @sprite? or @breed.useSprites 
-      @setSprite() if not @sprite? # lazy evaluation of useSprites
+      @setSprite() unless @sprite? # lazy evaluation of useSprites
       ABM.shapes.drawSprite ctx, @sprite, @x, @y, @size, rad
     else
       ABM.shapes.draw ctx, shape, @x, @y, @size, rad, @color
@@ -1417,7 +1456,7 @@ class ABM.Agent
     if (s=sprite)?
       @sprite = s; @color = s.color; @shape = s.shape; @size = s.size
     else
-      @color = u.randomColor if not @color?
+      @color = u.randomColor unless @color?
       @sprite = ABM.shapes.shapeToSprite @shape, @color, @size
     
   # Draw the agent on the drawing layer, leaving permanent image.
@@ -1526,7 +1565,7 @@ class ABM.Agents extends ABM.AgentSet
 
   # Factory: create num new agents stored in this agentset.The optional init
   # proc is called on the new agent after inserting in its agentSet.
-  create: (num, init = ->) -> # returns list too
+  create: (num, init = ->) -> # returns array of new agents too
     ((o) -> init(o); o) @add new @agentClass for i in [1..num] by 1 # too tricky?
 
   # Remove all agents from set via agent.die()
@@ -1543,7 +1582,7 @@ class ABM.Agents extends ABM.AgentSet
   inRect: (a, dx, dy, meToo=false) ->
     rect = ABM.patches.patchRect a.p, dx, dy, true
     rect = @inPatches rect
-    u.removeItem rect, a if not meToo
+    u.removeItem rect, a unless meToo
     rect
   
   # Return the members of this agentset that are within radius distance
@@ -1564,18 +1603,25 @@ class ABM.Agents extends ABM.AgentSet
 class ABM.Link
   # Constructor initializes instance variables:
   #
-  # * breed: the agentset this link belongs to
+  # * id:         unique identifier, promoted by agentset create() factory method
+  # * breed:      the agentset this agent belongs to
   # * end1, end2: two agents being connected
-  # * color: defaults to light gray
-  # * thickness: thickness in pixels of the link, default 2
-  # * hidden: whether or not to draw this link
-  breed: null # set by the agentSet owning this link
-  color: [130, 130, 130]
-  thickness: 2
-  hidden: false
-  label: null
-  labelColor: [0,0,0]
-  labelOffset: [0,0]
+  # * color:      defaults to light gray
+  # * thickness:  thickness in pixels of the link, default 2
+  # * label:      a text label drawn on my instances
+  # * labelColor: the color of my label text
+  # * labelOffset:the x,y offset of my label from my x,y location
+  # * hidden:     whether or not to draw this link
+
+  id: null            # unique id, promoted by agentset create factory method
+  breed: null         # my agentSet, set by the agentSet owning me
+  end1:null; end2:null# My two endpoints, using agents. Promoted by ctor
+  color: [130,130,130]# my color
+  thickness: 2        # my thickness in pixels, default to 2
+  hidden: false       # draw me?
+  label: null         # my text
+  labelColor: [0,0,0] # its color
+  labelOffset: [0,0]  # its offset from my midpoint
   constructor: (@end1, @end2) ->
     if @end1.links?
       @end1.links.push @
@@ -1637,8 +1683,8 @@ class ABM.Links extends ABM.AgentSet
   # Factory: Add 1 or more links from the from agent to the to agent(s) which
   # can be a single agent or an array of agents. The optional init
   # proc is called on the new link after inserting in the agentSet.
-  create: (from, to, init = ->) -> # returns list too
-    to = [to] if not to.length?
+  create: (from, to, init = ->) -> # returns array of new links too
+    to = [to] unless to.length?
     ((o) -> init(o); o) @add new @agentClass from, a for a in to # too tricky?
   
   # Remove all links from set via link.die()
@@ -1701,7 +1747,7 @@ class ABM.Animator
   setRate: (@rate, @multiStep=false) -> @resetTimes() # Change rate while running?
   # start/stop model, often used for debugging and resetting model
   start: ->
-    return if not @stopped # avoid multiple animates
+    return unless @stopped # avoid multiple animates
     @resetTimes()
     @stopped = false
     @animate()
@@ -1739,7 +1785,7 @@ class ABM.Animator
     @timeoutHandle = setTimeout @animateSteps, 10 unless @stopped
   animateDraws: =>
     if @drawsPerSec() <= @rate
-      @step() if not @multiStep
+      @step() unless @multiStep
       @draw()
     @animHandle = requestAnimFrame @animateDraws unless @stopped
   animate: ->
@@ -1818,7 +1864,7 @@ class ABM.Model
     @globalNames = (u.ownKeys @).concat "globalNames"
     @globalNames.set = false
     @startup()
-    u.waitOnFiles => @modelReady=true; @setup(); @globals() if not @globalNames.set
+    u.waitOnFiles => @modelReady=true; @setup(); @globals() unless @globalNames.set
 
   # Initialize/reset world parameters.
   setWorld: (size, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true) ->
@@ -1879,7 +1925,7 @@ class ABM.Model
   stopped: -> @anim.stopped
   toggle: -> if @anim.stopped then @start() else @stop()
   # Animate once by `step(); draw()`. For UI and debugging from console.
-  once: -> @stop() if not @anim.stopped; @anim.once() 
+  once: -> @stop() unless @anim.stopped; @anim.once() 
 
   # Stop and reset the model, restarting if currently running
   reset: () -> 
@@ -1911,7 +1957,7 @@ class ABM.Model
 #
 # to draw one of a random breed. Remove spotlight by passing `null`
   setSpotlight: (@spotlightAgent) ->
-    u.clearCtx @contexts.spotlight if not @spotlightAgent?
+    u.clearCtx @contexts.spotlight unless @spotlightAgent?
 
   drawSpotlight: (agent, ctx) ->
     u.clearCtx ctx
@@ -1948,15 +1994,15 @@ class ABM.Model
     breeds = []; breeds.classes = {}; breeds.sets = {}
     for b in s.split(" ")
       c = class Breed extends agentClass
-      @[b] = # add @<breed> to local scope
+      breed = @[b] = # add @<breed> to local scope
         new breedSet c, b, agentClass::breed # create subset agentSet
-      breeds.push @[b]
-      breeds.sets[b] = @[b]
+      breeds.push breed
+      breeds.sets[b] = breed
       breeds.classes["#{b}Class"] = c
     breeds
-  patchBreeds: (s) -> ABM.patchBreeds = @createBreeds s, ABM.Patch, ABM.Patches
-  agentBreeds: (s) -> ABM.agentBreeds = @createBreeds s, ABM.Agent, ABM.Agents
-  linkBreeds:  (s) -> ABM.linkBreeds  = @createBreeds s, ABM.Link,  ABM.Links
+  patchBreeds: (s) -> @patches.breeds = @createBreeds s, ABM.Patch, ABM.Patches
+  agentBreeds: (s) -> @agents.breeds  = @createBreeds s, ABM.Agent, ABM.Agents
+  linkBreeds:  (s) -> @links.breeds   = @createBreeds s, ABM.Link,  ABM.Links
   
   # Utility for models to create agentsets from arrays.  Ex:
   #
@@ -1968,7 +2014,7 @@ class ABM.Model
   # Note we avoid using the actual name, such as "patches" because this
   # can cause our modules to mistakenly depend on a global name.
   # See [CoffeeConsole](http://goo.gl/1i7bd) Chrome extension too.
-  debug: (@debugging = true)-> @setRootVars()
+  debug: (@debugging = true)-> @setRootVars(); @
   setRootVars: ->
     root.ps  = @patches
     root.p0  = @patches[0]
@@ -1984,4 +2030,3 @@ class ABM.Model
     root.gl  = @globals
     root.root= root
     root.app = @
-    @

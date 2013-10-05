@@ -24,7 +24,7 @@ class ABM.Animator
   setRate: (@rate, @multiStep=false) -> @resetTimes() # Change rate while running?
   # start/stop model, often used for debugging and resetting model
   start: ->
-    return if not @stopped # avoid multiple animates
+    return unless @stopped # avoid multiple animates
     @resetTimes()
     @stopped = false
     @animate()
@@ -62,7 +62,7 @@ class ABM.Animator
     @timeoutHandle = setTimeout @animateSteps, 10 unless @stopped
   animateDraws: =>
     if @drawsPerSec() <= @rate
-      @step() if not @multiStep
+      @step() unless @multiStep
       @draw()
     @animHandle = requestAnimFrame @animateDraws unless @stopped
   animate: ->
@@ -141,7 +141,7 @@ class ABM.Model
     @globalNames = (u.ownKeys @).concat "globalNames"
     @globalNames.set = false
     @startup()
-    u.waitOnFiles => @modelReady=true; @setup(); @globals() if not @globalNames.set
+    u.waitOnFiles => @modelReady=true; @setup(); @globals() unless @globalNames.set
 
   # Initialize/reset world parameters.
   setWorld: (size, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true) ->
@@ -202,7 +202,7 @@ class ABM.Model
   stopped: -> @anim.stopped
   toggle: -> if @anim.stopped then @start() else @stop()
   # Animate once by `step(); draw()`. For UI and debugging from console.
-  once: -> @stop() if not @anim.stopped; @anim.once() 
+  once: -> @stop() unless @anim.stopped; @anim.once() 
 
   # Stop and reset the model, restarting if currently running
   reset: () -> 
@@ -234,7 +234,7 @@ class ABM.Model
 #
 # to draw one of a random breed. Remove spotlight by passing `null`
   setSpotlight: (@spotlightAgent) ->
-    u.clearCtx @contexts.spotlight if not @spotlightAgent?
+    u.clearCtx @contexts.spotlight unless @spotlightAgent?
 
   drawSpotlight: (agent, ctx) ->
     u.clearCtx ctx
@@ -271,15 +271,15 @@ class ABM.Model
     breeds = []; breeds.classes = {}; breeds.sets = {}
     for b in s.split(" ")
       c = class Breed extends agentClass
-      @[b] = # add @<breed> to local scope
+      breed = @[b] = # add @<breed> to local scope
         new breedSet c, b, agentClass::breed # create subset agentSet
-      breeds.push @[b]
-      breeds.sets[b] = @[b]
+      breeds.push breed
+      breeds.sets[b] = breed
       breeds.classes["#{b}Class"] = c
     breeds
-  patchBreeds: (s) -> ABM.patchBreeds = @createBreeds s, ABM.Patch, ABM.Patches
-  agentBreeds: (s) -> ABM.agentBreeds = @createBreeds s, ABM.Agent, ABM.Agents
-  linkBreeds:  (s) -> ABM.linkBreeds  = @createBreeds s, ABM.Link,  ABM.Links
+  patchBreeds: (s) -> @patches.breeds = @createBreeds s, ABM.Patch, ABM.Patches
+  agentBreeds: (s) -> @agents.breeds  = @createBreeds s, ABM.Agent, ABM.Agents
+  linkBreeds:  (s) -> @links.breeds   = @createBreeds s, ABM.Link,  ABM.Links
   
   # Utility for models to create agentsets from arrays.  Ex:
   #
@@ -291,7 +291,7 @@ class ABM.Model
   # Note we avoid using the actual name, such as "patches" because this
   # can cause our modules to mistakenly depend on a global name.
   # See [CoffeeConsole](http://goo.gl/1i7bd) Chrome extension too.
-  debug: (@debugging = true)-> @setRootVars()
+  debug: (@debugging = true)-> @setRootVars(); @
   setRootVars: ->
     root.ps  = @patches
     root.p0  = @patches[0]
@@ -307,4 +307,3 @@ class ABM.Model
     root.gl  = @globals
     root.root= root
     root.app = @
-    @

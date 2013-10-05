@@ -46,7 +46,7 @@
         p.color = [0, 0, 0] # in original model but apparently not needed, refresh off?
         @burnedTrees++
       fadeEmbers: ->
-        for a in @embers by -1 #()
+        for a in @embers by -1 # -1: allow die() in loop
           a.scaleColor a.color, .8
           if 100 > Math.max a.color... # or (Math.max a.color...) < 100 , needs parens
             a.p.color = a.color
@@ -54,10 +54,12 @@
             a.die()
       step: ->
         console.log @anim.toString() if @anim.ticks % 100 is 0
-        if not @agents.any() then @stop()
-        for a in @fires by -1# ()
+        unless @agents.any()
+          console.log "..stopping, fire done at tick: #{@anim.ticks}"
+          @stop()
+        for a in @fires by -1 # -1: allow changeBreed() in loop
           @ignite p for p in a.p.n4 when u.colorsEqual p.color, [0, 255, 0]
-          a.changeBreed @embers #a.breed = "embers"
+          @embers.setBreed a
         @fadeEmbers()
 
     # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors

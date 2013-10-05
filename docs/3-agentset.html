@@ -165,10 +165,11 @@ This sub-array feature is how breeds are managed, see class <code>Model</code></
             </div>
             
             <div class="content"><div class='highlight'><pre>  constructor: (<span class="property">@agentClass</span>, <span class="property">@name</span>, <span class="property">@mainSet</span>) -&gt;
-    <span class="keyword">super</span>()
+    <span class="keyword">super</span>(<span class="number">0</span>) <span class="comment"># doesn't yield empty array if already instances in the mainSet</span>
+    <span class="property">@breeds</span> = [] <span class="keyword">unless</span> <span class="property">@mainSet</span>?
     <span class="property">@agentClass</span>::breed = @ <span class="comment"># let the breed know I'm it's agentSet</span>
     <span class="property">@ownVariables</span> = [] <span class="comment"># keep list of user variables</span>
-    <span class="property">@ID</span> = <span class="number">0</span> <span class="keyword">if</span> <span class="keyword">not</span> <span class="property">@mainSet</span>? <span class="comment"># Do not set ID if I'm a subset</span></pre></div></div>
+    <span class="property">@ID</span> = <span class="number">0</span> <span class="keyword">unless</span> <span class="property">@mainSet</span>? <span class="comment"># Do not set ID if I'm a subset</span></pre></div></div>
             
         </li>
         
@@ -225,13 +226,8 @@ array is unsorted, simply call <code>sortById</code> first, see <code>sortById</
             </div>
             
             <div class="content"><div class='highlight'><pre>  remove: (o) -&gt;
-    <span class="property">@mainSet</span>.remove o <span class="keyword">if</span> <span class="property">@mainSet</span>?
-    u.error <span class="string">"remove: empty arraySet"</span> <span class="keyword">if</span> <span class="property">@length</span> <span class="keyword">is</span> <span class="number">0</span>
-    <span class="keyword">if</span> o <span class="keyword">is</span> <span class="property">@last</span>()
-      @[--<span class="property">@length</span>] = <span class="literal">null</span> <span class="comment"># set last to null and decrease length (null: GC subtlety)</span>
-    <span class="keyword">else</span>
-      <span class="property">@splice</span> i, <span class="number">1</span> <span class="keyword">if</span> (i = <span class="property">@indexOfID</span> o.id) <span class="keyword">isnt</span> -<span class="number">1</span>
-      u.error <span class="string">"remove: indexOfID not in list"</span> <span class="keyword">if</span> i <span class="keyword">is</span> -<span class="number">1</span>
+    u.removeItem <span class="property">@mainSet</span>, o <span class="keyword">if</span> <span class="property">@mainSet</span>?
+    u.removeItem @, o
     @</pre></div></div>
             
         </li>
@@ -278,6 +274,27 @@ Return agentset.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
+              <p>Move an agent from its AgentSet/breed to be in this AgentSet/breed.
+REMIND: match NetLogo sematics in terms of own variables.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  setBreed: (a) -&gt; <span class="comment"># change agent a to be in this breed</span>
+    u.removeItem a.breed, a, <span class="string">"id"</span> <span class="keyword">if</span> a.breed.mainSet?
+    u.insertItem @, a, <span class="string">"id"</span> <span class="keyword">if</span> <span class="property">@mainSet</span>?
+    proto = a.__proto__ = <span class="property">@agentClass</span>.prototype
+    <span class="keyword">delete</span> a[k] <span class="keyword">for</span> own k,v <span class="keyword">of</span> a <span class="keyword">when</span> proto[k]?
+    a</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
               <p>Remove adjacent duplicates, by reference, in a sorted agentset.
 Use <code>sortById</code> first if agentset not sorted.</p>
 <pre><code>as = (AS.oneOf() for i in [1..4]) # 4 random agents w/ dups
@@ -293,48 +310,11 @@ as.sortById().uniq() # [{id:0,x:0,y:1}, {id:1,x:8,y:0},
         </li>
         
         
-        <li id="section-12">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
-              </div>
-              <p>Return the agent with the given <code>id</code> within the sorted agentset.
-Uses binary search thus is faster than simple lookup.</p>
-<pre><code>AS.withID 4 # {id:4,x:1,y:1}</code></pre>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  withID: (id) -&gt; <span class="comment"># null if not found</span>
-    <span class="keyword">if</span> (i = <span class="property">@indexOfID</span>(id)) <span class="keyword">isnt</span> -<span class="number">1</span> <span class="keyword">then</span> @[i] <span class="keyword">else</span> <span class="literal">null</span></pre></div></div>
-            
-        </li>
-        
-        
         <li id="section-13">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-13">&#182;</a>
-              </div>
-              <p>Return the array index of the given agent id in the sorted set.
-If agentset is not sorted, call @sortById() first.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  indexOfID: (id, sorted=<span class="literal">true</span>) -&gt; <span class="comment"># -1 if not found</span>
-    <span class="property">@sortById</span>() <span class="keyword">unless</span> sorted
-    <span class="keyword">return</span> <span class="property">@length</span>-<span class="number">1</span> <span class="keyword">if</span> id <span class="keyword">is</span> <span class="property">@last</span>().id  <span class="comment"># no "die" calls yet</span>
-    u.binarySearch @, id, (o)-&gt;o.id</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-14">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
               <p>The static <code>ABM.AgentSet.asSet</code> as a method.
 Used by agentset methods creating new agentsets.</p>
@@ -346,11 +326,11 @@ Used by agentset methods creating new agentsets.</p>
         </li>
         
         
-        <li id="section-15">
+        <li id="section-14">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
+                <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
               <p>Similar to above but sorted via <code>id</code>.</p>
 
@@ -361,11 +341,11 @@ Used by agentset methods creating new agentsets.</p>
         </li>
         
         
-        <li id="section-16">
+        <li id="section-15">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+                <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
               <p>Return string representative of agentset.</p>
 
@@ -376,11 +356,11 @@ Used by agentset methods creating new agentsets.</p>
         </li>
         
         
-        <li id="section-17">
+        <li id="section-16">
             <div class="annotation">
               
               <div class="pilwrap for-h3">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <h3>Property Utilities</h3>
 <p>Property access, also useful for debugging<br></p>
@@ -390,11 +370,11 @@ Used by agentset methods creating new agentsets.</p>
         </li>
         
         
-        <li id="section-18">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <p>Return an array of a property of the agentset</p>
 <pre><code> AS.getProp &quot;x&quot; # [0, 8, 6, 1, 1]</code></pre>
@@ -406,11 +386,11 @@ Used by agentset methods creating new agentsets.</p>
         </li>
         
         
-        <li id="section-19">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>Return an array of agents with the property equal to the given value</p>
 <pre><code>AS.getPropWith &quot;x&quot;, 1
@@ -423,11 +403,11 @@ Used by agentset methods creating new agentsets.</p>
         </li>
         
         
-        <li id="section-20">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>Set the property of the agents to a given value.  If value
 is an array, its values will be used, indexed by agentSet&#39;s index.
@@ -447,11 +427,11 @@ AS1.setProp &quot;x&quot;, 2 # {id:4,x:2,y:3},{id:5,x:2,y:1}</code></pre>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>Get the agent with the min/max prop value in the agentset</p>
 <pre><code>min = AS.minProp &quot;y&quot;  # 0
@@ -465,11 +445,11 @@ max = AS.maxProp &quot;y&quot;  # 4</code></pre>
         </li>
         
         
-        <li id="section-22">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap for-h3">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <h3>Array Utilities, often from ABM.util</h3>
 <p>Randomize the agentset</p>
@@ -482,11 +462,11 @@ max = AS.maxProp &quot;y&quot;  # 4</code></pre>
         </li>
         
         
-        <li id="section-23">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>Sort the agentset by the agent&#39;s <code>id</code>.</p>
 <pre><code>AS.shuffle();  AS.getProp &quot;id&quot;  # [3, 2, 1, 4, 5] 
@@ -499,11 +479,11 @@ AS.sortById(); AS.getProp &quot;id&quot;  # [1, 2, 3, 4, 5]</code></pre>
         </li>
         
         
-        <li id="section-24">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>Make a copy of an agentset, return as new agentset.<br>
 NOTE: does <em>not</em> duplicate the objects, simply creates a new agentset
@@ -520,11 +500,11 @@ as.getProp &quot;id&quot;  # [2, 4, 0, 1, 3]</code></pre>
         </li>
         
         
-        <li id="section-25">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>Return the last agent in the agentset</p>
 <pre><code>AS.last().id             # l5
@@ -537,11 +517,11 @@ l=AS.last(); p=[l.x,l.y] # [1,1]</code></pre>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>Returns true if the agentset has any agents</p>
 <pre><code>AS.any()  # true
@@ -554,11 +534,11 @@ AS.getPropWith(&quot;x&quot;, 99).any() #false</code></pre>
         </li>
         
         
-        <li id="section-27">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
               <p>Return an agentset without given agent a</p>
 <pre><code>as = AS.clone().other(AS[0])
@@ -571,11 +551,11 @@ as.getProp &quot;id&quot;  # [1, 2, 3, 4] </code></pre>
         </li>
         
         
-        <li id="section-28">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>Return random agent in agentset</p>
 <pre><code>AS.oneOf()  # {id:2,x:6,y:4}</code></pre>
@@ -587,11 +567,11 @@ as.getProp &quot;id&quot;  # [1, 2, 3, 4] </code></pre>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               <p>Return agentset made of n distinct agents</p>
 <pre><code>AS.nOf(3) # [{id:0,x:0,y:1}, {id:4,x:1,y:1}, {id:1,x:8,y:0}]</code></pre>
@@ -603,11 +583,11 @@ as.getProp &quot;id&quot;  # [1, 2, 3, 4] </code></pre>
         </li>
         
         
-        <li id="section-30">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>Return agent when f(o) min/max in agentset. If multiple agents have
 min/max value, return the first. Error if agentset empty.
@@ -624,11 +604,11 @@ AS.maxOneOf((a)-&gt;a.x+a.y, true) # {id:2,x:6,y:4},10 </code></pre>
         </li>
         
         
-        <li id="section-31">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap for-h3">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <h3>Drawing</h3>
 
@@ -637,11 +617,11 @@ AS.maxOneOf((a)-&gt;a.x+a.y, true) # {id:2,x:6,y:4},10 </code></pre>
         </li>
         
         
-        <li id="section-32">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-32">&#182;</a>
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <p>For agentsets who&#39;s agents have a <code>draw</code> method.
 Clears the graphics context (transparent), then
@@ -656,11 +636,11 @@ calls each agent&#39;s draw(ctx) method.</p>
         </li>
         
         
-        <li id="section-33">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap for-h3">
-                <a class="pilcrow" href="#section-33">&#182;</a>
+                <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
               <h3>Topology</h3>
 
@@ -669,11 +649,11 @@ calls each agent&#39;s draw(ctx) method.</p>
         </li>
         
         
-        <li id="section-34">
+        <li id="section-33">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-34">&#182;</a>
+                <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
               <p>For ABM.patches &amp; ABM.agents which have x,y. See ABM.util doc.</p>
 <p>Return all agents in agentset within d distance from given object.
@@ -695,11 +675,11 @@ depending on patches.isTorus, and patches width/height if needed.</p>
         </li>
         
         
-        <li id="section-35">
+        <li id="section-34">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-35">&#182;</a>
+                <a class="pilcrow" href="#section-34">&#182;</a>
               </div>
               <p>As above, but also limited to the angle <code>cone</code> around
 a <code>heading</code> from object <code>o</code>.</p>
@@ -720,13 +700,27 @@ a <code>heading</code> from object <code>o</code>.</p>
         </li>
         
         
-        <li id="section-36">
+        <li id="section-35">
             <div class="annotation">
               
               <div class="pilwrap for-h3">
-                <a class="pilcrow" href="#section-36">&#182;</a>
+                <a class="pilcrow" href="#section-35">&#182;</a>
               </div>
               <h3>Debugging</h3>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-36">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-36">&#182;</a>
+              </div>
+              <p>Useful in console.
+Also see <a href="http://goo.gl/1i7bd">CoffeeConsole</a> Chrome extension.</p>
 
             </div>
             
@@ -738,20 +732,6 @@ a <code>heading</code> from object <code>o</code>.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-37">&#182;</a>
-              </div>
-              <p>Useful in console.
-Also see <a href="http://goo.gl/1i7bd">CoffeeConsole</a> Chrome extension.</p>
-
-            </div>
-            
-        </li>
-        
-        
-        <li id="section-38">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-38">&#182;</a>
               </div>
               <p>Similar to NetLogo ask &amp; with operators.
 Allows functions as strings. Use:</p>
@@ -773,11 +753,11 @@ ABM.agents.with(&quot;o.id&lt;100&quot;).ask(&quot;o.color=[255,0,0]&quot;)</cod
         </li>
         
         
-        <li id="section-39">
+        <li id="section-38">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-39">&#182;</a>
+                <a class="pilcrow" href="#section-38">&#182;</a>
               </div>
               <p>The example agentset AS used in the code fragments was made like this,
 slightly more useful than shown above due to the toString method.</p>

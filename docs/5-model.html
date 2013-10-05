@@ -147,7 +147,7 @@ in setup() to change default settings</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  start: -&gt;
-    <span class="keyword">return</span> <span class="keyword">if</span> <span class="keyword">not</span> <span class="property">@stopped</span> <span class="comment"># avoid multiple animates</span>
+    <span class="keyword">return</span> <span class="keyword">unless</span> <span class="property">@stopped</span> <span class="comment"># avoid multiple animates</span>
     <span class="property">@resetTimes</span>()
     <span class="property">@stopped</span> = <span class="literal">false</span>
     <span class="property">@animate</span>()
@@ -302,7 +302,7 @@ The &quot;if&quot; is to avoid from ms=0</p>
     <span class="property">@timeoutHandle</span> = setTimeout <span class="property">@animateSteps</span>, <span class="number">10</span> <span class="keyword">unless</span> <span class="property">@stopped</span>
   animateDraws: =&gt;
     <span class="keyword">if</span> <span class="property">@drawsPerSec</span>() &lt;= <span class="property">@rate</span>
-      <span class="property">@step</span>() <span class="keyword">if</span> <span class="keyword">not</span> <span class="property">@multiStep</span>
+      <span class="property">@step</span>() <span class="keyword">unless</span> <span class="property">@multiStep</span>
       <span class="property">@draw</span>()
     <span class="property">@animHandle</span> = requestAnimFrame <span class="property">@animateDraws</span> <span class="keyword">unless</span> <span class="property">@stopped</span>
   animate: -&gt;
@@ -503,7 +503,7 @@ agentset is drawn only once, remaining static after that.</p>
     <span class="property">@globalNames</span> = (u.ownKeys @).concat <span class="string">"globalNames"</span>
     <span class="property">@globalNames</span>.set = <span class="literal">false</span>
     <span class="property">@startup</span>()
-    u.waitOnFiles =&gt; <span class="property">@modelReady</span>=<span class="literal">true</span>; <span class="property">@setup</span>(); <span class="property">@globals</span>() <span class="keyword">if</span> <span class="keyword">not</span> <span class="property">@globalNames</span>.set</pre></div></div>
+    u.waitOnFiles =&gt; <span class="property">@modelReady</span>=<span class="literal">true</span>; <span class="property">@setup</span>(); <span class="property">@globals</span>() <span class="keyword">unless</span> <span class="property">@globalNames</span>.set</pre></div></div>
             
         </li>
         
@@ -706,7 +706,7 @@ two abstract methods. <code>super</code> need not be called.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  once: -&gt; <span class="property">@stop</span>() <span class="keyword">if</span> <span class="keyword">not</span> <span class="property">@anim</span>.stopped; <span class="property">@anim</span>.once()</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  once: -&gt; <span class="property">@stop</span>() <span class="keyword">unless</span> <span class="property">@anim</span>.stopped; <span class="property">@anim</span>.once()</pre></div></div>
             
         </li>
         
@@ -783,7 +783,7 @@ Use:</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  setSpotlight: (<span class="property">@spotlightAgent</span>) -&gt;
-    u.clearCtx <span class="property">@contexts</span>.spotlight <span class="keyword">if</span> <span class="keyword">not</span> <span class="property">@spotlightAgent</span>?
+    u.clearCtx <span class="property">@contexts</span>.spotlight <span class="keyword">unless</span> <span class="property">@spotlightAgent</span>?
 
   drawSpotlight: (agent, ctx) -&gt;
     u.clearCtx ctx
@@ -836,15 +836,15 @@ not usable due to the patches being prebuilt.  Stay tuned.</p>
     breeds = []; breeds.classes = {}; breeds.sets = {}
     <span class="keyword">for</span> b <span class="keyword">in</span> s.split(<span class="string">" "</span>)
       c = <span class="class"><span class="keyword">class</span> <span class="title">Breed</span> <span class="keyword">extends</span> <span class="title">agentClass</span></span>
-      @[b] = <span class="comment"># add @&lt;breed&gt; to local scope</span>
+      breed = @[b] = <span class="comment"># add @&lt;breed&gt; to local scope</span>
         <span class="keyword">new</span> breedSet c, b, agentClass::breed <span class="comment"># create subset agentSet</span>
-      breeds.push @[b]
-      breeds.sets[b] = @[b]
+      breeds.push breed
+      breeds.sets[b] = breed
       breeds.classes[<span class="string">"<span class="subst">#{b}</span>Class"</span>] = c
     breeds
-  patchBreeds: (s) -&gt; ABM.patchBreeds = <span class="property">@createBreeds</span> s, ABM.Patch, ABM.Patches
-  agentBreeds: (s) -&gt; ABM.agentBreeds = <span class="property">@createBreeds</span> s, ABM.Agent, ABM.Agents
-  linkBreeds:  (s) -&gt; ABM.linkBreeds  = <span class="property">@createBreeds</span> s, ABM.Link,  ABM.Links</pre></div></div>
+  patchBreeds: (s) -&gt; <span class="property">@patches</span>.breeds = <span class="property">@createBreeds</span> s, ABM.Patch, ABM.Patches
+  agentBreeds: (s) -&gt; <span class="property">@agents</span>.breeds  = <span class="property">@createBreeds</span> s, ABM.Agent, ABM.Agents
+  linkBreeds:  (s) -&gt; <span class="property">@links</span>.breeds   = <span class="property">@createBreeds</span> s, ABM.Link,  ABM.Links</pre></div></div>
             
         </li>
         
@@ -879,7 +879,7 @@ See <a href="http://goo.gl/1i7bd">CoffeeConsole</a> Chrome extension too.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  debug: (<span class="property">@debugging</span> = <span class="literal">true</span>)-&gt; <span class="property">@setRootVars</span>()
+            <div class="content"><div class='highlight'><pre>  debug: (<span class="property">@debugging</span> = <span class="literal">true</span>)-&gt; <span class="property">@setRootVars</span>(); @
   setRootVars: -&gt;
     root.ps  = <span class="property">@patches</span>
     root.p0  = <span class="property">@patches</span>[<span class="number">0</span>]
@@ -894,8 +894,7 @@ See <a href="http://goo.gl/1i7bd">CoffeeConsole</a> Chrome extension too.</p>
     root.wd  = ABM.world
     root.gl  = <span class="property">@globals</span>
     root.root= root
-    root.app = @
-    @</pre></div></div>
+    root.app = @</pre></div></div>
             
         </li>
         

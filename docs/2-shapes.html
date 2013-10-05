@@ -297,7 +297,7 @@ Useful for shortcuts</p>
             
             <div class="content"><div class='highlight'><pre>  draw: (ctx, shape, x, y, size, rad, color) -&gt;
     <span class="keyword">if</span> shape.shortcut?
-      ctx.fillStyle = u.colorStr color <span class="keyword">if</span> <span class="keyword">not</span> shape.img?
+      ctx.fillStyle = u.colorStr color <span class="keyword">unless</span> shape.img?
       shape.shortcut ctx,x,y,size
     <span class="keyword">else</span>
       ctx.save()
@@ -356,7 +356,7 @@ the shape to fit it. Return existing sprite if duplicate.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">if</span> <span class="keyword">not</span> ctx?
+            <div class="content"><div class='highlight'><pre>    <span class="keyword">unless</span> ctx?
       spriteSheets[bits] = ctx = u.createCtx bits*<span class="number">10</span>, bits
       ctx.nextX = <span class="number">0</span>; ctx.nextY = <span class="number">0</span>; ctx.index = {}</pre></div></div>
             

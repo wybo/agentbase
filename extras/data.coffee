@@ -51,7 +51,7 @@ ABM.DataSet = class DataSet
     @
   # Check that x,y are valid coords (floats), from top-left of dataset.
   checkXY: (x,y) ->
-    u.error "x,y out of range: #{x},#{y}" if not (0<=x<=@width-1 and 0<=y<=@height-1)
+    u.error "x,y out of range: #{x},#{y}" unless (0<=x<=@width-1 and 0<=y<=@height-1)
   # Sample the dataset.
   setSampler: (@useNearest) ->
   sample: (x,y) -> if @useNearest then @nearest x,y else @bilinear x,y
@@ -99,8 +99,8 @@ ABM.DataSet = class DataSet
     ctx.putImageData idata, 0, 0
     ctx.canvas
   # Show dataset as image in patch drawing layer or patch colors, return image
-  toDrawing: (gray=true) -> ABM.patches.installDrawing (img=@toImage gray); img
-  toPatchColors: (gray=true) -> ABM.patches.installColors (img=@toImage gray); img
+  toDrawing: (gray=true) -> ABM.patches.installDrawing(img=@toImage gray); img
+  toPatchColors: (gray=true) -> ABM.patches.installColors(img=@toImage gray); img
   # Resample dataset to patch width/height and set named patch variable.
   # Note this "insets" the dataset so the variable is sampled the center of the patch.
   # The dataset can be sampled directly to its edges .. i.e. in agent coords.
@@ -150,7 +150,7 @@ ABM.DataSet = class DataSet
   # [slope](http://goo.gl/ZcOl08) and [aspect](http://goo.gl/KoI4y5)
   # It also returns the two derivitive DataSets, dzdx, dzdy for
   # those wanting to use the results of the two convolutions.
-  slopeAndAspect: (cellsize=1, posRadians=false) -> 
+  slopeAndAspect: (cellsize=1, noNaNs=true, posAngle=false) -> 
     dzdx = @convolve([-1,0,1,-2,0,2,-1,0,1],1/8) # sub left z from right
     dzdy = @convolve([1,2,1,0,0,0,-1,-2,-1],1/8) # sub bottom z from top
     aspect = []; slope = [] #; minX = .01; maxAtan = Math.PI/4
@@ -158,8 +158,12 @@ ABM.DataSet = class DataSet
       for x in [0...@width] by 1
         gx = dzdx.getXY(x,y); gy = dzdy.getXY(x,y)
         slope.push Math.atan(Math.sqrt(gx*gx + gy*gy)/(cellsize)) # radians
-        rad = if gx is gy is 0 then NaN else Math.atan2 -gy,-gx # radians in [-PI,PI], downhill
-        rad += 2*Math.PI if posRadians and rad < 0 # positive number, rad in [0,2PI]
+        while noNaNs and gx is gy
+          gx += u.randomNormal 0,.01; gy += u.randomNormal 0,.01
+        # radians in [-PI,PI], downhill
+        rad = if gx is gy is 0 then NaN else Math.atan2 -gy,-gx
+        # positive radians in [0,2PI] if desired
+        rad += 2*Math.PI if posAngle and rad < 0
         aspect.push rad
     slope = new DataSet @width, @height, slope
     aspect = new DataSet @width, @height, aspect
@@ -211,7 +215,7 @@ ABM.ImageDataSet = class ImageDataSet extends DataSet
   # the segment into an unsigned 32 bit int dataset entry.
   constructor: (@img, @byteFmt=3) -> # default 24 bit int
     super() # start out as an empty dataset
-    return if not @img?
+    return unless @img?
     @parse @img
   # The byte format can be:
   #

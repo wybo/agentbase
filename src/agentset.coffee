@@ -54,10 +54,11 @@ class ABM.AgentSet extends Array
   # If mainSet is supplied, the new agentset is a sub-array of mainSet.
   # This sub-array feature is how breeds are managed, see class `Model`
   constructor: (@agentClass, @name, @mainSet) ->
-    super()
+    super(0) # doesn't yield empty array if already instances in the mainSet
+    @breeds = [] unless @mainSet?
     @agentClass::breed = @ # let the breed know I'm it's agentSet
     @ownVariables = [] # keep list of user variables
-    @ID = 0 if not @mainSet? # Do not set ID if I'm a subset
+    @ID = 0 unless @mainSet? # Do not set ID if I'm a subset
 
   # Abstract method used by subclasses to create and add their instances.
   create: ->
@@ -80,13 +81,8 @@ class ABM.AgentSet extends Array
   #     AS.remove(AS[3]) # [{id:0,x:0,y:1}, {id:1,x:8,y:0},
   #                         {id:2,x:6,y:4}, {id:4,x:1,y:1}] 
   remove: (o) ->
-    @mainSet.remove o if @mainSet?
-    u.error "remove: empty arraySet" if @length is 0
-    if o is @last()
-      @[--@length] = null # set last to null and decrease length (null: GC subtlety)
-    else
-      @splice i, 1 if (i = @indexOfID o.id) isnt -1
-      u.error "remove: indexOfID not in list" if i is -1
+    u.removeItem @mainSet, o if @mainSet?
+    u.removeItem @, o
     @
 
   # Set the default value of a agent class, return agetnset
@@ -98,7 +94,15 @@ class ABM.AgentSet extends Array
       @setDefault name, null
       @ownVariables.push name
     @
-  
+
+  # Move an agent from its AgentSet/breed to be in this AgentSet/breed.
+  # REMIND: match NetLogo sematics in terms of own variables.
+  setBreed: (a) -> # change agent a to be in this breed
+    u.removeItem a.breed, a, "id" if a.breed.mainSet?
+    u.insertItem @, a, "id" if @mainSet?
+    proto = a.__proto__ = @agentClass.prototype
+    delete a[k] for own k,v of a when proto[k]?
+    a
 
   # Remove adjacent duplicates, by reference, in a sorted agentset.
   # Use `sortById` first if agentset not sorted.
@@ -109,22 +113,6 @@ class ABM.AgentSet extends Array
   #     as.sortById().uniq() # [{id:0,x:0,y:1}, {id:1,x:8,y:0}, 
   #                             {id:2,x:6,y:4}]
   uniq: -> u.uniq(@)
-
-  # Return the agent with the given `id` within the sorted agentset.
-  # Uses binary search thus is faster than simple lookup.
-  #
-  #     AS.withID 4 # {id:4,x:1,y:1}
-  withID: (id) -> # null if not found
-    if (i = @indexOfID(id)) isnt -1 then @[i] else null
-
-  # Return the array index of the given agent id in the sorted set.
-  # If agentset is not sorted, call @sortById() first.
-  #
-  #     
-  indexOfID: (id, sorted=true) -> # -1 if not found
-    @sortById() unless sorted
-    return @length-1 if id is @last().id  # no "die" calls yet
-    u.binarySearch @, id, (o)->o.id
 
   # The static `ABM.AgentSet.asSet` as a method.
   # Used by agentset methods creating new agentsets.

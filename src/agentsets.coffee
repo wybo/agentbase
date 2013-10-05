@@ -3,34 +3,42 @@
 
 # ### Patch and Patches
   
-# Class Patch instances represent a rectangle on a grid with:
-#
-# * id: installed by Patches agentset
-# * x,y: the x,y position within the grid
-# * color: the color of the patch as an RGBA array, A optional.
-# * hidden: whether or not to draw this patch
-# * label: text for the patch
-# * n/n4: adjacent neighbors: n: 8 patches, n4: N,E,S,W patches.
-# * breed: the agentset this patch belongs to
+# Class Patch instances represent a rectangle on a grid.  It holds variables\
+# that are in the patches the agents live on.  The set of all patches (ABM.patches)
+# is the world on which the agents live and the model runs.
 class ABM.Patch
+  # Constructor & Class Variables:
+  #
+  # Constructor & Class Variables:
+  # * id:         unique identifier, promoted by agentset create() factory method
+  # * breed:      the agentset this agent belongs to
+  # * x,y:        position on the patch grid, in patch coordinates
+  # * color:      the color of the patch as an RGBA array, A optional.
+  # * hidden:     whether or not to draw this patch
+  # * label:      text for the patch
+  # * labelColor: the color of my label text
+  # * labelOffset:the x,y offset of my label from my x,y location
+  # * n,n4:       adjacent neighbors: n: 8 patches, n4: N,E,S,W patches.
+  #
   # Patches may not need their neighbors, thus we use a default
   # of none.  n and n4 are promoted by the Patches agent set 
   # if world.neighbors is true, the default.
-  n: null
-  n4: null
-  color: [0,0,0]
-  hidden: false
-  label: null
-  labelColor: [0,0,0]
-  labelOffset: [0,0]
-  breed: null # set by the agentSet owning this patch
+
+  id: null            # unique id, promoted by agentset create factory method
+  breed: null         # set by the agentSet owning this patch
+  x:null; y:null      # The patch position in the patch grid
+  n:null; n4:null     # The neighbors, n: 8, n4: 4. null OK if model doesn't need them.
+  color: [0,0,0]      # The patch color
+  hidden: false       # draw me?
+  label: null         # text for the patch
+  labelColor: [0,0,0] # text color
+  labelOffset: [0,0]  # text offset from the patch center
   
   # New Patch: Just set x,y. Neighbors set by Patches constructor if needed.
   constructor: (@x, @y) ->
 
   # Return a string representation of the patch.
-  toString: ->
-    "{id:#{@id} xy:#{[@x,@y]} c:#{@color}}"
+  toString: -> "{id:#{@id} xy:#{[@x,@y]} c:#{@color}}"
 
   # Set patch color to `c` scaled by `s`. Usage:
   #
@@ -39,7 +47,7 @@ class ABM.Patch
   #
   # Promotes color if currently using the default.
   scaleColor: (c, s) -> 
-    @color = u.clone @color if not @.hasOwnProperty("color")
+    @color = u.clone @color unless @.hasOwnProperty("color")
     u.scaleColor c, s, @color
   
   # Draw the patch and its text label if there is one.
@@ -73,12 +81,14 @@ class ABM.Patch
 #
 # From ABM.world, set in Model:
 #
-# * size: pixel h/w of each patch.
-# * minX/maxX: min/max x coord in patch coords
-# * minY/maxY: min/max y coord in patch coords
-# * numX/numY: width/height of grid.
-# * isTorus: true if coord system wraps around at edges
+# * size:         pixel h/w of each patch.
+# * minX/maxX:    min/max x coord in patch coords
+# * minY/maxY:    min/max y coord in patch coords
+# * numX/numY:    width/height of grid.
+# * isTorus:      true if coord system wraps around at edges
 # * hasNeighbors: true if each patch caches its neighbors
+
+
 class ABM.Patches extends ABM.AgentSet
   # Constructor: super creates the empty AgentSet instance and installs
   # the agentClass (breed) variable shared by all the Patches in this set.
@@ -86,12 +96,18 @@ class ABM.Patches extends ABM.AgentSet
   constructor: -> # agentClass, name, mainSet
     super # call super with all the args I was called with
     @[k] = v for own k,v of ABM.world # add world items to patches
+    @populate() unless @mainSet
+  
+  # Setup patch world from world parameters.
+  # Note that this is done as separate method so like other agentsets,
+  # patches are started up empty and filled by "create" calls.
+  populate: ->
     for y in [@maxY..@minY] by -1
       for x in [@minX..@maxX] by 1
         @add new @agentClass x, y
     @setNeighbors() if @hasNeighbors
     @setPixels() # setup off-page canvas for pixel ops
-  
+    
   # Have patches cache the agents currently on them.
   # Optimizes p.agentsHere method.
   # Call before first agent is created.
@@ -136,7 +152,7 @@ class ABM.Patches extends ABM.AgentSet
   # If using scaled pixels, use pixel manipulation below, or use default agentSet
   # draw which iterates over the patches, drawing rectangles.
   draw: (ctx) ->
-    if @agentClass::color? and not @[0].hasOwnProperty "color"
+    if @agentClass::color? and not (@[0].hasOwnProperty "color") and (@breeds.length is 0)
       u.fillCtx ctx, @agentClass::color
     else if @drawWithPixels then @drawScaledPixels ctx else super ctx
 
@@ -191,7 +207,7 @@ class ABM.Patches extends ABM.AgentSet
             x+=@numX if x<@minX; x-=@numX if x>@maxX
             y+=@numY if y<@minY; y-=@numY if y>@maxY
           pnext = @patchXY x, y # much faster than coord()
-          if not pnext?
+          unless pnext?
             u.error "patchRect: x,y out of bounds, see console.log"
             console.log "x #{x} y #{y} p.x #{p.x} p.y #{p.y} dx #{dx} dy #{dy}"
           rect.push pnext if (meToo or p isnt pnext)
@@ -272,7 +288,7 @@ class ABM.Patches extends ABM.AgentSet
   # less than 8 neighbors, return the extra to the patch.
   diffuse: (v, rate, c) -> # variable name, diffusion rate, max color (optional)
     # zero temp variable if not yet set
-    if not @[0]._diffuseNext?
+    unless @[0]._diffuseNext?
       p._diffuseNext = 0 for p in @
     # pass 1: calculate contribution of all patches to themselves and neighbors
     for p in @
@@ -289,56 +305,63 @@ class ABM.Patches extends ABM.AgentSet
 # ### Agent & Agents
   
 # Class Agent instances represent the dynamic, behavioral element of ABM.
+# Each agent knows the patch it is on, and interacts with that and other
+# patches, as well as other agents.
 class ABM.Agent
   # Constructor & Class Variables:
   #
-  # * x,y: position on the patch grid, in patch coordinates, default: 0,0
-  # * color: the color of the agent, default: randomColor
-  # * shape: the shape name of the agent, default: "default"
-  # * heading: direction of the agent, in radians, from x-axis
-  # * hidden: whether or not to draw this agent
-  # * size: size of agent, in patch coords, default: 1
-  # * p: patch at current x,y location
-  # * penDown: true if agent pen is drawing
-  # * penSize: size in pixels of the pen, default: 1 pixel
-  # * breed: the agentset this agent belongs to
-  # * sprite: an image of the agent if non null
-  color: null  # default color, overrides random color if set
-  shape: "default"
-  breed: null # set by the agentSet owning this agent
-  hidden: false
-  label: null
-  labelColor: [0,0,0]
-  labelOffset: [0,0]
-  size: 1
-  penDown: false
-  penSize: 1 # pixels
-  heading: null
-  sprite: null # default sprite, none
-  cacheLinks: false
+  # * id:         unique identifier, promoted by agentset create() factory method
+  # * breed:      the agentset this agent belongs to
+  # * x,y:        position on the patch grid, in patch coordinates, default: 0,0
+  # * size:       size of agent, in patch coords, default: 1
+  # * color:      the color of the agent, default: randomColor
+  # * shape:      the shape name of the agent, default: "default"
+  # * label:      a text label drawn on my instances
+  # * labelColor: the color of my label text
+  # * labelOffset:the x,y offset of my label from my x,y location
+  # * heading:    direction of the agent, in radians, from x-axis
+  # * hidden:     whether or not to draw this agent
+  # * p:          patch at current x,y location
+  # * penDown:    true if agent pen is drawing
+  # * penSize:    size in pixels of the pen, default: 1 pixel
+  # * sprite:     an image of the agent if non null
+  # * cacheLinks: if true, keep array of links in/out of me
+  # * links:      array of links in/out of me.  Only used if @cacheLinks is true
+  #
+  # These class variables are "defaults" and many are "promoted" to instance variables.
+  # To have these be set to a constant for all instances, use breed.setDefault.
+  # This can be a huge savings in memory.
+  id: null            # unique id, promoted by agentset create factory method
+  breed: null         # my agentSet, set by the agentSet owning me
+  x: 0; y:0; p: null  # my location and the patch I'm on
+  size: 1             # my size in patch coords
+  color: null         # default color, overrides random color if set
+  shape: "default"    # my shape
+  hidden: false       # draw me?
+  label: null         # my text
+  labelColor: [0,0,0] # its color
+  labelOffset: [0,0]  # its offset from my x,y
+  penDown: false      # if my pen is down, I draw my path between changes in x,y
+  penSize: 1          # the pen thickness in pixels
+  heading: null       # the direction I'm pointed in, in radians
+  sprite: null        # an image of me for optimized drawing
+  cacheLinks: false   # should I keep links to/from me in links array?.
+  links: null         # array of links to/from me as an endpoint; init by ctor
   constructor: -> # called by agentSets create factory, not user
     @x = @y = 0
-    @color = u.randomColor() if not @color? # promote color if default not set
-    @heading = u.randomFloat(Math.PI*2) if not @heading? 
     @p = ABM.patches.patch @x, @y
+    @color = u.randomColor() unless @color? # promote color if default not set
+    @heading = u.randomFloat(Math.PI*2) unless @heading? 
     @p.agents.push @ if @p.agents? # ABM.patches.cacheAgentsHere
     @links = [] if @cacheLinks
 
-  # Move agent to different breed agentSet.
-  changeBreed: (newBreed) ->
-    u.error "changeBreed: not in agentSet" if not @id?
-    u.error "changeBreed: breed illegally set" if @hasOwnProperty "breed"
-    u.error "changeBreed: breed==newBreed" if @breed is newBreed
-    @die(); newBreed.create 1, (a) => a.setXY @x, @y
-
   # Set agent color to `c` scaled by `s`. Usage: see patch.scaleColor
   scaleColor: (c, s) -> 
-    @color = u.clone @color if not @hasOwnProperty "color" # promote color to inst var
+    @color = u.clone @color unless @hasOwnProperty "color" # promote color to inst var
     u.scaleColor c, s, @color
   
   # Return a string representation of the agent.
-  toString: ->
-    "{id:#{@id} xy:#{u.aToFixed [@x,@y]} c:#{@color} h: #{@heading.toFixed 2}}"
+  toString: -> "{id:#{@id} xy:#{u.aToFixed [@x,@y]} c:#{@color} h: #{@heading.toFixed 2}}"
   
   # Place the agent at the given x,y (floats) in patch coords
   # using patch topology (isTorus)
@@ -374,7 +397,7 @@ class ABM.Agent
     shape = ABM.shapes[@shape]
     rad = if shape.rotate then @heading else 0 # radians
     if @sprite? or @breed.useSprites 
-      @setSprite() if not @sprite? # lazy evaluation of useSprites
+      @setSprite() unless @sprite? # lazy evaluation of useSprites
       ABM.shapes.drawSprite ctx, @sprite, @x, @y, @size, rad
     else
       ABM.shapes.draw ctx, shape, @x, @y, @size, rad, @color
@@ -387,7 +410,7 @@ class ABM.Agent
     if (s=sprite)?
       @sprite = s; @color = s.color; @shape = s.shape; @size = s.size
     else
-      @color = u.randomColor if not @color?
+      @color = u.randomColor unless @color?
       @sprite = ABM.shapes.shapeToSprite @shape, @color, @size
     
   # Draw the agent on the drawing layer, leaving permanent image.
@@ -496,7 +519,7 @@ class ABM.Agents extends ABM.AgentSet
 
   # Factory: create num new agents stored in this agentset.The optional init
   # proc is called on the new agent after inserting in its agentSet.
-  create: (num, init = ->) -> # returns list too
+  create: (num, init = ->) -> # returns array of new agents too
     ((o) -> init(o); o) @add new @agentClass for i in [1..num] by 1 # too tricky?
 
   # Remove all agents from set via agent.die()
@@ -513,7 +536,7 @@ class ABM.Agents extends ABM.AgentSet
   inRect: (a, dx, dy, meToo=false) ->
     rect = ABM.patches.patchRect a.p, dx, dy, true
     rect = @inPatches rect
-    u.removeItem rect, a if not meToo
+    u.removeItem rect, a unless meToo
     rect
   
   # Return the members of this agentset that are within radius distance
@@ -534,18 +557,25 @@ class ABM.Agents extends ABM.AgentSet
 class ABM.Link
   # Constructor initializes instance variables:
   #
-  # * breed: the agentset this link belongs to
+  # * id:         unique identifier, promoted by agentset create() factory method
+  # * breed:      the agentset this agent belongs to
   # * end1, end2: two agents being connected
-  # * color: defaults to light gray
-  # * thickness: thickness in pixels of the link, default 2
-  # * hidden: whether or not to draw this link
-  breed: null # set by the agentSet owning this link
-  color: [130, 130, 130]
-  thickness: 2
-  hidden: false
-  label: null
-  labelColor: [0,0,0]
-  labelOffset: [0,0]
+  # * color:      defaults to light gray
+  # * thickness:  thickness in pixels of the link, default 2
+  # * label:      a text label drawn on my instances
+  # * labelColor: the color of my label text
+  # * labelOffset:the x,y offset of my label from my x,y location
+  # * hidden:     whether or not to draw this link
+
+  id: null            # unique id, promoted by agentset create factory method
+  breed: null         # my agentSet, set by the agentSet owning me
+  end1:null; end2:null# My two endpoints, using agents. Promoted by ctor
+  color: [130,130,130]# my color
+  thickness: 2        # my thickness in pixels, default to 2
+  hidden: false       # draw me?
+  label: null         # my text
+  labelColor: [0,0,0] # its color
+  labelOffset: [0,0]  # its offset from my midpoint
   constructor: (@end1, @end2) ->
     if @end1.links?
       @end1.links.push @
@@ -607,8 +637,8 @@ class ABM.Links extends ABM.AgentSet
   # Factory: Add 1 or more links from the from agent to the to agent(s) which
   # can be a single agent or an array of agents. The optional init
   # proc is called on the new link after inserting in the agentSet.
-  create: (from, to, init = ->) -> # returns list too
-    to = [to] if not to.length?
+  create: (from, to, init = ->) -> # returns array of new links too
+    to = [to] unless to.length?
     ((o) -> init(o); o) @add new @agentClass from, a for a in to # too tricky?
   
   # Remove all links from set via link.die()
