@@ -110,7 +110,8 @@ is the world on which the agents live and the model runs.</p>
 </em> label:      text for the patch
 <em> labelColor: the color of my label text
 </em> labelOffset:the x,y offset of my label from my x,y location
-* n,n4:       adjacent neighbors: n: 8 patches, n4: N,E,S,W patches.</p>
+<em> n,n4:       adjacent neighbors: n: 8 patches, n4: N,E,S,W patches.
+</em> pRect:      cached rect for performance</p>
 <p>Patches may not need their neighbors, thus we use a default
 of none.  n and n4 are promoted by the Patches agent set 
 if world.neighbors is true, the default.</p>
@@ -125,7 +126,8 @@ if world.neighbors is true, the default.</p>
   hidden: <span class="literal">false</span>       <span class="comment"># draw me?</span>
   label: <span class="literal">null</span>         <span class="comment"># text for the patch</span>
   labelColor: [<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>] <span class="comment"># text color</span>
-  labelOffset: [<span class="number">0</span>,<span class="number">0</span>]  <span class="comment"># text offset from the patch center</span></pre></div></div>
+  labelOffset: [<span class="number">0</span>,<span class="number">0</span>]  <span class="comment"># text offset from the patch center</span>
+  pRect: <span class="literal">null</span>         <span class="comment"># Performance: cached rect of neighborhood larger than n.</span></pre></div></div>
             
         </li>
         
@@ -1610,7 +1612,7 @@ from me, and within cone radians of my heading using patch topology</p>
             
             <div class="content"><div class='highlight'><pre>  inCone: (a, heading, cone, radius, meToo=<span class="literal">false</span>) -&gt; <span class="comment"># heading? .. so p ok?</span>
     as = <span class="property">@inRect</span> a, radius, radius, <span class="literal">true</span>
-    as.inCone a, heading, cone, radius, meToo</pre></div></div>
+    <span class="keyword">super</span> a, heading, cone, radius, meToo <span class="comment">#as.inCone a, heading, cone, radius, meToo</span></pre></div></div>
             
         </li>
         
@@ -1628,7 +1630,7 @@ from me, using patch topology</p>
             
             <div class="content"><div class='highlight'><pre>  inRadius: (a, radius, meToo=<span class="literal">false</span>)-&gt;
     as = <span class="property">@inRect</span> a, radius, radius, <span class="literal">true</span>
-    as.inRadius a, radius, meToo</pre></div></div>
+    <span class="keyword">super</span> a, radius, meToo <span class="comment"># as.inRadius a, radius, meToo</span></pre></div></div>
             
         </li>
         
@@ -1877,9 +1879,7 @@ Note call in reverse order to optimize list restructuring.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-98">&#182;</a>
               </div>
-              <p>Return the subset of this set with the given breed value.
-breed: (breed) -&gt; @getPropWith &quot;breed&quot;, breed</p>
-<p>Return all the nodes in this agentset, with duplicates
+              <p>Return all the nodes in this agentset, with duplicates
 included.  If 4 links have the same endpoint, it will
 appear 4 times.</p>
 

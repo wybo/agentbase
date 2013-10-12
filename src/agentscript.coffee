@@ -854,6 +854,14 @@ class ABM.AgentSet extends Array
     delete a[k] for own k,v of a when proto[k]?
     a
 
+  # Return all agents that are not of the given breeds argument.
+  # Breeds is a string of space separated names:
+  #   @patches.exclude "roads houses"
+  exclude: (breeds) ->
+    breeds = breeds.split(" ")
+    @asSet (o for o in @ when o.breed.name not in breeds)
+    
+  
   # Remove adjacent duplicates, by reference, in a sorted agentset.
   # Use `sortById` first if agentset not sorted.
   #
@@ -866,7 +874,7 @@ class ABM.AgentSet extends Array
 
   # The static `ABM.AgentSet.asSet` as a method.
   # Used by agentset methods creating new agentsets.
-  asSet: (a, setType = ABM.AgentSet) -> ABM.AgentSet.asSet a, setType
+  asSet: (a, setType = @) -> ABM.AgentSet.asSet a, setType # setType = ABM.AgentSet
 
   # Similar to above but sorted via `id`.
   asOrderedSet: (a) -> @asSet(a).sortById()
@@ -908,6 +916,7 @@ class ABM.AgentSet extends Array
   #     max = AS.maxProp "y"  # 4
   maxProp: (prop) -> u.aMax @getProp(prop)
   minProp: (prop) -> u.aMin @getProp(prop)
+  histOfProp: (prop, bin=1) -> u.histOf @, bin, prop
   
 # ### Array Utilities, often from ABM.util
 
@@ -975,9 +984,13 @@ class ABM.AgentSet extends Array
   # For agentsets who's agents have a `draw` method.
   # Clears the graphics context (transparent), then
   # calls each agent's draw(ctx) method.
-  draw: (ctx) ->
-    u.clearCtx(ctx)
-    o.draw(ctx) for o in @ when not o.hidden; null
+  draw: (ctx) -> 
+    u.clearCtx(ctx); o.draw(ctx) for o in @ when not o.hidden; null
+  
+  # Show/Hide all of an agentset or breed.
+  # To show/hide an individual object, set its prototype: o.hidden = bool
+  show: -> o.hidden = false for o in @
+  hide: -> o.hidden = true for o in @
 
 # ### Topology
   
@@ -1065,6 +1078,7 @@ class ABM.Patch
   # * labelColor: the color of my label text
   # * labelOffset:the x,y offset of my label from my x,y location
   # * n,n4:       adjacent neighbors: n: 8 patches, n4: N,E,S,W patches.
+  # * pRect:      cached rect for performance
   #
   # Patches may not need their neighbors, thus we use a default
   # of none.  n and n4 are promoted by the Patches agent set 
@@ -1079,6 +1093,7 @@ class ABM.Patch
   label: null         # text for the patch
   labelColor: [0,0,0] # text color
   labelOffset: [0,0]  # text offset from the patch center
+  pRect: null         # Performance: cached rect of neighborhood larger than n.
   
   # New Patch: Just set x,y. Neighbors set by Patches constructor if needed.
   constructor: (@x, @y) ->
@@ -1589,13 +1604,13 @@ class ABM.Agents extends ABM.AgentSet
   # from me, and within cone radians of my heading using patch topology
   inCone: (a, heading, cone, radius, meToo=false) -> # heading? .. so p ok?
     as = @inRect a, radius, radius, true
-    as.inCone a, heading, cone, radius, meToo
+    super a, heading, cone, radius, meToo #as.inCone a, heading, cone, radius, meToo
   
   # Return the members of this agentset that are within radius distance
   # from me, using patch topology
   inRadius: (a, radius, meToo=false)->
     as = @inRect a, radius, radius, true
-    as.inRadius a, radius, meToo
+    super a, radius, meToo # as.inRadius a, radius, meToo
 
 # ### Link and Links
   
@@ -1690,9 +1705,6 @@ class ABM.Links extends ABM.AgentSet
   # Remove all links from set via link.die()
   # Note call in reverse order to optimize list restructuring.
   clear: -> @last().die() while @any(); null # tricky, each die modifies list
-
-  # Return the subset of this set with the given breed value.
-  # breed: (breed) -> @getPropWith "breed", breed
 
   # Return all the nodes in this agentset, with duplicates
   # included.  If 4 links have the same endpoint, it will
@@ -1860,8 +1872,9 @@ class ABM.Model
     @links = ABM.links = new ABM.Links ABM.Link, "links"
 
     # Initialize model global resources
-    @modelReady = false;
-    @globalNames = (u.ownKeys @).concat "globalNames"
+    @debugging = false
+    @modelReady = false
+    @globalNames = null; @globalNames = u.ownKeys @
     @globalNames.set = false
     @startup()
     u.waitOnFiles => @modelReady=true; @setup(); @globals() unless @globalNames.set
@@ -1902,15 +1915,17 @@ class ABM.Model
   
   # Have patches cache the given patchRect.
   # Optimizes patchRect, inRadius and inCone
-  setCachePatchRects: (radius, meToo=false) -> @patches.cacheRect radius, meToo
+  # setCachePatchRects: (radius, meToo=false) -> @patches.cacheRect radius, meToo
   
 #### User Model Creation
 # A user's model is made by subclassing Model and over-riding these
 # two abstract methods. `super` need not be called.
   
-  # Initialize model resources (images, files) here.  Can be async.
+  # Initialize model resources (images, files) here.  
+  # Uses util.waitOn so can be be async.
   startup: -> # called by constructor
-  # Initialize your model variables and defaults here. No async w/o good handlers.
+  # Initialize your model variables and defaults here.
+  # If async used, make sure step/draw are aware of possible missing data.
   setup: ->
   # Update/step your model here
   step: -> # called each step of the animation
@@ -1922,14 +1937,13 @@ class ABM.Model
   # Start/stop the animation
   start: -> u.waitOn (=> @modelReady), (=> @anim.start()); @
   stop:  -> @anim.stop()
-  stopped: -> @anim.stopped
   toggle: -> if @anim.stopped then @start() else @stop()
   # Animate once by `step(); draw()`. For UI and debugging from console.
+  # Will advance the ticks/draws counters.
   once: -> @stop() unless @anim.stopped; @anim.once() 
 
-  # Stop and reset the model, restarting if currently running
-  reset: () -> 
-    running = not @stopped()
+  # Stop and reset the model, restarting if restart is true
+  reset: (restart = true) -> 
     @anim.reset() # stop & reset ticks/steps counters
     @patches = ABM.patches = new ABM.Patches ABM.Patch, "patches"
     @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
@@ -1937,7 +1951,7 @@ class ABM.Model
     @setCtxTransform v for k,v of @contexts # clear/resize all contexts
     u.s.spriteSheets.length = 0 # possibly null out entries?
     @setup()
-    @start() if running
+    @start() if restart
 
 #### Animation.
   

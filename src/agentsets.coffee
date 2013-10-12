@@ -19,6 +19,7 @@ class ABM.Patch
   # * labelColor: the color of my label text
   # * labelOffset:the x,y offset of my label from my x,y location
   # * n,n4:       adjacent neighbors: n: 8 patches, n4: N,E,S,W patches.
+  # * pRect:      cached rect for performance
   #
   # Patches may not need their neighbors, thus we use a default
   # of none.  n and n4 are promoted by the Patches agent set 
@@ -33,6 +34,7 @@ class ABM.Patch
   label: null         # text for the patch
   labelColor: [0,0,0] # text color
   labelOffset: [0,0]  # text offset from the patch center
+  pRect: null         # Performance: cached rect of neighborhood larger than n.
   
   # New Patch: Just set x,y. Neighbors set by Patches constructor if needed.
   constructor: (@x, @y) ->
@@ -543,13 +545,13 @@ class ABM.Agents extends ABM.AgentSet
   # from me, and within cone radians of my heading using patch topology
   inCone: (a, heading, cone, radius, meToo=false) -> # heading? .. so p ok?
     as = @inRect a, radius, radius, true
-    as.inCone a, heading, cone, radius, meToo
+    super a, heading, cone, radius, meToo #as.inCone a, heading, cone, radius, meToo
   
   # Return the members of this agentset that are within radius distance
   # from me, using patch topology
   inRadius: (a, radius, meToo=false)->
     as = @inRect a, radius, radius, true
-    as.inRadius a, radius, meToo
+    super a, radius, meToo # as.inRadius a, radius, meToo
 
 # ### Link and Links
   
@@ -644,9 +646,6 @@ class ABM.Links extends ABM.AgentSet
   # Remove all links from set via link.die()
   # Note call in reverse order to optimize list restructuring.
   clear: -> @last().die() while @any(); null # tricky, each die modifies list
-
-  # Return the subset of this set with the given breed value.
-  # breed: (breed) -> @getPropWith "breed", breed
 
   # Return all the nodes in this agentset, with duplicates
   # included.  If 4 links have the same endpoint, it will

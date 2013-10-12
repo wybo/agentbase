@@ -137,8 +137,9 @@ class ABM.Model
     @links = ABM.links = new ABM.Links ABM.Link, "links"
 
     # Initialize model global resources
-    @modelReady = false;
-    @globalNames = (u.ownKeys @).concat "globalNames"
+    @debugging = false
+    @modelReady = false
+    @globalNames = null; @globalNames = u.ownKeys @
     @globalNames.set = false
     @startup()
     u.waitOnFiles => @modelReady=true; @setup(); @globals() unless @globalNames.set
@@ -179,15 +180,17 @@ class ABM.Model
   
   # Have patches cache the given patchRect.
   # Optimizes patchRect, inRadius and inCone
-  setCachePatchRects: (radius, meToo=false) -> @patches.cacheRect radius, meToo
+  # setCachePatchRects: (radius, meToo=false) -> @patches.cacheRect radius, meToo
   
 #### User Model Creation
 # A user's model is made by subclassing Model and over-riding these
 # two abstract methods. `super` need not be called.
   
-  # Initialize model resources (images, files) here.  Can be async.
+  # Initialize model resources (images, files) here.  
+  # Uses util.waitOn so can be be async.
   startup: -> # called by constructor
-  # Initialize your model variables and defaults here. No async w/o good handlers.
+  # Initialize your model variables and defaults here.
+  # If async used, make sure step/draw are aware of possible missing data.
   setup: ->
   # Update/step your model here
   step: -> # called each step of the animation
@@ -199,14 +202,13 @@ class ABM.Model
   # Start/stop the animation
   start: -> u.waitOn (=> @modelReady), (=> @anim.start()); @
   stop:  -> @anim.stop()
-  stopped: -> @anim.stopped
   toggle: -> if @anim.stopped then @start() else @stop()
   # Animate once by `step(); draw()`. For UI and debugging from console.
+  # Will advance the ticks/draws counters.
   once: -> @stop() unless @anim.stopped; @anim.once() 
 
-  # Stop and reset the model, restarting if currently running
-  reset: () -> 
-    running = not @stopped()
+  # Stop and reset the model, restarting if restart is true
+  reset: (restart = true) -> 
     @anim.reset() # stop & reset ticks/steps counters
     @patches = ABM.patches = new ABM.Patches ABM.Patch, "patches"
     @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
@@ -214,7 +216,7 @@ class ABM.Model
     @setCtxTransform v for k,v of @contexts # clear/resize all contexts
     u.s.spriteSheets.length = 0 # possibly null out entries?
     @setup()
-    @start() if running
+    @start() if restart
 
 #### Animation.
   

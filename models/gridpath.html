@@ -45,7 +45,8 @@
         # @setLabelParams @patches, [255,255,255], [12,12]
       step: ->
         @floodFill()
-        p = @asSet (n for n in @walker.p.n4 when n.ok)
+        # p = @asSet (n for n in @walker.p.n4 when n.ok)
+        p = @patches.asSet (n for n in @walker.p.n4 when n.ok)
         @drawNum p.length
         @walker.moveTo p.oneOf()
         @walker.stamp()

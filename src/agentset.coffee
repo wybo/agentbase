@@ -104,6 +104,14 @@ class ABM.AgentSet extends Array
     delete a[k] for own k,v of a when proto[k]?
     a
 
+  # Return all agents that are not of the given breeds argument.
+  # Breeds is a string of space separated names:
+  #   @patches.exclude "roads houses"
+  exclude: (breeds) ->
+    breeds = breeds.split(" ")
+    @asSet (o for o in @ when o.breed.name not in breeds)
+    
+  
   # Remove adjacent duplicates, by reference, in a sorted agentset.
   # Use `sortById` first if agentset not sorted.
   #
@@ -116,7 +124,7 @@ class ABM.AgentSet extends Array
 
   # The static `ABM.AgentSet.asSet` as a method.
   # Used by agentset methods creating new agentsets.
-  asSet: (a, setType = ABM.AgentSet) -> ABM.AgentSet.asSet a, setType
+  asSet: (a, setType = @) -> ABM.AgentSet.asSet a, setType # setType = ABM.AgentSet
 
   # Similar to above but sorted via `id`.
   asOrderedSet: (a) -> @asSet(a).sortById()
@@ -158,6 +166,7 @@ class ABM.AgentSet extends Array
   #     max = AS.maxProp "y"  # 4
   maxProp: (prop) -> u.aMax @getProp(prop)
   minProp: (prop) -> u.aMin @getProp(prop)
+  histOfProp: (prop, bin=1) -> u.histOf @, bin, prop
   
 # ### Array Utilities, often from ABM.util
 
@@ -225,9 +234,13 @@ class ABM.AgentSet extends Array
   # For agentsets who's agents have a `draw` method.
   # Clears the graphics context (transparent), then
   # calls each agent's draw(ctx) method.
-  draw: (ctx) ->
-    u.clearCtx(ctx)
-    o.draw(ctx) for o in @ when not o.hidden; null
+  draw: (ctx) -> 
+    u.clearCtx(ctx); o.draw(ctx) for o in @ when not o.hidden; null
+  
+  # Show/Hide all of an agentset or breed.
+  # To show/hide an individual object, set its prototype: o.hidden = bool
+  show: -> o.hidden = false for o in @
+  hide: -> o.hidden = true for o in @
 
 # ### Topology
   
