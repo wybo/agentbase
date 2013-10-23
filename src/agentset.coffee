@@ -239,8 +239,8 @@ class ABM.AgentSet extends Array
   
   # Show/Hide all of an agentset or breed.
   # To show/hide an individual object, set its prototype: o.hidden = bool
-  show: -> o.hidden = false for o in @
-  hide: -> o.hidden = true for o in @
+  show: -> o.hidden = false for o in @; @draw(ABM.contexts[@name])
+  hide: -> o.hidden = true for o in @; @draw(ABM.contexts[@name])
 
 # ### Topology
   

@@ -98,12 +98,12 @@ class ABM.Patches extends ABM.AgentSet
   constructor: -> # agentClass, name, mainSet
     super # call super with all the args I was called with
     @[k] = v for own k,v of ABM.world # add world items to patches
-    @populate() unless @mainSet
+    @populate() unless @mainSet?
   
   # Setup patch world from world parameters.
   # Note that this is done as separate method so like other agentsets,
   # patches are started up empty and filled by "create" calls.
-  populate: ->
+  populate: -> # TopLeft to BottomRight, exactly as canvas imagedata
     for y in [@maxY..@minY] by -1
       for x in [@minX..@maxX] by 1
         @add new @agentClass x, y
@@ -117,13 +117,12 @@ class ABM.Patches extends ABM.AgentSet
 
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
   # if browser does not support these flags.
-  usePixels: (usePix=true) ->
+  usePixels: (@drawWithPixels=true) ->
     ctx = ABM.contexts.patches
-    ctx.imageSmoothingEnabled = not usePix
-    ctx.mozImageSmoothingEnabled = not usePix
-    ctx.webkitImageSmoothingEnabled = not usePix
+    ctx.imageSmoothingEnabled = not @drawWithPixels
+    ctx.mozImageSmoothingEnabled = not @drawWithPixels
+    ctx.webkitImageSmoothingEnabled = not @drawWithPixels
     u.setIdentity ctx
-    @drawWithPixels = usePix
 
   # Optimization: Cache a single set by modeler for use by patchRect,
   # inCone, inRect, inRadius.  Ex: flock demo model's vision rect.
@@ -176,6 +175,8 @@ class ABM.Patches extends ABM.AgentSet
   # using either clamp/wrap above according to isTorus topology.
   coord: (x,y) -> #returns a valid world coord (real, not int)
     if @isTorus then @wrap x,y else @clamp x,y
+  # Return true if on world or torus, false if non-torus and off-world
+  isOnWorld: (x,y) -> @isTorus or (@minXcor<=x<=@maxXcor and @minYcor<=y<=@maxYcor)
 
   # Return patch at x,y float values according to topology.
   patch: (x,y) -> 
@@ -246,16 +247,17 @@ class ABM.Patches extends ABM.AgentSet
   # Draws, or "imports" an image URL into the patches as their color property.
   # The drawing is scaled to the number of x,y patches, thus one pixel
   # per patch.  The colors are then transferred to the patches.
+  importColors: (imageSrc, f) ->
+    u.importImage imageSrc, (img) => # fat arrow, this context
+      @installColors(img)
+      f() if f?
+  # Direct install image into the patch colors, not async.
   installColors: (img) ->
     @pixelsCtx.drawImage img, 0, 0, @numX, @numY # scale if needed
     data = @pixelsCtx.getImageData(0, 0, @numX, @numY).data
     for p in @
       i = @pixelByteIndex p
       p.color = [data[i++], data[i++], data[i]] # promote initial default
-  importColors: (imageSrc, f) ->
-    u.importImage imageSrc, (img) => # fat arrow, this context
-      @installColors(img)
-      f() if f?
   
   # Draw the patches via pixel manipulation rather than 2D drawRect.
   # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq)
@@ -430,6 +432,7 @@ class ABM.Agent
     @distanceXY o.x, o.y
   
   # Return the closest torus topology point of given x,y relative to myself.
+  # Used internally to determine how to draw links between two agents.
   # See util.torusPt.
   torusPtXY: (x, y) ->
     u.torusPt @x, @y, x, y, ABM.patches.numX, ABM.patches.numY
@@ -444,12 +447,23 @@ class ABM.Agent
 
   # Return heading towards x,y using patch topology.
   towardsXY: (x, y) ->
-    if ABM.patches.isTorus
-    then u.torusRadsToward @x, @y, x, y, ABM.patches.numX, ABM.patches.numY
+    if (ps=ABM.patches).isTorus
+    then u.torusRadsToward @x, @y, x, y, ps.numX, ps.numY
     else u.radsToward @x, @y, x, y
 
   # Return heading towards given agent/patch using patch topology.
   towards: (o) -> @towardsXY o.x, o.y
+  
+  # Return patch ahead of me by given distance and heading.
+  # Returns null if non-torus and off patch world
+  patchAtHeadingAndDistance: (h,d) ->
+    [x,y] = u.polarToXY d, h, @x, @y
+    if (ps=ABM.patches).isOnWorld x,y then ps.patch x,y else null
+  patchLeftAndAhead: (dh, d) -> @patchAtHeadingAndDistance @heading+dh, d
+  patchRightAndAhead: (dh, d) -> @patchAtHeadingAndDistance @heading-dh, d
+  patchAhead: (d) -> @patchAtHeadingAndDistance @heading, d
+  canMove: (d) -> @patchAhead(d)?
+    
   
   # Remove myself from the model.  Includes removing myself from the agents
   # agentset and removing any links I may have.

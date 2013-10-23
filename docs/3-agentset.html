@@ -666,8 +666,8 @@ To show/hide an individual object, set its prototype: o.hidden = bool</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  show: -&gt; o.hidden = <span class="literal">false</span> <span class="keyword">for</span> o <span class="keyword">in</span> @
-  hide: -&gt; o.hidden = <span class="literal">true</span> <span class="keyword">for</span> o <span class="keyword">in</span> @</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  show: -&gt; o.hidden = <span class="literal">false</span> <span class="keyword">for</span> o <span class="keyword">in</span> @; <span class="property">@draw</span>(ABM.contexts[<span class="property">@name</span>])
+  hide: -&gt; o.hidden = <span class="literal">true</span> <span class="keyword">for</span> o <span class="keyword">in</span> @; <span class="property">@draw</span>(ABM.contexts[<span class="property">@name</span>])</pre></div></div>
             
         </li>
         

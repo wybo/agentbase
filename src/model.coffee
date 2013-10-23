@@ -145,7 +145,7 @@ class ABM.Model
     u.waitOnFiles => @modelReady=true; @setup(); @globals() unless @globalNames.set
 
   # Initialize/reset world parameters.
-  setWorld: (size, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true) ->
+  setWorld: (size, minX, maxX, minY, maxY, isTorus=false, hasNeighbors=true) ->
     numX = maxX-minX+1; numY = maxY-minY+1; pxWidth = numX*size; pxHeight = numY*size
     minXcor=minX-.5; maxXcor=maxX+.5; minYcor=minY-.5; maxYcor=maxY+.5
     ABM.world = @world = {size,minX,maxX,minY,maxY,minXcor,maxXcor,minYcor,maxYcor,
@@ -202,20 +202,25 @@ class ABM.Model
   # Start/stop the animation
   start: -> u.waitOn (=> @modelReady), (=> @anim.start()); @
   stop:  -> @anim.stop()
-  toggle: -> if @anim.stopped then @start() else @stop()
   # Animate once by `step(); draw()`. For UI and debugging from console.
   # Will advance the ticks/draws counters.
   once: -> @stop() unless @anim.stopped; @anim.once() 
 
   # Stop and reset the model, restarting if restart is true
   reset: (restart = true) -> 
+    console.log "reset: anim"
     @anim.reset() # stop & reset ticks/steps counters
+    console.log "reset: contexts"
+    (v.restore(); @setCtxTransform v) for k,v of @contexts # clear/resize b4 agentsets
+    console.log "reset: patches"
     @patches = ABM.patches = new ABM.Patches ABM.Patch, "patches"
+    console.log "reset: agents"
     @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
     @links = ABM.links = new ABM.Links ABM.Link, "links"
-    @setCtxTransform v for k,v of @contexts # clear/resize all contexts
     u.s.spriteSheets.length = 0 # possibly null out entries?
+    console.log "reset: setup"
     @setup()
+    @setRootVars() if @debugging
     @start() if restart
 
 #### Animation.
@@ -293,7 +298,7 @@ class ABM.Model
   # Note we avoid using the actual name, such as "patches" because this
   # can cause our modules to mistakenly depend on a global name.
   # See [CoffeeConsole](http://goo.gl/1i7bd) Chrome extension too.
-  debug: (@debugging = true)-> @setRootVars(); @
+  debug: (@debugging = true) -> u.waitOn (=> @modelReady), (=> @setRootVars()); @
   setRootVars: ->
     root.ps  = @patches
     root.p0  = @patches[0]

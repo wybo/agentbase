@@ -89,12 +89,12 @@ ABM.DataSet = <span class="class"><span class="keyword">class</span> <span class
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
-              <p>Create a new dataset from patch variable &quot;name&quot;</p>
+              <p>Create a new dataset using function f on each patch.
+If f is string, f set to fcn returning p[f]</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="property">@patchDataSet</span>: (name) -&gt;
-    <span class="keyword">new</span> DataSet (ps=ABM.patches).numX, ps.numY, (p[name] <span class="keyword">for</span> p <span class="keyword">in</span> ps)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="property">@patchDataSet</span>: (f) -&gt; <span class="keyword">new</span> PatchDataSet f</pre></div></div>
             
         </li>
         
@@ -113,7 +113,7 @@ async array, Image or XHR response.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  <span class="property">@importImageDataSet</span>: (name, fmt=<span class="number">3</span>, f) -&gt;
-    ds = <span class="keyword">new</span> ImageDataSet() <span class="comment"># empty dataset</span>
+    ds = <span class="keyword">new</span> ImageDataSet(<span class="literal">null</span>, fmt) <span class="comment"># empty dataset</span>
     u.importImage name, (img) -&gt; <span class="comment"># =&gt; not needed</span>
       ds.parse img
       f(ds) <span class="keyword">if</span> f?
@@ -415,8 +415,8 @@ The dataset can be sampled directly to its edges .. i.e. in agent coords.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  toPatchVar: (name) -&gt;
-    data = (p[name] = <span class="property">@patchSample</span> p.x, p.y <span class="keyword">for</span> p <span class="keyword">in</span> ABM.patches)
-    <span class="keyword">new</span> DataSet ABM.patches.numX, ABM.patches.numY, data</pre></div></div>
+    data = (p[name] = <span class="property">@patchSample</span> p.x, p.y <span class="keyword">for</span> p <span class="keyword">in</span> (ps=ABM.patches))
+    <span class="keyword">new</span> PatchDataSet ps.numX, ps.numY, data</pre></div></div>
             
         </li>
         
@@ -524,15 +524,16 @@ those wanting to use the results of the two convolutions.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  slopeAndAspect: (cellsize=<span class="number">1</span>, noNaNs=<span class="literal">true</span>, posAngle=<span class="literal">false</span>) -&gt; 
-    dzdx = <span class="property">@convolve</span>([-<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,-<span class="number">2</span>,<span class="number">0</span>,<span class="number">2</span>,-<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>],<span class="number">1</span>/<span class="number">8</span>) <span class="comment"># sub left z from right</span>
-    dzdy = <span class="property">@convolve</span>([<span class="number">1</span>,<span class="number">2</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,-<span class="number">1</span>,-<span class="number">2</span>,-<span class="number">1</span>],<span class="number">1</span>/<span class="number">8</span>) <span class="comment"># sub bottom z from top</span>
-    aspect = []; slope = [] <span class="comment">#; minX = .01; maxAtan = Math.PI/4</span>
-    <span class="keyword">for</span> y <span class="keyword">in</span> [<span class="number">0.</span>..<span class="property">@height</span>] <span class="keyword">by</span> <span class="number">1</span>
-      <span class="keyword">for</span> x <span class="keyword">in</span> [<span class="number">0.</span>..<span class="property">@width</span>] <span class="keyword">by</span> <span class="number">1</span>
-        gx = dzdx.getXY(x,y); gy = dzdy.getXY(x,y)
-        slope.push Math.atan(Math.sqrt(gx*gx + gy*gy)/(cellsize)) <span class="comment"># radians</span>
-        <span class="keyword">while</span> noNaNs <span class="keyword">and</span> gx <span class="keyword">is</span> gy
-          gx += u.randomNormal <span class="number">0</span>,<span class="number">.01</span>; gy += u.randomNormal <span class="number">0</span>,<span class="number">.01</span></pre></div></div>
+    <span class="keyword">if</span> <span class="keyword">not</span> <span class="property">@slope</span>?
+      <span class="property">@dzdx</span> = <span class="property">@convolve</span>([-<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,-<span class="number">2</span>,<span class="number">0</span>,<span class="number">2</span>,-<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>],<span class="number">1</span>/<span class="number">8</span>) <span class="comment"># sub left z from right</span>
+      <span class="property">@dzdy</span> = <span class="property">@convolve</span>([<span class="number">1</span>,<span class="number">2</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,-<span class="number">1</span>,-<span class="number">2</span>,-<span class="number">1</span>],<span class="number">1</span>/<span class="number">8</span>) <span class="comment"># sub bottom z from top</span>
+      aspect = []; slope = [] <span class="comment">#; minX = .01; maxAtan = Math.PI/4</span>
+      <span class="keyword">for</span> y <span class="keyword">in</span> [<span class="number">0.</span>..<span class="property">@height</span>] <span class="keyword">by</span> <span class="number">1</span>
+        <span class="keyword">for</span> x <span class="keyword">in</span> [<span class="number">0.</span>..<span class="property">@width</span>] <span class="keyword">by</span> <span class="number">1</span>
+          gx = <span class="property">@dzdx</span>.getXY(x,y); gy = <span class="property">@dzdy</span>.getXY(x,y)
+          slope.push Math.atan(Math.sqrt(gx*gx + gy*gy)/(cellsize)) <span class="comment"># radians</span>
+          <span class="keyword">while</span> noNaNs <span class="keyword">and</span> gx <span class="keyword">is</span> gy
+            gx += u.randomNormal <span class="number">0</span>,<span class="number">.01</span>; gy += u.randomNormal <span class="number">0</span>,<span class="number">.01</span></pre></div></div>
             
         </li>
         
@@ -547,7 +548,7 @@ those wanting to use the results of the two convolutions.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        rad = <span class="keyword">if</span> gx <span class="keyword">is</span> gy <span class="keyword">is</span> <span class="number">0</span> <span class="keyword">then</span> NaN <span class="keyword">else</span> Math.atan2 -gy,-gx</pre></div></div>
+            <div class="content"><div class='highlight'><pre>          rad = <span class="keyword">if</span> gx <span class="keyword">is</span> gy <span class="keyword">is</span> <span class="number">0</span> <span class="keyword">then</span> NaN <span class="keyword">else</span> Math.atan2 -gy,-gx</pre></div></div>
             
         </li>
         
@@ -562,11 +563,11 @@ those wanting to use the results of the two convolutions.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        rad += <span class="number">2</span>*Math.PI <span class="keyword">if</span> posAngle <span class="keyword">and</span> rad &lt; <span class="number">0</span>
-        aspect.push rad
-    slope = <span class="keyword">new</span> DataSet <span class="property">@width</span>, <span class="property">@height</span>, slope
-    aspect = <span class="keyword">new</span> DataSet <span class="property">@width</span>, <span class="property">@height</span>, aspect
-    [slope, aspect, dzdx, dzdy]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>          rad += <span class="number">2</span>*Math.PI <span class="keyword">if</span> posAngle <span class="keyword">and</span> rad &lt; <span class="number">0</span>
+          aspect.push rad
+      <span class="property">@slope</span> = <span class="keyword">new</span> DataSet <span class="property">@width</span>, <span class="property">@height</span>, slope
+      <span class="property">@aspect</span> = <span class="keyword">new</span> DataSet <span class="property">@width</span>, <span class="property">@height</span>, aspect
+    [<span class="property">@slope</span>, <span class="property">@aspect</span>, <span class="property">@dzdx</span>, <span class="property">@dzdy</span>]</pre></div></div>
             
         </li>
         
@@ -726,7 +727,19 @@ array of length 1-4: non-standard layout of RGB bytes
             
             <div class="content"><div class='highlight'><pre>      val = <span class="number">0</span>; val = val*<span class="number">256</span> + ta[i+j] <span class="keyword">for</span> j <span class="keyword">in</span> <span class="property">@byteFmt</span>
       <span class="property">@data</span>.push val
-    <span class="property">@reset</span> <span class="property">@ctx</span>.canvas.width, <span class="property">@ctx</span>.canvas.height, <span class="property">@data</span></pre></div></div>
+    <span class="property">@reset</span> <span class="property">@ctx</span>.canvas.width, <span class="property">@ctx</span>.canvas.height, <span class="property">@data</span>
+    
+ABM.PatchDataSet = <span class="class"><span class="keyword">class</span> <span class="title">PatchDataSet</span> <span class="keyword">extends</span> <span class="title">DataSet</span></span>
+  constructor: (f, height, data) -&gt;
+    <span class="keyword">if</span> u.isArray data
+      <span class="keyword">super</span> f, height, data
+    <span class="keyword">else</span>
+      f = u.propFcn f <span class="keyword">if</span> u.isString f
+      <span class="keyword">super</span> (ps=ABM.patches).numX, ps.numY, (f(p) <span class="keyword">for</span> p <span class="keyword">in</span> ps)
+    <span class="property">@useNearest</span> = <span class="literal">true</span>
+  toPatchVar: (name) -&gt;
+    data = (p[name] = <span class="property">@data</span>[i] <span class="keyword">for</span> p,i <span class="keyword">in</span> (ps=ABM.patches))
+    <span class="keyword">new</span> PatchDataSet ps.numX, ps.numY, data</pre></div></div>
             
         </li>
         

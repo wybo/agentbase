@@ -77,7 +77,7 @@ Thus @ABM is placed in the global scope.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="property">@ABM</span>={} 
+            <div class="content"><div class='highlight'><pre><span class="property">@ABM</span>={}
 
 root = @ <span class="comment"># Keep a private copy of global object</span></pre></div></div>
             
@@ -620,7 +620,8 @@ See Mozilla pixel <a href="http://goo.gl/Lxliq">manipulation article</a></p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
-              <p>Return angle in (-pi,pi] that added to rad2 = rad1</p>
+              <p>Return angle in (-pi,pi] that added to rad2 = rad1
+See NetLogo&#39;s <a href="http://goo.gl/CjoHuV">subtract-headings</a> for explanation</p>
 
             </div>
             
@@ -1251,6 +1252,22 @@ The squared distance is used for comparisons to avoid the Math.sqrt fcn.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-67">&#182;</a>
               </div>
+              <p>Convert polar r,theta to cartesian x,y.
+Default to 0,0 origin, optional x,y origin.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  polarToXY: (r, theta, x=<span class="number">0</span>, y=<span class="number">0</span>) -&gt; [x+r*Math.cos(theta), y+r*Math.sin(theta)]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-68">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-68">&#182;</a>
+              </div>
               <p>Return the <a href="http://goo.gl/PgJ5N">torus distance</a> and distance squared
 between two points A(x1,y1) and B(x2,y2):</p>
 <pre><code>dx = |x2-x1|; dy = |y2-y1|
@@ -1284,11 +1301,11 @@ A and B must also include the towards-reflections around A, thus 4 points.</p>
         </li>
         
         
-        <li id="section-68">
+        <li id="section-69">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-68">&#182;</a>
+                <a class="pilcrow" href="#section-69">&#182;</a>
               </div>
               <p>Return true if closest path between x1,y1 &amp; x2,y2 wraps around the torus.</p>
 
@@ -1301,11 +1318,11 @@ A and B must also include the towards-reflections around A, thus 4 points.</p>
         </li>
         
         
-        <li id="section-69">
+        <li id="section-70">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-69">&#182;</a>
+                <a class="pilcrow" href="#section-70">&#182;</a>
               </div>
               <p>Return 4 torus point reflections of x2,y2 around x1,y1</p>
 
@@ -1319,11 +1336,11 @@ A and B must also include the towards-reflections around A, thus 4 points.</p>
         </li>
         
         
-        <li id="section-70">
+        <li id="section-71">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-70">&#182;</a>
+                <a class="pilcrow" href="#section-71">&#182;</a>
               </div>
               <p>Return closest of 4 torus pts from A to B</p>
 
@@ -1339,11 +1356,11 @@ A and B must also include the towards-reflections around A, thus 4 points.</p>
         </li>
         
         
-        <li id="section-71">
+        <li id="section-72">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-71">&#182;</a>
+                <a class="pilcrow" href="#section-72">&#182;</a>
               </div>
               <p>Return the angle from x1,y1 to x2.y2 on torus using shortest reflection.</p>
 
@@ -1356,11 +1373,11 @@ A and B must also include the towards-reflections around A, thus 4 points.</p>
         </li>
         
         
-        <li id="section-72">
+        <li id="section-73">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-72">&#182;</a>
+                <a class="pilcrow" href="#section-73">&#182;</a>
               </div>
               <p>Return true if x2,y2 is in cone radians around heading radians from x1,x2
 and within distance radius from x1,x2 considering all torus reflections.</p>
@@ -1375,11 +1392,11 @@ and within distance radius from x1,x2 considering all torus reflections.</p>
         </li>
         
         
-        <li id="section-73">
+        <li id="section-74">
             <div class="annotation">
               
               <div class="pilwrap for-h3">
-                <a class="pilcrow" href="#section-73">&#182;</a>
+                <a class="pilcrow" href="#section-74">&#182;</a>
               </div>
               <h3>File I/O</h3>
 <p>Cache of file names used by file imports below</p>
@@ -1391,11 +1408,11 @@ and within distance radius from x1,x2 considering all torus reflections.</p>
         </li>
         
         
-        <li id="section-74">
+        <li id="section-75">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-74">&#182;</a>
+                <a class="pilcrow" href="#section-75">&#182;</a>
               </div>
               <p>Import an image, executing (async) optional function f(img) on completion</p>
 
@@ -1414,11 +1431,11 @@ and within distance radius from x1,x2 considering all torus reflections.</p>
         </li>
         
         
-        <li id="section-75">
+        <li id="section-76">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-75">&#182;</a>
+                <a class="pilcrow" href="#section-76">&#182;</a>
               </div>
               <p>Use XMLHttpRequest to fetch data of several types. Data Types: text,
 arraybuffer, blob, json, document, <a href="http://goo.gl/y3r3h">See specification</a></p>
@@ -1440,11 +1457,11 @@ arraybuffer, blob, json, document, <a href="http://goo.gl/y3r3h">See specificati
         </li>
         
         
-        <li id="section-76">
+        <li id="section-77">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-76">&#182;</a>
+                <a class="pilcrow" href="#section-77">&#182;</a>
               </div>
               <p>Return true if all files are loaded.</p>
 
@@ -1457,11 +1474,11 @@ arraybuffer, blob, json, document, <a href="http://goo.gl/y3r3h">See specificati
         </li>
         
         
-        <li id="section-77">
+        <li id="section-78">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-77">&#182;</a>
+                <a class="pilcrow" href="#section-78">&#182;</a>
               </div>
               <p>Wait for files to be loaded before executing callback f</p>
 
@@ -1472,11 +1489,11 @@ arraybuffer, blob, json, document, <a href="http://goo.gl/y3r3h">See specificati
         </li>
         
         
-        <li id="section-78">
+        <li id="section-79">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-78">&#182;</a>
+                <a class="pilcrow" href="#section-79">&#182;</a>
               </div>
               <p>Wait for function done() to return true before calling callback f</p>
 
@@ -1488,11 +1505,11 @@ arraybuffer, blob, json, document, <a href="http://goo.gl/y3r3h">See specificati
         </li>
         
         
-        <li id="section-79">
+        <li id="section-80">
             <div class="annotation">
               
               <div class="pilwrap for-h3">
-                <a class="pilcrow" href="#section-79">&#182;</a>
+                <a class="pilcrow" href="#section-80">&#182;</a>
               </div>
               <h3>Canvas/Context Operations</h3>
 <p>Create a new canvas of given width/height</p>
@@ -1507,11 +1524,11 @@ arraybuffer, blob, json, document, <a href="http://goo.gl/y3r3h">See specificati
         </li>
         
         
-        <li id="section-80">
+        <li id="section-81">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-80">&#182;</a>
+                <a class="pilcrow" href="#section-81">&#182;</a>
               </div>
               <p>As above, but returing the context object.
 Note ctx.canvas is the canvas for the ctx, and can be use as an image.</p>
@@ -1527,11 +1544,11 @@ Note ctx.canvas is the canvas for the ctx, and can be use as an image.</p>
         </li>
         
         
-        <li id="section-81">
+        <li id="section-82">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-81">&#182;</a>
+                <a class="pilcrow" href="#section-82">&#182;</a>
               </div>
               <p>Return a &quot;layer&quot; 2D/3D rendering context within the specified HTML <code>&lt;div&gt;</code>,
 with the given width/height positioned absolutely at top/left within the div,
@@ -1549,11 +1566,11 @@ and with the z-index of z.</p>
         </li>
         
         
-        <li id="section-82">
+        <li id="section-83">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-82">&#182;</a>
+                <a class="pilcrow" href="#section-83">&#182;</a>
               </div>
               <p>Install identity transform.  Call ctx.restore() to revert to previous transform</p>
 
@@ -1566,11 +1583,11 @@ and with the z-index of z.</p>
         </li>
         
         
-        <li id="section-83">
+        <li id="section-84">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-83">&#182;</a>
+                <a class="pilcrow" href="#section-84">&#182;</a>
               </div>
               <p>Clear the 2D/3D layer to be transparent. Note this <a href="http://goo.gl/qekXS">discussion</a>.</p>
 
@@ -1588,11 +1605,11 @@ and with the z-index of z.</p>
         </li>
         
         
-        <li id="section-84">
+        <li id="section-85">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-84">&#182;</a>
+                <a class="pilcrow" href="#section-85">&#182;</a>
               </div>
               <p>Fill the 2D/3D layer with the given color</p>
 
@@ -1611,11 +1628,11 @@ and with the z-index of z.</p>
         </li>
         
         
-        <li id="section-85">
+        <li id="section-86">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-85">&#182;</a>
+                <a class="pilcrow" href="#section-86">&#182;</a>
               </div>
               <p>Draw string of the given color at the xy location, in ctx pixel coords.
 Use setIdentity .. reset if a transform is being used by caller.</p>
@@ -1630,11 +1647,11 @@ Use setIdentity .. reset if a transform is being used by caller.</p>
         </li>
         
         
-        <li id="section-86">
+        <li id="section-87">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-86">&#182;</a>
+                <a class="pilcrow" href="#section-87">&#182;</a>
               </div>
               <p>Set the canvas text align and baseline drawing parameters</p>
 <ul>
@@ -1652,11 +1669,11 @@ Use setIdentity .. reset if a transform is being used by caller.</p>
         </li>
         
         
-        <li id="section-87">
+        <li id="section-88">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-87">&#182;</a>
+                <a class="pilcrow" href="#section-88">&#182;</a>
               </div>
               <p>Convert an image to a context. ctx.canvas gives the created canvas.</p>
 
@@ -1670,11 +1687,11 @@ Use setIdentity .. reset if a transform is being used by caller.</p>
         </li>
         
         
-        <li id="section-88">
+        <li id="section-89">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-88">&#182;</a>
+                <a class="pilcrow" href="#section-89">&#182;</a>
               </div>
               <p>Convert a context to an image, executing function f on completion.
 Generally can skip callback but see <a href="http://goo.gl/kIk2U">stackoverflow</a>
@@ -1691,11 +1708,11 @@ Fix: use ctx.canvas for programatic imaging.</p>
         </li>
         
         
-        <li id="section-89">
+        <li id="section-90">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-89">&#182;</a>
+                <a class="pilcrow" href="#section-90">&#182;</a>
               </div>
               <p>Convert a ctx to an imageData object</p>
 
@@ -1706,11 +1723,11 @@ Fix: use ctx.canvas for programatic imaging.</p>
         </li>
         
         
-        <li id="section-90">
+        <li id="section-91">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-90">&#182;</a>
+                <a class="pilcrow" href="#section-91">&#182;</a>
               </div>
               <p>Canvas versions of above</p>
 
@@ -1723,11 +1740,11 @@ Fix: use ctx.canvas for programatic imaging.</p>
         </li>
         
         
-        <li id="section-91">
+        <li id="section-92">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-91">&#182;</a>
+                <a class="pilcrow" href="#section-92">&#182;</a>
               </div>
               <p>Draw an image centered at x, y w/ image size dx, dy.
 See <a href="http://goo.gl/VUlhY">this tutorial</a>.</p>
@@ -1742,11 +1759,11 @@ See <a href="http://goo.gl/VUlhY">this tutorial</a>.</p>
         </li>
         
         
-        <li id="section-92">
+        <li id="section-93">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-92">&#182;</a>
+                <a class="pilcrow" href="#section-93">&#182;</a>
               </div>
               <p>Duplicate a ctx&#39;s image.  Returns the new ctx, use ctx.canvas for canvas.</p>
 
@@ -1760,11 +1777,11 @@ See <a href="http://goo.gl/VUlhY">this tutorial</a>.</p>
         </li>
         
         
-        <li id="section-93">
+        <li id="section-94">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-93">&#182;</a>
+                <a class="pilcrow" href="#section-94">&#182;</a>
               </div>
               <p>Resize a ctx/canvas and preserve data.</p>
 

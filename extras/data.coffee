@@ -13,16 +13,16 @@ u = ABM.util
 ABM.DataSet = class DataSet
   # Static members:
   
-  # Create a new dataset from patch variable "name"
-  @patchDataSet: (name) ->
-    new DataSet (ps=ABM.patches).numX, ps.numY, (p[name] for p in ps)
+  # Create a new dataset using function f on each patch.
+  # If f is string, f set to fcn returning p[f]
+  @patchDataSet: (f) -> new PatchDataSet f
   
   # Create a new dataset from an image file name.
   # Note that datasets can be built in two steps:
   # An empty constructor which then can be completed by an
   # async array, Image or XHR response.
   @importImageDataSet: (name, fmt=3, f) ->
-    ds = new ImageDataSet() # empty dataset
+    ds = new ImageDataSet(null, fmt) # empty dataset
     u.importImage name, (img) -> # => not needed
       ds.parse img
       f(ds) if f?
@@ -105,8 +105,8 @@ ABM.DataSet = class DataSet
   # Note this "insets" the dataset so the variable is sampled the center of the patch.
   # The dataset can be sampled directly to its edges .. i.e. in agent coords.
   toPatchVar: (name) ->
-    data = (p[name] = @patchSample p.x, p.y for p in ABM.patches)
-    new DataSet ABM.patches.numX, ABM.patches.numY, data
+    data = (p[name] = @patchSample p.x, p.y for p in (ps=ABM.patches))
+    new PatchDataSet ps.numX, ps.numY, data
   
   # Sample via transformed coords.
   # x,y is in topleft-bottomright box: [tlx,tly,tlx+w,tly-h]
@@ -151,23 +151,24 @@ ABM.DataSet = class DataSet
   # It also returns the two derivitive DataSets, dzdx, dzdy for
   # those wanting to use the results of the two convolutions.
   slopeAndAspect: (cellsize=1, noNaNs=true, posAngle=false) -> 
-    dzdx = @convolve([-1,0,1,-2,0,2,-1,0,1],1/8) # sub left z from right
-    dzdy = @convolve([1,2,1,0,0,0,-1,-2,-1],1/8) # sub bottom z from top
-    aspect = []; slope = [] #; minX = .01; maxAtan = Math.PI/4
-    for y in [0...@height] by 1
-      for x in [0...@width] by 1
-        gx = dzdx.getXY(x,y); gy = dzdy.getXY(x,y)
-        slope.push Math.atan(Math.sqrt(gx*gx + gy*gy)/(cellsize)) # radians
-        while noNaNs and gx is gy
-          gx += u.randomNormal 0,.01; gy += u.randomNormal 0,.01
-        # radians in [-PI,PI], downhill
-        rad = if gx is gy is 0 then NaN else Math.atan2 -gy,-gx
-        # positive radians in [0,2PI] if desired
-        rad += 2*Math.PI if posAngle and rad < 0
-        aspect.push rad
-    slope = new DataSet @width, @height, slope
-    aspect = new DataSet @width, @height, aspect
-    [slope, aspect, dzdx, dzdy]
+    if not @slope?
+      @dzdx = @convolve([-1,0,1,-2,0,2,-1,0,1],1/8) # sub left z from right
+      @dzdy = @convolve([1,2,1,0,0,0,-1,-2,-1],1/8) # sub bottom z from top
+      aspect = []; slope = [] #; minX = .01; maxAtan = Math.PI/4
+      for y in [0...@height] by 1
+        for x in [0...@width] by 1
+          gx = @dzdx.getXY(x,y); gy = @dzdy.getXY(x,y)
+          slope.push Math.atan(Math.sqrt(gx*gx + gy*gy)/(cellsize)) # radians
+          while noNaNs and gx is gy
+            gx += u.randomNormal 0,.01; gy += u.randomNormal 0,.01
+          # radians in [-PI,PI], downhill
+          rad = if gx is gy is 0 then NaN else Math.atan2 -gy,-gx
+          # positive radians in [0,2PI] if desired
+          rad += 2*Math.PI if posAngle and rad < 0
+          aspect.push rad
+      @slope = new DataSet @width, @height, slope
+      @aspect = new DataSet @width, @height, aspect
+    [@slope, @aspect, @dzdx, @dzdy]
   # Return a subset of the dataset. x,y,width,height integers
   subset: (x, y, width, height) ->
     u.error "subSet: params out of range" if x+width>@width or y+height>@height
@@ -243,3 +244,15 @@ ABM.ImageDataSet = class ImageDataSet extends DataSet
       @data.push val
     @reset @ctx.canvas.width, @ctx.canvas.height, @data
     
+ABM.PatchDataSet = class PatchDataSet extends DataSet
+  constructor: (f, height, data) ->
+    if u.isArray data
+      super f, height, data
+    else
+      f = u.propFcn f if u.isString f
+      super (ps=ABM.patches).numX, ps.numY, (f(p) for p in ps)
+    @useNearest = true
+  toPatchVar: (name) ->
+    data = (p[name] = @data[i] for p,i in (ps=ABM.patches))
+    new PatchDataSet ps.numX, ps.numY, data
+

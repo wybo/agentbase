@@ -5,7 +5,7 @@
 # Create the namespace **ABM** for our project.
 # Note here `this` or `@` == window due to coffeescript wrapper call.
 # Thus @ABM is placed in the global scope.
-@ABM={} 
+@ABM={}
 
 root = @ # Keep a private copy of global object
 
@@ -166,6 +166,7 @@ ABM.util = u =
   degToRad: (degrees) -> degrees * Math.PI / 180
   radToDeg: (radians) -> radians * 180 / Math.PI
   # Return angle in (-pi,pi] that added to rad2 = rad1
+  # See NetLogo's [subtract-headings](http://goo.gl/CjoHuV) for explanation
   subtractRads: (rad1, rad2) ->
     dr = rad1-rad2; PI = Math.PI
     dr += 2*PI if dr <= -PI; dr -= 2*PI if dr > PI; dr
@@ -370,6 +371,10 @@ ABM.util = u =
   # The squared distance is used for comparisons to avoid the Math.sqrt fcn.
   distance: (x1, y1, x2, y2) -> dx = x1-x2; dy = y1-y2; Math.sqrt dx*dx + dy*dy
   sqDistance: (x1, y1, x2, y2) -> dx = x1-x2; dy = y1-y2; dx*dx + dy*dy
+  
+  # Convert polar r,theta to cartesian x,y.
+  # Default to 0,0 origin, optional x,y origin.
+  polarToXY: (r, theta, x=0, y=0) -> [x+r*Math.cos(theta), y+r*Math.sin(theta)]
 
   # Return the [torus distance](http://goo.gl/PgJ5N) and distance squared
   # between two points A(x1,y1) and B(x2,y2):
@@ -989,8 +994,8 @@ class ABM.AgentSet extends Array
   
   # Show/Hide all of an agentset or breed.
   # To show/hide an individual object, set its prototype: o.hidden = bool
-  show: -> o.hidden = false for o in @
-  hide: -> o.hidden = true for o in @
+  show: -> o.hidden = false for o in @; @draw(ABM.contexts[@name])
+  hide: -> o.hidden = true for o in @; @draw(ABM.contexts[@name])
 
 # ### Topology
   
@@ -1157,12 +1162,12 @@ class ABM.Patches extends ABM.AgentSet
   constructor: -> # agentClass, name, mainSet
     super # call super with all the args I was called with
     @[k] = v for own k,v of ABM.world # add world items to patches
-    @populate() unless @mainSet
+    @populate() unless @mainSet?
   
   # Setup patch world from world parameters.
   # Note that this is done as separate method so like other agentsets,
   # patches are started up empty and filled by "create" calls.
-  populate: ->
+  populate: -> # TopLeft to BottomRight, exactly as canvas imagedata
     for y in [@maxY..@minY] by -1
       for x in [@minX..@maxX] by 1
         @add new @agentClass x, y
@@ -1176,13 +1181,12 @@ class ABM.Patches extends ABM.AgentSet
 
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
   # if browser does not support these flags.
-  usePixels: (usePix=true) ->
+  usePixels: (@drawWithPixels=true) ->
     ctx = ABM.contexts.patches
-    ctx.imageSmoothingEnabled = not usePix
-    ctx.mozImageSmoothingEnabled = not usePix
-    ctx.webkitImageSmoothingEnabled = not usePix
+    ctx.imageSmoothingEnabled = not @drawWithPixels
+    ctx.mozImageSmoothingEnabled = not @drawWithPixels
+    ctx.webkitImageSmoothingEnabled = not @drawWithPixels
     u.setIdentity ctx
-    @drawWithPixels = usePix
 
   # Optimization: Cache a single set by modeler for use by patchRect,
   # inCone, inRect, inRadius.  Ex: flock demo model's vision rect.
@@ -1235,6 +1239,8 @@ class ABM.Patches extends ABM.AgentSet
   # using either clamp/wrap above according to isTorus topology.
   coord: (x,y) -> #returns a valid world coord (real, not int)
     if @isTorus then @wrap x,y else @clamp x,y
+  # Return true if on world or torus, false if non-torus and off-world
+  isOnWorld: (x,y) -> @isTorus or (@minXcor<=x<=@maxXcor and @minYcor<=y<=@maxYcor)
 
   # Return patch at x,y float values according to topology.
   patch: (x,y) -> 
@@ -1305,16 +1311,17 @@ class ABM.Patches extends ABM.AgentSet
   # Draws, or "imports" an image URL into the patches as their color property.
   # The drawing is scaled to the number of x,y patches, thus one pixel
   # per patch.  The colors are then transferred to the patches.
+  importColors: (imageSrc, f) ->
+    u.importImage imageSrc, (img) => # fat arrow, this context
+      @installColors(img)
+      f() if f?
+  # Direct install image into the patch colors, not async.
   installColors: (img) ->
     @pixelsCtx.drawImage img, 0, 0, @numX, @numY # scale if needed
     data = @pixelsCtx.getImageData(0, 0, @numX, @numY).data
     for p in @
       i = @pixelByteIndex p
       p.color = [data[i++], data[i++], data[i]] # promote initial default
-  importColors: (imageSrc, f) ->
-    u.importImage imageSrc, (img) => # fat arrow, this context
-      @installColors(img)
-      f() if f?
   
   # Draw the patches via pixel manipulation rather than 2D drawRect.
   # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq)
@@ -1489,6 +1496,7 @@ class ABM.Agent
     @distanceXY o.x, o.y
   
   # Return the closest torus topology point of given x,y relative to myself.
+  # Used internally to determine how to draw links between two agents.
   # See util.torusPt.
   torusPtXY: (x, y) ->
     u.torusPt @x, @y, x, y, ABM.patches.numX, ABM.patches.numY
@@ -1503,12 +1511,23 @@ class ABM.Agent
 
   # Return heading towards x,y using patch topology.
   towardsXY: (x, y) ->
-    if ABM.patches.isTorus
-    then u.torusRadsToward @x, @y, x, y, ABM.patches.numX, ABM.patches.numY
+    if (ps=ABM.patches).isTorus
+    then u.torusRadsToward @x, @y, x, y, ps.numX, ps.numY
     else u.radsToward @x, @y, x, y
 
   # Return heading towards given agent/patch using patch topology.
   towards: (o) -> @towardsXY o.x, o.y
+  
+  # Return patch ahead of me by given distance and heading.
+  # Returns null if non-torus and off patch world
+  patchAtHeadingAndDistance: (h,d) ->
+    [x,y] = u.polarToXY d, h, @x, @y
+    if (ps=ABM.patches).isOnWorld x,y then ps.patch x,y else null
+  patchLeftAndAhead: (dh, d) -> @patchAtHeadingAndDistance @heading+dh, d
+  patchRightAndAhead: (dh, d) -> @patchAtHeadingAndDistance @heading-dh, d
+  patchAhead: (d) -> @patchAtHeadingAndDistance @heading, d
+  canMove: (d) -> @patchAhead(d)?
+    
   
   # Remove myself from the model.  Includes removing myself from the agents
   # agentset and removing any links I may have.
@@ -1880,7 +1899,7 @@ class ABM.Model
     u.waitOnFiles => @modelReady=true; @setup(); @globals() unless @globalNames.set
 
   # Initialize/reset world parameters.
-  setWorld: (size, minX, maxX, minY, maxY, isTorus=true, hasNeighbors=true) ->
+  setWorld: (size, minX, maxX, minY, maxY, isTorus=false, hasNeighbors=true) ->
     numX = maxX-minX+1; numY = maxY-minY+1; pxWidth = numX*size; pxHeight = numY*size
     minXcor=minX-.5; maxXcor=maxX+.5; minYcor=minY-.5; maxYcor=maxY+.5
     ABM.world = @world = {size,minX,maxX,minY,maxY,minXcor,maxXcor,minYcor,maxYcor,
@@ -1937,20 +1956,25 @@ class ABM.Model
   # Start/stop the animation
   start: -> u.waitOn (=> @modelReady), (=> @anim.start()); @
   stop:  -> @anim.stop()
-  toggle: -> if @anim.stopped then @start() else @stop()
   # Animate once by `step(); draw()`. For UI and debugging from console.
   # Will advance the ticks/draws counters.
   once: -> @stop() unless @anim.stopped; @anim.once() 
 
   # Stop and reset the model, restarting if restart is true
   reset: (restart = true) -> 
+    console.log "reset: anim"
     @anim.reset() # stop & reset ticks/steps counters
+    console.log "reset: contexts"
+    (v.restore(); @setCtxTransform v) for k,v of @contexts # clear/resize b4 agentsets
+    console.log "reset: patches"
     @patches = ABM.patches = new ABM.Patches ABM.Patch, "patches"
+    console.log "reset: agents"
     @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
     @links = ABM.links = new ABM.Links ABM.Link, "links"
-    @setCtxTransform v for k,v of @contexts # clear/resize all contexts
     u.s.spriteSheets.length = 0 # possibly null out entries?
+    console.log "reset: setup"
     @setup()
+    @setRootVars() if @debugging
     @start() if restart
 
 #### Animation.
@@ -2028,7 +2052,7 @@ class ABM.Model
   # Note we avoid using the actual name, such as "patches" because this
   # can cause our modules to mistakenly depend on a global name.
   # See [CoffeeConsole](http://goo.gl/1i7bd) Chrome extension too.
-  debug: (@debugging = true)-> @setRootVars(); @
+  debug: (@debugging = true) -> u.waitOn (=> @modelReady), (=> @setRootVars()); @
   setRootVars: ->
     root.ps  = @patches
     root.p0  = @patches[0]

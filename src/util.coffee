@@ -5,7 +5,7 @@
 # Create the namespace **ABM** for our project.
 # Note here `this` or `@` == window due to coffeescript wrapper call.
 # Thus @ABM is placed in the global scope.
-@ABM={} 
+@ABM={}
 
 root = @ # Keep a private copy of global object
 
@@ -166,6 +166,7 @@ ABM.util = u =
   degToRad: (degrees) -> degrees * Math.PI / 180
   radToDeg: (radians) -> radians * 180 / Math.PI
   # Return angle in (-pi,pi] that added to rad2 = rad1
+  # See NetLogo's [subtract-headings](http://goo.gl/CjoHuV) for explanation
   subtractRads: (rad1, rad2) ->
     dr = rad1-rad2; PI = Math.PI
     dr += 2*PI if dr <= -PI; dr -= 2*PI if dr > PI; dr
@@ -370,6 +371,10 @@ ABM.util = u =
   # The squared distance is used for comparisons to avoid the Math.sqrt fcn.
   distance: (x1, y1, x2, y2) -> dx = x1-x2; dy = y1-y2; Math.sqrt dx*dx + dy*dy
   sqDistance: (x1, y1, x2, y2) -> dx = x1-x2; dy = y1-y2; dx*dx + dy*dy
+  
+  # Convert polar r,theta to cartesian x,y.
+  # Default to 0,0 origin, optional x,y origin.
+  polarToXY: (r, theta, x=0, y=0) -> [x+r*Math.cos(theta), y+r*Math.sin(theta)]
 
   # Return the [torus distance](http://goo.gl/PgJ5N) and distance squared
   # between two points A(x1,y1) and B(x2,y2):

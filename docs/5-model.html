@@ -519,7 +519,7 @@ agentset is drawn only once, remaining static after that.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  setWorld: (size, minX, maxX, minY, maxY, isTorus=<span class="literal">true</span>, hasNeighbors=<span class="literal">true</span>) -&gt;
+            <div class="content"><div class='highlight'><pre>  setWorld: (size, minX, maxX, minY, maxY, isTorus=<span class="literal">false</span>, hasNeighbors=<span class="literal">true</span>) -&gt;
     numX = maxX-minX+<span class="number">1</span>; numY = maxY-minY+<span class="number">1</span>; pxWidth = numX*size; pxHeight = numY*size
     minXcor=minX-<span class="number">.5</span>; maxXcor=maxX+<span class="number">.5</span>; minYcor=minY-<span class="number">.5</span>; maxYcor=maxY+<span class="number">.5</span>
     ABM.world = <span class="property">@world</span> = {size,minX,maxX,minY,maxY,minXcor,maxXcor,minYcor,maxYcor,
@@ -690,8 +690,7 @@ If async used, make sure step/draw are aware of possible missing data.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  start: -&gt; u.waitOn (=&gt; <span class="property">@modelReady</span>), (=&gt; <span class="property">@anim</span>.start()); @
-  stop:  -&gt; <span class="property">@anim</span>.stop()
-  toggle: -&gt; <span class="keyword">if</span> <span class="property">@anim</span>.stopped <span class="keyword">then</span> <span class="property">@start</span>() <span class="keyword">else</span> <span class="property">@stop</span>()</pre></div></div>
+  stop:  -&gt; <span class="property">@anim</span>.stop()</pre></div></div>
             
         </li>
         
@@ -723,13 +722,19 @@ Will advance the ticks/draws counters.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  reset: (restart = <span class="literal">true</span>) -&gt; 
+    console.log <span class="string">"reset: anim"</span>
     <span class="property">@anim</span>.reset() <span class="comment"># stop &amp; reset ticks/steps counters</span>
+    console.log <span class="string">"reset: contexts"</span>
+    (v.restore(); <span class="property">@setCtxTransform</span> v) <span class="keyword">for</span> k,v <span class="keyword">of</span> <span class="property">@contexts</span> <span class="comment"># clear/resize b4 agentsets</span>
+    console.log <span class="string">"reset: patches"</span>
     <span class="property">@patches</span> = ABM.patches = <span class="keyword">new</span> ABM.Patches ABM.Patch, <span class="string">"patches"</span>
+    console.log <span class="string">"reset: agents"</span>
     <span class="property">@agents</span> = ABM.agents = <span class="keyword">new</span> ABM.Agents ABM.Agent, <span class="string">"agents"</span>
     <span class="property">@links</span> = ABM.links = <span class="keyword">new</span> ABM.Links ABM.Link, <span class="string">"links"</span>
-    <span class="property">@setCtxTransform</span> v <span class="keyword">for</span> k,v <span class="keyword">of</span> <span class="property">@contexts</span> <span class="comment"># clear/resize all contexts</span>
     u.s.spriteSheets.length = <span class="number">0</span> <span class="comment"># possibly null out entries?</span>
+    console.log <span class="string">"reset: setup"</span>
     <span class="property">@setup</span>()
+    <span class="property">@setRootVars</span>() <span class="keyword">if</span> <span class="property">@debugging</span>
     <span class="property">@start</span>() <span class="keyword">if</span> restart</pre></div></div>
             
         </li>
@@ -879,7 +884,7 @@ See <a href="http://goo.gl/1i7bd">CoffeeConsole</a> Chrome extension too.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  debug: (<span class="property">@debugging</span> = <span class="literal">true</span>)-&gt; <span class="property">@setRootVars</span>(); @
+            <div class="content"><div class='highlight'><pre>  debug: (<span class="property">@debugging</span> = <span class="literal">true</span>) -&gt; u.waitOn (=&gt; <span class="property">@modelReady</span>), (=&gt; <span class="property">@setRootVars</span>()); @
   setRootVars: -&gt;
     root.ps  = <span class="property">@patches</span>
     root.p0  = <span class="property">@patches</span>[<span class="number">0</span>]
