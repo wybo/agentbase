@@ -483,7 +483,8 @@ ABM.util = u =
   # Note ctx.canvas is the canvas for the ctx, and can be use as an image.
   createCtx: (width, height, ctxType="2d") ->
     can = @createCanvas width, height
-    can.ctx = if ctxType is "2d" 
+    # can.ctx = 
+    if ctxType is "2d" 
     then can.getContext "2d" 
     else can.getContext("webgl") ? can.getContext("experimental-webgl")
 
@@ -493,10 +494,17 @@ ABM.util = u =
   #
   # The z level gives us the capability of buildng a "stack" of coordinated canvases.
   createLayer: (div, width, height, z, ctx = "2d") -> # a canvas ctx object
-    ctx = @createCtx width, height, ctx
-    ctx.canvas.setAttribute 'style', "position:absolute;top:0;left:0;z-index:#{z}"
-    document.getElementById(div).appendChild(ctx.canvas)
+    if ctx is "img" 
+    then element = ctx = new Image()#; element.width = width; element.height=height
+    else element = (ctx=@createCtx(width, height, ctx)).canvas
+    @insertLayer div, element, width, height, z
     ctx
+  insertLayer: (div, element, w, h, z) ->
+    element.setAttribute 'style', # Note: this erases existing style, el.style.position doesnt
+    "position:absolute;top:0;left:0;width:#{w};height:#{h};z-index:#{z}"
+    document.getElementById(div).appendChild(element)
+
+
   # Install identity transform.  Call ctx.restore() to revert to previous transform
   setIdentity: (ctx) ->
     ctx.save() # revert to native 2D transform
@@ -527,7 +535,7 @@ ABM.util = u =
     @setIdentity(ctx) if setIdentity
     ctx.fillStyle = @colorStr color;  ctx.fillText(string, x, y)
     ctx.restore() if setIdentity
-  # Set the canvas text align and baseline drawing parameters
+  # Set the element text align and baseline drawing parameters
   #
   # * font is a HTML/CSS string like: "9px sans-serif"
   # * align is left right center start end
@@ -536,11 +544,19 @@ ABM.util = u =
   # See [reference](http://goo.gl/AvEAq) for details.
   ctxTextParams: (ctx, font, align = "center", baseline = "middle") -> 
     ctx.font = font; ctx.textAlign = align; ctx.textBaseline = baseline
+  elementTextParams: (e, font, align = "center", baseline = "middle") -> 
+    e = e.canvas if e.canvas?
+    e.style.font = font; e.style.textAlign = align; e.style.textBaseline = baseline
 
   # Convert an image to a context. ctx.canvas gives the created canvas.
   imageToCtx: (image) ->
     ctx = @createCtx image.width, image.height
     ctx.drawImage image, 0, 0
+    ctx
+  imageSliceToCtx: (img, sx, sy, sw, sh, ctx) ->
+    if ctx?
+    then ctx.canvas.width = sw; ctx.canvas.height = sh
+    else ctx = u.createCtx sw, sh
     ctx
 
   # Convert a context to an image, executing function f on completion.

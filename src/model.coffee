@@ -80,11 +80,12 @@ class ABM.Model
   # 
   #     v.z++ for k,v of ABM.Model::contextsInit # increase each z value by one
   contextsInit: {
-    patches:   {z:0, ctx:"2d"}
-    drawing:   {z:1, ctx:"2d"}
-    links:     {z:2, ctx:"2d"}
-    agents:    {z:3, ctx:"2d"}
-    spotlight: {z:4, ctx:"2d"}
+    patches:   {z:0,  ctx:"2d"}
+    image:     {z:5,  ctx:"img"}
+    drawing:   {z:10, ctx:"2d"}
+    links:     {z:20, ctx:"2d"}
+    agents:    {z:30, ctx:"2d"}
+    spotlight: {z:40, ctx:"2d"}
   }
   # Constructor: 
   #
@@ -114,9 +115,8 @@ class ABM.Model
     
     for own k,v of @contextsInit
       @contexts[k] = ctx = u.createLayer div, @world.pxWidth, @world.pxHeight, v.z, v.ctx
-      @setCtxTransform ctx
-      u.ctxTextParams ctx, "10px sans-serif", "center", "middle"
-    u.fillCtx @contexts.patches, [100, 100, 100]
+      @setCtxTransform ctx if ctx.canvas?
+      u.elementTextParams ctx, "10px sans-serif", "center", "middle"
 
     # One of the layers is used for drawing only, not an agentset:
     @drawing = ABM.drawing = @contexts.drawing
@@ -211,7 +211,7 @@ class ABM.Model
     console.log "reset: anim"
     @anim.reset() # stop & reset ticks/steps counters
     console.log "reset: contexts"
-    (v.restore(); @setCtxTransform v) for k,v of @contexts # clear/resize b4 agentsets
+    (v.restore(); @setCtxTransform v) for k,v of @contexts when v.canvas? # clear/resize b4 agentsets
     console.log "reset: patches"
     @patches = ABM.patches = new ABM.Patches ABM.Patch, "patches"
     console.log "reset: agents"

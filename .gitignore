@@ -1,9 +1,12 @@
 # See: https://help.github.com/articles/ignoring-files
+.gitignore
 Attic/
 misc/
 modelsui/
 sketches/
 NNMC/
+notes
+tests
 *-
 .DS_Store
 .DS_Store?

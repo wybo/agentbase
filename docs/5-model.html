@@ -342,11 +342,12 @@ Example:</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  contextsInit: {
-    patches:   {z:<span class="number">0</span>, ctx:<span class="string">"2d"</span>}
-    drawing:   {z:<span class="number">1</span>, ctx:<span class="string">"2d"</span>}
-    links:     {z:<span class="number">2</span>, ctx:<span class="string">"2d"</span>}
-    agents:    {z:<span class="number">3</span>, ctx:<span class="string">"2d"</span>}
-    spotlight: {z:<span class="number">4</span>, ctx:<span class="string">"2d"</span>}
+    patches:   {z:<span class="number">0</span>,  ctx:<span class="string">"2d"</span>}
+    image:     {z:<span class="number">5</span>,  ctx:<span class="string">"img"</span>}
+    drawing:   {z:<span class="number">10</span>, ctx:<span class="string">"2d"</span>}
+    links:     {z:<span class="number">20</span>, ctx:<span class="string">"2d"</span>}
+    agents:    {z:<span class="number">30</span>, ctx:<span class="string">"2d"</span>}
+    spotlight: {z:<span class="number">40</span>, ctx:<span class="string">"2d"</span>}
   }</pre></div></div>
             
         </li>
@@ -402,9 +403,8 @@ ctx.restore() # restore patch coord system</code></pre>
             <div class="content"><div class='highlight'><pre>    
     <span class="keyword">for</span> own k,v <span class="keyword">of</span> <span class="property">@contextsInit</span>
       <span class="property">@contexts</span>[k] = ctx = u.createLayer div, <span class="property">@world</span>.pxWidth, <span class="property">@world</span>.pxHeight, v.z, v.ctx
-      <span class="property">@setCtxTransform</span> ctx
-      u.ctxTextParams ctx, <span class="string">"10px sans-serif"</span>, <span class="string">"center"</span>, <span class="string">"middle"</span>
-    u.fillCtx <span class="property">@contexts</span>.patches, [<span class="number">100</span>, <span class="number">100</span>, <span class="number">100</span>]</pre></div></div>
+      <span class="property">@setCtxTransform</span> ctx <span class="keyword">if</span> ctx.canvas?
+      u.elementTextParams ctx, <span class="string">"10px sans-serif"</span>, <span class="string">"center"</span>, <span class="string">"middle"</span></pre></div></div>
             
         </li>
         
@@ -725,7 +725,7 @@ Will advance the ticks/draws counters.</p>
     console.log <span class="string">"reset: anim"</span>
     <span class="property">@anim</span>.reset() <span class="comment"># stop &amp; reset ticks/steps counters</span>
     console.log <span class="string">"reset: contexts"</span>
-    (v.restore(); <span class="property">@setCtxTransform</span> v) <span class="keyword">for</span> k,v <span class="keyword">of</span> <span class="property">@contexts</span> <span class="comment"># clear/resize b4 agentsets</span>
+    (v.restore(); <span class="property">@setCtxTransform</span> v) <span class="keyword">for</span> k,v <span class="keyword">of</span> <span class="property">@contexts</span> <span class="keyword">when</span> v.canvas? <span class="comment"># clear/resize b4 agentsets</span>
     console.log <span class="string">"reset: patches"</span>
     <span class="property">@patches</span> = ABM.patches = <span class="keyword">new</span> ABM.Patches ABM.Patch, <span class="string">"patches"</span>
     console.log <span class="string">"reset: agents"</span>

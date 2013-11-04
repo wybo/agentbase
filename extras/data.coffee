@@ -211,6 +211,18 @@ ABM.AscDataSet = class AscDataSet extends DataSet
     @reset @header.ncols, @header.nrows, @data
 
 ABM.ImageDataSet = class ImageDataSet extends DataSet
+  # Class utility for huge data sets
+  @imageRowsToData: (img, rowsPerSlice, arrayType, f) ->
+    rowsDone = 0; data = new arrayType img.width*img.height
+    while rowsDone < img.height
+      rows = Math.min img.height - rowsDone, rowsPerSlice
+      ctx = u.imageSliceToCtx img, 0, rowsDone, img.width, rows
+      idata = u.ctxToImageData(ctx).data
+      dataStart = rowsDone*img.width
+      # data[dataStart+i] = idata[4*i+1] for i in [0...idata.length/4] by 1
+      data[dataStart+i] = f(idata,4*i) for i in [0...idata.length/4] by 1
+      rowsDone += rows
+    data
   # An image-as-data dataset.  The parser takes an image
   # data Uint8Array, enumerates it in 4-byte segments converting
   # the segment into an unsigned 32 bit int dataset entry.

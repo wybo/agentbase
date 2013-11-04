@@ -668,6 +668,44 @@ ABM.ImageDataSet = <span class="class"><span class="keyword">class</span> <span 
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
+              <p>Class utility for huge data sets</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="property">@imageRowsToData</span>: (img, rowsPerSlice, arrayType, f) -&gt;
+    rowsDone = <span class="number">0</span>; data = <span class="keyword">new</span> arrayType img.width*img.height
+    <span class="keyword">while</span> rowsDone &lt; img.height
+      rows = Math.min img.height - rowsDone, rowsPerSlice
+      ctx = u.imageSliceToCtx img, <span class="number">0</span>, rowsDone, img.width, rows
+      idata = u.ctxToImageData(ctx).data
+      dataStart = rowsDone*img.width</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-34">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-34">&#182;</a>
+              </div>
+              <p>data[dataStart+i] = idata[4*i+1] for i in [0...idata.length/4] by 1</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      data[dataStart+i] = f(idata,<span class="number">4</span>*i) <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span>..idata.length/<span class="number">4</span>] <span class="keyword">by</span> <span class="number">1</span>
+      rowsDone += rows
+    data</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-35">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-35">&#182;</a>
+              </div>
               <p>An image-as-data dataset.  The parser takes an image
 data Uint8Array, enumerates it in 4-byte segments converting
 the segment into an unsigned 32 bit int dataset entry.</p>
@@ -682,11 +720,11 @@ the segment into an unsigned 32 bit int dataset entry.</p>
         </li>
         
         
-        <li id="section-34">
+        <li id="section-36">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-34">&#182;</a>
+                <a class="pilcrow" href="#section-36">&#182;</a>
               </div>
               <p>The byte format can be:</p>
 <pre><code>int 1-4 or 8,16,24,32: number of bytes/bits of data
@@ -715,11 +753,11 @@ array of length 1-4: non-standard layout of RGB bytes
         </li>
         
         
-        <li id="section-35">
+        <li id="section-37">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-35">&#182;</a>
+                <a class="pilcrow" href="#section-37">&#182;</a>
               </div>
               <p>Note: do not use bitwise operations: keep value positive int</p>
 

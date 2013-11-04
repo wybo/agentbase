@@ -1536,10 +1536,7 @@ Note ctx.canvas is the canvas for the ctx, and can be use as an image.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  createCtx: (width, height, ctxType=<span class="string">"2d"</span>) -&gt;
-    can = <span class="property">@createCanvas</span> width, height
-    can.ctx = <span class="keyword">if</span> ctxType <span class="keyword">is</span> <span class="string">"2d"</span> 
-    <span class="keyword">then</span> can.getContext <span class="string">"2d"</span> 
-    <span class="keyword">else</span> can.getContext(<span class="string">"webgl"</span>) ? can.getContext(<span class="string">"experimental-webgl"</span>)</pre></div></div>
+    can = <span class="property">@createCanvas</span> width, height</pre></div></div>
             
         </li>
         
@@ -1550,18 +1547,13 @@ Note ctx.canvas is the canvas for the ctx, and can be use as an image.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-82">&#182;</a>
               </div>
-              <p>Return a &quot;layer&quot; 2D/3D rendering context within the specified HTML <code>&lt;div&gt;</code>,
-with the given width/height positioned absolutely at top/left within the div,
-and with the z-index of z.</p>
-<p>The z level gives us the capability of buildng a &quot;stack&quot; of coordinated canvases.</p>
+              <p>can.ctx = </p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  createLayer: (div, width, height, z, ctx = <span class="string">"2d"</span>) -&gt; <span class="comment"># a canvas ctx object</span>
-    ctx = <span class="property">@createCtx</span> width, height, ctx
-    ctx.canvas.setAttribute <span class="string">'style'</span>, <span class="string">"position:absolute;top:0;left:0;z-index:<span class="subst">#{z}</span>"</span>
-    document.getElementById(div).appendChild(ctx.canvas)
-    ctx</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    <span class="keyword">if</span> ctxType <span class="keyword">is</span> <span class="string">"2d"</span> 
+    <span class="keyword">then</span> can.getContext <span class="string">"2d"</span> 
+    <span class="keyword">else</span> can.getContext(<span class="string">"webgl"</span>) ? can.getContext(<span class="string">"experimental-webgl"</span>)</pre></div></div>
             
         </li>
         
@@ -1571,6 +1563,33 @@ and with the z-index of z.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-83">&#182;</a>
+              </div>
+              <p>Return a &quot;layer&quot; 2D/3D rendering context within the specified HTML <code>&lt;div&gt;</code>,
+with the given width/height positioned absolutely at top/left within the div,
+and with the z-index of z.</p>
+<p>The z level gives us the capability of buildng a &quot;stack&quot; of coordinated canvases.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  createLayer: (div, width, height, z, ctx = <span class="string">"2d"</span>) -&gt; <span class="comment"># a canvas ctx object</span>
+    <span class="keyword">if</span> ctx <span class="keyword">is</span> <span class="string">"img"</span> 
+    <span class="keyword">then</span> element = ctx = <span class="keyword">new</span> Image()<span class="comment">#; element.width = width; element.height=height</span>
+    <span class="keyword">else</span> element = (ctx=<span class="property">@createCtx</span>(width, height, ctx)).canvas
+    <span class="property">@insertLayer</span> div, element, width, height, z
+    ctx
+  insertLayer: (div, element, w, h, z) -&gt;
+    element.setAttribute <span class="string">'style'</span>, <span class="comment"># Note: this erases existing style, el.style.position doesnt</span>
+    <span class="string">"position:absolute;top:0;left:0;width:<span class="subst">#{w}</span>;height:<span class="subst">#{h}</span>;z-index:<span class="subst">#{z}</span>"</span>
+    document.getElementById(div).appendChild(element)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-84">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-84">&#182;</a>
               </div>
               <p>Install identity transform.  Call ctx.restore() to revert to previous transform</p>
 
@@ -1583,11 +1602,11 @@ and with the z-index of z.</p>
         </li>
         
         
-        <li id="section-84">
+        <li id="section-85">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-84">&#182;</a>
+                <a class="pilcrow" href="#section-85">&#182;</a>
               </div>
               <p>Clear the 2D/3D layer to be transparent. Note this <a href="http://goo.gl/qekXS">discussion</a>.</p>
 
@@ -1605,11 +1624,11 @@ and with the z-index of z.</p>
         </li>
         
         
-        <li id="section-85">
+        <li id="section-86">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-85">&#182;</a>
+                <a class="pilcrow" href="#section-86">&#182;</a>
               </div>
               <p>Fill the 2D/3D layer with the given color</p>
 
@@ -1628,11 +1647,11 @@ and with the z-index of z.</p>
         </li>
         
         
-        <li id="section-86">
+        <li id="section-87">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-86">&#182;</a>
+                <a class="pilcrow" href="#section-87">&#182;</a>
               </div>
               <p>Draw string of the given color at the xy location, in ctx pixel coords.
 Use setIdentity .. reset if a transform is being used by caller.</p>
@@ -1647,13 +1666,13 @@ Use setIdentity .. reset if a transform is being used by caller.</p>
         </li>
         
         
-        <li id="section-87">
+        <li id="section-88">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-87">&#182;</a>
+                <a class="pilcrow" href="#section-88">&#182;</a>
               </div>
-              <p>Set the canvas text align and baseline drawing parameters</p>
+              <p>Set the element text align and baseline drawing parameters</p>
 <ul>
 <li>font is a HTML/CSS string like: &quot;9px sans-serif&quot;</li>
 <li>align is left right center start end</li>
@@ -1664,25 +1683,10 @@ Use setIdentity .. reset if a transform is being used by caller.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  ctxTextParams: (ctx, font, align = <span class="string">"center"</span>, baseline = <span class="string">"middle"</span>) -&gt; 
-    ctx.font = font; ctx.textAlign = align; ctx.textBaseline = baseline</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-88">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-88">&#182;</a>
-              </div>
-              <p>Convert an image to a context. ctx.canvas gives the created canvas.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  imageToCtx: (image) -&gt;
-    ctx = <span class="property">@createCtx</span> image.width, image.height
-    ctx.drawImage image, <span class="number">0</span>, <span class="number">0</span>
-    ctx</pre></div></div>
+    ctx.font = font; ctx.textAlign = align; ctx.textBaseline = baseline
+  elementTextParams: (e, font, align = <span class="string">"center"</span>, baseline = <span class="string">"middle"</span>) -&gt; 
+    e = e.canvas <span class="keyword">if</span> e.canvas?
+    e.style.font = font; e.style.textAlign = align; e.style.textBaseline = baseline</pre></div></div>
             
         </li>
         
@@ -1692,6 +1696,29 @@ Use setIdentity .. reset if a transform is being used by caller.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-89">&#182;</a>
+              </div>
+              <p>Convert an image to a context. ctx.canvas gives the created canvas.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  imageToCtx: (image) -&gt;
+    ctx = <span class="property">@createCtx</span> image.width, image.height
+    ctx.drawImage image, <span class="number">0</span>, <span class="number">0</span>
+    ctx
+  imageSliceToCtx: (img, sx, sy, sw, sh, ctx) -&gt;
+    <span class="keyword">if</span> ctx?
+    <span class="keyword">then</span> ctx.canvas.width = sw; ctx.canvas.height = sh
+    <span class="keyword">else</span> ctx = u.createCtx sw, sh
+    ctx</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-90">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-90">&#182;</a>
               </div>
               <p>Convert a context to an image, executing function f on completion.
 Generally can skip callback but see <a href="http://goo.gl/kIk2U">stackoverflow</a>
@@ -1708,11 +1735,11 @@ Fix: use ctx.canvas for programatic imaging.</p>
         </li>
         
         
-        <li id="section-90">
+        <li id="section-91">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-90">&#182;</a>
+                <a class="pilcrow" href="#section-91">&#182;</a>
               </div>
               <p>Convert a ctx to an imageData object</p>
 
@@ -1723,11 +1750,11 @@ Fix: use ctx.canvas for programatic imaging.</p>
         </li>
         
         
-        <li id="section-91">
+        <li id="section-92">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-91">&#182;</a>
+                <a class="pilcrow" href="#section-92">&#182;</a>
               </div>
               <p>Canvas versions of above</p>
 
@@ -1740,11 +1767,11 @@ Fix: use ctx.canvas for programatic imaging.</p>
         </li>
         
         
-        <li id="section-92">
+        <li id="section-93">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-92">&#182;</a>
+                <a class="pilcrow" href="#section-93">&#182;</a>
               </div>
               <p>Draw an image centered at x, y w/ image size dx, dy.
 See <a href="http://goo.gl/VUlhY">this tutorial</a>.</p>
@@ -1759,11 +1786,11 @@ See <a href="http://goo.gl/VUlhY">this tutorial</a>.</p>
         </li>
         
         
-        <li id="section-93">
+        <li id="section-94">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-93">&#182;</a>
+                <a class="pilcrow" href="#section-94">&#182;</a>
               </div>
               <p>Duplicate a ctx&#39;s image.  Returns the new ctx, use ctx.canvas for canvas.</p>
 
@@ -1777,11 +1804,11 @@ See <a href="http://goo.gl/VUlhY">this tutorial</a>.</p>
         </li>
         
         
-        <li id="section-94">
+        <li id="section-95">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-94">&#182;</a>
+                <a class="pilcrow" href="#section-95">&#182;</a>
               </div>
               <p>Resize a ctx/canvas and preserve data.</p>
 
