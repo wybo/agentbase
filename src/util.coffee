@@ -86,13 +86,16 @@ ABM.util = u =
   # Return an array of floating pt numbers as strings at given precision;
   # useful for printing
   aToFixed: (a, p=2) -> (i.toFixed p for i in a)
+  # Return localized string for number, with commas etc
+  tls: (n) -> n.toLocaleString()
+
 
 # ### Color and Angle Operations
 # Our colors are r,g,b,[a] arrays, with an optional color.str HTML
 # color string property. The str value is set on the first call to colorStr
   
   # Return a random RGB or gray color. Array passed to minimize garbage collection
-  randomColor: (c = []) -> 
+  randomColor: (c = []) ->
     c.str = null if c.str?
     c[i] = @randomInt(256) for i in [0..2]
     c 
@@ -170,6 +173,7 @@ ABM.util = u =
   subtractRads: (rad1, rad2) ->
     dr = rad1-rad2; PI = Math.PI
     dr += 2*PI if dr <= -PI; dr -= 2*PI if dr > PI; dr
+
   
 # ### Object Operations
   
@@ -246,6 +250,8 @@ ABM.util = u =
     for a in array
       (r = r1; o = a) if (r1=f(a)) > r
     if valueToo then [o, r] else o
+  firstOneOf: (array, f) ->
+    return i for a,i in array when f(a); return -1
 
   # Return histogram of o when f(o) is a numeric value in array.
   # Histogram interval is bin. Error if array empty.
@@ -288,6 +294,7 @@ ABM.util = u =
   #     uniq b
   #     # b now is [{id:1},{id:3},{id:4},{id:10}]
   uniq: (array) ->
+    return array if array.length < 2 # return if empty or singlton
     array.splice i,1 for i in [array.length-1..1] by -1 when array[i-1] is array[i]
     array
   
@@ -299,10 +306,11 @@ ABM.util = u =
   # Return array of property values of given array of objects
   aProp: (array, prop) -> (a[prop] for a in array)
 
-  # Return max/min/sum/avg of numeric array
-  aMax: (array) -> array.reduce (a,b) -> Math.max a,b
-  aMin: (array) -> array.reduce (a,b) -> Math.min a,b
-  aSum: (array) -> array.reduce (a,b) -> a+b
+  # Return scalar max/min/sum/avg of numeric array
+  # Iterate rather than reduce: work with typed arrays
+  aMax: (array) -> v=array[0]; v=Math.max v,a for a in array; v
+  aMin: (array) -> v=array[0]; v=Math.min v,a for a in array; v
+  aSum: (array) -> v=0; v += a for a in array; v
   aAvg: (array) -> @aSum(array)/array.length
   
   aNaNs: (array) -> (i for v,i in array when isNaN v)
@@ -472,6 +480,35 @@ ABM.util = u =
   waitOn: (done, f) ->
     if done() then f() else setTimeout (=> @waitOn(done, f)), 1000
 
+# ### Image Data Operations
+  # Make a copy of an image.
+  # Note: new image will have the naturalWidth/Height of input img.
+  # Should be sync
+  cloneImage: (img) -> (i=new Image()).src = img.src; i
+
+  # Create a data array from an image's imageData
+  # img may be a canvas.
+  # The function f = f(imageData, rgbIndex) -> number
+  imageToData: (img, f=@pixelByte(0), arrayType=Uint8ClampedArray) ->
+    @imageRowsToData img, img.height, f, arrayType
+  imageRowsToData: (img, rowsPerSlice, f=@pixelByte(0), arrayType=Uint8ClampedArray) ->
+    rowsDone = 0; data = new arrayType img.width*img.height
+    while rowsDone < img.height
+      rows = Math.min img.height - rowsDone, rowsPerSlice
+      ctx = @imageSliceToCtx img, 0, rowsDone, img.width, rows # REMIND: pass ctx
+      idata = @ctxToImageData(ctx).data
+      dataStart = rowsDone*img.width
+      data[dataStart+i] = f(idata,4*i) for i in [0...idata.length/4] by 1
+      rowsDone += rows
+    data
+  # Two utilities for Image data extraction.
+  # They return a fcn in a closure which "sees" the args and variables
+  pixelBytesToInt: (a) ->
+    ImageByteFmts = [[2],[1,2],[0,1,2],[3,0,1,2]]
+    a=ImageByteFmts[a-1] if typeof a is "number"
+    (id,i)->val = 0; val = val*256 + id[i+j] for j in a; val
+  pixelByte: (n) -> (id,i)->id[i+n]
+
 # ### Canvas/Context Operations
 
   # Create a new canvas of given width/height
@@ -483,8 +520,7 @@ ABM.util = u =
   # Note ctx.canvas is the canvas for the ctx, and can be use as an image.
   createCtx: (width, height, ctxType="2d") ->
     can = @createCanvas width, height
-    # can.ctx = 
-    if ctxType is "2d" 
+    if ctxType is "2d"
     then can.getContext "2d" 
     else can.getContext("webgl") ? can.getContext("experimental-webgl")
 
@@ -495,14 +531,20 @@ ABM.util = u =
   # The z level gives us the capability of buildng a "stack" of coordinated canvases.
   createLayer: (div, width, height, z, ctx = "2d") -> # a canvas ctx object
     if ctx is "img" 
-    then element = ctx = new Image()#; element.width = width; element.height=height
+    then element = ctx = new Image(); ctx.width = width; ctx.height=height
     else element = (ctx=@createCtx(width, height, ctx)).canvas
     @insertLayer div, element, width, height, z
     ctx
   insertLayer: (div, element, w, h, z) ->
     element.setAttribute 'style', # Note: this erases existing style, el.style.position doesnt
     "position:absolute;top:0;left:0;width:#{w};height:#{h};z-index:#{z}"
-    document.getElementById(div).appendChild(element)
+    div.appendChild(element)
+
+  setCtxSmoothing: (ctx, smoothing) ->
+    ctx.imageSmoothingEnabled = smoothing
+    ctx.mozImageSmoothingEnabled = smoothing
+    ctx.oImageSmoothingEnabled = smoothing
+    ctx.webkitImageSmoothingEnabled = smoothing
 
 
   # Install identity transform.  Call ctx.restore() to revert to previous transform
@@ -549,31 +591,41 @@ ABM.util = u =
     e.style.font = font; e.style.textAlign = align; e.style.textBaseline = baseline
 
   # Convert an image to a context. ctx.canvas gives the created canvas.
-  imageToCtx: (image) ->
-    ctx = @createCtx image.width, image.height
-    ctx.drawImage image, 0, 0
+  # If w, h provided, scale to that size. img may be a canvas
+  # Note: to convert a ctx to an "image" (drawImage) use ctx.canvas
+  imageToCtx: (img, w, h) ->
+    if w? and h?
+      ctx = @createCtx w, h
+      ctx.drawImage img, 0, 0, w, h
+    else
+      ctx = @createCtx img.width, img.height
+      ctx.drawImage img, 0, 0
     ctx
   imageSliceToCtx: (img, sx, sy, sw, sh, ctx) ->
     if ctx?
     then ctx.canvas.width = sw; ctx.canvas.height = sh
-    else ctx = u.createCtx sw, sh
+    else ctx = @createCtx sw, sh
+    ctx.drawImage img, sx, sy, sw, sh, 0, 0, sw, sh
     ctx
 
   # Convert a context to an image, executing function f on completion.
   # Generally can skip callback but see [stackoverflow](http://goo.gl/kIk2U)
   # Note: uses toDataURL thus possible cross origin problems.
   # Fix: use ctx.canvas for programatic imaging.
-  ctxToImage: (ctx, f) ->
+  ctxToDataUrl: (ctx) -> ctx.canvas.toDataURL "image/png"
+  ctxToDataUrlImage: (ctx, f) ->
     img = new Image()
     (img.onload = -> f(img)) if f?
     img.src = ctx.canvas.toDataURL "image/png"
+    img
   # Convert a ctx to an imageData object
-  ctxToImageData: (ctx) -> ctx.getImageData 0, 0, ctx.canvas.width, ctx.canvas.height
+  ctxToImageData: (ctx) ->
+    ctx.getImageData 0, 0, ctx.canvas.width, ctx.canvas.height
 
   # Canvas versions of above
-  canvasToImage: (canvas) -> ctxToImage(canvas.getContext "2d")
-  canvasToImageData: (canvas) -> ctxToImageData(canvas.getContext "2d")
-  imageToCanvas: (image) -> imageToCtx(image).canvas
+  # canvasToImage: (canvas) -> ctxToImage(canvas.getContext "2d")
+  # canvasToImageData: (canvas) -> ctxToImageData(canvas.getContext "2d")
+  # imageToCanvas: (image) -> imageToCtx(image).canvas
   
   # Draw an image centered at x, y w/ image size dx, dy.
   # See [this tutorial](http://goo.gl/VUlhY).
@@ -582,12 +634,6 @@ ABM.util = u =
     ctx.rotate rad
     ctx.drawImage img, -dx/2, -dy/2
   
-  # Duplicate a ctx's image.  Returns the new ctx, use ctx.canvas for canvas.
-  copyCtx: (ctx0) ->
-    ctx = @createCtx ctx0.canvas.width, ctx0.canvas.height
-    ctx.drawImage ctx0.canvas, 0, 0
-    ctx
-    
   # Resize a ctx/canvas and preserve data.
   resizeCtx: (ctx, width, height, scale = false) -> # http://goo.gl/Tp90B
     copy = @copyCtx ctx

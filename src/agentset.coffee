@@ -87,9 +87,12 @@ class ABM.AgentSet extends Array
 
   # Set the default value of a agent class, return agetnset
   setDefault: (name, value) -> @agentClass::[name] = value; @
-  # Declare variables of an agent class. Vars = a string of space separated names.
+  # Declare variables of an agent class. 
+  # Vars = a string of space separated names or an array of name strings
   # Return agentset.
   own: (vars) -> # maybe not set default if val is null?
+    # vars = vars.split(" ") if not u.isArray vars
+    # for name in vars#.split(" ") # if not u.isArray vars
     for name in vars.split(" ")
       @setDefault name, null
       @ownVariables.push name
@@ -110,6 +113,27 @@ class ABM.AgentSet extends Array
   exclude: (breeds) ->
     breeds = breeds.split(" ")
     @asSet (o for o in @ when o.breed.name not in breeds)
+
+  # Recursive floodfill:
+  # Arguments:
+  #
+  # * aset: Initial array of agents, often a single agent: [a]
+  # * fCandidate(a) -> true if a is elegible to be added to the set.
+  # * fJoin(a, lastSet) -> adds a to the agentset, usually by setting a variable
+  # * fNeighbors(a) -> returns the neighbors of this agent
+  # * asetLast: the array of the last set of agents to join the set.
+  #
+  # asetLast generally [] but can used if the join function uses the prior
+  # agents for a distance calculation, for example.
+  #
+  floodFill: (aset, fCandidate, fJoin, fNeighbors, asetLast=[]) ->
+    fJoin p, asetLast for p in aset
+    asetNext = []
+    for p in aset
+      for n in fNeighbors(p) when fCandidate n
+        asetNext.push n if asetNext.indexOf(n) < 0
+    @floodFill asetNext, fCandidate, fJoin, fNeighbors, aset if asetNext.length > 0
+
     
   
   # Remove adjacent duplicates, by reference, in a sorted agentset.

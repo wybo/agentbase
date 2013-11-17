@@ -361,8 +361,23 @@ useful for printing</p>
         <li id="section-18">
             <div class="annotation">
               
-              <div class="pilwrap for-h3">
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>Return localized string for number, with commas etc</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  tls: (n) -&gt; n.toLocaleString()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h3">
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <h3>Color and Angle Operations</h3>
 <p>Our colors are r,g,b,[a] arrays, with an optional color.str HTML
@@ -373,17 +388,17 @@ color string property. The str value is set on the first call to colorStr</p>
         </li>
         
         
-        <li id="section-19">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>Return a random RGB or gray color. Array passed to minimize garbage collection</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  randomColor: (c = []) -&gt; 
+            <div class="content"><div class='highlight'><pre>  randomColor: (c = []) -&gt;
     c.str = <span class="literal">null</span> <span class="keyword">if</span> c.str?
     c[i] = <span class="property">@randomInt</span>(<span class="number">256</span>) <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span><span class="number">.2</span>]
     c</pre></div></div>
@@ -391,11 +406,11 @@ color string property. The str value is set on the first call to colorStr</p>
         </li>
         
         
-        <li id="section-20">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>Note: if 2 args passed, assume they&#39;re min, max w/ default c</p>
 
@@ -411,11 +426,11 @@ color string property. The str value is set on the first call to colorStr</p>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>Random color from a colormap set of r,g,b values.
 Default is one of 125 (5^3) colors</p>
@@ -429,11 +444,11 @@ Default is one of 125 (5^3) colors</p>
         </li>
         
         
-        <li id="section-22">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>Modify an existing rgb or gray color.  Alpha optional, not set if not provided.
 Modifying an existing array minimizes GC overhead</p>
@@ -449,11 +464,11 @@ Modifying an existing array minimizes GC overhead</p>
         </li>
         
         
-        <li id="section-23">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>Return new color, c, by scaling each value of the rgb color max.</p>
 
@@ -467,11 +482,11 @@ Modifying an existing array minimizes GC overhead</p>
         </li>
         
         
-        <li id="section-24">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>Return HTML color as used by canvas element.  Can include Alpha</p>
 
@@ -484,11 +499,11 @@ Modifying an existing array minimizes GC overhead</p>
         </li>
         
         
-        <li id="section-25">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
               <p>Compare two colors.  Alas, there is no array.Equal operator.</p>
 
@@ -499,11 +514,11 @@ Modifying an existing array minimizes GC overhead</p>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>Convert r,g,b to a gray value (not color array). Round for 0-255 int.</p>
 
@@ -514,11 +529,11 @@ Modifying an existing array minimizes GC overhead</p>
         </li>
         
         
-        <li id="section-27">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               <p>RGB &lt;&gt; HSB (HSV) conversions.
 RGB in [0-255], HSB in [0-1]
@@ -552,11 +567,11 @@ and <a href="http://axonflux.com/handy-rgb-to-hsl-and-rgb-to-hsv-color-model-c">
         </li>
         
         
-        <li id="section-28">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>Return little/big endian-ness of hardware. 
 See Mozilla pixel <a href="http://goo.gl/Lxliq">manipulation article</a></p>
@@ -568,11 +583,11 @@ See Mozilla pixel <a href="http://goo.gl/Lxliq">manipulation article</a></p>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>convert 1-int array to typed array</p>
 
@@ -583,11 +598,11 @@ See Mozilla pixel <a href="http://goo.gl/Lxliq">manipulation article</a></p>
         </li>
         
         
-        <li id="section-30">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <p>return true if byte order reversed</p>
 
@@ -598,11 +613,11 @@ See Mozilla pixel <a href="http://goo.gl/Lxliq">manipulation article</a></p>
         </li>
         
         
-        <li id="section-31">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+                <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
               <p>Convert between degrees and radians.  We/Math package use radians.</p>
 
@@ -614,11 +629,11 @@ See Mozilla pixel <a href="http://goo.gl/Lxliq">manipulation article</a></p>
         </li>
         
         
-        <li id="section-32">
+        <li id="section-33">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-32">&#182;</a>
+                <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
               <p>Return angle in (-pi,pi] that added to rad2 = rad1
 See NetLogo&#39;s <a href="http://goo.gl/CjoHuV">subtract-headings</a> for explanation</p>
@@ -632,11 +647,11 @@ See NetLogo&#39;s <a href="http://goo.gl/CjoHuV">subtract-headings</a> for expla
         </li>
         
         
-        <li id="section-33">
+        <li id="section-34">
             <div class="annotation">
               
               <div class="pilwrap for-h3">
-                <a class="pilcrow" href="#section-33">&#182;</a>
+                <a class="pilcrow" href="#section-34">&#182;</a>
               </div>
               <h3>Object Operations</h3>
 
@@ -645,11 +660,11 @@ See NetLogo&#39;s <a href="http://goo.gl/CjoHuV">subtract-headings</a> for expla
         </li>
         
         
-        <li id="section-34">
+        <li id="section-35">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-34">&#182;</a>
+                <a class="pilcrow" href="#section-35">&#182;</a>
               </div>
               <p>Return object&#39;s own key or variable values</p>
 
@@ -662,11 +677,11 @@ See NetLogo&#39;s <a href="http://goo.gl/CjoHuV">subtract-headings</a> for expla
         </li>
         
         
-        <li id="section-35">
+        <li id="section-36">
             <div class="annotation">
               
               <div class="pilwrap for-h3">
-                <a class="pilcrow" href="#section-35">&#182;</a>
+                <a class="pilcrow" href="#section-36">&#182;</a>
               </div>
               <h3>Array Operations</h3>
 
@@ -675,11 +690,11 @@ See NetLogo&#39;s <a href="http://goo.gl/CjoHuV">subtract-headings</a> for expla
         </li>
         
         
-        <li id="section-36">
+        <li id="section-37">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-36">&#182;</a>
+                <a class="pilcrow" href="#section-37">&#182;</a>
               </div>
               <p>Does the array have any elements? Is the array empty?</p>
 
@@ -691,11 +706,11 @@ See NetLogo&#39;s <a href="http://goo.gl/CjoHuV">subtract-headings</a> for expla
         </li>
         
         
-        <li id="section-37">
+        <li id="section-38">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-37">&#182;</a>
+                <a class="pilcrow" href="#section-38">&#182;</a>
               </div>
               <p>Make a copy of the array. Needed when you don&#39;t want to modify the given
 array with mutator methods like sort, splice or your own functions.
@@ -709,11 +724,11 @@ By giving begin/arguments, retrieve a subset of the array</p>
         </li>
         
         
-        <li id="section-38">
+        <li id="section-39">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-38">&#182;</a>
+                <a class="pilcrow" href="#section-39">&#182;</a>
               </div>
               <p>Return last element of array.  Error if empty.</p>
 
@@ -726,11 +741,11 @@ By giving begin/arguments, retrieve a subset of the array</p>
         </li>
         
         
-        <li id="section-39">
+        <li id="section-40">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-39">&#182;</a>
+                <a class="pilcrow" href="#section-40">&#182;</a>
               </div>
               <p>Return random element of array.  Error if empty.</p>
 
@@ -743,11 +758,11 @@ By giving begin/arguments, retrieve a subset of the array</p>
         </li>
         
         
-        <li id="section-40">
+        <li id="section-41">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-40">&#182;</a>
+                <a class="pilcrow" href="#section-41">&#182;</a>
               </div>
               <p>Return n random elements of array. Error if n &gt; length
 Note: array elements presumed unique, i.e. objects or distinct primitives</p>
@@ -763,11 +778,11 @@ Note: array elements presumed unique, i.e. objects or distinct primitives</p>
         </li>
         
         
-        <li id="section-41">
+        <li id="section-42">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-41">&#182;</a>
+                <a class="pilcrow" href="#section-42">&#182;</a>
               </div>
               <p>True if item is in array. Binary search if f isnt null.</p>
 
@@ -778,11 +793,11 @@ Note: array elements presumed unique, i.e. objects or distinct primitives</p>
         </li>
         
         
-        <li id="section-42">
+        <li id="section-43">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-42">&#182;</a>
+                <a class="pilcrow" href="#section-43">&#182;</a>
               </div>
               <p>Remove an item from an array. Binary search if f isnt null.
 Error if item not in array.</p>
@@ -796,11 +811,11 @@ Error if item not in array.</p>
         </li>
         
         
-        <li id="section-43">
+        <li id="section-44">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-43">&#182;</a>
+                <a class="pilcrow" href="#section-44">&#182;</a>
               </div>
               <p>Remove elements in items from an array. Binary search if f isnt null.
 Error if an item not in array.</p>
@@ -812,11 +827,11 @@ Error if an item not in array.</p>
         </li>
         
         
-        <li id="section-44">
+        <li id="section-45">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-44">&#182;</a>
+                <a class="pilcrow" href="#section-45">&#182;</a>
               </div>
               <p>Insert an item in a sorted array</p>
 
@@ -830,11 +845,11 @@ Error if an item not in array.</p>
         </li>
         
         
-        <li id="section-45">
+        <li id="section-46">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-45">&#182;</a>
+                <a class="pilcrow" href="#section-46">&#182;</a>
               </div>
               <p>Randomize the elements of this array.
 Clever! See <a href="http://goo.gl/TT2SY">cookbook</a></p>
@@ -846,11 +861,11 @@ Clever! See <a href="http://goo.gl/TT2SY">cookbook</a></p>
         </li>
         
         
-        <li id="section-46">
+        <li id="section-47">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-46">&#182;</a>
+                <a class="pilcrow" href="#section-47">&#182;</a>
               </div>
               <p>Return o when f(o) min/max in array. Error if array empty.
 If f is a string, return element with max value of that property.
@@ -875,16 +890,18 @@ max = maxOneOf array, &quot;x&quot;</code></pre>
     r = -Infinity; o = <span class="literal">null</span>; f = <span class="property">@propFcn</span> f <span class="keyword">if</span> <span class="property">@isString</span> f
     <span class="keyword">for</span> a <span class="keyword">in</span> array
       (r = r1; o = a) <span class="keyword">if</span> (r1=f(a)) &gt; r
-    <span class="keyword">if</span> valueToo <span class="keyword">then</span> [o, r] <span class="keyword">else</span> o</pre></div></div>
+    <span class="keyword">if</span> valueToo <span class="keyword">then</span> [o, r] <span class="keyword">else</span> o
+  firstOneOf: (array, f) -&gt;
+    <span class="keyword">return</span> i <span class="keyword">for</span> a,i <span class="keyword">in</span> array <span class="keyword">when</span> f(a); <span class="keyword">return</span> -<span class="number">1</span></pre></div></div>
             
         </li>
         
         
-        <li id="section-47">
+        <li id="section-48">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-47">&#182;</a>
+                <a class="pilcrow" href="#section-48">&#182;</a>
               </div>
               <p>Return histogram of o when f(o) is a numeric value in array.
 Histogram interval is bin. Error if array empty.
@@ -910,11 +927,11 @@ h = histOf b, 2, &quot;id&quot;</code></pre>
         </li>
         
         
-        <li id="section-48">
+        <li id="section-49">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-48">&#182;</a>
+                <a class="pilcrow" href="#section-49">&#182;</a>
               </div>
               <p>Mutator. Sorts the array of objects in place by the property. Returns array.
 Clone first if you want to preserve the original array.</p>
@@ -929,11 +946,11 @@ sortBy array, &quot;i&quot;
         </li>
         
         
-        <li id="section-49">
+        <li id="section-50">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-49">&#182;</a>
+                <a class="pilcrow" href="#section-50">&#182;</a>
               </div>
               <p>Mutator. Removes adjacent dups, by reference, in place from sorted array.
 Note &quot;by reference&quot; means litteraly same object, not copy. Returns array.
@@ -950,17 +967,18 @@ uniq b
             </div>
             
             <div class="content"><div class='highlight'><pre>  uniq: (array) -&gt;
+    <span class="keyword">return</span> array <span class="keyword">if</span> array.length &lt; <span class="number">2</span> <span class="comment"># return if empty or singlton</span>
     array.splice i,<span class="number">1</span> <span class="keyword">for</span> i <span class="keyword">in</span> [array.length-<span class="number">1.</span><span class="number">.1</span>] <span class="keyword">by</span> -<span class="number">1</span> <span class="keyword">when</span> array[i-<span class="number">1</span>] <span class="keyword">is</span> array[i]
     array</pre></div></div>
             
         </li>
         
         
-        <li id="section-50">
+        <li id="section-51">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-50">&#182;</a>
+                <a class="pilcrow" href="#section-51">&#182;</a>
               </div>
               <p>Return a new array composed of the rows of a matrix. I.e. convert</p>
 <pre><code>[[1,2,3],[4,5,6]] to [1,2,3,4,5,6]</code></pre>
@@ -972,11 +990,11 @@ uniq b
         </li>
         
         
-        <li id="section-51">
+        <li id="section-52">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-51">&#182;</a>
+                <a class="pilcrow" href="#section-52">&#182;</a>
               </div>
               <p>Return array of property values of given array of objects</p>
 
@@ -987,19 +1005,20 @@ uniq b
         </li>
         
         
-        <li id="section-52">
+        <li id="section-53">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-52">&#182;</a>
+                <a class="pilcrow" href="#section-53">&#182;</a>
               </div>
-              <p>Return max/min/sum/avg of numeric array</p>
+              <p>Return scalar max/min/sum/avg of numeric array
+Iterate rather than reduce: work with typed arrays</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  aMax: (array) -&gt; array.reduce (a,b) -&gt; Math.max a,b
-  aMin: (array) -&gt; array.reduce (a,b) -&gt; Math.min a,b
-  aSum: (array) -&gt; array.reduce (a,b) -&gt; a+b
+            <div class="content"><div class='highlight'><pre>  aMax: (array) -&gt; v=array[<span class="number">0</span>]; v=Math.max v,a <span class="keyword">for</span> a <span class="keyword">in</span> array; v
+  aMin: (array) -&gt; v=array[<span class="number">0</span>]; v=Math.min v,a <span class="keyword">for</span> a <span class="keyword">in</span> array; v
+  aSum: (array) -&gt; v=<span class="number">0</span>; v += a <span class="keyword">for</span> a <span class="keyword">in</span> array; v
   aAvg: (array) -&gt; <span class="property">@aSum</span>(array)/array.length
   
   aNaNs: (array) -&gt; (i <span class="keyword">for</span> v,i <span class="keyword">in</span> array <span class="keyword">when</span> isNaN v)</pre></div></div>
@@ -1007,11 +1026,11 @@ uniq b
         </li>
         
         
-        <li id="section-53">
+        <li id="section-54">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-53">&#182;</a>
+                <a class="pilcrow" href="#section-54">&#182;</a>
               </div>
               <p>Return array composed of f pairwise on both arrays</p>
 
@@ -1025,11 +1044,11 @@ uniq b
         </li>
         
         
-        <li id="section-54">
+        <li id="section-55">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-54">&#182;</a>
+                <a class="pilcrow" href="#section-55">&#182;</a>
               </div>
               <p>Return a JS array given a TypedArray</p>
 
@@ -1040,11 +1059,11 @@ uniq b
         </li>
         
         
-        <li id="section-55">
+        <li id="section-56">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-55">&#182;</a>
+                <a class="pilcrow" href="#section-56">&#182;</a>
               </div>
               <p>Return a linear interpolation between lo and hi.
 Scale is in [0-1], and the result is in [lo,hi]
@@ -1057,11 +1076,11 @@ Scale is in [0-1], and the result is in [lo,hi]
         </li>
         
         
-        <li id="section-56">
+        <li id="section-57">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-56">&#182;</a>
+                <a class="pilcrow" href="#section-57">&#182;</a>
               </div>
               <p>Return point interpolated between two points.</p>
 
@@ -1072,11 +1091,11 @@ Scale is in [0-1], and the result is in [lo,hi]
         </li>
         
         
-        <li id="section-57">
+        <li id="section-58">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-57">&#182;</a>
+                <a class="pilcrow" href="#section-58">&#182;</a>
               </div>
               <p>Return an array with values in [lo,hi], defaults to [0,1].
 Note: to have a half-open interval, [lo,hi), try hi=hi-.00009</p>
@@ -1090,11 +1109,11 @@ Note: to have a half-open interval, [lo,hi), try hi=hi-.00009</p>
         </li>
         
         
-        <li id="section-58">
+        <li id="section-59">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-58">&#182;</a>
+                <a class="pilcrow" href="#section-59">&#182;</a>
               </div>
               <p>Return array index of item, or index for item if array to remain sorted.
 f is used to return an integer for sorting, primarily for object properties.
@@ -1109,11 +1128,11 @@ Adapted from underscore&#39;s _.sortedIndex.</p>
         </li>
         
         
-        <li id="section-59">
+        <li id="section-60">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-59">&#182;</a>
+                <a class="pilcrow" href="#section-60">&#182;</a>
               </div>
               <p>Why not array.length - 1? Because we can insert 1 after end of array.</p>
 
@@ -1128,11 +1147,11 @@ Adapted from underscore&#39;s _.sortedIndex.</p>
         </li>
         
         
-        <li id="section-60">
+        <li id="section-61">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-60">&#182;</a>
+                <a class="pilcrow" href="#section-61">&#182;</a>
               </div>
               <p>Return argument unchanged; for primitive arrays or objs sorted by reference</p>
 
@@ -1143,11 +1162,11 @@ Adapted from underscore&#39;s _.sortedIndex.</p>
         </li>
         
         
-        <li id="section-61">
+        <li id="section-62">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-61">&#182;</a>
+                <a class="pilcrow" href="#section-62">&#182;</a>
               </div>
               <p>Return a function that returns an object&#39;s property.  Property in fcn closure.</p>
 
@@ -1158,11 +1177,11 @@ Adapted from underscore&#39;s _.sortedIndex.</p>
         </li>
         
         
-        <li id="section-62">
+        <li id="section-63">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-62">&#182;</a>
+                <a class="pilcrow" href="#section-63">&#182;</a>
               </div>
               <p>Return index of value in array or -1 if not found.
 If no property given, use Array.indexOf.
@@ -1180,11 +1199,11 @@ Property can be string or function. If property is &quot;&quot;, use identity de
         </li>
         
         
-        <li id="section-63">
+        <li id="section-64">
             <div class="annotation">
               
               <div class="pilwrap for-h3">
-                <a class="pilcrow" href="#section-63">&#182;</a>
+                <a class="pilcrow" href="#section-64">&#182;</a>
               </div>
               <h3>Topology Operations</h3>
 
@@ -1193,11 +1212,11 @@ Property can be string or function. If property is &quot;&quot;, use identity de
         </li>
         
         
-        <li id="section-64">
+        <li id="section-65">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-64">&#182;</a>
+                <a class="pilcrow" href="#section-65">&#182;</a>
               </div>
               <p>Return angle in [-pi,pi] radians from x1,y1 to x2,y2
 <a href="http://goo.gl/JS8DF">See: Math.atan2</a></p>
@@ -1209,11 +1228,11 @@ Property can be string or function. If property is &quot;&quot;, use identity de
         </li>
         
         
-        <li id="section-65">
+        <li id="section-66">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-65">&#182;</a>
+                <a class="pilcrow" href="#section-66">&#182;</a>
               </div>
               <p>Return true if x2,y2 is in cone radians around heading radians from x1,x2
 and within distance radius from x1,x2.
@@ -1229,11 +1248,11 @@ I.e. is p2 in cone/heading/radius from p1?</p>
         </li>
         
         
-        <li id="section-66">
+        <li id="section-67">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-66">&#182;</a>
+                <a class="pilcrow" href="#section-67">&#182;</a>
               </div>
               <p>Return the Euclidean distance and distance squared between x1,y1, x2,y2.
 The squared distance is used for comparisons to avoid the Math.sqrt fcn.</p>
@@ -1246,11 +1265,11 @@ The squared distance is used for comparisons to avoid the Math.sqrt fcn.</p>
         </li>
         
         
-        <li id="section-67">
+        <li id="section-68">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-67">&#182;</a>
+                <a class="pilcrow" href="#section-68">&#182;</a>
               </div>
               <p>Convert polar r,theta to cartesian x,y.
 Default to 0,0 origin, optional x,y origin.</p>
@@ -1262,11 +1281,11 @@ Default to 0,0 origin, optional x,y origin.</p>
         </li>
         
         
-        <li id="section-68">
+        <li id="section-69">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-68">&#182;</a>
+                <a class="pilcrow" href="#section-69">&#182;</a>
               </div>
               <p>Return the <a href="http://goo.gl/PgJ5N">torus distance</a> and distance squared
 between two points A(x1,y1) and B(x2,y2):</p>
@@ -1301,11 +1320,11 @@ A and B must also include the towards-reflections around A, thus 4 points.</p>
         </li>
         
         
-        <li id="section-69">
+        <li id="section-70">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-69">&#182;</a>
+                <a class="pilcrow" href="#section-70">&#182;</a>
               </div>
               <p>Return true if closest path between x1,y1 &amp; x2,y2 wraps around the torus.</p>
 
@@ -1318,11 +1337,11 @@ A and B must also include the towards-reflections around A, thus 4 points.</p>
         </li>
         
         
-        <li id="section-70">
+        <li id="section-71">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-70">&#182;</a>
+                <a class="pilcrow" href="#section-71">&#182;</a>
               </div>
               <p>Return 4 torus point reflections of x2,y2 around x1,y1</p>
 
@@ -1336,11 +1355,11 @@ A and B must also include the towards-reflections around A, thus 4 points.</p>
         </li>
         
         
-        <li id="section-71">
+        <li id="section-72">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-71">&#182;</a>
+                <a class="pilcrow" href="#section-72">&#182;</a>
               </div>
               <p>Return closest of 4 torus pts from A to B</p>
 
@@ -1356,11 +1375,11 @@ A and B must also include the towards-reflections around A, thus 4 points.</p>
         </li>
         
         
-        <li id="section-72">
+        <li id="section-73">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-72">&#182;</a>
+                <a class="pilcrow" href="#section-73">&#182;</a>
               </div>
               <p>Return the angle from x1,y1 to x2.y2 on torus using shortest reflection.</p>
 
@@ -1373,11 +1392,11 @@ A and B must also include the towards-reflections around A, thus 4 points.</p>
         </li>
         
         
-        <li id="section-73">
+        <li id="section-74">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-73">&#182;</a>
+                <a class="pilcrow" href="#section-74">&#182;</a>
               </div>
               <p>Return true if x2,y2 is in cone radians around heading radians from x1,x2
 and within distance radius from x1,x2 considering all torus reflections.</p>
@@ -1392,11 +1411,11 @@ and within distance radius from x1,x2 considering all torus reflections.</p>
         </li>
         
         
-        <li id="section-74">
+        <li id="section-75">
             <div class="annotation">
               
               <div class="pilwrap for-h3">
-                <a class="pilcrow" href="#section-74">&#182;</a>
+                <a class="pilcrow" href="#section-75">&#182;</a>
               </div>
               <h3>File I/O</h3>
 <p>Cache of file names used by file imports below</p>
@@ -1408,11 +1427,11 @@ and within distance radius from x1,x2 considering all torus reflections.</p>
         </li>
         
         
-        <li id="section-75">
+        <li id="section-76">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-75">&#182;</a>
+                <a class="pilcrow" href="#section-76">&#182;</a>
               </div>
               <p>Import an image, executing (async) optional function f(img) on completion</p>
 
@@ -1431,11 +1450,11 @@ and within distance radius from x1,x2 considering all torus reflections.</p>
         </li>
         
         
-        <li id="section-76">
+        <li id="section-77">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-76">&#182;</a>
+                <a class="pilcrow" href="#section-77">&#182;</a>
               </div>
               <p>Use XMLHttpRequest to fetch data of several types. Data Types: text,
 arraybuffer, blob, json, document, <a href="http://goo.gl/y3r3h">See specification</a></p>
@@ -1457,11 +1476,11 @@ arraybuffer, blob, json, document, <a href="http://goo.gl/y3r3h">See specificati
         </li>
         
         
-        <li id="section-77">
+        <li id="section-78">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-77">&#182;</a>
+                <a class="pilcrow" href="#section-78">&#182;</a>
               </div>
               <p>Return true if all files are loaded.</p>
 
@@ -1474,11 +1493,11 @@ arraybuffer, blob, json, document, <a href="http://goo.gl/y3r3h">See specificati
         </li>
         
         
-        <li id="section-78">
+        <li id="section-79">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-78">&#182;</a>
+                <a class="pilcrow" href="#section-79">&#182;</a>
               </div>
               <p>Wait for files to be loaded before executing callback f</p>
 
@@ -1489,11 +1508,11 @@ arraybuffer, blob, json, document, <a href="http://goo.gl/y3r3h">See specificati
         </li>
         
         
-        <li id="section-79">
+        <li id="section-80">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-79">&#182;</a>
+                <a class="pilcrow" href="#section-80">&#182;</a>
               </div>
               <p>Wait for function done() to return true before calling callback f</p>
 
@@ -1505,11 +1524,77 @@ arraybuffer, blob, json, document, <a href="http://goo.gl/y3r3h">See specificati
         </li>
         
         
-        <li id="section-80">
+        <li id="section-81">
             <div class="annotation">
               
               <div class="pilwrap for-h3">
-                <a class="pilcrow" href="#section-80">&#182;</a>
+                <a class="pilcrow" href="#section-81">&#182;</a>
+              </div>
+              <h3>Image Data Operations</h3>
+<p>Make a copy of an image.
+Note: new image will have the naturalWidth/Height of input img.
+Should be sync</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  cloneImage: (img) -&gt; (i=<span class="keyword">new</span> Image()).src = img.src; i</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-82">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-82">&#182;</a>
+              </div>
+              <p>Create a data array from an image&#39;s imageData
+img may be a canvas.
+The function f = f(imageData, rgbIndex) -&gt; number</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  imageToData: (img, f=<span class="property">@pixelByte</span>(<span class="number">0</span>), arrayType=Uint8ClampedArray) -&gt;
+    <span class="property">@imageRowsToData</span> img, img.height, f, arrayType
+  imageRowsToData: (img, rowsPerSlice, f=<span class="property">@pixelByte</span>(<span class="number">0</span>), arrayType=Uint8ClampedArray) -&gt;
+    rowsDone = <span class="number">0</span>; data = <span class="keyword">new</span> arrayType img.width*img.height
+    <span class="keyword">while</span> rowsDone &lt; img.height
+      rows = Math.min img.height - rowsDone, rowsPerSlice
+      ctx = <span class="property">@imageSliceToCtx</span> img, <span class="number">0</span>, rowsDone, img.width, rows <span class="comment"># REMIND: pass ctx</span>
+      idata = <span class="property">@ctxToImageData</span>(ctx).data
+      dataStart = rowsDone*img.width
+      data[dataStart+i] = f(idata,<span class="number">4</span>*i) <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span>..idata.length/<span class="number">4</span>] <span class="keyword">by</span> <span class="number">1</span>
+      rowsDone += rows
+    data</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-83">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-83">&#182;</a>
+              </div>
+              <p>Two utilities for Image data extraction.
+They return a fcn in a closure which &quot;sees&quot; the args and variables</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  pixelBytesToInt: (a) -&gt;
+    ImageByteFmts = [[<span class="number">2</span>],[<span class="number">1</span>,<span class="number">2</span>],[<span class="number">0</span>,<span class="number">1</span>,<span class="number">2</span>],[<span class="number">3</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">2</span>]]
+    a=ImageByteFmts[a-<span class="number">1</span>] <span class="keyword">if</span> <span class="keyword">typeof</span> a <span class="keyword">is</span> <span class="string">"number"</span>
+    (id,i)-&gt;val = <span class="number">0</span>; val = val*<span class="number">256</span> + id[i+j] <span class="keyword">for</span> j <span class="keyword">in</span> a; val
+  pixelByte: (n) -&gt; (id,i)-&gt;id[i+n]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-84">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h3">
+                <a class="pilcrow" href="#section-84">&#182;</a>
               </div>
               <h3>Canvas/Context Operations</h3>
 <p>Create a new canvas of given width/height</p>
@@ -1524,11 +1609,11 @@ arraybuffer, blob, json, document, <a href="http://goo.gl/y3r3h">See specificati
         </li>
         
         
-        <li id="section-81">
+        <li id="section-85">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-81">&#182;</a>
+                <a class="pilcrow" href="#section-85">&#182;</a>
               </div>
               <p>As above, but returing the context object.
 Note ctx.canvas is the canvas for the ctx, and can be use as an image.</p>
@@ -1536,33 +1621,19 @@ Note ctx.canvas is the canvas for the ctx, and can be use as an image.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  createCtx: (width, height, ctxType=<span class="string">"2d"</span>) -&gt;
-    can = <span class="property">@createCanvas</span> width, height</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-82">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-82">&#182;</a>
-              </div>
-              <p>can.ctx = </p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">if</span> ctxType <span class="keyword">is</span> <span class="string">"2d"</span> 
+    can = <span class="property">@createCanvas</span> width, height
+    <span class="keyword">if</span> ctxType <span class="keyword">is</span> <span class="string">"2d"</span>
     <span class="keyword">then</span> can.getContext <span class="string">"2d"</span> 
     <span class="keyword">else</span> can.getContext(<span class="string">"webgl"</span>) ? can.getContext(<span class="string">"experimental-webgl"</span>)</pre></div></div>
             
         </li>
         
         
-        <li id="section-83">
+        <li id="section-86">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-83">&#182;</a>
+                <a class="pilcrow" href="#section-86">&#182;</a>
               </div>
               <p>Return a &quot;layer&quot; 2D/3D rendering context within the specified HTML <code>&lt;div&gt;</code>,
 with the given width/height positioned absolutely at top/left within the div,
@@ -1573,23 +1644,29 @@ and with the z-index of z.</p>
             
             <div class="content"><div class='highlight'><pre>  createLayer: (div, width, height, z, ctx = <span class="string">"2d"</span>) -&gt; <span class="comment"># a canvas ctx object</span>
     <span class="keyword">if</span> ctx <span class="keyword">is</span> <span class="string">"img"</span> 
-    <span class="keyword">then</span> element = ctx = <span class="keyword">new</span> Image()<span class="comment">#; element.width = width; element.height=height</span>
+    <span class="keyword">then</span> element = ctx = <span class="keyword">new</span> Image(); ctx.width = width; ctx.height=height
     <span class="keyword">else</span> element = (ctx=<span class="property">@createCtx</span>(width, height, ctx)).canvas
     <span class="property">@insertLayer</span> div, element, width, height, z
     ctx
   insertLayer: (div, element, w, h, z) -&gt;
     element.setAttribute <span class="string">'style'</span>, <span class="comment"># Note: this erases existing style, el.style.position doesnt</span>
     <span class="string">"position:absolute;top:0;left:0;width:<span class="subst">#{w}</span>;height:<span class="subst">#{h}</span>;z-index:<span class="subst">#{z}</span>"</span>
-    document.getElementById(div).appendChild(element)</pre></div></div>
+    div.appendChild(element)
+
+  setCtxSmoothing: (ctx, smoothing) -&gt;
+    ctx.imageSmoothingEnabled = smoothing
+    ctx.mozImageSmoothingEnabled = smoothing
+    ctx.oImageSmoothingEnabled = smoothing
+    ctx.webkitImageSmoothingEnabled = smoothing</pre></div></div>
             
         </li>
         
         
-        <li id="section-84">
+        <li id="section-87">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-84">&#182;</a>
+                <a class="pilcrow" href="#section-87">&#182;</a>
               </div>
               <p>Install identity transform.  Call ctx.restore() to revert to previous transform</p>
 
@@ -1602,11 +1679,11 @@ and with the z-index of z.</p>
         </li>
         
         
-        <li id="section-85">
+        <li id="section-88">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-85">&#182;</a>
+                <a class="pilcrow" href="#section-88">&#182;</a>
               </div>
               <p>Clear the 2D/3D layer to be transparent. Note this <a href="http://goo.gl/qekXS">discussion</a>.</p>
 
@@ -1624,11 +1701,11 @@ and with the z-index of z.</p>
         </li>
         
         
-        <li id="section-86">
+        <li id="section-89">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-86">&#182;</a>
+                <a class="pilcrow" href="#section-89">&#182;</a>
               </div>
               <p>Fill the 2D/3D layer with the given color</p>
 
@@ -1647,11 +1724,11 @@ and with the z-index of z.</p>
         </li>
         
         
-        <li id="section-87">
+        <li id="section-90">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-87">&#182;</a>
+                <a class="pilcrow" href="#section-90">&#182;</a>
               </div>
               <p>Draw string of the given color at the xy location, in ctx pixel coords.
 Use setIdentity .. reset if a transform is being used by caller.</p>
@@ -1666,11 +1743,11 @@ Use setIdentity .. reset if a transform is being used by caller.</p>
         </li>
         
         
-        <li id="section-88">
+        <li id="section-91">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-88">&#182;</a>
+                <a class="pilcrow" href="#section-91">&#182;</a>
               </div>
               <p>Set the element text align and baseline drawing parameters</p>
 <ul>
@@ -1691,78 +1768,32 @@ Use setIdentity .. reset if a transform is being used by caller.</p>
         </li>
         
         
-        <li id="section-89">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-89">&#182;</a>
-              </div>
-              <p>Convert an image to a context. ctx.canvas gives the created canvas.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  imageToCtx: (image) -&gt;
-    ctx = <span class="property">@createCtx</span> image.width, image.height
-    ctx.drawImage image, <span class="number">0</span>, <span class="number">0</span>
-    ctx
-  imageSliceToCtx: (img, sx, sy, sw, sh, ctx) -&gt;
-    <span class="keyword">if</span> ctx?
-    <span class="keyword">then</span> ctx.canvas.width = sw; ctx.canvas.height = sh
-    <span class="keyword">else</span> ctx = u.createCtx sw, sh
-    ctx</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-90">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-90">&#182;</a>
-              </div>
-              <p>Convert a context to an image, executing function f on completion.
-Generally can skip callback but see <a href="http://goo.gl/kIk2U">stackoverflow</a>
-Note: uses toDataURL thus possible cross origin problems.
-Fix: use ctx.canvas for programatic imaging.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  ctxToImage: (ctx, f) -&gt;
-    img = <span class="keyword">new</span> Image()
-    (img.<span class="function"><span class="title">onload</span></span> = -&gt; f(img)) <span class="keyword">if</span> f?
-    img.src = ctx.canvas.toDataURL <span class="string">"image/png"</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-91">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-91">&#182;</a>
-              </div>
-              <p>Convert a ctx to an imageData object</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  ctxToImageData: (ctx) -&gt; ctx.getImageData <span class="number">0</span>, <span class="number">0</span>, ctx.canvas.width, ctx.canvas.height</pre></div></div>
-            
-        </li>
-        
-        
         <li id="section-92">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-92">&#182;</a>
               </div>
-              <p>Canvas versions of above</p>
+              <p>Convert an image to a context. ctx.canvas gives the created canvas.
+If w, h provided, scale to that size. img may be a canvas
+Note: to convert a ctx to an &quot;image&quot; (drawImage) use ctx.canvas</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  canvasToImage: (canvas) -&gt; ctxToImage(canvas.getContext <span class="string">"2d"</span>)
-  canvasToImageData: (canvas) -&gt; ctxToImageData(canvas.getContext <span class="string">"2d"</span>)
-  imageToCanvas: (image) -&gt; imageToCtx(image).canvas</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  imageToCtx: (img, w, h) -&gt;
+    <span class="keyword">if</span> w? <span class="keyword">and</span> h?
+      ctx = <span class="property">@createCtx</span> w, h
+      ctx.drawImage img, <span class="number">0</span>, <span class="number">0</span>, w, h
+    <span class="keyword">else</span>
+      ctx = <span class="property">@createCtx</span> img.width, img.height
+      ctx.drawImage img, <span class="number">0</span>, <span class="number">0</span>
+    ctx
+  imageSliceToCtx: (img, sx, sy, sw, sh, ctx) -&gt;
+    <span class="keyword">if</span> ctx?
+    <span class="keyword">then</span> ctx.canvas.width = sw; ctx.canvas.height = sh
+    <span class="keyword">else</span> ctx = <span class="property">@createCtx</span> sw, sh
+    ctx.drawImage img, sx, sy, sw, sh, <span class="number">0</span>, <span class="number">0</span>, sw, sh
+    ctx</pre></div></div>
             
         </li>
         
@@ -1772,6 +1803,61 @@ Fix: use ctx.canvas for programatic imaging.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-93">&#182;</a>
+              </div>
+              <p>Convert a context to an image, executing function f on completion.
+Generally can skip callback but see <a href="http://goo.gl/kIk2U">stackoverflow</a>
+Note: uses toDataURL thus possible cross origin problems.
+Fix: use ctx.canvas for programatic imaging.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  ctxToDataUrl: (ctx) -&gt; ctx.canvas.toDataURL <span class="string">"image/png"</span>
+  ctxToDataUrlImage: (ctx, f) -&gt;
+    img = <span class="keyword">new</span> Image()
+    (img.<span class="function"><span class="title">onload</span></span> = -&gt; f(img)) <span class="keyword">if</span> f?
+    img.src = ctx.canvas.toDataURL <span class="string">"image/png"</span>
+    img</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-94">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-94">&#182;</a>
+              </div>
+              <p>Convert a ctx to an imageData object</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  ctxToImageData: (ctx) -&gt;
+    ctx.getImageData <span class="number">0</span>, <span class="number">0</span>, ctx.canvas.width, ctx.canvas.height</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-95">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-95">&#182;</a>
+              </div>
+              <p>Canvas versions of above
+canvasToImage: (canvas) -&gt; ctxToImage(canvas.getContext &quot;2d&quot;)
+canvasToImageData: (canvas) -&gt; ctxToImageData(canvas.getContext &quot;2d&quot;)
+imageToCanvas: (image) -&gt; imageToCtx(image).canvas</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-96">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-96">&#182;</a>
               </div>
               <p>Draw an image centered at x, y w/ image size dx, dy.
 See <a href="http://goo.gl/VUlhY">this tutorial</a>.</p>
@@ -1786,29 +1872,11 @@ See <a href="http://goo.gl/VUlhY">this tutorial</a>.</p>
         </li>
         
         
-        <li id="section-94">
+        <li id="section-97">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-94">&#182;</a>
-              </div>
-              <p>Duplicate a ctx&#39;s image.  Returns the new ctx, use ctx.canvas for canvas.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  copyCtx: (ctx0) -&gt;
-    ctx = <span class="property">@createCtx</span> ctx0.canvas.width, ctx0.canvas.height
-    ctx.drawImage ctx0.canvas, <span class="number">0</span>, <span class="number">0</span>
-    ctx</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-95">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-95">&#182;</a>
+                <a class="pilcrow" href="#section-97">&#182;</a>
               </div>
               <p>Resize a ctx/canvas and preserve data.</p>
 

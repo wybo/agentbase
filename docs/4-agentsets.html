@@ -353,9 +353,7 @@ if browser does not support these flags.</p>
             
             <div class="content"><div class='highlight'><pre>  usePixels: (<span class="property">@drawWithPixels</span>=<span class="literal">true</span>) -&gt;
     ctx = ABM.contexts.patches
-    ctx.imageSmoothingEnabled = <span class="keyword">not</span> <span class="property">@drawWithPixels</span>
-    ctx.mozImageSmoothingEnabled = <span class="keyword">not</span> <span class="property">@drawWithPixels</span>
-    ctx.webkitImageSmoothingEnabled = <span class="keyword">not</span> <span class="property">@drawWithPixels</span>
+    u.setCtxSmoothing ctx, <span class="keyword">not</span> <span class="property">@drawWithPixels</span>
     u.setIdentity ctx</pre></div></div>
             
         </li>
@@ -857,7 +855,10 @@ See Mozilla pixel <a href="http://goo.gl/Lxliq">manipulation article</a></p>
       <span class="keyword">else</span> data[i] = (c[<span class="number">0</span>] &lt;&lt; <span class="number">24</span>) | (c[<span class="number">1</span>] &lt;&lt; <span class="number">16</span>) | (c[<span class="number">2</span>] &lt;&lt; <span class="number">8</span>) | a
     <span class="property">@pixelsCtx</span>.putImageData <span class="property">@pixelsImageData</span>, <span class="number">0</span>, <span class="number">0</span>
     <span class="keyword">return</span> <span class="keyword">if</span> <span class="property">@size</span> <span class="keyword">is</span> <span class="number">1</span>
-    ctx.drawImage <span class="property">@pixelsCtx</span>.canvas, <span class="number">0</span>, <span class="number">0</span>, ctx.canvas.width, ctx.canvas.height</pre></div></div>
+    ctx.drawImage <span class="property">@pixelsCtx</span>.canvas, <span class="number">0</span>, <span class="number">0</span>, ctx.canvas.width, ctx.canvas.height
+
+  floodFill: (aset, fCandidate, fJoin, <span class="function"><span class="title">fNeighbors</span></span>=((p)-&gt;p.n), asetLast=[]) -&gt;
+    <span class="keyword">super</span> aset, fCandidate, fJoin, fNeighbors, asetLast</pre></div></div>
             
         </li>
         
@@ -1321,12 +1322,14 @@ Returns null if non-torus and off patch world</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  patchAtHeadingAndDistance: (h,d) -&gt;
-    [x,y] = u.polarToXY d, h, <span class="property">@x</span>, <span class="property">@y</span>
-    <span class="keyword">if</span> (ps=ABM.patches).isOnWorld x,y <span class="keyword">then</span> ps.patch x,y <span class="keyword">else</span> <span class="literal">null</span>
+    [x,y] = u.polarToXY d, h, <span class="property">@x</span>, <span class="property">@y</span>; patchAt x,y
   patchLeftAndAhead: (dh, d) -&gt; <span class="property">@patchAtHeadingAndDistance</span> <span class="property">@heading</span>+dh, d
   patchRightAndAhead: (dh, d) -&gt; <span class="property">@patchAtHeadingAndDistance</span> <span class="property">@heading</span>-dh, d
   patchAhead: (d) -&gt; <span class="property">@patchAtHeadingAndDistance</span> <span class="property">@heading</span>, d
-  canMove: (d) -&gt; <span class="property">@patchAhead</span>(d)?</pre></div></div>
+  canMove: (d) -&gt; <span class="property">@patchAhead</span>(d)?
+  patchAt: (dx,dy) -&gt;
+    x=<span class="property">@x</span>+dx; y=<span class="property">@y</span>+dy
+    <span class="keyword">if</span> (ps=ABM.patches).isOnWorld x,y <span class="keyword">then</span> ps.patch x,y <span class="keyword">else</span> <span class="literal">null</span></pre></div></div>
             
         </li>
         

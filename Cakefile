@@ -8,10 +8,13 @@ fs     = require 'fs'
 {exec} = require 'child_process'
 shell  = require 'shelljs'
 
+editor= shell.exec("git config --get core.editor",{silent:true}).output
+
 srcDir = "src/"
 extrasDir = "extras/"
 toolsDir = 'tools/'
 libDir = 'lib/'
+modelsDir = 'models/'
 ASNames = "util shapes agentset agentsets model".split(" ")
 ASPaths = ("#{srcDir}#{f}.coffee" for f in ASNames)
 ASPath = "#{srcDir}agentscript.coffee"
@@ -22,8 +25,8 @@ JSNames = XNames.concat ["agentscript"]
 task 'all', 'Compile, minify, create docs', ->
   invoke 'build'
   invoke 'doc'
-  console.log "checking models for map use" # until maps work correctly
-  shell.exec "grep '\\.\\./agentscript.js' models/*.html"
+  # console.log "checking models for map use" # until maps work correctly
+  # shell.exec "grep '\\.\\./agentscript.js' models/*.html"
   invoke 'wc'
   invoke 'minify'
   
@@ -66,11 +69,11 @@ task 'doc', 'Create documentation from source files', ->
 #   """, ->
 
 task 'git:diff', 'git diff the core and extras .coffee files', ->
-  shell.exec """
-    outfile=/tmp/gitdiff-`date +"%m.%d:%H.%M"`; echo $outfile
-    git diff #{ASPaths.concat(XPaths).join(' ')} > $outfile
-    mate $outfile
-  """, ->
+  coffeeFiles = ASPaths.concat(XPaths).join(' ')
+  exec "git diff #{coffeeFiles} | #{editor}"
+
+task 'git:diffmodels', 'git diff the sample models', ->
+  exec "git diff #{modelsDir}*html | #{editor}"
 
 task 'minify', 'Create minified version of coffeescript.js', ->
   console.log "uglify javascript files"
@@ -131,7 +134,7 @@ task 'test', 'Testing 1,2,3...', ->
   # """, ->
   coffeeFiles = ASPaths.concat(XPaths).join(' ')
   exec """
-    git diff #{coffeeFiles} | mate
+    git diff #{coffeeFiles} | #{editor}
   """
   
   

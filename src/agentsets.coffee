@@ -119,9 +119,7 @@ class ABM.Patches extends ABM.AgentSet
   # if browser does not support these flags.
   usePixels: (@drawWithPixels=true) ->
     ctx = ABM.contexts.patches
-    ctx.imageSmoothingEnabled = not @drawWithPixels
-    ctx.mozImageSmoothingEnabled = not @drawWithPixels
-    ctx.webkitImageSmoothingEnabled = not @drawWithPixels
+    u.setCtxSmoothing ctx, not @drawWithPixels
     u.setIdentity ctx
 
   # Optimization: Cache a single set by modeler for use by patchRect,
@@ -285,7 +283,10 @@ class ABM.Patches extends ABM.AgentSet
     @pixelsCtx.putImageData @pixelsImageData, 0, 0
     return if @size is 1
     ctx.drawImage @pixelsCtx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height
-      
+
+  floodFill: (aset, fCandidate, fJoin, fNeighbors=((p)->p.n), asetLast=[]) ->
+    super aset, fCandidate, fJoin, fNeighbors, asetLast
+
   # Diffuse the value of patch variable `p.v` by distributing `rate` percent
   # of each patch's value of `v` to its neighbors. If a color `c` is given,
   # scale the patch's color to be `p.v` of `c`. If the patch has
@@ -457,13 +458,14 @@ class ABM.Agent
   # Return patch ahead of me by given distance and heading.
   # Returns null if non-torus and off patch world
   patchAtHeadingAndDistance: (h,d) ->
-    [x,y] = u.polarToXY d, h, @x, @y
-    if (ps=ABM.patches).isOnWorld x,y then ps.patch x,y else null
+    [x,y] = u.polarToXY d, h, @x, @y; patchAt x,y
   patchLeftAndAhead: (dh, d) -> @patchAtHeadingAndDistance @heading+dh, d
   patchRightAndAhead: (dh, d) -> @patchAtHeadingAndDistance @heading-dh, d
   patchAhead: (d) -> @patchAtHeadingAndDistance @heading, d
   canMove: (d) -> @patchAhead(d)?
-    
+  patchAt: (dx,dy) ->
+    x=@x+dx; y=@y+dy
+    if (ps=ABM.patches).isOnWorld x,y then ps.patch x,y else null
   
   # Remove myself from the model.  Includes removing myself from the agents
   # agentset and removing any links I may have.

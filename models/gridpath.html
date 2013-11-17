@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>AgentScript Model</title>
+    <title>Grid Path Model</title>
     <script src="../lib/agentscript.js"></script>
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
@@ -72,7 +72,7 @@
       
       floodFill: ->
         p.ok = false for p in @patches
-        pset = [@patches.last()] # [@patches.patchXY @patches.maxX, @patches.maxY] # [@patches.last()]
+        pset = [@patches.last()]
         while pset.length > 0
           p.ok = true for p in pset
           pnext = @asSet u.flatten (p.n4 for p in pset)

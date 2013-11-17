@@ -21,8 +21,8 @@ ABM.DataSet = class DataSet
   # Note that datasets can be built in two steps:
   # An empty constructor which then can be completed by an
   # async array, Image or XHR response.
-  @importImageDataSet: (name, fmt=3, f) ->
-    ds = new ImageDataSet(null, fmt) # empty dataset
+  @importImageDataSet: (name, f=u.pixelByte(0), arrayType=Uint8ClampedArray, rowsPerSlice) ->
+    ds = new ImageDataSet(null, f, arrayType, rowsPerSlice) # empty dataset
     u.importImage name, (img) -> # => not needed
       ds.parse img
       f(ds) if f?
@@ -85,6 +85,8 @@ ABM.DataSet = class DataSet
     s.replace /,/g, sep
   # Convert dataset into an image. Normalize data to be allowable image data
   toImage: (gray = true, normalize = true, alpha = 255)->
+    @toContext(gray, normalize, alpha).canvas
+  toContext: (gray = true, normalize = true, alpha = 255)->
     ctx = u.createCtx @width, @height
     idata = ctx.getImageData(0, 0, @width, @height); ta = idata.data
     max = Math.pow(2, if gray then 8 else 24)
@@ -97,16 +99,20 @@ ABM.DataSet = class DataSet
       then ta[j] = ta[j+1] = ta[j+2] = Math.floor num
       else ta[j]=num>>>16; ta[j+1]=(num>>8)&0xff; ta[j+2]=num&0xff
     ctx.putImageData idata, 0, 0
-    ctx.canvas
+    ctx
   # Show dataset as image in patch drawing layer or patch colors, return image
-  toDrawing: (gray=true) -> ABM.patches.installDrawing(img=@toImage gray); img
-  toPatchColors: (gray=true) -> ABM.patches.installColors(img=@toImage gray); img
+  toDrawing: (gray = true, normalize = true, alpha = 255) -> 
+    ABM.patches.installDrawing(img=@toImage gray, normalize, alpha); img
+  toPatchColors: (gray = true, normalize = true, alpha = 255) -> 
+    ABM.patches.installColors(img=@toImage gray, normalize, alpha); img
   # Resample dataset to patch width/height and set named patch variable.
   # Note this "insets" the dataset so the variable is sampled the center of the patch.
   # The dataset can be sampled directly to its edges .. i.e. in agent coords.
   toPatchVar: (name) ->
-    data = (p[name] = @patchSample p.x, p.y for p in (ps=ABM.patches))
-    new PatchDataSet ps.numX, ps.numY, data
+    if (ps=ABM.patches).length = @data.length
+    then data = @data; p[name] = data[i] for p,i in ps
+    else data = (p[name] = @patchSample p.x, p.y for p in ps)
+    null
   
   # Sample via transformed coords.
   # x,y is in topleft-bottomright box: [tlx,tly,tlx+w,tly-h]
@@ -145,30 +151,35 @@ ABM.DataSet = class DataSet
         @neighborhood x,y,n
         array.push u.aSum(u.aPairMul(kernel, n))*factor
     new DataSet @width, @height, array
+  # A few common convolutions.  dzdx/y are also called horiz/vert Sobel
+  dzdx: (n=2,factor=1/8) -> @convolve([-1,0,1,-n,0,n,-1,0,1],factor)
+  dzdy: (n=2,factor=1/8) -> @convolve([1,n,1,0,0,0,-1,-n,-1],factor)
+  laplace8: () -> @convolve([-1,-1,-1,-1,8,-1,-1,-1,-1])
+  laplace4: () -> @convolve([0,-1,0,-1,4,-1,0,-1,0])
   # Create two new convolved datasets, slope and aspect, common in
   # the use of an elevation data set. See Esri tutorials for 
   # [slope](http://goo.gl/ZcOl08) and [aspect](http://goo.gl/KoI4y5)
   # It also returns the two derivitive DataSets, dzdx, dzdy for
   # those wanting to use the results of the two convolutions.
-  slopeAndAspect: (cellsize=1, noNaNs=true, posAngle=false) -> 
-    if not @slope?
-      @dzdx = @convolve([-1,0,1,-2,0,2,-1,0,1],1/8) # sub left z from right
-      @dzdy = @convolve([1,2,1,0,0,0,-1,-2,-1],1/8) # sub bottom z from top
-      aspect = []; slope = [] #; minX = .01; maxAtan = Math.PI/4
-      for y in [0...@height] by 1
-        for x in [0...@width] by 1
-          gx = @dzdx.getXY(x,y); gy = @dzdy.getXY(x,y)
-          slope.push Math.atan(Math.sqrt(gx*gx + gy*gy)/(cellsize)) # radians
-          while noNaNs and gx is gy
-            gx += u.randomNormal 0,.01; gy += u.randomNormal 0,.01
-          # radians in [-PI,PI], downhill
-          rad = if gx is gy is 0 then NaN else Math.atan2 -gy,-gx
-          # positive radians in [0,2PI] if desired
-          rad += 2*Math.PI if posAngle and rad < 0
-          aspect.push rad
-      @slope = new DataSet @width, @height, slope
-      @aspect = new DataSet @width, @height, aspect
-    [@slope, @aspect, @dzdx, @dzdy]
+  slopeAndAspect: (noNaNs=true, posAngle=true) -> 
+    n = 2
+    dzdx = @dzdx() # sub left z from right
+    dzdy = @dzdy() # sub bottom z from top
+    aspect = []; slope = []
+    for y in [0...@height] by 1
+      for x in [0...@width] by 1
+        gx = dzdx.getXY(x,y); gy = dzdy.getXY(x,y)
+        slope.push Math.atan(Math.sqrt(gx*gx + gy*gy)) #/(@cellsize)) # radians
+        while noNaNs and gx is gy
+          gx += u.randomNormal 0,.0001; gy += u.randomNormal 0,.0001
+        # radians in [-PI,PI], downhill
+        rad = if gx is gy is 0 then NaN else Math.atan2 -gy,-gx
+        # positive radians in [0,2PI] if desired
+        rad += 2*Math.PI if posAngle and rad < 0
+        aspect.push rad
+    slope = new DataSet @width, @height, slope
+    aspect = new DataSet @width, @height, aspect
+    [slope, aspect, dzdx, dzdy]
   # Return a subset of the dataset. x,y,width,height integers
   subset: (x, y, width, height) ->
     u.error "subSet: params out of range" if x+width>@width or y+height>@height
@@ -211,60 +222,29 @@ ABM.AscDataSet = class AscDataSet extends DataSet
     @reset @header.ncols, @header.nrows, @data
 
 ABM.ImageDataSet = class ImageDataSet extends DataSet
-  # Class utility for huge data sets
-  @imageRowsToData: (img, rowsPerSlice, arrayType, f) ->
-    rowsDone = 0; data = new arrayType img.width*img.height
-    while rowsDone < img.height
-      rows = Math.min img.height - rowsDone, rowsPerSlice
-      ctx = u.imageSliceToCtx img, 0, rowsDone, img.width, rows
-      idata = u.ctxToImageData(ctx).data
-      dataStart = rowsDone*img.width
-      # data[dataStart+i] = idata[4*i+1] for i in [0...idata.length/4] by 1
-      data[dataStart+i] = f(idata,4*i) for i in [0...idata.length/4] by 1
-      rowsDone += rows
-    data
   # An image-as-data dataset.  The parser takes an image
   # data Uint8Array, enumerates it in 4-byte segments converting
-  # the segment into an unsigned 32 bit int dataset entry.
-  constructor: (@img, @byteFmt=3) -> # default 24 bit int
+  # the segments into a data element for the given array type.
+  # If rowsPerSlice is set, incrementally traverse image in image
+  # slice of that height; used for huge images.
+  # Defaults to gray scale and Uint8ClampedArray
+  # img may be a canvas
+  constructor: (@img, @f=u.pixelByte(0), @arrayType=Uint8ClampedArray, @rowsPerSlice) ->
     super() # start out as an empty dataset
     return unless @img?
     @parse @img
-  # The byte format can be:
-  #
-  #     int 1-4 or 8,16,24,32: number of bytes/bits of data
-  #       std layout: B, GB, RGB, ARGB for 1-4 bytes
-  #     array of length 1-4: non-standard layout of RGB bytes
-  #       ex: [1,2] -> 16 bits G<<8 | B
-  ByteFmts: [[2],[1,2],[0,1,2],[3,0,1,2]]
-  checkByteFmt: () ->
-    if u.isArray @byteFmt
-      if @byteFmt.length>4 or u.aMax(@byteFmt)>3 or u.aMin(@byteFmt)<0
-        u.error "bad ImageDataSet byte format array: #{@byteFmt}"
-    else
-      if @byteFmt not in [1,2,3,4,8,16,24,32]
-        u.error "bad ImageDataSet byte/bit format int: #{@byteFmt}"
-      @byteFmt = @byteFmt/8 if @byteFmt > 4 # convert bits to bytes
-      @byteFmt = @ByteFmts[@byteFmt-1]
   parse: (@img) ->
-    @checkByteFmt @byteFmt
-    @ctx = u.imageToCtx @img # keep context for possible later use
-    ta = u.ctxToImageData(@ctx).data # Uint8 typed array of image data
-    for i in [0...ta.length] by 4
-      # Note: do not use bitwise operations: keep value positive int
-      val = 0; val = val*256 + ta[i+j] for j in @byteFmt
-      @data.push val
-    @reset @ctx.canvas.width, @ctx.canvas.height, @data
+    @rowsPerSlice or= @img.height
+    data = u.imageRowsToData @img, @rowsPerSlice, @f, @arrayType
+    @reset @img.width, @img.height, data
     
 ABM.PatchDataSet = class PatchDataSet extends DataSet
-  constructor: (f, height, data) ->
-    if u.isArray data
-      super f, height, data
-    else
-      f = u.propFcn f if u.isString f
-      super (ps=ABM.patches).numX, ps.numY, (f(p) for p in ps)
+  constructor: (f, arrayType=Array) ->
+    data = new arrayType (ps=ABM.patches).length
+    f = u.propFcn f if u.isString f
+    data[i] = f(p) for p,i in ps
+    super ps.numX, ps.numY, data
     @useNearest = true
   toPatchVar: (name) ->
-    data = (p[name] = @data[i] for p,i in (ps=ABM.patches))
-    new PatchDataSet ps.numX, ps.numY, data
+    p[name] = @data[i] for p,i in ABM.patches; null
 

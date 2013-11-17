@@ -112,8 +112,8 @@ async array, Image or XHR response.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="property">@importImageDataSet</span>: (name, fmt=<span class="number">3</span>, f) -&gt;
-    ds = <span class="keyword">new</span> ImageDataSet(<span class="literal">null</span>, fmt) <span class="comment"># empty dataset</span>
+            <div class="content"><div class='highlight'><pre>  <span class="property">@importImageDataSet</span>: (name, f=u.pixelByte(<span class="number">0</span>), arrayType=Uint8ClampedArray, rowsPerSlice) -&gt;
+    ds = <span class="keyword">new</span> ImageDataSet(<span class="literal">null</span>, f, arrayType, rowsPerSlice) <span class="comment"># empty dataset</span>
     u.importImage name, (img) -&gt; <span class="comment"># =&gt; not needed</span>
       ds.parse img
       f(ds) <span class="keyword">if</span> f?
@@ -369,6 +369,8 @@ If p &lt; 0, print data, otherwise use toFixed to truncate to p precision</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  toImage: (gray = <span class="literal">true</span>, normalize = <span class="literal">true</span>, alpha = <span class="number">255</span>)-&gt;
+    <span class="property">@toContext</span>(gray, normalize, alpha).canvas
+  toContext: (gray = <span class="literal">true</span>, normalize = <span class="literal">true</span>, alpha = <span class="number">255</span>)-&gt;
     ctx = u.createCtx <span class="property">@width</span>, <span class="property">@height</span>
     idata = ctx.getImageData(<span class="number">0</span>, <span class="number">0</span>, <span class="property">@width</span>, <span class="property">@height</span>); ta = idata.data
     max = Math.pow(<span class="number">2</span>, <span class="keyword">if</span> gray <span class="keyword">then</span> <span class="number">8</span> <span class="keyword">else</span> <span class="number">24</span>)
@@ -381,7 +383,7 @@ If p &lt; 0, print data, otherwise use toFixed to truncate to p precision</p>
       <span class="keyword">then</span> ta[j] = ta[j+<span class="number">1</span>] = ta[j+<span class="number">2</span>] = Math.floor num
       <span class="keyword">else</span> ta[j]=num&gt;&gt;&gt;<span class="number">16</span>; ta[j+<span class="number">1</span>]=(num&gt;&gt;<span class="number">8</span>)&amp;<span class="number">0xff</span>; ta[j+<span class="number">2</span>]=num&amp;<span class="number">0xff</span>
     ctx.putImageData idata, <span class="number">0</span>, <span class="number">0</span>
-    ctx.canvas</pre></div></div>
+    ctx</pre></div></div>
             
         </li>
         
@@ -396,8 +398,10 @@ If p &lt; 0, print data, otherwise use toFixed to truncate to p precision</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  toDrawing: (gray=<span class="literal">true</span>) -&gt; ABM.patches.installDrawing(img=<span class="property">@toImage</span> gray); img
-  toPatchColors: (gray=<span class="literal">true</span>) -&gt; ABM.patches.installColors(img=<span class="property">@toImage</span> gray); img</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  toDrawing: (gray = <span class="literal">true</span>, normalize = <span class="literal">true</span>, alpha = <span class="number">255</span>) -&gt; 
+    ABM.patches.installDrawing(img=<span class="property">@toImage</span> gray, normalize, alpha); img
+  toPatchColors: (gray = <span class="literal">true</span>, normalize = <span class="literal">true</span>, alpha = <span class="number">255</span>) -&gt; 
+    ABM.patches.installColors(img=<span class="property">@toImage</span> gray, normalize, alpha); img</pre></div></div>
             
         </li>
         
@@ -415,8 +419,10 @@ The dataset can be sampled directly to its edges .. i.e. in agent coords.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  toPatchVar: (name) -&gt;
-    data = (p[name] = <span class="property">@patchSample</span> p.x, p.y <span class="keyword">for</span> p <span class="keyword">in</span> (ps=ABM.patches))
-    <span class="keyword">new</span> PatchDataSet ps.numX, ps.numY, data</pre></div></div>
+    <span class="keyword">if</span> (ps=ABM.patches).length = <span class="property">@data</span>.length
+    <span class="keyword">then</span> data = <span class="property">@data</span>; p[name] = data[i] <span class="keyword">for</span> p,i <span class="keyword">in</span> ps
+    <span class="keyword">else</span> data = (p[name] = <span class="property">@patchSample</span> p.x, p.y <span class="keyword">for</span> p <span class="keyword">in</span> ps)
+    <span class="literal">null</span></pre></div></div>
             
         </li>
         
@@ -515,25 +521,14 @@ See <a href="http://goo.gl/ubFiji">Convolution article</a></p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
-              <p>Create two new convolved datasets, slope and aspect, common in
-the use of an elevation data set. See Esri tutorials for 
-<a href="http://goo.gl/ZcOl08">slope</a> and <a href="http://goo.gl/KoI4y5">aspect</a>
-It also returns the two derivitive DataSets, dzdx, dzdy for
-those wanting to use the results of the two convolutions.</p>
+              <p>A few common convolutions.  dzdx/y are also called horiz/vert Sobel</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  slopeAndAspect: (cellsize=<span class="number">1</span>, noNaNs=<span class="literal">true</span>, posAngle=<span class="literal">false</span>) -&gt; 
-    <span class="keyword">if</span> <span class="keyword">not</span> <span class="property">@slope</span>?
-      <span class="property">@dzdx</span> = <span class="property">@convolve</span>([-<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,-<span class="number">2</span>,<span class="number">0</span>,<span class="number">2</span>,-<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>],<span class="number">1</span>/<span class="number">8</span>) <span class="comment"># sub left z from right</span>
-      <span class="property">@dzdy</span> = <span class="property">@convolve</span>([<span class="number">1</span>,<span class="number">2</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,-<span class="number">1</span>,-<span class="number">2</span>,-<span class="number">1</span>],<span class="number">1</span>/<span class="number">8</span>) <span class="comment"># sub bottom z from top</span>
-      aspect = []; slope = [] <span class="comment">#; minX = .01; maxAtan = Math.PI/4</span>
-      <span class="keyword">for</span> y <span class="keyword">in</span> [<span class="number">0.</span>..<span class="property">@height</span>] <span class="keyword">by</span> <span class="number">1</span>
-        <span class="keyword">for</span> x <span class="keyword">in</span> [<span class="number">0.</span>..<span class="property">@width</span>] <span class="keyword">by</span> <span class="number">1</span>
-          gx = <span class="property">@dzdx</span>.getXY(x,y); gy = <span class="property">@dzdy</span>.getXY(x,y)
-          slope.push Math.atan(Math.sqrt(gx*gx + gy*gy)/(cellsize)) <span class="comment"># radians</span>
-          <span class="keyword">while</span> noNaNs <span class="keyword">and</span> gx <span class="keyword">is</span> gy
-            gx += u.randomNormal <span class="number">0</span>,<span class="number">.01</span>; gy += u.randomNormal <span class="number">0</span>,<span class="number">.01</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  dzdx: (n=<span class="number">2</span>,factor=<span class="number">1</span>/<span class="number">8</span>) -&gt; <span class="property">@convolve</span>([-<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,-n,<span class="number">0</span>,n,-<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>],factor)
+  dzdy: (n=<span class="number">2</span>,factor=<span class="number">1</span>/<span class="number">8</span>) -&gt; <span class="property">@convolve</span>([<span class="number">1</span>,n,<span class="number">1</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,-<span class="number">1</span>,-n,-<span class="number">1</span>],factor)
+  laplace8: () -&gt; <span class="property">@convolve</span>([-<span class="number">1</span>,-<span class="number">1</span>,-<span class="number">1</span>,-<span class="number">1</span>,<span class="number">8</span>,-<span class="number">1</span>,-<span class="number">1</span>,-<span class="number">1</span>,-<span class="number">1</span>])
+  laplace4: () -&gt; <span class="property">@convolve</span>([<span class="number">0</span>,-<span class="number">1</span>,<span class="number">0</span>,-<span class="number">1</span>,<span class="number">4</span>,-<span class="number">1</span>,<span class="number">0</span>,-<span class="number">1</span>,<span class="number">0</span>])</pre></div></div>
             
         </li>
         
@@ -544,11 +539,25 @@ those wanting to use the results of the two convolutions.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
-              <p>radians in [-PI,PI], downhill</p>
+              <p>Create two new convolved datasets, slope and aspect, common in
+the use of an elevation data set. See Esri tutorials for 
+<a href="http://goo.gl/ZcOl08">slope</a> and <a href="http://goo.gl/KoI4y5">aspect</a>
+It also returns the two derivitive DataSets, dzdx, dzdy for
+those wanting to use the results of the two convolutions.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>          rad = <span class="keyword">if</span> gx <span class="keyword">is</span> gy <span class="keyword">is</span> <span class="number">0</span> <span class="keyword">then</span> NaN <span class="keyword">else</span> Math.atan2 -gy,-gx</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  slopeAndAspect: (noNaNs=<span class="literal">true</span>, posAngle=<span class="literal">true</span>) -&gt; 
+    n = <span class="number">2</span>
+    dzdx = <span class="property">@dzdx</span>() <span class="comment"># sub left z from right</span>
+    dzdy = <span class="property">@dzdy</span>() <span class="comment"># sub bottom z from top</span>
+    aspect = []; slope = []
+    <span class="keyword">for</span> y <span class="keyword">in</span> [<span class="number">0.</span>..<span class="property">@height</span>] <span class="keyword">by</span> <span class="number">1</span>
+      <span class="keyword">for</span> x <span class="keyword">in</span> [<span class="number">0.</span>..<span class="property">@width</span>] <span class="keyword">by</span> <span class="number">1</span>
+        gx = dzdx.getXY(x,y); gy = dzdy.getXY(x,y)
+        slope.push Math.atan(Math.sqrt(gx*gx + gy*gy)) <span class="comment">#/(@cellsize)) # radians</span>
+        <span class="keyword">while</span> noNaNs <span class="keyword">and</span> gx <span class="keyword">is</span> gy
+          gx += u.randomNormal <span class="number">0</span>,<span class="number">.0001</span>; gy += u.randomNormal <span class="number">0</span>,<span class="number">.0001</span></pre></div></div>
             
         </li>
         
@@ -559,15 +568,11 @@ those wanting to use the results of the two convolutions.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
-              <p>positive radians in [0,2PI] if desired</p>
+              <p>radians in [-PI,PI], downhill</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>          rad += <span class="number">2</span>*Math.PI <span class="keyword">if</span> posAngle <span class="keyword">and</span> rad &lt; <span class="number">0</span>
-          aspect.push rad
-      <span class="property">@slope</span> = <span class="keyword">new</span> DataSet <span class="property">@width</span>, <span class="property">@height</span>, slope
-      <span class="property">@aspect</span> = <span class="keyword">new</span> DataSet <span class="property">@width</span>, <span class="property">@height</span>, aspect
-    [<span class="property">@slope</span>, <span class="property">@aspect</span>, <span class="property">@dzdx</span>, <span class="property">@dzdy</span>]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>        rad = <span class="keyword">if</span> gx <span class="keyword">is</span> gy <span class="keyword">is</span> <span class="number">0</span> <span class="keyword">then</span> NaN <span class="keyword">else</span> Math.atan2 -gy,-gx</pre></div></div>
             
         </li>
         
@@ -577,6 +582,25 @@ those wanting to use the results of the two convolutions.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-29">&#182;</a>
+              </div>
+              <p>positive radians in [0,2PI] if desired</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        rad += <span class="number">2</span>*Math.PI <span class="keyword">if</span> posAngle <span class="keyword">and</span> rad &lt; <span class="number">0</span>
+        aspect.push rad
+    slope = <span class="keyword">new</span> DataSet <span class="property">@width</span>, <span class="property">@height</span>, slope
+    aspect = <span class="keyword">new</span> DataSet <span class="property">@width</span>, <span class="property">@height</span>, aspect
+    [slope, aspect, dzdx, dzdy]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-30">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>Return a subset of the dataset. x,y,width,height integers</p>
 
@@ -595,11 +619,11 @@ ABM.AscDataSet = <span class="class"><span class="keyword">class</span> <span cl
         </li>
         
         
-        <li id="section-30">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <p>An .asc GIS file a text file with a header:</p>
 <pre><code>ncols 195
@@ -615,11 +639,11 @@ NODATA_value -9999</code></pre>
         </li>
         
         
-        <li id="section-31">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+                <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
               <p>Constructor takes a string generally via an xhr request.
 It can be &quot;empty&quot; .. i.e. needing a second parse() call
@@ -635,11 +659,11 @@ so that it can be used in an async file operation.</p>
         </li>
         
         
-        <li id="section-32">
+        <li id="section-33">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-32">&#182;</a>
+                <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
               <p>Complete an initial, empty dataset object who&#39;s string
 is read via an xhr request.</p>
@@ -662,122 +686,40 @@ ABM.ImageDataSet = <span class="class"><span class="keyword">class</span> <span 
         </li>
         
         
-        <li id="section-33">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-33">&#182;</a>
-              </div>
-              <p>Class utility for huge data sets</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  <span class="property">@imageRowsToData</span>: (img, rowsPerSlice, arrayType, f) -&gt;
-    rowsDone = <span class="number">0</span>; data = <span class="keyword">new</span> arrayType img.width*img.height
-    <span class="keyword">while</span> rowsDone &lt; img.height
-      rows = Math.min img.height - rowsDone, rowsPerSlice
-      ctx = u.imageSliceToCtx img, <span class="number">0</span>, rowsDone, img.width, rows
-      idata = u.ctxToImageData(ctx).data
-      dataStart = rowsDone*img.width</pre></div></div>
-            
-        </li>
-        
-        
         <li id="section-34">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-34">&#182;</a>
               </div>
-              <p>data[dataStart+i] = idata[4*i+1] for i in [0...idata.length/4] by 1</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>      data[dataStart+i] = f(idata,<span class="number">4</span>*i) <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span>..idata.length/<span class="number">4</span>] <span class="keyword">by</span> <span class="number">1</span>
-      rowsDone += rows
-    data</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-35">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-35">&#182;</a>
-              </div>
               <p>An image-as-data dataset.  The parser takes an image
 data Uint8Array, enumerates it in 4-byte segments converting
-the segment into an unsigned 32 bit int dataset entry.</p>
+the segments into a data element for the given array type.
+If rowsPerSlice is set, incrementally traverse image in image
+slice of that height; used for huge images.
+Defaults to gray scale and Uint8ClampedArray
+img may be a canvas</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  constructor: (<span class="property">@img</span>, <span class="property">@byteFmt</span>=<span class="number">3</span>) -&gt; <span class="comment"># default 24 bit int</span>
+            <div class="content"><div class='highlight'><pre>  constructor: (<span class="property">@img</span>, <span class="property">@f</span>=u.pixelByte(<span class="number">0</span>), <span class="property">@arrayType</span>=Uint8ClampedArray, <span class="property">@rowsPerSlice</span>) -&gt;
     <span class="keyword">super</span>() <span class="comment"># start out as an empty dataset</span>
     <span class="keyword">return</span> <span class="keyword">unless</span> <span class="property">@img</span>?
-    <span class="property">@parse</span> <span class="property">@img</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-36">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-36">&#182;</a>
-              </div>
-              <p>The byte format can be:</p>
-<pre><code>int 1-4 or 8,16,24,32: number of bytes/bits of data
-  std layout: B, GB, RGB, ARGB for 1-4 bytes
-array of length 1-4: non-standard layout of RGB bytes
-  ex: [1,2] -&gt; 16 bits G&lt;&lt;8 | B</code></pre>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  ByteFmts: [[<span class="number">2</span>],[<span class="number">1</span>,<span class="number">2</span>],[<span class="number">0</span>,<span class="number">1</span>,<span class="number">2</span>],[<span class="number">3</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">2</span>]]
-  checkByteFmt: () -&gt;
-    <span class="keyword">if</span> u.isArray <span class="property">@byteFmt</span>
-      <span class="keyword">if</span> <span class="property">@byteFmt</span>.length&gt;<span class="number">4</span> <span class="keyword">or</span> u.aMax(<span class="property">@byteFmt</span>)&gt;<span class="number">3</span> <span class="keyword">or</span> u.aMin(<span class="property">@byteFmt</span>)&lt;<span class="number">0</span>
-        u.error <span class="string">"bad ImageDataSet byte format array: <span class="subst">#{@byteFmt}</span>"</span>
-    <span class="keyword">else</span>
-      <span class="keyword">if</span> <span class="property">@byteFmt</span> <span class="keyword">not</span> <span class="keyword">in</span> [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">8</span>,<span class="number">16</span>,<span class="number">24</span>,<span class="number">32</span>]
-        u.error <span class="string">"bad ImageDataSet byte/bit format int: <span class="subst">#{@byteFmt}</span>"</span>
-      <span class="property">@byteFmt</span> = <span class="property">@byteFmt</span>/<span class="number">8</span> <span class="keyword">if</span> <span class="property">@byteFmt</span> &gt; <span class="number">4</span> <span class="comment"># convert bits to bytes</span>
-      <span class="property">@byteFmt</span> = <span class="property">@ByteFmts</span>[<span class="property">@byteFmt</span>-<span class="number">1</span>]
+    <span class="property">@parse</span> <span class="property">@img</span>
   parse: (<span class="property">@img</span>) -&gt;
-    <span class="property">@checkByteFmt</span> <span class="property">@byteFmt</span>
-    <span class="property">@ctx</span> = u.imageToCtx <span class="property">@img</span> <span class="comment"># keep context for possible later use</span>
-    ta = u.ctxToImageData(<span class="property">@ctx</span>).data <span class="comment"># Uint8 typed array of image data</span>
-    <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span>..ta.length] <span class="keyword">by</span> <span class="number">4</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-37">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-37">&#182;</a>
-              </div>
-              <p>Note: do not use bitwise operations: keep value positive int</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>      val = <span class="number">0</span>; val = val*<span class="number">256</span> + ta[i+j] <span class="keyword">for</span> j <span class="keyword">in</span> <span class="property">@byteFmt</span>
-      <span class="property">@data</span>.push val
-    <span class="property">@reset</span> <span class="property">@ctx</span>.canvas.width, <span class="property">@ctx</span>.canvas.height, <span class="property">@data</span>
+    <span class="property">@rowsPerSlice</span> <span class="keyword">or</span>= <span class="property">@img</span>.height
+    data = u.imageRowsToData <span class="property">@img</span>, <span class="property">@rowsPerSlice</span>, <span class="property">@f</span>, <span class="property">@arrayType</span>
+    <span class="property">@reset</span> <span class="property">@img</span>.width, <span class="property">@img</span>.height, data
     
 ABM.PatchDataSet = <span class="class"><span class="keyword">class</span> <span class="title">PatchDataSet</span> <span class="keyword">extends</span> <span class="title">DataSet</span></span>
-  constructor: (f, height, data) -&gt;
-    <span class="keyword">if</span> u.isArray data
-      <span class="keyword">super</span> f, height, data
-    <span class="keyword">else</span>
-      f = u.propFcn f <span class="keyword">if</span> u.isString f
-      <span class="keyword">super</span> (ps=ABM.patches).numX, ps.numY, (f(p) <span class="keyword">for</span> p <span class="keyword">in</span> ps)
+  constructor: (f, arrayType=Array) -&gt;
+    data = <span class="keyword">new</span> arrayType (ps=ABM.patches).length
+    f = u.propFcn f <span class="keyword">if</span> u.isString f
+    data[i] = f(p) <span class="keyword">for</span> p,i <span class="keyword">in</span> ps
+    <span class="keyword">super</span> ps.numX, ps.numY, data
     <span class="property">@useNearest</span> = <span class="literal">true</span>
   toPatchVar: (name) -&gt;
-    data = (p[name] = <span class="property">@data</span>[i] <span class="keyword">for</span> p,i <span class="keyword">in</span> (ps=ABM.patches))
-    <span class="keyword">new</span> PatchDataSet ps.numX, ps.numY, data</pre></div></div>
+    p[name] = <span class="property">@data</span>[i] <span class="keyword">for</span> p,i <span class="keyword">in</span> ABM.patches; <span class="literal">null</span></pre></div></div>
             
         </li>
         

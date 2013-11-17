@@ -371,13 +371,13 @@ Example:</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  constructor: (
-    <span class="property">@div</span>, size=<span class="number">13</span>, minX=-<span class="number">16</span>, maxX=<span class="number">16</span>, minY=-<span class="number">16</span>, maxY=<span class="number">16</span>,
+    div, size=<span class="number">13</span>, minX=-<span class="number">16</span>, maxX=<span class="number">16</span>, minY=-<span class="number">16</span>, maxY=<span class="number">16</span>,
     isTorus=<span class="literal">false</span>, hasNeighbors=<span class="literal">true</span>
   ) -&gt;
     ABM.model = @
     <span class="property">@setWorld</span> size, minX, maxX, minY, maxY, isTorus, hasNeighbors
     <span class="property">@contexts</span> = ABM.contexts = {}
-    document.getElementById(div).setAttribute <span class="string">'style'</span>, <span class="string">"position:relative"</span></pre></div></div>
+    (<span class="property">@div</span>=document.getElementById(div)).setAttribute <span class="string">'style'</span>, <span class="string">"position:relative"</span></pre></div></div>
             
         </li>
         
@@ -402,7 +402,7 @@ ctx.restore() # restore patch coord system</code></pre>
             
             <div class="content"><div class='highlight'><pre>    
     <span class="keyword">for</span> own k,v <span class="keyword">of</span> <span class="property">@contextsInit</span>
-      <span class="property">@contexts</span>[k] = ctx = u.createLayer div, <span class="property">@world</span>.pxWidth, <span class="property">@world</span>.pxHeight, v.z, v.ctx
+      <span class="property">@contexts</span>[k] = ctx = u.createLayer <span class="property">@div</span>, <span class="property">@world</span>.pxWidth, <span class="property">@world</span>.pxHeight, v.z, v.ctx
       <span class="property">@setCtxTransform</span> ctx <span class="keyword">if</span> ctx.canvas?
       u.elementTextParams ctx, <span class="string">"10px sans-serif"</span>, <span class="string">"center"</span>, <span class="string">"middle"</span></pre></div></div>
             

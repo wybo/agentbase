@@ -95,13 +95,13 @@ class ABM.Model
   # * intialize various instance variables
   # * call `setup` abstract method
   constructor: (
-    @div, size=13, minX=-16, maxX=16, minY=-16, maxY=16,
+    div, size=13, minX=-16, maxX=16, minY=-16, maxY=16,
     isTorus=false, hasNeighbors=true
   ) ->
     ABM.model = @
     @setWorld size, minX, maxX, minY, maxY, isTorus, hasNeighbors
     @contexts = ABM.contexts = {}
-    document.getElementById(div).setAttribute 'style', "position:relative"
+    (@div=document.getElementById(div)).setAttribute 'style', "position:relative"
         
     # * Create 2D canvas contexts layered on top of each other.
     # * Initialize a patch coord transform for each layer.
@@ -114,7 +114,7 @@ class ABM.Model
     #     ctx.restore() # restore patch coord system
     
     for own k,v of @contextsInit
-      @contexts[k] = ctx = u.createLayer div, @world.pxWidth, @world.pxHeight, v.z, v.ctx
+      @contexts[k] = ctx = u.createLayer @div, @world.pxWidth, @world.pxHeight, v.z, v.ctx
       @setCtxTransform ctx if ctx.canvas?
       u.elementTextParams ctx, "10px sans-serif", "center", "middle"
 
