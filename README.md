@@ -14,74 +14,74 @@ See the template.html and models/*.html files for example models.  The individua
 
 #### Documentation
 
-Currently the documentation is hosted directly on github via the [rawgithub](https://rawgithub.com/) project using the docco generated html found in the doc/ directory.  One exception is the template.html file in the top level directory.
+Currently the documentation is hosted directly on our [GitHub Pages](http://backspaces.github.io/agentscript) from the docco generated html found in the doc/ directory.
 
-[**util.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/1-util.html): is the base module for all of the miscellaneous functions used by the rest of the project.
+[**util.coffee**](docs/1-util.html): is the base module for all of the miscellaneous functions used by the rest of the project.
 
-[**shapes.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/2-shapes.html): is a simple agent shapes module containing the default shapes and a few functions for getting the named shapes and adding your own shapes.
+[**shapes.coffee**](docs/2-shapes.html): is a simple agent shapes module containing the default shapes and a few functions for getting the named shapes and adding your own shapes.
 
-[**agentset.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/3-agentset.html) is the core array subclass used by patches, agents, and links.
+[**agentset.coffee**](docs/3-agentset.html) is the core array subclass used by patches, agents, and links.
 
-[**agentsets.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/4-agentsets.html) contains the three subclasses of AgentSet: Patches, Agents, and Links along with the three classes they manage: Patch, Agent, and Link.
+[**agentsets.coffee**](docs/4-agentsets.html) contains the three subclasses of AgentSet: Patches, Agents, and Links along with the three classes they manage: Patch, Agent, and Link.
 
-[**model.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/5-model.html) is the top level integration for all the agentsets and is subclassed by all user models. 
+[**model.coffee**](docs/5-model.html) is the top level integration for all the agentsets and is subclassed by all user models. 
 
-[**template.html**](https://rawgithub.com/backspaces/agentscript/master/docs/6-template.html) is a trivial subclass of Model showing the basic structure how you build your own models.  In addition, the models/ directory contains 10 simple models used in teaching NetLogo. You can [run the model here.](https://rawgithub.com/backspaces/agentscript/master/models/template.html) 
+[**template.html**](docs/6-template.html) is a trivial subclass of Model showing the basic structure how you build your own models.  In addition, the models/ directory contains 10 simple models used in teaching NetLogo. You can [run the model here.](models/template.html) 
 
 #### Add-ons
 
 The extras/ directory contains libraries that are too specialized to be in the core AgentScript but are essential for certain applications.  They are compiled to JS in the lib/ directory.
 
-[**data.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/data.html) A 2D DataSet library for data best expressed as an array of numbers.  It includes the ability to treat Images as data, to parse GIS elevation .asc files, to create datasets from patch variables etc.  It includes analytic abilities like nearest neighbor and bilinear sampling, convolution with 3x3 kernels, and resampling datasets to different resolutions.
+[**data.coffee**](docs/data.html) A 2D DataSet library for data best expressed as an array of numbers.  It includes the ability to treat Images as data, to parse GIS elevation .asc files, to create datasets from patch variables etc.  It includes analytic abilities like nearest neighbor and bilinear sampling, convolution with 3x3 kernels, and resampling datasets to different resolutions.
 
-[**fbui.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/fbui.html) A simple start at a User Interface abstraction, with JSON representing buttons, sliders, switches and menus.  Each item in the JSON tree modifies the state of the model, either directly by setting Model variables or indirectly by calling a method in class Model.
+[**fbui.coffee**](docs/fbui.html) A simple start at a User Interface abstraction, with JSON representing buttons, sliders, switches and menus.  Each item in the JSON tree modifies the state of the model, either directly by setting Model variables or indirectly by calling a method in class Model.
 
-[**mouse.coffee**](https://rawgithub.com/backspaces/agentscript/master/docs/mouse.html) A trivial event based interface to the mouse, mainly for direct interaction with the model's graphic layers.  It converts the mouse raw coordinates into patch coordinates.
+[**mouse.coffee**](docs/mouse.html) A trivial event based interface to the mouse, mainly for direct interaction with the model's graphic layers.  It converts the mouse raw coordinates into patch coordinates.
 
 #### Sample Models
 
-The models/ directory contains tiny models used to test the system and offer examples to get started with.  I also use the rawgithub project to view directly on github.  These usually print to the console.log, so opening the developer's javascript console will show model information.
+The models/ directory contains tiny models used to test the system and offer examples to get started with.  These also are our our GitHub pages.  They usually print to the console.log, so opening the developer's javascript console will show model information.
 
-[**ants.html**](https://rawgithub.com/backspaces/agentscript/master/models/ants.html) Ant foraging with nest and food pheromone diffusion. 
+[**ants.html**](models/ants.html) Ant foraging with nest and food pheromone diffusion. 
 
-[**buttons.html**](https://rawgithub.com/backspaces/agentscript/master/models/buttons.html) Stuart Kauffman's example of randomly connecting pairs of buttons in a pile resulting in a tipping point.
+[**buttons.html**](models/buttons.html) Stuart Kauffman's example of randomly connecting pairs of buttons in a pile resulting in a tipping point.
 
-[**diffusion.html**](https://rawgithub.com/backspaces/agentscript/master/models/diffusion.html) Agents randomly flying on a patch grid dropping a color which is diffused over the grid.
+[**diffusion.html**](models/diffusion.html) Agents randomly flying on a patch grid dropping a color which is diffused over the grid.
 
-[**fire.html**](https://rawgithub.com/backspaces/agentscript/master/models/fire.html) A CA based spread of fire showing burn behavior.
+[**fire.html**](models/fire.html) A CA based spread of fire showing burn behavior.
 
-[**flock.html**](https://rawgithub.com/backspaces/agentscript/master/models/flock.html) The classic "boids" model where agents use three simple rules resulting in realistic flocking.
+[**flock.html**](models/flock.html) The classic "boids" model where agents use three simple rules resulting in realistic flocking.
 
-[**gridpath.html**](https://rawgithub.com/backspaces/agentscript/master/models/gridpath.html) One of Knuth's great puzzles on the probability of all Manhattan  traversals diagonally traversing a grid.
+[**gridpath.html**](models/gridpath.html) One of Knuth's great puzzles on the probability of all Manhattan  traversals diagonally traversing a grid.
 
-[**linktravel.html**](https://rawgithub.com/backspaces/agentscript/master/models/linktravel.html) Agents traversing a graph of nodes and links.
+[**linktravel.html**](models/linktravel.html) Agents traversing a graph of nodes and links.
 
-[**nbody.html**](https://rawgithub.com/backspaces/agentscript/master/models/nbody.html) Nonlinear gravitation of n bodies.
+[**nbody.html**](models/nbody.html) Nonlinear gravitation of n bodies.
 
-[**prefattach.html**](https://rawgithub.com/backspaces/agentscript/master/models/prefattach.html) Example of a dynamic graph with new links preferentially attaching to nodes with most links.  This results in a power-law distribution.
+[**prefattach.html**](models/prefattach.html) Example of a dynamic graph with new links preferentially attaching to nodes with most links.  This results in a power-law distribution.
 
-[**tspga.html**](https://rawgithub.com/backspaces/agentscript/master/models/tspga.html) A Traveling Sales Person solution via a Genetic Algorithm showing the rapid conversion of stochastic methods.
+[**tspga.html**](models/tspga.html) A Traveling Sales Person solution via a Genetic Algorithm showing the rapid conversion of stochastic methods.
 
 #### Sample Models Format
 
 Our example models use CoffeeScript directly within the browser via `text/coffeescript` [script tags](http://coffeescript.org/#scripts):
 
-    <html>
-      <head>
-        <title>AgentScript Model</title>
-        <script src="agentscript.js"></script>
-        <script src="coffee-script.js"></script>
-        <script type="text/coffeescript">
-        class MyModel extends ABM.Model
-              ...
-        model = new MyModel "layers", 13, -16, 16, -16, 16
-              ...
-        </script>
-      </head>
-      <body>
-        <div id="layers" style="padding:20"></div>
-      </body>
-    </html>
+      <html>
+        <head>
+          <title>AgentScript Model</title>
+          <script src="agentscript.js"></script>
+          <script src="coffee-script.js"></script>
+          <script type="text/coffeescript">
+          class MyModel extends ABM.Model
+                ...
+          model = new MyModel "layers", 13, -16, 16, -16, 16
+                ...
+          </script>
+        </head>
+        <body>
+          <div id="layers" style="padding:20"></div>
+        </body>
+      </html>
 
 You may see this by running a sample model, then use the browser's View Page Source.  (Google "view page source")
 
