@@ -1875,8 +1875,26 @@ See <a href="http://goo.gl/VUlhY">this tutorial</a>.</p>
         <li id="section-97">
             <div class="annotation">
               
-              <div class="pilwrap ">
+              <div class="pilwrap for-h1">
                 <a class="pilcrow" href="#section-97">&#182;</a>
+              </div>
+              <h1>Duplicate a ctx&#39;s image.  Returns the new ctx, use ctx.canvas for canvas.</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  copyCtx: (ctx0) -&gt;
+    ctx = <span class="property">@createCtx</span> ctx0.canvas.width, ctx0.canvas.height
+    ctx.drawImage ctx0.canvas, <span class="number">0</span>, <span class="number">0</span>
+    ctx</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-98">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-98">&#182;</a>
               </div>
               <p>Resize a ctx/canvas and preserve data.</p>
 

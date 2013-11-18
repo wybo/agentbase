@@ -634,6 +634,12 @@ ABM.util = u =
     ctx.rotate rad
     ctx.drawImage img, -dx/2, -dy/2
   
+  # # Duplicate a ctx's image.  Returns the new ctx, use ctx.canvas for canvas.
+  copyCtx: (ctx0) ->
+    ctx = @createCtx ctx0.canvas.width, ctx0.canvas.height
+    ctx.drawImage ctx0.canvas, 0, 0
+    ctx
+
   # Resize a ctx/canvas and preserve data.
   resizeCtx: (ctx, width, height, scale = false) -> # http://goo.gl/Tp90B
     copy = @copyCtx ctx
