@@ -109,9 +109,9 @@ ABM.DataSet = class DataSet
   # Note this "insets" the dataset so the variable is sampled the center of the patch.
   # The dataset can be sampled directly to its edges .. i.e. in agent coords.
   toPatchVar: (name) ->
-    if (ps=ABM.patches).length = @data.length
-    then data = @data; p[name] = data[i] for p,i in ps
-    else data = (p[name] = @patchSample p.x, p.y for p in ps)
+    if (ps=ABM.patches).length is @data.length
+    then p[name] = @data[i] for p,i in ps
+    else p[name] = @patchSample p.x, p.y for p in ps
     null
   
   # Sample via transformed coords.

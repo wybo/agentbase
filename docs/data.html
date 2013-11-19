@@ -419,9 +419,9 @@ The dataset can be sampled directly to its edges .. i.e. in agent coords.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  toPatchVar: (name) -&gt;
-    <span class="keyword">if</span> (ps=ABM.patches).length = <span class="property">@data</span>.length
-    <span class="keyword">then</span> data = <span class="property">@data</span>; p[name] = data[i] <span class="keyword">for</span> p,i <span class="keyword">in</span> ps
-    <span class="keyword">else</span> data = (p[name] = <span class="property">@patchSample</span> p.x, p.y <span class="keyword">for</span> p <span class="keyword">in</span> ps)
+    <span class="keyword">if</span> (ps=ABM.patches).length <span class="keyword">is</span> <span class="property">@data</span>.length
+    <span class="keyword">then</span> p[name] = <span class="property">@data</span>[i] <span class="keyword">for</span> p,i <span class="keyword">in</span> ps
+    <span class="keyword">else</span> p[name] = <span class="property">@patchSample</span> p.x, p.y <span class="keyword">for</span> p <span class="keyword">in</span> ps
     <span class="literal">null</span></pre></div></div>
             
         </li>
