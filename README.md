@@ -62,6 +62,8 @@ The models/ directory contains tiny models used to test the system and offer exa
 
 [**tspga.html**](models/tspga.html) A Traveling Sales Person solution via a Genetic Algorithm showing the rapid conversion of stochastic methods.
 
+[**droplets.html**](models/droplets.html) A simple GIS model based on ESRI asc elevation file with droplets which seek lowest elevation. Uses the data.js extension.
+
 #### Sample Models Format
 
 Our example models use CoffeeScript directly within the browser via `text/coffeescript` [script tags](http://coffeescript.org/#scripts):
