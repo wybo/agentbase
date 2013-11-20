@@ -32,7 +32,7 @@ ABM.DataSet = class DataSet
   # The parse method converts a string into a dataset. Async
   @importAscDataSet: (name, f) ->
     ds = new AscDataSet() # empty dataset
-    u.xhrLoadFile name, "text", (response) -> # => not needed
+    u.xhrLoadFile name, "GET", "text", (response) -> # -> OK, closure
       ds.parse response # complete the empty dataset
       f(ds) if f?
     ds # async: ds will be empty until import finishes

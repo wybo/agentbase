@@ -135,7 +135,7 @@ The parse method converts a string into a dataset. Async</p>
             
             <div class="content"><div class='highlight'><pre>  <span class="property">@importAscDataSet</span>: (name, f) -&gt;
     ds = <span class="keyword">new</span> AscDataSet() <span class="comment"># empty dataset</span>
-    u.xhrLoadFile name, <span class="string">"text"</span>, (response) -&gt; <span class="comment"># =&gt; not needed</span>
+    u.xhrLoadFile name, <span class="string">"GET"</span>, <span class="string">"text"</span>, (response) -&gt; <span class="comment"># -&gt; OK, closure</span>
       ds.parse response <span class="comment"># complete the empty dataset</span>
       f(ds) <span class="keyword">if</span> f?
     ds <span class="comment"># async: ds will be empty until import finishes</span></pre></div></div>

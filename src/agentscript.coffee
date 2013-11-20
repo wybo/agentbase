@@ -457,14 +457,15 @@ ABM.util = u =
     img
     
   # Use XMLHttpRequest to fetch data of several types. Data Types: text,
-  # arraybuffer, blob, json, document, [See specification](http://goo.gl/y3r3h)
-  xhrLoadFile: (name, type="text", f = ->) -> # AJAX async request
+  # arraybuffer, blob, json, document, [See specification](http://goo.gl/y3r3h).
+  # method is "GET" or "POST". f is function to call onload, default to no-op.
+  xhrLoadFile: (name, method="GET", type="text", f = ->) -> # AJAX async request
     if (xhr=@fileIndex[name])?
       f(xhr.response)
     else
       @fileIndex[name] = xhr = new XMLHttpRequest()
       xhr.isDone = false
-      xhr.open "POST", name # POST vs GET best for big files?
+      xhr.open method, name # POST mainly for security and large files
       xhr.responseType = type
       xhr.onload = -> f(xhr.response); xhr.isDone = true
       xhr.send()

@@ -1457,17 +1457,18 @@ and within distance radius from x1,x2 considering all torus reflections.</p>
                 <a class="pilcrow" href="#section-77">&#182;</a>
               </div>
               <p>Use XMLHttpRequest to fetch data of several types. Data Types: text,
-arraybuffer, blob, json, document, <a href="http://goo.gl/y3r3h">See specification</a></p>
+arraybuffer, blob, json, document, <a href="http://goo.gl/y3r3h">See specification</a>.
+method is &quot;GET&quot; or &quot;POST&quot;. f is function to call onload, default to no-op.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  xhrLoadFile: (name, type=<span class="string">"text"</span>, <span class="function"><span class="title">f</span></span> = -&gt;) -&gt; <span class="comment"># AJAX async request</span>
+            <div class="content"><div class='highlight'><pre>  xhrLoadFile: (name, method=<span class="string">"GET"</span>, type=<span class="string">"text"</span>, <span class="function"><span class="title">f</span></span> = -&gt;) -&gt; <span class="comment"># AJAX async request</span>
     <span class="keyword">if</span> (xhr=<span class="property">@fileIndex</span>[name])?
       f(xhr.response)
     <span class="keyword">else</span>
       <span class="property">@fileIndex</span>[name] = xhr = <span class="keyword">new</span> XMLHttpRequest()
       xhr.isDone = <span class="literal">false</span>
-      xhr.open <span class="string">"POST"</span>, name <span class="comment"># POST vs GET best for big files?</span>
+      xhr.open method, name <span class="comment"># POST mainly for security and large files</span>
       xhr.responseType = type
       xhr.<span class="function"><span class="title">onload</span></span> = -&gt; f(xhr.response); xhr.isDone = <span class="literal">true</span>
       xhr.send()
