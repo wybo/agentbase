@@ -165,7 +165,28 @@ ABM.util = u =
       when 5 then r = v; g = p; b = q
     [Math.round(r*255), Math.round(g*255), Math.round(b*255)]
     
-    
+  # Colormap utilities.  Create an array of colors which are
+  # shared by a set of objects.
+  # Note: Experimental, will change.
+  rgbMap: (R,G=R,B=R) ->
+    R = (Math.round(i*255/(R-1)) for i in [0...R]) if typeof R is "number"
+    G = (Math.round(i*255/(G-1)) for i in [0...G]) if typeof G is "number"
+    B = (Math.round(i*255/(B-1)) for i in [0...B]) if typeof B is "number"
+    map=[]; ((map.push [r,g,b] for b in B) for g in G) for r in R
+    map
+  grayMap: -> ([i,i,i] for i in [0..255])
+  hsbMap: (n=256, s=255,b=255)-> 
+    (@hsbToRgb [i*255/(n-1),s,b] for i in [0...n])
+  gradientMap: (nColors, stops, locs) ->
+    locs = (i/(stops.length-1) for i in [0...stops.length]) if not locs?
+    ctx = @createCtx nColors, 1
+    grad = ctx.createLinearGradient 0, 0, nColors, 0
+    grad.addColorStop locs[i], @colorStr stops[i] for i in [0...stops.length]
+    ctx.fillStyle = grad
+    ctx.fillRect 0, 0, nColors, 1
+    id = @ctxToImageData(ctx).data
+    ([id[i], id[i+1], id[i+2]] for i in [0...id.length] by 4)
+
   # Return little/big endian-ness of hardware. 
   # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq)
   isLittleEndian: ->
