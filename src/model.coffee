@@ -164,7 +164,7 @@ class ABM.Model
   
   # Modelers "tune" their model by adjusting flags:<br>
   # `@refreshLinks, @refreshAgents, @refreshPatches`<br>
-  # and by the following methods:
+  # and by the following helper methods:
 
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
   # if browser does not support imageSmoothingEnabled or equivalent.
@@ -180,7 +180,7 @@ class ABM.Model
   
   # Have patches cache the given patchRect.
   # Optimizes patchRect, inRadius and inCone
-  # setCachePatchRects: (radius, meToo=false) -> @patches.cacheRect radius, meToo
+  setCachePatchRect:(radius,meToo=false)->@patches.cacheRect radius,meToo
   
 #### User Model Creation
 # A user's model is made by subclassing Model and over-riding these

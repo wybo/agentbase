@@ -12,6 +12,7 @@
       setMaxTurn: (@maxTurn) -> @maxTurn = u.degToRad(@maxTurn)
       toggleConsole: () -> @useConsole = not @useConsole
       setup: ->
+        # u.randomSeed() # use for repeatable runs
       
         @refreshPatches = false # <3fps->4fps agents larger part of drawing 
         # No optimizations: 4fps
@@ -45,7 +46,7 @@
           if sheet?
             console.log sheet
             document.getElementById("play").appendChild(sheet.canvas)
-        # @stop() if @anim.ticks is 100
+        @stop() if @anim.ticks is 400
 
       flock: (a) -> # a is agent
         flockmates = @agents.inRadius a, @vision

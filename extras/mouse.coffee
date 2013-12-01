@@ -2,8 +2,8 @@
 # See: [addEventListener](http://goo.gl/dq0nN)
 class ABM.Mouse
   # Create and start mouse obj, args: name of div, and a callback method.
-  constructor: (divName, @callback) ->
-    @div = document.getElementById divName
+  constructor: (@div, @callback) ->
+    # @div = document.getElementById divName
     @lastX=Infinity; @lastY=Infinity
     @start()
   # Start/stop the mouseListeners.  Note that NL's model is to have

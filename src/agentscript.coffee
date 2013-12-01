@@ -56,6 +56,11 @@ ABM.util = u =
   
 # ### Numeric Operations
 
+  # Replace Math.random with a simple seedable generator.
+  # See [StackOverflow](http://goo.gl/FafN3z)
+  randomSeed: (seed=123456) ->
+    Math.random = -> x=Math.sin(seed++)*10000; x-Math.floor(x)
+
   # Return random int in [0,max) or [min,max)
   randomInt: (max) -> Math.floor(Math.random() * max)
   randomInt2: (min, max) -> min + Math.floor(Math.random() * (max-min))
@@ -126,15 +131,18 @@ ABM.util = u =
   # Return HTML color as used by canvas element.  Can include Alpha
   colorStr: (c) ->
     return s if (s = c.str)?
+    @error "alpha > 1" if c.length is 4 and c[3] > 1
     c.str = if c.length is 3 then "rgb(#{c})" else "rgba(#{c})"
   # Compare two colors.  Alas, there is no array.Equal operator.
   colorsEqual: (c1, c2) -> c1.toString() is c2.toString()
-  # Convert r,g,b to a gray value (not color array). Round for 0-255 int.
+  # Convert r,g,b to a luminance float value (not color array).
+  # Round for 0-255 int for gray color value.
+  # [Good post on image filters](http://goo.gl/pE9cV8)
   rgbToGray: (c) -> 0.2126*c[0] + 0.7152*c[1] + 0.0722*c[2]
   # RGB <> HSB (HSV) conversions.
   # RGB in [0-255], HSB in [0-1]
   # See [Wikipedia](http://en.wikipedia.org/wiki/HSV_color_space)
-  # and [Blog Post](http://axonflux.com/handy-rgb-to-hsl-and-rgb-to-hsv-color-model-c)
+  # and [Blog Post](http://goo.gl/7yP4cO)
   rgbToHsb: (c) ->
     r=c[0]/255; g=c[1]/255; b=c[2]/255
     max = Math.max(r,g,b); min = Math.min(r,g,b); v = max
@@ -143,9 +151,9 @@ ABM.util = u =
       when r then h = (g - b) / d + (if g < b then 6 else 0)
       when g then h = (b - r) / d + 2
       when b then h = (r - g) / d + 4
-    [h/6, s, v]
+    [Math.round(255*h/6), Math.round(255*s), Math.round(255*v)]
   hsbToRgb: (c) ->
-    h=c[0]; s=c[1]; v=c[2]; i = Math.floor(h*6)
+    h=c[0]/255; s=c[1]/255; v=c[2]/255; i = Math.floor(h*6)
     f = h * 6 - i;        p = v * (1 - s)
     q = v * (1 - f * s);  t = v * (1 - (1 - f) * s)
     switch(i % 6)
@@ -273,13 +281,17 @@ ABM.util = u =
     r[i] = 0 for val,i in r when not val?
     r
 
-  # Mutator. Sorts the array of objects in place by the property. Returns array.
+  # Mutator. Sort array of objects in place by the function f.
+  # If f is string, f returns property of object.
+  # Returns array.
   # Clone first if you want to preserve the original array.
   #
   #     array = [{i:1},{i:5},{i:-1},{i:2},{i:2}]
   #     sortBy array, "i"
   #     # array now is [{i:-1},{i:1},{i:2},{i:2},{i:5}]
-  sortBy: (array, prop) -> array.sort (a,b) -> a[prop] - b[prop]
+  sortBy: (array, f) -> 
+   f = @propFcn f if @isString f # use item[f] if f is string
+   array.sort (a,b) -> f(a) - f(b)
 
   # Mutator. Removes adjacent dups, by reference, in place from sorted array.
   # Note "by reference" means litteraly same object, not copy. Returns array.
@@ -2013,7 +2025,7 @@ class ABM.Model
   
   # Modelers "tune" their model by adjusting flags:<br>
   # `@refreshLinks, @refreshAgents, @refreshPatches`<br>
-  # and by the following methods:
+  # and by the following helper methods:
 
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
   # if browser does not support imageSmoothingEnabled or equivalent.
@@ -2029,7 +2041,7 @@ class ABM.Model
   
   # Have patches cache the given patchRect.
   # Optimizes patchRect, inRadius and inCone
-  # setCachePatchRects: (radius, meToo=false) -> @patches.cacheRect radius, meToo
+  setCachePatchRect:(radius,meToo=false)->@patches.cacheRect radius,meToo
   
 #### User Model Creation
 # A user's model is made by subclassing Model and over-riding these

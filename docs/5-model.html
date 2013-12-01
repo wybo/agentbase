@@ -558,7 +558,7 @@ agentset is drawn only once, remaining static after that.</p>
               </div>
               <p>Modelers &quot;tune&quot; their model by adjusting flags:<br>
 <code>@refreshLinks, @refreshAgents, @refreshPatches</code><br>
-and by the following methods:</p>
+and by the following helper methods:</p>
 <p>Draw patches using scaled image of colors. Note anti-aliasing may occur
 if browser does not support imageSmoothingEnabled or equivalent.</p>
 
@@ -608,10 +608,11 @@ Optimizes Agent a.myLinks method</p>
                 <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>Have patches cache the given patchRect.
-Optimizes patchRect, inRadius and inCone
-setCachePatchRects: (radius, meToo=false) -&gt; @patches.cacheRect radius, meToo</p>
+Optimizes patchRect, inRadius and inCone</p>
 
             </div>
+            
+            <div class="content"><div class='highlight'><pre>  setCachePatchRect:(radius,meToo=<span class="literal">false</span>)-&gt;<span class="property">@patches</span>.cacheRect radius,meToo</pre></div></div>
             
         </li>
         
