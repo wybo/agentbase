@@ -1,12 +1,12 @@
 ### AgentScript
 
-AgentScript is a minimalist Agent Based Modeling (ABM) framework based on [NetLogo](http://ccl.northwestern.edu/netlogo/) (NL) agent semantics.  Its goal is to promote the Agent Oriented Programming model in a highly deployable [CoffeeScript](http://coffeescript.org/)/JavaScript (CS/JS) implementation.
+AgentScript is a minimalist Agent Based Modeling (ABM) framework based on [NetLogo](http://ccl.northwestern.edu/netlogo/) agent semantics.  Its goal is to promote the Agent Oriented Programming model in a highly deployable [CoffeeScript](http://coffeescript.org/)/JavaScript (CoffeeScript/JavaScript) implementation.
 Please drop by our 
 [Google Group](https://groups.google.com/forum/?hl=en#!forum/agentscript)
 
 #### Build
 
-Cake is used to build agentscript.coffee from individual source files, and to compile into agentscript.js, agentscript.min.js, and agentscript.map.  The map file allows debugging in Chrome via CS source.
+Cake is used to build agentscript.coffee from individual source files, and to compile into agentscript.js, agentscript.min.js, and agentscript.map.  The map file allows debugging in Chrome via CoffeeScript source.
 
 See the template.html and models/*.html files for example models.  The individual
 .coffee files are documented via Jeremy Ashkenas's
@@ -30,7 +30,7 @@ Currently the documentation is hosted directly on our [GitHub Pages](http://back
 
 #### Add-ons
 
-The extras/ directory contains libraries that are too specialized to be in the core AgentScript but are essential for certain applications.  They are compiled to JS in the lib/ directory.
+The extras/ directory contains libraries that are too specialized to be in the core AgentScript but are essential for certain applications.  They are compiled to JavaScript in the lib/ directory.
 
 [**data.coffee**](docs/data.html) A 2D DataSet library for data best expressed as an array of numbers.  It includes the ability to treat Images as data, to parse GIS elevation .asc files, to create datasets from patch variables etc.  It includes analytic abilities like nearest neighbor and bilinear sampling, convolution with 3x3 kernels, and resampling datasets to different resolutions.
 
@@ -91,9 +91,11 @@ Similarly, the models will print to the "javascript console" while they run. (Go
 
 #### Files
     
+    CNAME               DNS agentscript.org file for gh-pages
     Cakefile            cake file for build, docs etc.
     LICENSE             GPLv3 License
     README.md           This file
+    index.html          gh-pages index.html file
     docs/               Docco documentation
     extras/             AgentScript extensions
     lib/                All .js/min.js and .map files
