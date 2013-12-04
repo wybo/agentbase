@@ -298,7 +298,7 @@ class ABM.Model
   # Note we avoid using the actual name, such as "patches" because this
   # can cause our modules to mistakenly depend on a global name.
   # See [CoffeeConsole](http://goo.gl/1i7bd) Chrome extension too.
-  debug: (@debugging = true) -> u.waitOn (=> @modelReady), (=> @setRootVars()); @
+  debug: (@debugging=true)->u.waitOn (=>@modelReady),(=>@setRootVars()); @
   setRootVars: ->
     root.ps  = @patches
     root.p0  = @patches[0]

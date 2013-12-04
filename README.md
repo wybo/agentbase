@@ -1,20 +1,16 @@
 ### AgentScript
 
-AgentScript is a minimalist Agent Based Modeling (ABM) framework based on [NetLogo](http://ccl.northwestern.edu/netlogo/) agent semantics.  Its goal is to promote the Agent Oriented Programming model in a highly deployable [CoffeeScript](http://coffeescript.org/)/JavaScript (CoffeeScript/JavaScript) implementation.
-Please drop by our 
-[Google Group](https://groups.google.com/forum/?hl=en#!forum/agentscript)
+AgentScript is a minimalist Agent Based Modeling (ABM) framework based on [NetLogo](http://ccl.northwestern.edu/netlogo/) agent semantics.  Its goal is to promote the Agent Oriented Programming model in a highly deployable [CoffeeScript](http://coffeescript.org/)/JavaScript implementation. Please drop by our [Google Group](https://groups.google.com/forum/?hl=en#!forum/agentscript) to get involved. We have a gh-pages site [agentscript.org](http://agentscript.org/).
 
 #### Build
 
 Cake is used to build agentscript.coffee from individual source files, and to compile into agentscript.js, agentscript.min.js, and agentscript.map.  The map file allows debugging in Chrome via CoffeeScript source.
 
-See the template.html and models/*.html files for example models.  The individual
-.coffee files are documented via Jeremy Ashkenas's
-[docco](http://jashkenas.github.com/docco/) in the docs/ dir. See the Cakefile for details.
+See the template.html and models/*.html files for example models.  The individual .coffee files are documented via Jeremy Ashkenas's [docco](http://jashkenas.github.com/docco/) in the docs/ dir. See the Cakefile for details.
 
 #### Documentation
 
-Currently the documentation is hosted directly on our [GitHub Pages](http://backspaces.github.io/agentscript) from the docco generated html found in the doc/ directory.
+Currently the documentation is hosted directly on our [GitHub Pages](http://backspaces.github.io/agentscript) or directly from [agentscript.org](http://agentscript.org/) from the docco generated html found in the doc/ directory.
 
 [**util.coffee**](docs/1-util.html): is the base module for all of the miscellaneous functions used by the rest of the project.
 

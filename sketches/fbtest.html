@@ -1,0 +1,51 @@
+<html>
+  <head>
+    <title>Firebase Play</title>
+    <script src='https://cdn.firebase.com/v0/firebase.js'></script>
+    <script src="../tools/coffee-script.js"></script>
+    <script type="text/coffeescript">
+
+window.fb = fb = new Firebase('https://agentscript.firebaseio.com/flock/ui');
+console.log fb.toString()
+console.log fb.root().toString()
+ui =
+  setup:          type:"button", val: false
+  go:             type:"button", val: false
+  step:           type:"button", val: false
+  population:     type:"slider", min:25, step:25, max:1000, val:250
+  useObstacle:    type:"switch", val: false
+  maxPheromone:   type:"slider", min:1, step:1, max:200, val:35
+  evaporationRate:type:"slider", min:0, step:.01, max:1, val:.32
+  diffusionRate:  type:"slider", min:0, step:.005, max:.1, val:.01
+  wiggleAngle:    type:"slider", min:5, step:5, max:90, val:30
+
+# jui = JSON.stringify ui, null, "  "
+console.log ui
+fb.set ui, (val)->window.fbval = val
+
+fb.on 'child_added', (snapshot, previous) ->
+  console.log "childAdd", snapshot.name(), snapshot.val()
+  window.snap = [snapshot,previous]
+  # snapshot.forEach (childsnap)->console.log childsnap.name(), childsnap.val()
+
+fb.on 'child_changed', (snapshot, previous) ->
+  console.log "childChange", snapshot.name(), snapshot.val()
+  # snapshot.forEach (childsnap)->console.log childsnap.name(), childsnap.val()
+
+# fb.on 'value', (snapshot) ->
+#   console.log "fb val", snapshot.name(), snapshot.val()
+
+# fb.forEach (child) ->
+#   console.log child.name(), child.val()
+#   child.on 'value', (snapshot) -> console.log snapshot.val()
+
+console.log "----------- ..async"
+
+# fb.set ui, (val)->window.fbval = val
+    
+    </script>
+  </head>
+  <body>
+    <div id="layers" style="padding:20"></div>
+  </body>
+</html>

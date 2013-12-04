@@ -1,0 +1,43 @@
+<html>
+  <head>
+    <title>AgentScript Model</title>
+    <script src="../lib/agentscript.js"></script>
+    <script src="../lib/mouse.js"></script>
+    <script src="../tools/coffee-script.js"></script>
+    <script type="text/coffeescript">
+    
+    # Sketch linkhit but not using the animator, just mouse event callback
+    # Note use of body onload: once(), ditto mouse callback
+    # Idea: body onload does not start the animator, instead, advances it
+    # manually via the once() method.  Setup also installs once() fore any
+    # mouse down/move.  Thus the animator is driven by the mouse, not "clocks"
+    u = ABM.util # shortcut
+
+    class MyModel extends ABM.Model
+      setup: -> # called by Model constructor
+        @refreshPatches = @refreshAgents = false
+        @mouse = new ABM.Mouse @div, => @once()
+        
+        @agents.setDefault "shape", "circle"; @agents.setDefault "size", .5
+        p.sprout 1 for p in @patches.nOf 20
+        @links.create a, @agents.other(a).oneOf() for a in @agents
+
+      step: ->
+        for l in @links
+          l.color = if @mouseOnLink l then [256,0,0] else [128,128,128]
+
+      mouseOnLink: (l) ->
+        d = u.aSum (a.distanceXY @mouse.x, @mouse.y for a in l.bothEnds())
+        d - l.length() < 1 / @patches.size
+
+    model = new MyModel "layers", 25, -8, 8, -8, 8
+    model.debug() # Debug: Put Model vars in global name space
+    # ABM.model.once() # Run model just one step
+    </script>
+  </head>
+  <body onload="ABM.model.once()">
+    <div id="layers" style="padding:20"></div>
+  </body>
+</html>
+
+

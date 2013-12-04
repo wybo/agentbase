@@ -84,9 +84,9 @@ ABM.DataSet = class DataSet
       s += "\n" + "#{i}: #{data.slice i*@width, (i+1)*@width}"
     s.replace /,/g, sep
   # Convert dataset into an image. Normalize data to be allowable image data
-  toImage: (gray = true, normalize = true, alpha = 255)->
+  toImage: (gray = true, normalize = true, alpha = 1)->
     @toContext(gray, normalize, alpha).canvas
-  toContext: (gray = true, normalize = true, alpha = 255)->
+  toContext: (gray = true, normalize = true, alpha = 1)->
     ctx = u.createCtx @width, @height
     idata = ctx.getImageData(0, 0, @width, @height); ta = idata.data
     max = Math.pow(2, if gray then 8 else 24)
@@ -101,9 +101,9 @@ ABM.DataSet = class DataSet
     ctx.putImageData idata, 0, 0
     ctx
   # Show dataset as image in patch drawing layer or patch colors, return image
-  toDrawing: (gray = true, normalize = true, alpha = 255) -> 
+  toDrawing: (gray = true, normalize = true, alpha = 1) -> 
     ABM.patches.installDrawing(img=@toImage gray, normalize, alpha); img
-  toPatchColors: (gray = true, normalize = true, alpha = 255) -> 
+  toPatchColors: (gray = true, normalize = true, alpha = 1) -> 
     ABM.patches.installColors(img=@toImage gray, normalize, alpha); img
   # Resample dataset to patch width/height and set named patch variable.
   # Note this "insets" the dataset so the variable is sampled the center of the patch.

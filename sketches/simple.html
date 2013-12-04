@@ -1,0 +1,37 @@
+<html>
+  <head>
+    <title>AgentScript Model</title>
+    <script src="../lib/agentscript.js"></script>
+    <script src="../tools/coffee-script.js"></script>
+    <script type="text/coffeescript">
+    
+    u = ABM.util # shortcut for ABM.util
+    class MyModel extends ABM.Model
+      setup: -> # called by Model constructor
+        @refreshPatches = false
+        @agents.create 25
+        for a in @agents
+          a.size = 3
+          a.shape = u.oneOf ABM.shapes.names()
+        for p in @patches
+          p.color = u.randomGray()
+          p.color = [255,0,0] if p.x is 0
+          p.color = [255,255,0] if p.y is 0
+      step: ->
+        for a in @agents
+          a.rotate u.randomCentered(u.degToRad(40))
+          a.forward 1
+
+    # div, size, minX, maxX, minY, maxY, torus=true, neighbors=true
+    model = new MyModel "layers", 10, -25, 25, -20, 20, true
+    model.debug() # Debug: Put Model vars in global name space
+    model.start() # Run model immediately after startup initialization
+
+    </script>
+  </head>
+  <body>
+    <div id="layers" style="padding:20"></div>
+  </body>
+</html>
+
+

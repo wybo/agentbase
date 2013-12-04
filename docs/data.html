@@ -368,9 +368,9 @@ If p &lt; 0, print data, otherwise use toFixed to truncate to p precision</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  toImage: (gray = <span class="literal">true</span>, normalize = <span class="literal">true</span>, alpha = <span class="number">255</span>)-&gt;
+            <div class="content"><div class='highlight'><pre>  toImage: (gray = <span class="literal">true</span>, normalize = <span class="literal">true</span>, alpha = <span class="number">1</span>)-&gt;
     <span class="property">@toContext</span>(gray, normalize, alpha).canvas
-  toContext: (gray = <span class="literal">true</span>, normalize = <span class="literal">true</span>, alpha = <span class="number">255</span>)-&gt;
+  toContext: (gray = <span class="literal">true</span>, normalize = <span class="literal">true</span>, alpha = <span class="number">1</span>)-&gt;
     ctx = u.createCtx <span class="property">@width</span>, <span class="property">@height</span>
     idata = ctx.getImageData(<span class="number">0</span>, <span class="number">0</span>, <span class="property">@width</span>, <span class="property">@height</span>); ta = idata.data
     max = Math.pow(<span class="number">2</span>, <span class="keyword">if</span> gray <span class="keyword">then</span> <span class="number">8</span> <span class="keyword">else</span> <span class="number">24</span>)
@@ -398,9 +398,9 @@ If p &lt; 0, print data, otherwise use toFixed to truncate to p precision</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  toDrawing: (gray = <span class="literal">true</span>, normalize = <span class="literal">true</span>, alpha = <span class="number">255</span>) -&gt; 
+            <div class="content"><div class='highlight'><pre>  toDrawing: (gray = <span class="literal">true</span>, normalize = <span class="literal">true</span>, alpha = <span class="number">1</span>) -&gt; 
     ABM.patches.installDrawing(img=<span class="property">@toImage</span> gray, normalize, alpha); img
-  toPatchColors: (gray = <span class="literal">true</span>, normalize = <span class="literal">true</span>, alpha = <span class="number">255</span>) -&gt; 
+  toPatchColors: (gray = <span class="literal">true</span>, normalize = <span class="literal">true</span>, alpha = <span class="number">1</span>) -&gt; 
     ABM.patches.installColors(img=<span class="property">@toImage</span> gray, normalize, alpha); img</pre></div></div>
             
         </li>
