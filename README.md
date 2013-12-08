@@ -87,15 +87,14 @@ Similarly, the models will print to the "javascript console" while they run. (Go
 
 #### Files
     
-    CNAME               DNS agentscript.org file for gh-pages
     Cakefile            cake file for build, docs etc.
     LICENSE             GPLv3 License
     README.md           This file
-    index.html          gh-pages index.html file
     docs/               Docco documentation
     extras/             AgentScript extensions
     lib/                All .js/min.js and .map files
     models/             Sample models
+    sketches/           Very simple models showing gist-like hints
     src/                Component .coffee files for agentscript.coffee
     tools/              coffee-script.js and others
     
