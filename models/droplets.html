@@ -38,7 +38,7 @@
         # p.elevation = p.color[0] for p in @patches # could also use toPatchVar below
         # @slope.toPatchVar("slope")
         # @aspect.toPatchVar("aspect")
-        @elevation.toDrawing()
+        @img=@elevation.toDrawing()
         @elevation.toPatchVar("elevation")
         @slope.toPatchVar("slope")
         @aspect.toPatchVar("aspect")
