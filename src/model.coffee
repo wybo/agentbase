@@ -169,6 +169,10 @@ class ABM.Model
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
   # if browser does not support imageSmoothingEnabled or equivalent.
   setFastPatches: -> @patches.usePixels()
+
+  # Patches are all the same static default color, just "clear" entire canvas.
+  # Don't use if patch breeds have different colors.
+  setMonochromePatches: -> @patches.monochrome = true
     
   # Have patches cache the agents currently on them.
   # Optimizes Patch p.agentsHere method

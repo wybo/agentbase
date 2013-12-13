@@ -1287,6 +1287,7 @@ class ABM.Patches extends ABM.AgentSet
   # Patches are created from top-left to bottom-right to match data sets.
   constructor: -> # agentClass, name, mainSet
     super # call super with all the args I was called with
+    @monochrome = false # set to true to optimize patches all default color
     @[k] = v for own k,v of ABM.world # add world items to patches
     @populate() unless @mainSet?
   
@@ -1310,7 +1311,6 @@ class ABM.Patches extends ABM.AgentSet
   usePixels: (@drawWithPixels=true) ->
     ctx = ABM.contexts.patches
     u.setCtxSmoothing ctx, not @drawWithPixels
-    u.setIdentity ctx
 
   # Optimization: Cache a single set by modeler for use by patchRect,
   # inCone, inRect, inRadius.  Ex: flock demo model's vision rect.
@@ -1338,13 +1338,14 @@ class ABM.Patches extends ABM.AgentSet
       @pixelsData32 = new Uint32Array @pixelsData.buffer
       @pixelsAreLittleEndian = u.isLittleEndian()
   
-  # If using scaled pixels, use pixel manipulation below, or use default agentSet
-  # draw which iterates over the patches, drawing rectangles.
+  # Draw patces.  Three cases:
+  #
+  # * Pixels: use pixel manipulation rather than canvas draws
+  # * Monochrome: just fill canvas w/ patch default
+  # * Otherwise: just draw each patch individually
   draw: (ctx) ->
-    # if @agentClass::color? and not (@[0].hasOwnProperty "color") and (@breeds.length is 0)
-    #   u.fillCtx ctx, @agentClass::color
-    # else if @drawWithPixels then @drawScaledPixels ctx else super ctx
-    if @drawWithPixels then @drawScaledPixels ctx else super ctx
+    if @monochrome then u.fillCtx ctx, @agentClass::color
+    else if @drawWithPixels then @drawScaledPixels ctx else super ctx
 
 # #### Patch grid coord system utilities:
   
@@ -1451,6 +1452,7 @@ class ABM.Patches extends ABM.AgentSet
   # Draw the patches via pixel manipulation rather than 2D drawRect.
   # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq)
   drawScaledPixels: (ctx) -> 
+    # Note u.setIdentity ctx & ctx.restore() not needed, pixel ops don't use transform
     if @pixelsData32? then @drawScaledPixels32 ctx else @drawScaledPixels8 ctx
   # The 8-bit version for drawScaledPixels.  Used for systems w/o typed arrays
   drawScaledPixels8: (ctx) ->
@@ -2052,6 +2054,10 @@ class ABM.Model
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
   # if browser does not support imageSmoothingEnabled or equivalent.
   setFastPatches: -> @patches.usePixels()
+
+  # Patches are all the same static default color, just "clear" entire canvas.
+  # Don't use if patch breeds have different colors.
+  setMonochromePatches: -> @patches.monochrome = true
     
   # Have patches cache the agents currently on them.
   # Optimizes Patch p.agentsHere method
