@@ -151,9 +151,10 @@ class ABM.Patches extends ABM.AgentSet
   # If using scaled pixels, use pixel manipulation below, or use default agentSet
   # draw which iterates over the patches, drawing rectangles.
   draw: (ctx) ->
-    if @agentClass::color? and not (@[0].hasOwnProperty "color") and (@breeds.length is 0)
-      u.fillCtx ctx, @agentClass::color
-    else if @drawWithPixels then @drawScaledPixels ctx else super ctx
+    # if @agentClass::color? and not (@[0].hasOwnProperty "color") and (@breeds.length is 0)
+    #   u.fillCtx ctx, @agentClass::color
+    # else if @drawWithPixels then @drawScaledPixels ctx else super ctx
+    if @drawWithPixels then @drawScaledPixels ctx else super ctx
 
 # #### Patch grid coord system utilities:
   
