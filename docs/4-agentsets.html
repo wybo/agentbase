@@ -789,11 +789,13 @@ per patch.  The colors are then transferred to the patches.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  installColors: (img) -&gt;
+    u.setIdentity <span class="property">@pixelsCtx</span>
     <span class="property">@pixelsCtx</span>.drawImage img, <span class="number">0</span>, <span class="number">0</span>, <span class="property">@numX</span>, <span class="property">@numY</span> <span class="comment"># scale if needed</span>
     data = <span class="property">@pixelsCtx</span>.getImageData(<span class="number">0</span>, <span class="number">0</span>, <span class="property">@numX</span>, <span class="property">@numY</span>).data
     <span class="keyword">for</span> p <span class="keyword">in</span> @
       i = <span class="property">@pixelByteIndex</span> p
-      p.color = [data[i++], data[i++], data[i]] <span class="comment"># promote initial default</span></pre></div></div>
+      p.color = [data[i++], data[i++], data[i]] <span class="comment"># promote initial default</span>
+    <span class="property">@pixelsCtx</span>.restore() <span class="comment"># restore patch transform</span></pre></div></div>
             
         </li>
         

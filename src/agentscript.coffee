@@ -1443,12 +1443,14 @@ class ABM.Patches extends ABM.AgentSet
       f() if f?
   # Direct install image into the patch colors, not async.
   installColors: (img) ->
+    u.setIdentity @pixelsCtx
     @pixelsCtx.drawImage img, 0, 0, @numX, @numY # scale if needed
     data = @pixelsCtx.getImageData(0, 0, @numX, @numY).data
     for p in @
       i = @pixelByteIndex p
       p.color = [data[i++], data[i++], data[i]] # promote initial default
-  
+    @pixelsCtx.restore() # restore patch transform
+
   # Draw the patches via pixel manipulation rather than 2D drawRect.
   # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq)
   drawScaledPixels: (ctx) -> 
@@ -2096,7 +2098,7 @@ class ABM.Model
   once: -> @stop() unless @anim.stopped; @anim.once() 
 
   # Stop and reset the model, restarting if restart is true
-  reset: (restart = true) -> 
+  reset: (restart = false) -> 
     console.log "reset: anim"
     @anim.reset() # stop & reset ticks/steps counters
     console.log "reset: contexts"

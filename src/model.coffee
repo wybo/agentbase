@@ -211,7 +211,7 @@ class ABM.Model
   once: -> @stop() unless @anim.stopped; @anim.once() 
 
   # Stop and reset the model, restarting if restart is true
-  reset: (restart = true) -> 
+  reset: (restart = false) -> 
     console.log "reset: anim"
     @anim.reset() # stop & reset ticks/steps counters
     console.log "reset: contexts"
