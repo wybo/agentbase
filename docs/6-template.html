@@ -84,7 +84,7 @@ and <code>setup</code> will be called by <code>Model.constructor</code>. See:</p
             
             <div class="content"><div class='highlight'><pre>    
     u = ABM.util <span class="comment"># ABM.util alias, u.s is also ABM.shapes accessor.</span>
-    <span class="function"><span class="title">log</span></span> = (arg) -&gt; console.log arg
+    <span class="function"><span class="title">log</span> = <span class="params">(arg)</span> -&gt;</span> console.log arg
     <span class="class"><span class="keyword">class</span> <span class="title">MyModel</span> <span class="keyword">extends</span> <span class="title">ABM</span>.<span class="title">Model</span></span></pre></div></div>
             
         </li>
@@ -103,7 +103,7 @@ for an example, not needed by simple models.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      startup: -&gt; <span class="comment"># called by constructor</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>      <span class="attribute">startup</span>:<span class="function"> -&gt;</span> <span class="comment"># called by constructor</span></pre></div></div>
             
         </li>
         
@@ -120,7 +120,7 @@ for an example, not needed by simple models.</p>
             
             <div class="content"><div class='highlight'><pre>        u.s.add <span class="string">"cc"</span>, <span class="literal">true</span>, u.importImage(<span class="string">"data/coffee.png"</span>)
         u.s.add <span class="string">"redfish"</span>, <span class="literal">false</span>, u.importImage(<span class="string">"data/redfish64t.png"</span>)
-        u.s.add <span class="string">"bowtie"</span>, <span class="literal">true</span>, (c) -&gt; u.s.poly c, [[-<span class="number">.5</span>,-<span class="number">.5</span>],[<span class="number">.5</span>,<span class="number">.5</span>],[-<span class="number">.5</span>,<span class="number">.5</span>],[<span class="number">.5</span>,-<span class="number">.5</span>]]</pre></div></div>
+        u.s.add <span class="string">"bowtie"</span>, <span class="literal">true</span>, <span class="function"><span class="params">(c)</span> -&gt;</span> u.s.poly c, [[-<span class="number">.5</span>,-<span class="number">.5</span>],[<span class="number">.5</span>,<span class="number">.5</span>],[-<span class="number">.5</span>,<span class="number">.5</span>],[<span class="number">.5</span>,-<span class="number">.5</span>]]</pre></div></div>
             
         </li>
         
@@ -138,7 +138,7 @@ We also periodically change the patch colors to random gray values.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      setup: -&gt; <span class="comment"># called by Model.constructor        </span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>      <span class="attribute">setup</span>:<span class="function"> -&gt;</span> <span class="comment"># called by Model.constructor        </span></pre></div></div>
             
         </li>
         
@@ -279,7 +279,7 @@ Note CoffeeScript
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        log <span class="string">"total agents: <span class="subst">#{@agents.length}</span>, total patches: <span class="subst">#{@patches.length}</span>"</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>        log <span class="string">"total agents: <span class="subst">#{<span class="property">@agents</span>.length}</span>, total patches: <span class="subst">#{<span class="property">@patches</span>.length}</span>"</span></pre></div></div>
             
         </li>
         
@@ -311,7 +311,7 @@ Note CoffeeScript
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      step: -&gt;  <span class="comment"># called by Model.animate</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>      <span class="attribute">step</span>:<span class="function"> -&gt;</span>  <span class="comment"># called by Model.animate</span></pre></div></div>
             
         </li>
         
@@ -403,7 +403,7 @@ and report model state.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      updateAgents: (a) -&gt; <span class="comment"># a is agent</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>      <span class="attribute">updateAgents</span>: <span class="function"><span class="params">(a)</span> -&gt;</span> <span class="comment"># a is agent</span></pre></div></div>
             
         </li>
         
@@ -435,7 +435,7 @@ our heading by +/- <code>wiggle/2</code> radians</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>        a.forward <span class="property">@speed</span>
-      updatePatches: (p) -&gt; <span class="comment"># p is patch</span></pre></div></div>
+      <span class="attribute">updatePatches</span>: <span class="function"><span class="params">(p)</span> -&gt;</span> <span class="comment"># p is patch</span></pre></div></div>
             
         </li>
         
@@ -452,7 +452,7 @@ Note we modify the existing color, GC minimization.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>        u.randomGray(p.color) <span class="keyword">if</span> p.x <span class="keyword">isnt</span> <span class="number">0</span> <span class="keyword">and</span> p.y <span class="keyword">isnt</span> <span class="number">0</span> <span class="comment"># aviod GC, reuse color</span>
-      reportInfo: -&gt;</pre></div></div>
+      <span class="attribute">reportInfo</span>:<span class="function"> -&gt;</span></pre></div></div>
             
         </li>
         
@@ -468,7 +468,8 @@ Note we modify the existing color, GC minimization.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>        headings = <span class="property">@agents</span>.getProp <span class="string">"heading"</span>
-        <span class="function"><span class="title">avgHeading</span></span> = (headings.reduce (a,b)-&gt;a+b) / <span class="property">@agents</span>.length</pre></div></div>
+        <span class="function"><span class="title">avgHeading</span> = <span class="params">(headings.reduce (a,b)-&gt;a+b)</span> / @<span class="title">agents</span>.<span class="title">length</span>
+</span></pre></div></div>
             
         </li>
         

@@ -94,7 +94,7 @@ If f is string, f set to fcn returning p[f]</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="property">@patchDataSet</span>: (f) -&gt; <span class="keyword">new</span> PatchDataSet f</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="property">@patchDataSet</span>: <span class="function"><span class="params">(f)</span> -&gt;</span> <span class="keyword">new</span> PatchDataSet f</pre></div></div>
             
         </li>
         
@@ -112,9 +112,9 @@ async array, Image or XHR response.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="property">@importImageDataSet</span>: (name, f=u.pixelByte(<span class="number">0</span>), arrayType=Uint8ClampedArray, rowsPerSlice) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="property">@importImageDataSet</span>: <span class="function"><span class="params">(name, f=u.pixelByte(<span class="number">0</span>), arrayType=Uint8ClampedArray, rowsPerSlice)</span> -&gt;</span>
     ds = <span class="keyword">new</span> ImageDataSet(<span class="literal">null</span>, f, arrayType, rowsPerSlice) <span class="comment"># empty dataset</span>
-    u.importImage name, (img) -&gt; <span class="comment"># =&gt; not needed</span>
+    u.importImage name, <span class="function"><span class="params">(img)</span> -&gt;</span> <span class="comment"># =&gt; not needed</span>
       ds.parse img
       f(ds) <span class="keyword">if</span> f?
     ds <span class="comment"># async: ds will be empty until import finishes</span></pre></div></div>
@@ -133,9 +133,9 @@ The parse method converts a string into a dataset. Async</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="property">@importAscDataSet</span>: (name, f) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="property">@importAscDataSet</span>: <span class="function"><span class="params">(name, f)</span> -&gt;</span>
     ds = <span class="keyword">new</span> AscDataSet() <span class="comment"># empty dataset</span>
-    u.xhrLoadFile name, <span class="string">"GET"</span>, <span class="string">"text"</span>, (response) -&gt; <span class="comment"># -&gt; OK, closure</span>
+    u.xhrLoadFile name, <span class="string">"GET"</span>, <span class="string">"text"</span>, <span class="function"><span class="params">(response)</span> -&gt;</span> <span class="comment"># -&gt; OK, closure</span>
       ds.parse response <span class="comment"># complete the empty dataset</span>
       f(ds) <span class="keyword">if</span> f?
     ds <span class="comment"># async: ds will be empty until import finishes</span></pre></div></div>
@@ -153,7 +153,7 @@ The parse method converts a string into a dataset. Async</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  constructor: (width=<span class="number">0</span>, height=<span class="number">0</span>, data=[]) -&gt; 
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">constructor</span>: <span class="function"><span class="params">(width=<span class="number">0</span>, height=<span class="number">0</span>, data=[])</span> -&gt;</span> 
     <span class="property">@useNearest</span>=<span class="literal">false</span>
     <span class="property">@reset</span> width, height, data</pre></div></div>
             
@@ -171,10 +171,10 @@ an empty dataset and having it filled by another function.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  reset: (<span class="property">@width</span>, <span class="property">@height</span>, <span class="property">@data</span>) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">reset</span>: <span class="function"><span class="params">(<span class="property">@width</span>, <span class="property">@height</span>, <span class="property">@data</span>)</span> -&gt;</span>
     <span class="keyword">if</span> data.length <span class="keyword">isnt</span> width*height
       u.error <span class="string">"""DataSet: data array length error:
-      data.length: <span class="subst">#{@data.length}</span> width: <span class="subst">#{@width}</span> height: <span class="subst">#{@height}</span>
+      data.length: <span class="subst">#{<span class="property">@data</span>.length}</span> width: <span class="subst">#{<span class="property">@width</span>}</span> height: <span class="subst">#{<span class="property">@height</span>}</span>
       """</span>
     @</pre></div></div>
             
@@ -191,7 +191,7 @@ an empty dataset and having it filled by another function.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  checkXY: (x,y) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">checkXY</span>: <span class="function"><span class="params">(x,y)</span> -&gt;</span>
     u.error <span class="string">"x,y out of range: <span class="subst">#{x}</span>,<span class="subst">#{y}</span>"</span> <span class="keyword">unless</span> (<span class="number">0</span>&lt;=x&lt;=<span class="property">@width</span>-<span class="number">1</span> <span class="keyword">and</span> <span class="number">0</span>&lt;=y&lt;=<span class="property">@height</span>-<span class="number">1</span>)</pre></div></div>
             
         </li>
@@ -207,8 +207,8 @@ an empty dataset and having it filled by another function.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  setSampler: (<span class="property">@useNearest</span>) -&gt;
-  sample: (x,y) -&gt; <span class="keyword">if</span> <span class="property">@useNearest</span> <span class="keyword">then</span> <span class="property">@nearest</span> x,y <span class="keyword">else</span> <span class="property">@bilinear</span> x,y</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">setSampler</span>: <span class="function"><span class="params">(<span class="property">@useNearest</span>)</span> -&gt;</span>
+  <span class="attribute">sample</span>: <span class="function"><span class="params">(x,y)</span> -&gt;</span> <span class="keyword">if</span> <span class="property">@useNearest</span> <span class="keyword">then</span> <span class="property">@nearest</span> x,y <span class="keyword">else</span> <span class="property">@bilinear</span> x,y</pre></div></div>
             
         </li>
         
@@ -223,7 +223,7 @@ an empty dataset and having it filled by another function.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  nearest: (x,y) -&gt; <span class="property">@getXY</span> Math.round(x), Math.round(y)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">nearest</span>: <span class="function"><span class="params">(x,y)</span> -&gt;</span> <span class="property">@getXY</span> Math.round(x), Math.round(y)</pre></div></div>
             
         </li>
         
@@ -238,7 +238,7 @@ an empty dataset and having it filled by another function.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  bilinear: (x,y) -&gt; <span class="comment"># http://en.wikipedia.org/wiki/Bilinear_interpolation</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">bilinear</span>: <span class="function"><span class="params">(x,y)</span> -&gt;</span> <span class="comment"># http://en.wikipedia.org/wiki/Bilinear_interpolation</span>
     <span class="property">@checkXY</span> x,y
     x0=Math.floor x; y0=Math.floor y; i=<span class="property">@toIndex</span> x0,y0; w=<span class="property">@width</span></pre></div></div>
             
@@ -287,7 +287,7 @@ if fij wrap on x, x is 0, dx is 1; return f00<em>dy+f01</em>y, linear on y</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  toIndex: (x,y) -&gt; x + y*<span class="property">@width</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">toIndex</span>: <span class="function"><span class="params">(x,y)</span> -&gt;</span> x + y*<span class="property">@width</span></pre></div></div>
             
         </li>
         
@@ -302,7 +302,7 @@ if fij wrap on x, x is 0, dx is 1; return f00<em>dy+f01</em>y, linear on y</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  toXY: (i) -&gt; [i % <span class="property">@width</span>, Math.floor i/<span class="property">@width</span>]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">toXY</span>: <span class="function"><span class="params">(i)</span> -&gt;</span> [i % <span class="property">@width</span>, Math.floor i/<span class="property">@width</span>]</pre></div></div>
             
         </li>
         
@@ -317,7 +317,7 @@ if fij wrap on x, x is 0, dx is 1; return f00<em>dy+f01</em>y, linear on y</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  getXY: (x,y) -&gt; <span class="property">@checkXY</span> x,y; <span class="property">@data</span>[<span class="property">@toIndex</span> x,y]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">getXY</span>: <span class="function"><span class="params">(x,y)</span> -&gt;</span> <span class="property">@checkXY</span> x,y; <span class="property">@data</span>[<span class="property">@toIndex</span> x,y]</pre></div></div>
             
         </li>
         
@@ -332,7 +332,7 @@ if fij wrap on x, x is 0, dx is 1; return f00<em>dy+f01</em>y, linear on y</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  setXY: (x,y,num) -&gt; <span class="property">@checkXY</span> x,y; <span class="property">@data</span>[<span class="property">@toIndex</span> x,y] = num</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">setXY</span>: <span class="function"><span class="params">(x,y,num)</span> -&gt;</span> <span class="property">@checkXY</span> x,y; <span class="property">@data</span>[<span class="property">@toIndex</span> x,y] = num</pre></div></div>
             
         </li>
         
@@ -348,11 +348,11 @@ If p &lt; 0, print data, otherwise use toFixed to truncate to p precision</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  toString: (p=<span class="number">2</span>, sep=<span class="string">", "</span>)-&gt;
-    s = <span class="string">"width: <span class="subst">#{@width}</span> height: <span class="subst">#{@height}</span> data:"</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">toString</span>: <span class="function"><span class="params">(p=<span class="number">2</span>, sep=<span class="string">", "</span>)</span>-&gt;</span>
+    s = <span class="string">"width: <span class="subst">#{<span class="property">@width</span>}</span> height: <span class="subst">#{<span class="property">@height</span>}</span> data:"</span>
     data = <span class="keyword">if</span> p&lt;<span class="number">0</span> <span class="keyword">then</span> <span class="property">@data</span> <span class="keyword">else</span> u.aToFixed <span class="property">@data</span>, p
     <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span>..<span class="property">@height</span>]
-      s += <span class="string">"\n"</span> + <span class="string">"<span class="subst">#{i}</span>: <span class="subst">#{data.slice i*@width, (i+<span class="number">1</span>)*@width}</span>"</span>
+      s += <span class="string">"\n"</span> + <span class="string">"<span class="subst">#{i}</span>: <span class="subst">#{data.slice i*<span class="property">@width</span>, (i+<span class="number">1</span>)*<span class="property">@width</span>}</span>"</span>
     s.replace <span class="regexp">/,/g</span>, sep</pre></div></div>
             
         </li>
@@ -369,9 +369,9 @@ NOTE: alpha below is pixel value .. i.e. 0-255, not HTML value: 0-1</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  toImage: (gray = <span class="literal">true</span>, normalize = <span class="literal">true</span>, alpha = <span class="number">255</span>)-&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">toImage</span>: <span class="function"><span class="params">(gray = <span class="literal">true</span>, normalize = <span class="literal">true</span>, alpha = <span class="number">255</span>)</span>-&gt;</span>
     <span class="property">@toContext</span>(gray, normalize, alpha).canvas
-  toContext: (gray = <span class="literal">true</span>, normalize = <span class="literal">true</span>, alpha = <span class="number">255</span>)-&gt;
+  <span class="attribute">toContext</span>: <span class="function"><span class="params">(gray = <span class="literal">true</span>, normalize = <span class="literal">true</span>, alpha = <span class="number">255</span>)</span>-&gt;</span>
     ctx = u.createCtx <span class="property">@width</span>, <span class="property">@height</span>
     idata = ctx.getImageData(<span class="number">0</span>, <span class="number">0</span>, <span class="property">@width</span>, <span class="property">@height</span>); ta = idata.data
     max = Math.pow(<span class="number">2</span>, <span class="keyword">if</span> gray <span class="keyword">then</span> <span class="number">8</span> <span class="keyword">else</span> <span class="number">24</span>)
@@ -400,9 +400,9 @@ NOTE: alpha below is pixel value .. i.e. 0-255, not HTML value: 0-1</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  toDrawing: (gray = <span class="literal">true</span>, normalize = <span class="literal">true</span>, alpha = <span class="number">255</span>) -&gt; 
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">toDrawing</span>: <span class="function"><span class="params">(gray = <span class="literal">true</span>, normalize = <span class="literal">true</span>, alpha = <span class="number">255</span>)</span> -&gt;</span> 
     ABM.patches.installDrawing(img=<span class="property">@toImage</span> gray, normalize, alpha); img
-  toPatchColors: (gray = <span class="literal">true</span>, normalize = <span class="literal">true</span>, alpha = <span class="number">255</span>) -&gt; 
+  <span class="attribute">toPatchColors</span>: <span class="function"><span class="params">(gray = <span class="literal">true</span>, normalize = <span class="literal">true</span>, alpha = <span class="number">255</span>)</span> -&gt;</span> 
     ABM.patches.installColors(img=<span class="property">@toImage</span> gray, normalize, alpha); img</pre></div></div>
             
         </li>
@@ -420,7 +420,7 @@ The dataset can be sampled directly to its edges .. i.e. in agent coords.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  toPatchVar: (name) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">toPatchVar</span>: <span class="function"><span class="params">(name)</span> -&gt;</span>
     <span class="keyword">if</span> (ps=ABM.patches).length <span class="keyword">is</span> <span class="property">@data</span>.length
     <span class="keyword">then</span> p[name] = <span class="property">@data</span>[i] <span class="keyword">for</span> p,i <span class="keyword">in</span> ps
     <span class="keyword">else</span> p[name] = <span class="property">@patchSample</span> p.x, p.y <span class="keyword">for</span> p <span class="keyword">in</span> ps
@@ -440,10 +440,10 @@ x,y is in topleft-bottomright box: [tlx,tly,tlx+w,tly-h]</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  coordSample: (x, y, tlx, tly, w, h) -&gt; <span class="comment">#brx, bry) -&gt;</span>
-    xs=(x-tlx)*(<span class="property">@width</span>-<span class="number">1</span>)<span class="regexp">/w;  ys=(tly-y)*(@height-1)/</span>h <span class="comment"># convert to sample space</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">coordSample</span>: <span class="function"><span class="params">(x, y, tlx, tly, w, h)</span> -&gt;</span> <span class="comment">#brx, bry) -&gt;</span>
+    xs=(x-tlx)*(<span class="property">@width</span>-<span class="number">1</span>)/w;  ys=(tly-y)*(<span class="property">@height</span>-<span class="number">1</span>)/h <span class="comment"># convert to sample space</span>
     <span class="property">@sample</span> xs,ys
-  patchSample: (px, py) -&gt;
+  <span class="attribute">patchSample</span>: <span class="function"><span class="params">(px, py)</span> -&gt;</span>
     w=ABM.world
     <span class="property">@coordSample</span> px, py, w.minXcor, w.maxYcor, w.numX, w.numY</pre></div></div>
             
@@ -460,7 +460,7 @@ x,y is in topleft-bottomright box: [tlx,tly,tlx+w,tly-h]</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  resample: (width, height) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">resample</span>: <span class="function"><span class="params">(width, height)</span> -&gt;</span>
     <span class="keyword">return</span> <span class="keyword">new</span> DataSet width,height,<span class="property">@data</span> <span class="keyword">if</span> width <span class="keyword">is</span> <span class="property">@width</span> <span class="keyword">and</span> height <span class="keyword">is</span> <span class="property">@height</span>
     data = []; xScale = (<span class="property">@width</span>-<span class="number">1</span>)<span class="regexp">/(width-1); yScale = (@height-1)/</span>(height-<span class="number">1</span>)
     <span class="keyword">for</span> y <span class="keyword">in</span> [<span class="number">0.</span>..height] <span class="keyword">by</span> <span class="number">1</span>
@@ -483,7 +483,7 @@ Off-edge neighbors revert to nearest edge value.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  neighborhood: (x,y,array=[]) -&gt; <span class="comment"># return 3x3 neighborhood</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">neighborhood</span>: <span class="function"><span class="params">(x,y,array=[])</span> -&gt;</span> <span class="comment"># return 3x3 neighborhood</span>
     array.length = <span class="number">0</span> <span class="comment"># in case user supplied an array</span>
     <span class="keyword">for</span> dy <span class="keyword">in</span> [-<span class="number">1.</span><span class="number">.1</span>]
       <span class="keyword">for</span> dx <span class="keyword">in</span> [-<span class="number">1.</span><span class="number">.1</span>]
@@ -506,7 +506,7 @@ See <a href="http://goo.gl/ubFiji">Convolution article</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  convolve: (kernel,factor=<span class="number">1</span>) -&gt; <span class="comment"># Factory: return new convolved dataset</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">convolve</span>: <span class="function"><span class="params">(kernel,factor=<span class="number">1</span>)</span> -&gt;</span> <span class="comment"># Factory: return new convolved dataset</span>
     array = []; n = []
     <span class="keyword">for</span> y <span class="keyword">in</span> [<span class="number">0.</span>..<span class="property">@height</span>] <span class="keyword">by</span> <span class="number">1</span>
       <span class="keyword">for</span> x <span class="keyword">in</span> [<span class="number">0.</span>..<span class="property">@width</span>] <span class="keyword">by</span> <span class="number">1</span>
@@ -527,10 +527,10 @@ See <a href="http://goo.gl/ubFiji">Convolution article</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  dzdx: (n=<span class="number">2</span>,factor=<span class="number">1</span>/<span class="number">8</span>) -&gt; <span class="property">@convolve</span>([-<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,-n,<span class="number">0</span>,n,-<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>],factor)
-  dzdy: (n=<span class="number">2</span>,factor=<span class="number">1</span>/<span class="number">8</span>) -&gt; <span class="property">@convolve</span>([<span class="number">1</span>,n,<span class="number">1</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,-<span class="number">1</span>,-n,-<span class="number">1</span>],factor)
-  laplace8: () -&gt; <span class="property">@convolve</span>([-<span class="number">1</span>,-<span class="number">1</span>,-<span class="number">1</span>,-<span class="number">1</span>,<span class="number">8</span>,-<span class="number">1</span>,-<span class="number">1</span>,-<span class="number">1</span>,-<span class="number">1</span>])
-  laplace4: () -&gt; <span class="property">@convolve</span>([<span class="number">0</span>,-<span class="number">1</span>,<span class="number">0</span>,-<span class="number">1</span>,<span class="number">4</span>,-<span class="number">1</span>,<span class="number">0</span>,-<span class="number">1</span>,<span class="number">0</span>])</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">dzdx</span>: <span class="function"><span class="params">(n=<span class="number">2</span>,factor=<span class="number">1</span>/<span class="number">8</span>)</span> -&gt;</span> <span class="property">@convolve</span>([-<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,-n,<span class="number">0</span>,n,-<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>],factor)
+  <span class="attribute">dzdy</span>: <span class="function"><span class="params">(n=<span class="number">2</span>,factor=<span class="number">1</span>/<span class="number">8</span>)</span> -&gt;</span> <span class="property">@convolve</span>([<span class="number">1</span>,n,<span class="number">1</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,-<span class="number">1</span>,-n,-<span class="number">1</span>],factor)
+  <span class="attribute">laplace8</span>: <span class="function"><span class="params">()</span> -&gt;</span> <span class="property">@convolve</span>([-<span class="number">1</span>,-<span class="number">1</span>,-<span class="number">1</span>,-<span class="number">1</span>,<span class="number">8</span>,-<span class="number">1</span>,-<span class="number">1</span>,-<span class="number">1</span>,-<span class="number">1</span>])
+  <span class="attribute">laplace4</span>: <span class="function"><span class="params">()</span> -&gt;</span> <span class="property">@convolve</span>([<span class="number">0</span>,-<span class="number">1</span>,<span class="number">0</span>,-<span class="number">1</span>,<span class="number">4</span>,-<span class="number">1</span>,<span class="number">0</span>,-<span class="number">1</span>,<span class="number">0</span>])</pre></div></div>
             
         </li>
         
@@ -549,7 +549,7 @@ those wanting to use the results of the two convolutions.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  slopeAndAspect: (noNaNs=<span class="literal">true</span>, posAngle=<span class="literal">true</span>) -&gt; 
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">slopeAndAspect</span>: <span class="function"><span class="params">(noNaNs=<span class="literal">true</span>, posAngle=<span class="literal">true</span>)</span> -&gt;</span> 
     n = <span class="number">2</span>
     dzdx = <span class="property">@dzdx</span>() <span class="comment"># sub left z from right</span>
     dzdy = <span class="property">@dzdy</span>() <span class="comment"># sub bottom z from top</span>
@@ -608,7 +608,7 @@ those wanting to use the results of the two convolutions.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  subset: (x, y, width, height) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">subset</span>: <span class="function"><span class="params">(x, y, width, height)</span> -&gt;</span>
     u.error <span class="string">"subSet: params out of range"</span> <span class="keyword">if</span> x+width&gt;<span class="property">@width</span> <span class="keyword">or</span> y+height&gt;<span class="property">@height</span>
     data = []
     <span class="keyword">for</span> j <span class="keyword">in</span> [y...y+height] <span class="keyword">by</span> <span class="number">1</span>
@@ -653,7 +653,7 @@ so that it can be used in an async file operation.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  constructor: (<span class="property">@str</span>=<span class="string">""</span>) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">constructor</span>: <span class="function"><span class="params">(<span class="property">@str</span>=<span class="string">""</span>)</span> -&gt;</span>
     <span class="keyword">super</span>() <span class="comment"># start out as an empty dataset</span>
     <span class="keyword">return</span> <span class="keyword">if</span> <span class="property">@str</span>.length <span class="keyword">is</span> <span class="number">0</span>
     <span class="property">@parse</span> <span class="property">@str</span></pre></div></div>
@@ -672,7 +672,7 @@ is read via an xhr request.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  parse: (<span class="property">@str</span>) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">parse</span>: <span class="function"><span class="params">(<span class="property">@str</span>)</span> -&gt;</span>
     textData = str.split <span class="string">"\n"</span>; <span class="property">@header</span> = {}; <span class="comment">#gisData.data = []</span>
     <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span><span class="number">.5</span>]
       keyVal = textData[i].split <span class="regexp">/\s+/</span>
@@ -704,23 +704,23 @@ img may be a canvas</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  constructor: (<span class="property">@img</span>, <span class="property">@f</span>=u.pixelByte(<span class="number">0</span>), <span class="property">@arrayType</span>=Uint8ClampedArray, <span class="property">@rowsPerSlice</span>) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">constructor</span>: <span class="function"><span class="params">(<span class="property">@img</span>, <span class="property">@f</span>=u.pixelByte(<span class="number">0</span>), <span class="property">@arrayType</span>=Uint8ClampedArray, <span class="property">@rowsPerSlice</span>)</span> -&gt;</span>
     <span class="keyword">super</span>() <span class="comment"># start out as an empty dataset</span>
     <span class="keyword">return</span> <span class="keyword">unless</span> <span class="property">@img</span>?
     <span class="property">@parse</span> <span class="property">@img</span>
-  parse: (<span class="property">@img</span>) -&gt;
+  <span class="attribute">parse</span>: <span class="function"><span class="params">(<span class="property">@img</span>)</span> -&gt;</span>
     <span class="property">@rowsPerSlice</span> <span class="keyword">or</span>= <span class="property">@img</span>.height
     data = u.imageRowsToData <span class="property">@img</span>, <span class="property">@rowsPerSlice</span>, <span class="property">@f</span>, <span class="property">@arrayType</span>
     <span class="property">@reset</span> <span class="property">@img</span>.width, <span class="property">@img</span>.height, data
     
 ABM.PatchDataSet = <span class="class"><span class="keyword">class</span> <span class="title">PatchDataSet</span> <span class="keyword">extends</span> <span class="title">DataSet</span></span>
-  constructor: (f, arrayType=Array) -&gt;
+  <span class="attribute">constructor</span>: <span class="function"><span class="params">(f, arrayType=Array)</span> -&gt;</span>
     data = <span class="keyword">new</span> arrayType (ps=ABM.patches).length
     f = u.propFcn f <span class="keyword">if</span> u.isString f
     data[i] = f(p) <span class="keyword">for</span> p,i <span class="keyword">in</span> ps
     <span class="keyword">super</span> ps.numX, ps.numY, data
     <span class="property">@useNearest</span> = <span class="literal">true</span>
-  toPatchVar: (name) -&gt;
+  <span class="attribute">toPatchVar</span>: <span class="function"><span class="params">(name)</span> -&gt;</span>
     p[name] = <span class="property">@data</span>[i] <span class="keyword">for</span> p,i <span class="keyword">in</span> ABM.patches; <span class="literal">null</span></pre></div></div>
             
         </li>

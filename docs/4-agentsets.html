@@ -70,7 +70,7 @@
               </div>
               <p>There are three agentsets and their corresponding 
 agents: Patches/Patch, Agents/Agent, and Links/Link.</p>
-<h3>Patch and Patches</h3>
+<h3 id="patch-and-patches">Patch and Patches</h3>
 
             </div>
             
@@ -101,33 +101,35 @@ is the world on which the agents live and the model runs.</p>
                 <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
               <p>Constructor &amp; Class Variables:</p>
-<p>Constructor &amp; Class Variables:
-<em> id:         unique identifier, promoted by agentset create() factory method
-</em> breed:      the agentset this agent belongs to
-<em> x,y:        position on the patch grid, in patch coordinates
-</em> color:      the color of the patch as an RGBA array, A optional.
-<em> hidden:     whether or not to draw this patch
-</em> label:      text for the patch
-<em> labelColor: the color of my label text
-</em> labelOffset:the x,y offset of my label from my x,y location
-<em> n,n4:       adjacent neighbors: n: 8 patches, n4: N,E,S,W patches.
-</em> pRect:      cached rect for performance</p>
+<p>Constructor &amp; Class Variables:</p>
+<ul>
+<li>id:         unique identifier, promoted by agentset create() factory method</li>
+<li>breed:      the agentset this agent belongs to</li>
+<li>x,y:        position on the patch grid, in patch coordinates</li>
+<li>color:      the color of the patch as an RGBA array, A optional.</li>
+<li>hidden:     whether or not to draw this patch</li>
+<li>label:      text for the patch</li>
+<li>labelColor: the color of my label text</li>
+<li>labelOffset:the x,y offset of my label from my x,y location</li>
+<li>n,n4:       adjacent neighbors: n: 8 patches, n4: N,E,S,W patches.</li>
+<li>pRect:      cached rect for performance</li>
+</ul>
 <p>Patches may not need their neighbors, thus we use a default
 of none.  n and n4 are promoted by the Patches agent set 
 if world.neighbors is true, the default.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  id: <span class="literal">null</span>            <span class="comment"># unique id, promoted by agentset create factory method</span>
-  breed: <span class="literal">null</span>         <span class="comment"># set by the agentSet owning this patch</span>
-  x:<span class="literal">null</span>; y:<span class="literal">null</span>      <span class="comment"># The patch position in the patch grid</span>
-  n:<span class="literal">null</span>; n4:<span class="literal">null</span>     <span class="comment"># The neighbors, n: 8, n4: 4. null OK if model doesn't need them.</span>
-  color: [<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>]      <span class="comment"># The patch color</span>
-  hidden: <span class="literal">false</span>       <span class="comment"># draw me?</span>
-  label: <span class="literal">null</span>         <span class="comment"># text for the patch</span>
-  labelColor: [<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>] <span class="comment"># text color</span>
-  labelOffset: [<span class="number">0</span>,<span class="number">0</span>]  <span class="comment"># text offset from the patch center</span>
-  pRect: <span class="literal">null</span>         <span class="comment"># Performance: cached rect of neighborhood larger than n.</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">id</span>: <span class="literal">null</span>            <span class="comment"># unique id, promoted by agentset create factory method</span>
+  <span class="attribute">breed</span>: <span class="literal">null</span>         <span class="comment"># set by the agentSet owning this patch</span>
+  <span class="attribute">x</span>:<span class="literal">null</span>; <span class="attribute">y</span>:<span class="literal">null</span>      <span class="comment"># The patch position in the patch grid</span>
+  <span class="attribute">n</span>:<span class="literal">null</span>; <span class="attribute">n4</span>:<span class="literal">null</span>     <span class="comment"># The neighbors, n: 8, n4: 4. null OK if model doesn't need them.</span>
+  <span class="attribute">color</span>: [<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>]      <span class="comment"># The patch color</span>
+  <span class="attribute">hidden</span>: <span class="literal">false</span>       <span class="comment"># draw me?</span>
+  <span class="attribute">label</span>: <span class="literal">null</span>         <span class="comment"># text for the patch</span>
+  <span class="attribute">labelColor</span>: [<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>] <span class="comment"># text color</span>
+  <span class="attribute">labelOffset</span>: [<span class="number">0</span>,<span class="number">0</span>]  <span class="comment"># text offset from the patch center</span>
+  <span class="attribute">pRect</span>: <span class="literal">null</span>         <span class="comment"># Performance: cached rect of neighborhood larger than n.</span></pre></div></div>
             
         </li>
         
@@ -142,7 +144,7 @@ if world.neighbors is true, the default.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  constructor: (<span class="property">@x</span>, <span class="property">@y</span>) -&gt;</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">constructor</span>: <span class="function"><span class="params">(<span class="property">@x</span>, <span class="property">@y</span>)</span> -&gt;</span></pre></div></div>
             
         </li>
         
@@ -157,7 +159,7 @@ if world.neighbors is true, the default.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  toString: -&gt; <span class="string">"{id:<span class="subst">#{@id}</span> xy:<span class="subst">#{[@x,@y]}</span> c:<span class="subst">#{@color}</span>}"</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">toString</span>:<span class="function"> -&gt;</span> <span class="string">"{id:<span class="subst">#{<span class="property">@id</span>}</span> xy:<span class="subst">#{[<span class="property">@x</span>,<span class="property">@y</span>]}</span> c:<span class="subst">#{<span class="property">@color</span>}</span>}"</span></pre></div></div>
             
         </li>
         
@@ -175,7 +177,7 @@ p.scaleColor @foodColor, p.foodPheromone # ants model</code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  scaleColor: (c, s) -&gt; 
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">scaleColor</span>: <span class="function"><span class="params">(c, s)</span> -&gt;</span> 
     <span class="property">@color</span> = u.clone <span class="property">@color</span> <span class="keyword">unless</span> @.hasOwnProperty(<span class="string">"color"</span>)
     u.scaleColor c, s, <span class="property">@color</span></pre></div></div>
             
@@ -192,7 +194,7 @@ p.scaleColor @foodColor, p.foodPheromone # ants model</code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  draw: (ctx) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">draw</span>: <span class="function"><span class="params">(ctx)</span> -&gt;</span>
     ctx.fillStyle = u.colorStr <span class="property">@color</span>
     ctx.fillRect <span class="property">@x</span>-<span class="number">.5</span>, <span class="property">@y</span>-<span class="number">.5</span>, <span class="number">1</span>, <span class="number">1</span>
     <span class="keyword">if</span> <span class="property">@label</span>? <span class="comment"># REMIND: should be 2nd pass.</span>
@@ -215,7 +217,7 @@ as they move from patch to patch.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  agentsHere: -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">agentsHere</span>:<span class="function"> -&gt;</span>
     <span class="property">@agents</span> ? (a <span class="keyword">for</span> a <span class="keyword">in</span> ABM.agents <span class="keyword">when</span> a.p <span class="keyword">is</span> @)</pre></div></div>
             
         </li>
@@ -231,7 +233,7 @@ as they move from patch to patch.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  isOnEdge: -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">isOnEdge</span>:<span class="function"> -&gt;</span>
     <span class="property">@x</span> <span class="keyword">is</span> <span class="property">@breed</span>.minX <span class="keyword">or</span> <span class="property">@x</span> <span class="keyword">is</span> <span class="property">@breed</span>.maxX <span class="keyword">or</span> \
     <span class="property">@y</span> <span class="keyword">is</span> <span class="property">@breed</span>.minY <span class="keyword">or</span> <span class="property">@y</span> <span class="keyword">is</span> <span class="property">@breed</span>.maxY</pre></div></div>
             
@@ -249,8 +251,8 @@ proc is called on the new agent after inserting in its agentSet.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  sprout: (num = <span class="number">1</span>, breed = ABM.agents, <span class="function"><span class="title">init</span></span> = -&gt;) -&gt;
-    breed.create num, (a) =&gt; <span class="comment"># fat arrow so that @ = this patch</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">sprout</span>: <span class="function"><span class="params">(num = <span class="number">1</span>, breed = ABM.agents, init = -&gt;)</span> -&gt;</span>
+    breed.create num, <span class="function"><span class="params">(a)</span> =&gt;</span> <span class="comment"># fat arrow so that @ = this patch</span>
       a.setXY <span class="property">@x</span>, <span class="property">@y</span>; init(a); a</pre></div></div>
             
         </li>
@@ -293,7 +295,7 @@ Patches are created from top-left to bottom-right to match data sets.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  constructor: -&gt; <span class="comment"># agentClass, name, mainSet</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">constructor</span>:<span class="function"> -&gt;</span> <span class="comment"># agentClass, name, mainSet</span>
     <span class="keyword">super</span> <span class="comment"># call super with all the args I was called with</span>
     <span class="property">@monochrome</span> = <span class="literal">false</span> <span class="comment"># set to true to optimize patches all default color</span>
     @[k] = v <span class="keyword">for</span> own k,v <span class="keyword">of</span> ABM.world <span class="comment"># add world items to patches</span>
@@ -314,7 +316,7 @@ patches are started up empty and filled by &quot;create&quot; calls.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  populate: -&gt; <span class="comment"># TopLeft to BottomRight, exactly as canvas imagedata</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">populate</span>:<span class="function"> -&gt;</span> <span class="comment"># TopLeft to BottomRight, exactly as canvas imagedata</span>
     <span class="keyword">for</span> y <span class="keyword">in</span> [<span class="property">@maxY</span>..<span class="property">@minY</span>] <span class="keyword">by</span> -<span class="number">1</span>
       <span class="keyword">for</span> x <span class="keyword">in</span> [<span class="property">@minX</span>..<span class="property">@maxX</span>] <span class="keyword">by</span> <span class="number">1</span>
         <span class="property">@add</span> <span class="keyword">new</span> <span class="property">@agentClass</span> x, y
@@ -336,7 +338,7 @@ Call before first agent is created.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  cacheAgentsHere: -&gt; p.agents = [] <span class="keyword">for</span> p <span class="keyword">in</span> @; <span class="literal">null</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">cacheAgentsHere</span>:<span class="function"> -&gt;</span> p.agents = [] <span class="keyword">for</span> p <span class="keyword">in</span> @; <span class="literal">null</span></pre></div></div>
             
         </li>
         
@@ -348,11 +350,11 @@ Call before first agent is created.</p>
                 <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
               <p>Draw patches using scaled image of colors. Note anti-aliasing may occur
-if browser does not support these flags.</p>
+if browser does not support smoothing flags.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  usePixels: (<span class="property">@drawWithPixels</span>=<span class="literal">true</span>) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">usePixels</span>: <span class="function"><span class="params">(<span class="property">@drawWithPixels</span>=<span class="literal">true</span>)</span> -&gt;</span>
     ctx = ABM.contexts.patches
     u.setCtxSmoothing ctx, <span class="keyword">not</span> <span class="property">@drawWithPixels</span></pre></div></div>
             
@@ -370,7 +372,7 @@ inCone, inRect, inRadius.  Ex: flock demo model&#39;s vision rect.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  cacheRect: (radius, meToo=<span class="literal">false</span>) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">cacheRect</span>: <span class="function"><span class="params">(radius, meToo=<span class="literal">false</span>)</span> -&gt;</span>
     <span class="keyword">for</span> p <span class="keyword">in</span> @
       p.pRect = <span class="property">@patchRect</span> p, radius, radius, meToo
       p.pRect.radius = radius<span class="comment">#; p.pRect.meToo = meToo</span>
@@ -389,7 +391,7 @@ inCone, inRect, inRadius.  Ex: flock demo model&#39;s vision rect.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  setNeighbors: -&gt; 
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">setNeighbors</span>:<span class="function"> -&gt;</span> 
     <span class="keyword">for</span> p <span class="keyword">in</span> @
       p.n =  <span class="property">@patchRect</span> p, <span class="number">1</span>, <span class="number">1</span>
       p.n4 = <span class="property">@asSet</span> (n <span class="keyword">for</span> n <span class="keyword">in</span> p.n <span class="keyword">when</span> n.x <span class="keyword">is</span> p.x <span class="keyword">or</span> n.y <span class="keyword">is</span> p.y)</pre></div></div>
@@ -407,7 +409,7 @@ inCone, inRect, inRadius.  Ex: flock demo model&#39;s vision rect.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  setPixels: -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">setPixels</span>:<span class="function"> -&gt;</span>
     <span class="keyword">if</span> <span class="property">@size</span> <span class="keyword">is</span> <span class="number">1</span>
     <span class="keyword">then</span> <span class="property">@usePixels</span>(); <span class="property">@pixelsCtx</span> = ABM.contexts.patches
     <span class="keyword">else</span> <span class="property">@pixelsCtx</span> = u.createCtx <span class="property">@numX</span>, <span class="property">@numY</span>
@@ -435,7 +437,7 @@ inCone, inRect, inRadius.  Ex: flock demo model&#39;s vision rect.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  draw: (ctx) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">draw</span>: <span class="function"><span class="params">(ctx)</span> -&gt;</span>
     <span class="keyword">if</span> <span class="property">@monochrome</span> <span class="keyword">then</span> u.fillCtx ctx, <span class="property">@agentClass</span>::color
     <span class="keyword">else</span> <span class="keyword">if</span> <span class="property">@drawWithPixels</span> <span class="keyword">then</span> <span class="property">@drawScaledPixels</span> ctx <span class="keyword">else</span> <span class="keyword">super</span> ctx</pre></div></div>
             
@@ -445,10 +447,10 @@ inCone, inRect, inRadius.  Ex: flock demo model&#39;s vision rect.</p>
         <li id="section-20">
             <div class="annotation">
               
-              <div class="pilwrap for-h4">
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
-              <h4>Patch grid coord system utilities:</h4>
+              <h4 id="patch-grid-coord-system-utilities-">Patch grid coord system utilities:</h4>
 
             </div>
             
@@ -465,7 +467,7 @@ inCone, inRect, inRadius.  Ex: flock demo model&#39;s vision rect.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  patchIndex: (x,y) -&gt; x-<span class="property">@minX</span> + <span class="property">@numX</span>*(<span class="property">@maxY</span>-y)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">patchIndex</span>: <span class="function"><span class="params">(x,y)</span> -&gt;</span> x-<span class="property">@minX</span> + <span class="property">@numX</span>*(<span class="property">@maxY</span>-y)</pre></div></div>
             
         </li>
         
@@ -481,7 +483,7 @@ x &amp; y are both valid integer patch coordinates.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  patchXY: (x,y) -&gt; @[<span class="property">@patchIndex</span> x,y]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">patchXY</span>: <span class="function"><span class="params">(x,y)</span> -&gt;</span> @[<span class="property">@patchIndex</span> x,y]</pre></div></div>
             
         </li>
         
@@ -496,7 +498,7 @@ x &amp; y are both valid integer patch coordinates.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  clamp: (x,y) -&gt; [u.clamp(x, <span class="property">@minXcor</span>, <span class="property">@maxXcor</span>), u.clamp(y, <span class="property">@minYcor</span>, <span class="property">@maxYcor</span>)]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">clamp</span>: <span class="function"><span class="params">(x,y)</span> -&gt;</span> [u.clamp(x, <span class="property">@minXcor</span>, <span class="property">@maxXcor</span>), u.clamp(y, <span class="property">@minYcor</span>, <span class="property">@maxYcor</span>)]</pre></div></div>
             
         </li>
         
@@ -511,7 +513,7 @@ x &amp; y are both valid integer patch coordinates.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  wrap: (x,y)  -&gt; [u.wrap(x, <span class="property">@minXcor</span>, <span class="property">@maxXcor</span>),  u.wrap(y, <span class="property">@minYcor</span>, <span class="property">@maxYcor</span>)]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">wrap</span>: <span class="function"><span class="params">(x,y)</span>  -&gt;</span> [u.wrap(x, <span class="property">@minXcor</span>, <span class="property">@maxXcor</span>),  u.wrap(y, <span class="property">@minYcor</span>, <span class="property">@maxYcor</span>)]</pre></div></div>
             
         </li>
         
@@ -527,7 +529,7 @@ using either clamp/wrap above according to isTorus topology.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  coord: (x,y) -&gt; <span class="comment">#returns a valid world coord (real, not int)</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">coord</span>: <span class="function"><span class="params">(x,y)</span> -&gt;</span> <span class="comment">#returns a valid world coord (real, not int)</span>
     <span class="keyword">if</span> <span class="property">@isTorus</span> <span class="keyword">then</span> <span class="property">@wrap</span> x,y <span class="keyword">else</span> <span class="property">@clamp</span> x,y</pre></div></div>
             
         </li>
@@ -543,7 +545,7 @@ using either clamp/wrap above according to isTorus topology.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  isOnWorld: (x,y) -&gt; <span class="property">@isTorus</span> <span class="keyword">or</span> (<span class="property">@minXcor</span>&lt;=x&lt;=<span class="property">@maxXcor</span> <span class="keyword">and</span> <span class="property">@minYcor</span>&lt;=y&lt;=<span class="property">@maxYcor</span>)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">isOnWorld</span>: <span class="function"><span class="params">(x,y)</span> -&gt;</span> <span class="property">@isTorus</span> <span class="keyword">or</span> (<span class="property">@minXcor</span>&lt;=x&lt;=<span class="property">@maxXcor</span> <span class="keyword">and</span> <span class="property">@minYcor</span>&lt;=y&lt;=<span class="property">@maxYcor</span>)</pre></div></div>
             
         </li>
         
@@ -558,7 +560,7 @@ using either clamp/wrap above according to isTorus topology.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  patch: (x,y) -&gt; 
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">patch</span>: <span class="function"><span class="params">(x,y)</span> -&gt;</span> 
     [x,y]=<span class="property">@coord</span> x,y
     x = u.clamp Math.round(x), <span class="property">@minX</span>, <span class="property">@maxX</span>
     y = u.clamp Math.round(y), <span class="property">@minY</span>, <span class="property">@maxY</span>
@@ -577,7 +579,7 @@ using either clamp/wrap above according to isTorus topology.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  randomPt: -&gt; [u.randomFloat2(<span class="property">@minXcor</span>,<span class="property">@maxXcor</span>), u.randomFloat2(<span class="property">@minYcor</span>,<span class="property">@maxYcor</span>)]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">randomPt</span>:<span class="function"> -&gt;</span> [u.randomFloat2(<span class="property">@minXcor</span>,<span class="property">@maxXcor</span>), u.randomFloat2(<span class="property">@minYcor</span>,<span class="property">@maxYcor</span>)]</pre></div></div>
             
         </li>
         
@@ -585,10 +587,10 @@ using either clamp/wrap above according to isTorus topology.</p>
         <li id="section-29">
             <div class="annotation">
               
-              <div class="pilwrap for-h4">
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
-              <h4>Patch metrics</h4>
+              <h4 id="patch-metrics">Patch metrics</h4>
 
             </div>
             
@@ -605,7 +607,7 @@ using either clamp/wrap above according to isTorus topology.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  toBits: (p) -&gt; p*<span class="property">@size</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">toBits</span>: <span class="function"><span class="params">(p)</span> -&gt;</span> p*<span class="property">@size</span></pre></div></div>
             
         </li>
         
@@ -620,7 +622,7 @@ using either clamp/wrap above according to isTorus topology.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  fromBits: (b) -&gt; b/<span class="property">@size</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">fromBits</span>: <span class="function"><span class="params">(b)</span> -&gt;</span> b/<span class="property">@size</span></pre></div></div>
             
         </li>
         
@@ -628,10 +630,10 @@ using either clamp/wrap above according to isTorus topology.</p>
         <li id="section-32">
             <div class="annotation">
               
-              <div class="pilwrap for-h4">
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
-              <h4>Patch utilities</h4>
+              <h4 id="patch-utilities">Patch utilities</h4>
 
             </div>
             
@@ -650,7 +652,7 @@ Exclude <code>p</code> unless meToo is true, default false.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  patchRect: (p, dx, dy, meToo=<span class="literal">false</span>) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">patchRect</span>: <span class="function"><span class="params">(p, dx, dy, meToo=<span class="literal">false</span>)</span> -&gt;</span>
     <span class="keyword">return</span> p.pRect <span class="keyword">if</span> p.pRect? <span class="keyword">and</span> p.pRect.radius <span class="keyword">is</span> dx <span class="comment"># and p.pRect.radius is dy</span>
     rect = []; <span class="comment"># REMIND: optimize if no wrapping, rect inside patch boundaries</span>
     <span class="keyword">for</span> y <span class="keyword">in</span> [p.y-dy..p.y+dy] <span class="keyword">by</span> <span class="number">1</span> <span class="comment"># by 1: perf: avoid bidir JS for loop</span>
@@ -684,8 +686,8 @@ soon as the onload callback executes.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  importDrawing: (imageSrc, f) -&gt;
-    u.importImage imageSrc, (img) =&gt; <span class="comment"># fat arrow, this context</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">importDrawing</span>: <span class="function"><span class="params">(imageSrc, f)</span> -&gt;</span>
+    u.importImage imageSrc, <span class="function"><span class="params">(img)</span> =&gt;</span> <span class="comment"># fat arrow, this context</span>
       <span class="property">@installDrawing</span> img
       f() <span class="keyword">if</span> f?</pre></div></div>
             
@@ -702,7 +704,7 @@ soon as the onload callback executes.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  installDrawing: (img, ctx=ABM.contexts.drawing) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">installDrawing</span>: <span class="function"><span class="params">(img, ctx=ABM.contexts.drawing)</span> -&gt;</span>
     u.setIdentity ctx
     ctx.drawImage img, <span class="number">0</span>, <span class="number">0</span>, ctx.canvas.width, ctx.canvas.height
     ctx.restore() <span class="comment"># restore patch transform</span></pre></div></div>
@@ -722,8 +724,8 @@ The top-left order simplifies finding pixels in data sets</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  pixelByteIndex: (p) -&gt; <span class="number">4</span>*p.id <span class="comment"># Uint8</span>
-  pixelWordIndex: (p) -&gt; p.id   <span class="comment"># Uint32</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">pixelByteIndex</span>: <span class="function"><span class="params">(p)</span> -&gt;</span> <span class="number">4</span>*p.id <span class="comment"># Uint8</span>
+  <span class="attribute">pixelWordIndex</span>: <span class="function"><span class="params">(p)</span> -&gt;</span> p.id   <span class="comment"># Uint32</span></pre></div></div>
             
         </li>
         
@@ -738,7 +740,7 @@ The top-left order simplifies finding pixels in data sets</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  pixelXYtoPatchXY: (x,y) -&gt; [<span class="property">@minXcor</span>+(x<span class="regexp">/@size), @maxYcor-(y/</span><span class="property">@size</span>)]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">pixelXYtoPatchXY</span>: <span class="function"><span class="params">(x,y)</span> -&gt;</span> [<span class="property">@minXcor</span>+(x<span class="regexp">/@size), @maxYcor-(y/</span><span class="property">@size</span>)]</pre></div></div>
             
         </li>
         
@@ -753,7 +755,7 @@ The top-left order simplifies finding pixels in data sets</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  patchXYtoPixelXY: (x,y) -&gt; [(x-<span class="property">@minXcor</span>)*<span class="property">@size</span>, (<span class="property">@maxYcor</span>-y)*<span class="property">@size</span>]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">patchXYtoPixelXY</span>: <span class="function"><span class="params">(x,y)</span> -&gt;</span> [(x-<span class="property">@minXcor</span>)*<span class="property">@size</span>, (<span class="property">@maxYcor</span>-y)*<span class="property">@size</span>]</pre></div></div>
             
         </li>
         
@@ -770,8 +772,8 @@ per patch.  The colors are then transferred to the patches.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  importColors: (imageSrc, f) -&gt;
-    u.importImage imageSrc, (img) =&gt; <span class="comment"># fat arrow, this context</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">importColors</span>: <span class="function"><span class="params">(imageSrc, f)</span> -&gt;</span>
+    u.importImage imageSrc, <span class="function"><span class="params">(img)</span> =&gt;</span> <span class="comment"># fat arrow, this context</span>
       <span class="property">@installColors</span>(img)
       f() <span class="keyword">if</span> f?</pre></div></div>
             
@@ -788,7 +790,7 @@ per patch.  The colors are then transferred to the patches.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  installColors: (img) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">installColors</span>: <span class="function"><span class="params">(img)</span> -&gt;</span>
     u.setIdentity <span class="property">@pixelsCtx</span>
     <span class="property">@pixelsCtx</span>.drawImage img, <span class="number">0</span>, <span class="number">0</span>, <span class="property">@numX</span>, <span class="property">@numY</span> <span class="comment"># scale if needed</span>
     data = <span class="property">@pixelsCtx</span>.getImageData(<span class="number">0</span>, <span class="number">0</span>, <span class="property">@numX</span>, <span class="property">@numY</span>).data
@@ -811,7 +813,7 @@ See Mozilla pixel <a href="http://goo.gl/Lxliq">manipulation article</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  drawScaledPixels: (ctx) -&gt;</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">drawScaledPixels</span>: <span class="function"><span class="params">(ctx)</span> -&gt;</span></pre></div></div>
             
         </li>
         
@@ -822,11 +824,15 @@ See Mozilla pixel <a href="http://goo.gl/Lxliq">manipulation article</a></p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-42">&#182;</a>
               </div>
-              <p>Note u.setIdentity ctx &amp; ctx.restore() not needed, pixel ops don&#39;t use transform</p>
+              <p>u.setIdentity ctx &amp; ctx.restore() only needed if patch size 
+not 1, pixel ops don&#39;t use transform but @size&gt;1 uses
+a drawimage</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">if</span> <span class="property">@pixelsData32</span>? <span class="keyword">then</span> <span class="property">@drawScaledPixels32</span> ctx <span class="keyword">else</span> <span class="property">@drawScaledPixels8</span> ctx</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    u.setIdentity ctx <span class="keyword">if</span> <span class="property">@size</span> <span class="keyword">isnt</span> <span class="number">1</span>
+    <span class="keyword">if</span> <span class="property">@pixelsData32</span>? <span class="keyword">then</span> <span class="property">@drawScaledPixels32</span> ctx <span class="keyword">else</span> <span class="property">@drawScaledPixels8</span> ctx
+    ctx.restore() <span class="keyword">if</span> <span class="property">@size</span> <span class="keyword">isnt</span> <span class="number">1</span></pre></div></div>
             
         </li>
         
@@ -841,7 +847,7 @@ See Mozilla pixel <a href="http://goo.gl/Lxliq">manipulation article</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  drawScaledPixels8: (ctx) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">drawScaledPixels8</span>: <span class="function"><span class="params">(ctx)</span> -&gt;</span>
     data = <span class="property">@pixelsData</span>
     <span class="keyword">for</span> p <span class="keyword">in</span> @
       i = <span class="property">@pixelByteIndex</span> p; c = p.color
@@ -864,7 +870,7 @@ See Mozilla pixel <a href="http://goo.gl/Lxliq">manipulation article</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  drawScaledPixels32: (ctx) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">drawScaledPixels32</span>: <span class="function"><span class="params">(ctx)</span> -&gt;</span>
     data = <span class="property">@pixelsData32</span>
     <span class="keyword">for</span> p <span class="keyword">in</span> @
       i = <span class="property">@pixelWordIndex</span> p; c = p.color
@@ -876,7 +882,7 @@ See Mozilla pixel <a href="http://goo.gl/Lxliq">manipulation article</a></p>
     <span class="keyword">return</span> <span class="keyword">if</span> <span class="property">@size</span> <span class="keyword">is</span> <span class="number">1</span>
     ctx.drawImage <span class="property">@pixelsCtx</span>.canvas, <span class="number">0</span>, <span class="number">0</span>, ctx.canvas.width, ctx.canvas.height
 
-  floodFill: (aset, fCandidate, fJoin, <span class="function"><span class="title">fNeighbors</span></span>=((p)-&gt;p.n), asetLast=[]) -&gt;
+  <span class="attribute">floodFill</span>: <span class="function"><span class="params">(aset, fCandidate, fJoin, fNeighbors=((p)-&gt;p.n), asetLast=[])</span> -&gt;</span>
     <span class="keyword">super</span> aset, fCandidate, fJoin, fNeighbors, asetLast</pre></div></div>
             
         </li>
@@ -895,7 +901,7 @@ less than 8 neighbors, return the extra to the patch.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  diffuse: (v, rate, c) -&gt; <span class="comment"># variable name, diffusion rate, max color (optional)</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">diffuse</span>: <span class="function"><span class="params">(v, rate, c)</span> -&gt;</span> <span class="comment"># variable name, diffusion rate, max color (optional)</span></pre></div></div>
             
         </li>
         
@@ -956,10 +962,10 @@ less than 8 neighbors, return the extra to the patch.</p>
         <li id="section-49">
             <div class="annotation">
               
-              <div class="pilwrap for-h3">
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-49">&#182;</a>
               </div>
-              <h3>Agent &amp; Agents</h3>
+              <h3 id="agent-agents">Agent &amp; Agents</h3>
 
             </div>
             
@@ -1015,23 +1021,23 @@ This can be a huge savings in memory.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  id: <span class="literal">null</span>            <span class="comment"># unique id, promoted by agentset create factory method</span>
-  breed: <span class="literal">null</span>         <span class="comment"># my agentSet, set by the agentSet owning me</span>
-  x: <span class="number">0</span>; y:<span class="number">0</span>; p: <span class="literal">null</span>  <span class="comment"># my location and the patch I'm on</span>
-  size: <span class="number">1</span>             <span class="comment"># my size in patch coords</span>
-  color: <span class="literal">null</span>         <span class="comment"># default color, overrides random color if set</span>
-  shape: <span class="string">"default"</span>    <span class="comment"># my shape</span>
-  hidden: <span class="literal">false</span>       <span class="comment"># draw me?</span>
-  label: <span class="literal">null</span>         <span class="comment"># my text</span>
-  labelColor: [<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>] <span class="comment"># its color</span>
-  labelOffset: [<span class="number">0</span>,<span class="number">0</span>]  <span class="comment"># its offset from my x,y</span>
-  penDown: <span class="literal">false</span>      <span class="comment"># if my pen is down, I draw my path between changes in x,y</span>
-  penSize: <span class="number">1</span>          <span class="comment"># the pen thickness in pixels</span>
-  heading: <span class="literal">null</span>       <span class="comment"># the direction I'm pointed in, in radians</span>
-  sprite: <span class="literal">null</span>        <span class="comment"># an image of me for optimized drawing</span>
-  cacheLinks: <span class="literal">false</span>   <span class="comment"># should I keep links to/from me in links array?.</span>
-  links: <span class="literal">null</span>         <span class="comment"># array of links to/from me as an endpoint; init by ctor</span>
-  constructor: -&gt; <span class="comment"># called by agentSets create factory, not user</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">id</span>: <span class="literal">null</span>            <span class="comment"># unique id, promoted by agentset create factory method</span>
+  <span class="attribute">breed</span>: <span class="literal">null</span>         <span class="comment"># my agentSet, set by the agentSet owning me</span>
+  <span class="attribute">x</span>: <span class="number">0</span>; <span class="attribute">y</span>:<span class="number">0</span>; <span class="attribute">p</span>: <span class="literal">null</span>  <span class="comment"># my location and the patch I'm on</span>
+  <span class="attribute">size</span>: <span class="number">1</span>             <span class="comment"># my size in patch coords</span>
+  <span class="attribute">color</span>: <span class="literal">null</span>         <span class="comment"># default color, overrides random color if set</span>
+  <span class="attribute">shape</span>: <span class="string">"default"</span>    <span class="comment"># my shape</span>
+  <span class="attribute">hidden</span>: <span class="literal">false</span>       <span class="comment"># draw me?</span>
+  <span class="attribute">label</span>: <span class="literal">null</span>         <span class="comment"># my text</span>
+  <span class="attribute">labelColor</span>: [<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>] <span class="comment"># its color</span>
+  <span class="attribute">labelOffset</span>: [<span class="number">0</span>,<span class="number">0</span>]  <span class="comment"># its offset from my x,y</span>
+  <span class="attribute">penDown</span>: <span class="literal">false</span>      <span class="comment"># if my pen is down, I draw my path between changes in x,y</span>
+  <span class="attribute">penSize</span>: <span class="number">1</span>          <span class="comment"># the pen thickness in pixels</span>
+  <span class="attribute">heading</span>: <span class="literal">null</span>       <span class="comment"># the direction I'm pointed in, in radians</span>
+  <span class="attribute">sprite</span>: <span class="literal">null</span>        <span class="comment"># an image of me for optimized drawing</span>
+  <span class="attribute">cacheLinks</span>: <span class="literal">false</span>   <span class="comment"># should I keep links to/from me in links array?.</span>
+  <span class="attribute">links</span>: <span class="literal">null</span>         <span class="comment"># array of links to/from me as an endpoint; init by ctor</span>
+  <span class="attribute">constructor</span>:<span class="function"> -&gt;</span> <span class="comment"># called by agentSets create factory, not user</span>
     <span class="property">@x</span> = <span class="property">@y</span> = <span class="number">0</span>
     <span class="property">@p</span> = ABM.patches.patch <span class="property">@x</span>, <span class="property">@y</span>
     <span class="property">@color</span> = u.randomColor() <span class="keyword">unless</span> <span class="property">@color</span>? <span class="comment"># promote color if default not set</span>
@@ -1052,7 +1058,7 @@ This can be a huge savings in memory.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  scaleColor: (c, s) -&gt; 
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">scaleColor</span>: <span class="function"><span class="params">(c, s)</span> -&gt;</span> 
     <span class="property">@color</span> = u.clone <span class="property">@color</span> <span class="keyword">unless</span> <span class="property">@hasOwnProperty</span> <span class="string">"color"</span> <span class="comment"># promote color to inst var</span>
     u.scaleColor c, s, <span class="property">@color</span></pre></div></div>
             
@@ -1069,7 +1075,7 @@ This can be a huge savings in memory.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  toString: -&gt; <span class="string">"{id:<span class="subst">#{@id}</span> xy:<span class="subst">#{u.aToFixed [@x,@y]}</span> c:<span class="subst">#{@color}</span> h: <span class="subst">#{@heading.toFixed <span class="number">2</span>}</span>}"</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">toString</span>:<span class="function"> -&gt;</span> <span class="string">"{id:<span class="subst">#{<span class="property">@id</span>}</span> xy:<span class="subst">#{u.aToFixed [<span class="property">@x</span>,<span class="property">@y</span>]}</span> c:<span class="subst">#{<span class="property">@color</span>}</span> h: <span class="subst">#{<span class="property">@heading</span>.toFixed <span class="number">2</span>}</span>}"</span></pre></div></div>
             
         </li>
         
@@ -1085,7 +1091,7 @@ using patch topology (isTorus)</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  setXY: (x, y) -&gt; <span class="comment"># REMIND GC problem, 2 arrays</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">setXY</span>: <span class="function"><span class="params">(x, y)</span> -&gt;</span> <span class="comment"># REMIND GC problem, 2 arrays</span>
     [x0, y0] = [<span class="property">@x</span>, <span class="property">@y</span>] <span class="keyword">if</span> <span class="property">@penDown</span>
     [<span class="property">@x</span>, <span class="property">@y</span>] = ABM.patches.coord x, y
     p = <span class="property">@p</span>
@@ -1114,7 +1120,7 @@ using patch topology (isTorus)</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  moveTo: (a) -&gt; <span class="property">@setXY</span> a.x, a.y</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">moveTo</span>: <span class="function"><span class="params">(a)</span> -&gt;</span> <span class="property">@setXY</span> a.x, a.y</pre></div></div>
             
         </li>
         
@@ -1130,7 +1136,7 @@ using patch topology (isTorus)</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  forward: (d) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">forward</span>: <span class="function"><span class="params">(d)</span> -&gt;</span>
     <span class="property">@setXY</span> <span class="property">@x</span> + d*Math.cos(<span class="property">@heading</span>), <span class="property">@y</span> + d*Math.sin(<span class="property">@heading</span>)</pre></div></div>
             
         </li>
@@ -1146,7 +1152,7 @@ using patch topology (isTorus)</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  rotate: (rad) -&gt; <span class="property">@heading</span> = u.wrap <span class="property">@heading</span> + rad, <span class="number">0</span>, Math.PI*<span class="number">2</span> <span class="comment"># returns new h</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">rotate</span>: <span class="function"><span class="params">(rad)</span> -&gt;</span> <span class="property">@heading</span> = u.wrap <span class="property">@heading</span> + rad, <span class="number">0</span>, Math.PI*<span class="number">2</span> <span class="comment"># returns new h</span></pre></div></div>
             
         </li>
         
@@ -1161,7 +1167,7 @@ using patch topology (isTorus)</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  draw: (ctx) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">draw</span>: <span class="function"><span class="params">(ctx)</span> -&gt;</span>
     shape = ABM.shapes[<span class="property">@shape</span>]
     rad = <span class="keyword">if</span> shape.rotate <span class="keyword">then</span> <span class="property">@heading</span> <span class="keyword">else</span> <span class="number">0</span> <span class="comment"># radians</span>
     <span class="keyword">if</span> <span class="property">@sprite</span>? <span class="keyword">or</span> <span class="property">@breed</span>.useSprites 
@@ -1186,7 +1192,7 @@ using patch topology (isTorus)</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  setSprite: (sprite)-&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">setSprite</span>: <span class="function"><span class="params">(sprite)</span>-&gt;</span>
     <span class="keyword">if</span> (s=sprite)?
       <span class="property">@sprite</span> = s; <span class="property">@color</span> = s.color; <span class="property">@shape</span> = s.shape; <span class="property">@size</span> = s.size
     <span class="keyword">else</span>
@@ -1206,7 +1212,7 @@ using patch topology (isTorus)</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  stamp: -&gt; <span class="property">@draw</span> ABM.drawing</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">stamp</span>:<span class="function"> -&gt;</span> <span class="property">@draw</span> ABM.drawing</pre></div></div>
             
         </li>
         
@@ -1222,7 +1228,7 @@ using patch topology (isTorus)</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  distanceXY: (x,y) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">distanceXY</span>: <span class="function"><span class="params">(x,y)</span> -&gt;</span>
     <span class="keyword">if</span> ABM.patches.isTorus
     <span class="keyword">then</span> u.torusDistance <span class="property">@x</span>, <span class="property">@y</span>, x, y, ABM.patches.numX, ABM.patches.numY
     <span class="keyword">else</span> u.distance <span class="property">@x</span>, <span class="property">@y</span>, x, y</pre></div></div>
@@ -1240,7 +1246,7 @@ using patch topology (isTorus)</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  distance: (o) -&gt; <span class="comment"># o any object w/ x,y, patch or agent</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">distance</span>: <span class="function"><span class="params">(o)</span> -&gt;</span> <span class="comment"># o any object w/ x,y, patch or agent</span>
     <span class="property">@distanceXY</span> o.x, o.y</pre></div></div>
             
         </li>
@@ -1258,7 +1264,7 @@ See util.torusPt.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  torusPtXY: (x, y) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">torusPtXY</span>: <span class="function"><span class="params">(x, y)</span> -&gt;</span>
     u.torusPt <span class="property">@x</span>, <span class="property">@y</span>, x, y, ABM.patches.numX, ABM.patches.numY</pre></div></div>
             
         </li>
@@ -1275,7 +1281,7 @@ relative to myself. See util.torusPt.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  torusPt: (o) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">torusPt</span>: <span class="function"><span class="params">(o)</span> -&gt;</span>
     <span class="property">@torusPtXY</span> o.x, o.y</pre></div></div>
             
         </li>
@@ -1291,7 +1297,7 @@ relative to myself. See util.torusPt.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  face: (o) -&gt; <span class="property">@heading</span> = <span class="property">@towards</span> o</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">face</span>: <span class="function"><span class="params">(o)</span> -&gt;</span> <span class="property">@heading</span> = <span class="property">@towards</span> o</pre></div></div>
             
         </li>
         
@@ -1306,7 +1312,7 @@ relative to myself. See util.torusPt.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  towardsXY: (x, y) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">towardsXY</span>: <span class="function"><span class="params">(x, y)</span> -&gt;</span>
     <span class="keyword">if</span> (ps=ABM.patches).isTorus
     <span class="keyword">then</span> u.torusRadsToward <span class="property">@x</span>, <span class="property">@y</span>, x, y, ps.numX, ps.numY
     <span class="keyword">else</span> u.radsToward <span class="property">@x</span>, <span class="property">@y</span>, x, y</pre></div></div>
@@ -1324,7 +1330,7 @@ relative to myself. See util.torusPt.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  towards: (o) -&gt; <span class="property">@towardsXY</span> o.x, o.y</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">towards</span>: <span class="function"><span class="params">(o)</span> -&gt;</span> <span class="property">@towardsXY</span> o.x, o.y</pre></div></div>
             
         </li>
         
@@ -1340,13 +1346,13 @@ Returns null if non-torus and off patch world</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  patchAtHeadingAndDistance: (h,d) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">patchAtHeadingAndDistance</span>: <span class="function"><span class="params">(h,d)</span> -&gt;</span>
     [x,y] = u.polarToXY d, h, <span class="property">@x</span>, <span class="property">@y</span>; patchAt x,y
-  patchLeftAndAhead: (dh, d) -&gt; <span class="property">@patchAtHeadingAndDistance</span> <span class="property">@heading</span>+dh, d
-  patchRightAndAhead: (dh, d) -&gt; <span class="property">@patchAtHeadingAndDistance</span> <span class="property">@heading</span>-dh, d
-  patchAhead: (d) -&gt; <span class="property">@patchAtHeadingAndDistance</span> <span class="property">@heading</span>, d
-  canMove: (d) -&gt; <span class="property">@patchAhead</span>(d)?
-  patchAt: (dx,dy) -&gt;
+  <span class="attribute">patchLeftAndAhead</span>: <span class="function"><span class="params">(dh, d)</span> -&gt;</span> <span class="property">@patchAtHeadingAndDistance</span> <span class="property">@heading</span>+dh, d
+  <span class="attribute">patchRightAndAhead</span>: <span class="function"><span class="params">(dh, d)</span> -&gt;</span> <span class="property">@patchAtHeadingAndDistance</span> <span class="property">@heading</span>-dh, d
+  <span class="attribute">patchAhead</span>: <span class="function"><span class="params">(d)</span> -&gt;</span> <span class="property">@patchAtHeadingAndDistance</span> <span class="property">@heading</span>, d
+  <span class="attribute">canMove</span>: <span class="function"><span class="params">(d)</span> -&gt;</span> <span class="property">@patchAhead</span>(d)?
+  <span class="attribute">patchAt</span>: <span class="function"><span class="params">(dx,dy)</span> -&gt;</span>
     x=<span class="property">@x</span>+dx; y=<span class="property">@y</span>+dy
     <span class="keyword">if</span> (ps=ABM.patches).isOnWorld x,y <span class="keyword">then</span> ps.patch x,y <span class="keyword">else</span> <span class="literal">null</span></pre></div></div>
             
@@ -1364,7 +1370,7 @@ agentset and removing any links I may have.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  die: -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">die</span>:<span class="function"> -&gt;</span>
     <span class="property">@breed</span>.remove @
     l.die() <span class="keyword">for</span> l <span class="keyword">in</span> <span class="property">@myLinks</span>()
     u.removeItem <span class="property">@p</span>.agents, @ <span class="keyword">if</span> <span class="property">@p</span>.agents?
@@ -1384,8 +1390,8 @@ proc is called on the new agent after inserting in its agentSet.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  hatch: (num = <span class="number">1</span>, breed = ABM.agents, <span class="function"><span class="title">init</span></span> = -&gt;) -&gt;
-    breed.create num, (a) =&gt; <span class="comment"># fat arrow so that @ = this agent</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">hatch</span>: <span class="function"><span class="params">(num = <span class="number">1</span>, breed = ABM.agents, init = -&gt;)</span> -&gt;</span>
+    breed.create num, <span class="function"><span class="params">(a)</span> =&gt;</span> <span class="comment"># fat arrow so that @ = this agent</span>
       a.setXY <span class="property">@x</span>, <span class="property">@y</span> <span class="comment"># for side effects like patches.agentsHere</span>
       a[k] = v <span class="keyword">for</span> own k, v <span class="keyword">of</span> @ <span class="keyword">when</span> k <span class="keyword">isnt</span> <span class="string">"id"</span>    
       init(a); a <span class="comment"># Important: init called after object inserted in agent set</span></pre></div></div>
@@ -1404,7 +1410,7 @@ from me, and within cone radians of my heading using patch topology</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  inCone: (aset, cone, radius, meToo=<span class="literal">false</span>) -&gt; 
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">inCone</span>: <span class="function"><span class="params">(aset, cone, radius, meToo=<span class="literal">false</span>)</span> -&gt;</span> 
     aset.inCone <span class="property">@p</span>, <span class="property">@heading</span>, cone, radius, meToo <span class="comment"># REMIND: @p vs @?</span></pre></div></div>
             
         </li>
@@ -1420,7 +1426,7 @@ from me, and within cone radians of my heading using patch topology</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  otherEnd: (l) -&gt; <span class="keyword">if</span> l.end1 <span class="keyword">is</span> @ <span class="keyword">then</span> l.end2 <span class="keyword">else</span> l.end1</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">otherEnd</span>: <span class="function"><span class="params">(l)</span> -&gt;</span> <span class="keyword">if</span> l.end1 <span class="keyword">is</span> @ <span class="keyword">then</span> l.end2 <span class="keyword">else</span> l.end1</pre></div></div>
             
         </li>
         
@@ -1435,7 +1441,7 @@ from me, and within cone radians of my heading using patch topology</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  myLinks: -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">myLinks</span>:<span class="function"> -&gt;</span>
     <span class="property">@links</span> ? (l <span class="keyword">for</span> l <span class="keyword">in</span> ABM.links <span class="keyword">when</span> (l.end1 <span class="keyword">is</span> @) <span class="keyword">or</span> (l.end2 <span class="keyword">is</span> @))</pre></div></div>
             
         </li>
@@ -1451,7 +1457,7 @@ from me, and within cone radians of my heading using patch topology</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  linkNeighbors: -&gt; <span class="comment"># return all agents linked to me</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">linkNeighbors</span>:<span class="function"> -&gt;</span> <span class="comment"># return all agents linked to me</span>
     <span class="property">@otherEnd</span> l <span class="keyword">for</span> l <span class="keyword">in</span> <span class="property">@myLinks</span>()</pre></div></div>
             
         </li>
@@ -1467,7 +1473,7 @@ from me, and within cone radians of my heading using patch topology</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  myInLinks: -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">myInLinks</span>:<span class="function"> -&gt;</span>
     l <span class="keyword">for</span> l <span class="keyword">in</span> <span class="property">@myLinks</span>() <span class="keyword">when</span> l.end2 <span class="keyword">is</span> @</pre></div></div>
             
         </li>
@@ -1483,7 +1489,7 @@ from me, and within cone radians of my heading using patch topology</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  inLinkNeighbors: -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">inLinkNeighbors</span>:<span class="function"> -&gt;</span>
     l.end1 <span class="keyword">for</span> l <span class="keyword">in</span> <span class="property">@myLinks</span>() <span class="keyword">when</span> l.end2 <span class="keyword">is</span> @</pre></div></div>
             
         </li>
@@ -1499,7 +1505,7 @@ from me, and within cone radians of my heading using patch topology</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  myOutLinks: -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">myOutLinks</span>:<span class="function"> -&gt;</span>
     l <span class="keyword">for</span> l <span class="keyword">in</span> <span class="property">@myLinks</span>() <span class="keyword">when</span> l.end1 <span class="keyword">is</span> @</pre></div></div>
             
         </li>
@@ -1515,7 +1521,7 @@ from me, and within cone radians of my heading using patch topology</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  outLinkNeighbors: -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">outLinkNeighbors</span>:<span class="function"> -&gt;</span>
     l.end2 <span class="keyword">for</span> l <span class="keyword">in</span> <span class="property">@myLinks</span>() <span class="keyword">when</span> l.end1 <span class="keyword">is</span> @</pre></div></div>
             
         </li>
@@ -1548,7 +1554,7 @@ the agentClass (breed) variable shared by all the Agents in this set.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  constructor: -&gt; <span class="comment"># agentClass, name, mainSet</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">constructor</span>:<span class="function"> -&gt;</span> <span class="comment"># agentClass, name, mainSet</span>
     <span class="keyword">super</span> <span class="comment"># call super with all the args I was called with</span>
     <span class="property">@useSprites</span> = <span class="literal">false</span></pre></div></div>
             
@@ -1566,7 +1572,7 @@ Optimizes Agent a.myLinks method. Call before any agents created.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  cacheLinks: -&gt; <span class="property">@agentClass</span>::cacheLinks = <span class="literal">true</span> <span class="comment"># all agents, not individual breeds</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">cacheLinks</span>:<span class="function"> -&gt;</span> <span class="property">@agentClass</span>::cacheLinks = <span class="literal">true</span> <span class="comment"># all agents, not individual breeds</span></pre></div></div>
             
         </li>
         
@@ -1581,7 +1587,7 @@ Optimizes Agent a.myLinks method. Call before any agents created.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  setUseSprites: (<span class="property">@useSprites</span>=<span class="literal">true</span>) -&gt;</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">setUseSprites</span>: <span class="function"><span class="params">(<span class="property">@useSprites</span>=<span class="literal">true</span>)</span> -&gt;</span></pre></div></div>
             
         </li>
         
@@ -1597,7 +1603,7 @@ the mainSet, returns just the agents that are not subclassed breeds.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="keyword">in</span>: (array) -&gt; <span class="property">@asSet</span> (o <span class="keyword">for</span> o <span class="keyword">in</span> array <span class="keyword">when</span> o.breed <span class="keyword">is</span> @)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">in</span>: <span class="function"><span class="params">(array)</span> -&gt;</span> <span class="property">@asSet</span> (o <span class="keyword">for</span> o <span class="keyword">in</span> array <span class="keyword">when</span> o.breed <span class="keyword">is</span> @)</pre></div></div>
             
         </li>
         
@@ -1613,8 +1619,10 @@ proc is called on the new agent after inserting in its agentSet.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  create: (num, <span class="function"><span class="title">init</span></span> = -&gt;) -&gt; <span class="comment"># returns array of new agents too</span>
-    ((o) -&gt; init(o); o) <span class="property">@add</span> <span class="keyword">new</span> <span class="property">@agentClass</span> <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">1.</span>.num] <span class="keyword">by</span> <span class="number">1</span> <span class="comment"># too tricky?</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">create</span>: <span class="function"><span class="params">(num, init = -&gt;)</span> -&gt;</span> <span class="comment"># returns array of new agents too</span>
+    <span class="function"><span class="params">((o) -&gt; init(o); o)</span> @<span class="title">add</span> <span class="title">new</span> @<span class="title">agentClass</span> <span class="title">for</span> <span class="title">i</span> <span class="title">in</span> [1..<span class="title">num</span>] <span class="title">by</span> 1 # <span class="title">too</span> <span class="title">tricky</span>?
+
+</span></pre></div></div>
             
         </li>
         
@@ -1630,7 +1638,7 @@ Note call in reverse order to optimize list restructuring.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  clear: -&gt; <span class="property">@last</span>().die() <span class="keyword">while</span> <span class="property">@any</span>(); <span class="literal">null</span> <span class="comment"># tricky, each die modifies list</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">clear</span>:<span class="function"> -&gt;</span> <span class="property">@last</span>().die() <span class="keyword">while</span> <span class="property">@any</span>(); <span class="literal">null</span> <span class="comment"># tricky, each die modifies list</span></pre></div></div>
             
         </li>
         
@@ -1645,7 +1653,7 @@ Note call in reverse order to optimize list restructuring.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  inPatches: (patches) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">inPatches</span>: <span class="function"><span class="params">(patches)</span> -&gt;</span>
     array = []
     array.push p.agentsHere()... <span class="keyword">for</span> p <span class="keyword">in</span> patches <span class="comment"># concat measured slower</span>
     <span class="keyword">if</span> <span class="property">@mainSet</span>? <span class="keyword">then</span> <span class="property">@in</span> array <span class="keyword">else</span> <span class="property">@asSet</span> array</pre></div></div>
@@ -1663,7 +1671,7 @@ Note call in reverse order to optimize list restructuring.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  inRect: (a, dx, dy, meToo=<span class="literal">false</span>) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">inRect</span>: <span class="function"><span class="params">(a, dx, dy, meToo=<span class="literal">false</span>)</span> -&gt;</span>
     rect = ABM.patches.patchRect a.p, dx, dy, <span class="literal">true</span>
     rect = <span class="property">@inPatches</span> rect
     u.removeItem rect, a <span class="keyword">unless</span> meToo
@@ -1683,7 +1691,7 @@ from me, and within cone radians of my heading using patch topology</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  inCone: (a, heading, cone, radius, meToo=<span class="literal">false</span>) -&gt; <span class="comment"># heading? .. so p ok?</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">inCone</span>: <span class="function"><span class="params">(a, heading, cone, radius, meToo=<span class="literal">false</span>)</span> -&gt;</span> <span class="comment"># heading? .. so p ok?</span>
     as = <span class="property">@inRect</span> a, radius, radius, <span class="literal">true</span>
     <span class="keyword">super</span> a, heading, cone, radius, meToo <span class="comment">#as.inCone a, heading, cone, radius, meToo</span></pre></div></div>
             
@@ -1701,7 +1709,7 @@ from me, using patch topology</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  inRadius: (a, radius, meToo=<span class="literal">false</span>)-&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">inRadius</span>: <span class="function"><span class="params">(a, radius, meToo=<span class="literal">false</span>)</span>-&gt;</span>
     as = <span class="property">@inRect</span> a, radius, radius, <span class="literal">true</span>
     <span class="keyword">super</span> a, radius, meToo <span class="comment"># as.inRadius a, radius, meToo</span></pre></div></div>
             
@@ -1711,10 +1719,10 @@ from me, using patch topology</p>
         <li id="section-90">
             <div class="annotation">
               
-              <div class="pilwrap for-h3">
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-90">&#182;</a>
               </div>
-              <h3>Link and Links</h3>
+              <h3 id="link-and-links">Link and Links</h3>
 
             </div>
             
@@ -1757,16 +1765,16 @@ from me, using patch topology</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  id: <span class="literal">null</span>            <span class="comment"># unique id, promoted by agentset create factory method</span>
-  breed: <span class="literal">null</span>         <span class="comment"># my agentSet, set by the agentSet owning me</span>
-  end1:<span class="literal">null</span>; end2:<span class="literal">null</span><span class="comment"># My two endpoints, using agents. Promoted by ctor</span>
-  color: [<span class="number">130</span>,<span class="number">130</span>,<span class="number">130</span>]<span class="comment"># my color</span>
-  thickness: <span class="number">2</span>        <span class="comment"># my thickness in pixels, default to 2</span>
-  hidden: <span class="literal">false</span>       <span class="comment"># draw me?</span>
-  label: <span class="literal">null</span>         <span class="comment"># my text</span>
-  labelColor: [<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>] <span class="comment"># its color</span>
-  labelOffset: [<span class="number">0</span>,<span class="number">0</span>]  <span class="comment"># its offset from my midpoint</span>
-  constructor: (<span class="property">@end1</span>, <span class="property">@end2</span>) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">id</span>: <span class="literal">null</span>            <span class="comment"># unique id, promoted by agentset create factory method</span>
+  <span class="attribute">breed</span>: <span class="literal">null</span>         <span class="comment"># my agentSet, set by the agentSet owning me</span>
+  <span class="attribute">end1</span>:<span class="literal">null</span>; <span class="attribute">end2</span>:<span class="literal">null</span><span class="comment"># My two endpoints, using agents. Promoted by ctor</span>
+  <span class="attribute">color</span>: [<span class="number">130</span>,<span class="number">130</span>,<span class="number">130</span>]<span class="comment"># my color</span>
+  <span class="attribute">thickness</span>: <span class="number">2</span>        <span class="comment"># my thickness in pixels, default to 2</span>
+  <span class="attribute">hidden</span>: <span class="literal">false</span>       <span class="comment"># draw me?</span>
+  <span class="attribute">label</span>: <span class="literal">null</span>         <span class="comment"># my text</span>
+  <span class="attribute">labelColor</span>: [<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>] <span class="comment"># its color</span>
+  <span class="attribute">labelOffset</span>: [<span class="number">0</span>,<span class="number">0</span>]  <span class="comment"># its offset from my midpoint</span>
+  <span class="attribute">constructor</span>: <span class="function"><span class="params">(<span class="property">@end1</span>, <span class="property">@end2</span>)</span> -&gt;</span>
     <span class="keyword">if</span> <span class="property">@end1</span>.links?
       <span class="property">@end1</span>.links.push @
       <span class="property">@end2</span>.links.push @</pre></div></div>
@@ -1786,7 +1794,7 @@ is called with patch coordinate transform installed.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  draw: (ctx) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">draw</span>: <span class="function"><span class="params">(ctx)</span> -&gt;</span>
     ctx.save()
     ctx.strokeStyle = u.colorStr <span class="property">@color</span>
     ctx.lineWidth = ABM.patches.fromBits <span class="property">@thickness</span>
@@ -1823,7 +1831,7 @@ is called with patch coordinate transform installed.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  die: -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">die</span>:<span class="function"> -&gt;</span>
     <span class="property">@breed</span>.remove @
     u.removeItem <span class="property">@end1</span>.links, @ <span class="keyword">if</span> <span class="property">@end1</span>.links?
     u.removeItem <span class="property">@end2</span>.links, @ <span class="keyword">if</span> <span class="property">@end2</span>.links?
@@ -1842,7 +1850,7 @@ is called with patch coordinate transform installed.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  bothEnds: -&gt; [<span class="property">@end1</span>, <span class="property">@end2</span>]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">bothEnds</span>:<span class="function"> -&gt;</span> [<span class="property">@end1</span>, <span class="property">@end2</span>]</pre></div></div>
             
         </li>
         
@@ -1857,7 +1865,7 @@ is called with patch coordinate transform installed.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  length: -&gt; <span class="property">@end1</span>.distance <span class="property">@end2</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">length</span>:<span class="function"> -&gt;</span> <span class="property">@end1</span>.distance <span class="property">@end2</span></pre></div></div>
             
         </li>
         
@@ -1873,7 +1881,7 @@ Assumes the given input <em>is</em> one of the link endpoint pairs!</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  otherEnd: (a) -&gt; <span class="keyword">if</span> <span class="property">@end1</span> <span class="keyword">is</span> a <span class="keyword">then</span> <span class="property">@end2</span> <span class="keyword">else</span> <span class="property">@end1</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">otherEnd</span>: <span class="function"><span class="params">(a)</span> -&gt;</span> <span class="keyword">if</span> <span class="property">@end1</span> <span class="keyword">is</span> a <span class="keyword">then</span> <span class="property">@end2</span> <span class="keyword">else</span> <span class="property">@end1</span></pre></div></div>
             
         </li>
         
@@ -1905,7 +1913,7 @@ the agentClass (breed) variable shared by all the Links in this set.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  constructor: -&gt; <span class="comment"># agentClass, name, mainSet</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">constructor</span>:<span class="function"> -&gt;</span> <span class="comment"># agentClass, name, mainSet</span>
     <span class="keyword">super</span> <span class="comment"># call super with all the args I was called with</span></pre></div></div>
             
         </li>
@@ -1923,9 +1931,11 @@ proc is called on the new link after inserting in the agentSet.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  create: (from, to, <span class="function"><span class="title">init</span></span> = -&gt;) -&gt; <span class="comment"># returns array of new links too</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">create</span>: <span class="function"><span class="params">(from, to, init = -&gt;)</span> -&gt;</span> <span class="comment"># returns array of new links too</span>
     to = [to] <span class="keyword">unless</span> to.length?
-    ((o) -&gt; init(o); o) <span class="property">@add</span> <span class="keyword">new</span> <span class="property">@agentClass</span> from, a <span class="keyword">for</span> a <span class="keyword">in</span> to <span class="comment"># too tricky?</span></pre></div></div>
+    <span class="function"><span class="params">((o) -&gt; init(o); o)</span> @<span class="title">add</span> <span class="title">new</span> @<span class="title">agentClass</span> <span class="title">from</span>, <span class="title">a</span> <span class="title">for</span> <span class="title">a</span> <span class="title">in</span> <span class="title">to</span> # <span class="title">too</span> <span class="title">tricky</span>?
+  
+</span></pre></div></div>
             
         </li>
         
@@ -1941,7 +1951,7 @@ Note call in reverse order to optimize list restructuring.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  clear: -&gt; <span class="property">@last</span>().die() <span class="keyword">while</span> <span class="property">@any</span>(); <span class="literal">null</span> <span class="comment"># tricky, each die modifies list</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">clear</span>:<span class="function"> -&gt;</span> <span class="property">@last</span>().die() <span class="keyword">while</span> <span class="property">@any</span>(); <span class="literal">null</span> <span class="comment"># tricky, each die modifies list</span></pre></div></div>
             
         </li>
         
@@ -1958,7 +1968,7 @@ appear 4 times.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  allEnds: -&gt; <span class="comment"># all link ends, w/ dups</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">allEnds</span>:<span class="function"> -&gt;</span> <span class="comment"># all link ends, w/ dups</span>
     n = <span class="property">@asSet</span> []
     n.push l.end1, l.end2 <span class="keyword">for</span> l <span class="keyword">in</span> @
     n</pre></div></div>
@@ -1977,7 +1987,7 @@ duplicates removed.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  nodes: -&gt; <span class="comment"># allEnds without dups</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">nodes</span>:<span class="function"> -&gt;</span> <span class="comment"># allEnds without dups</span>
     <span class="property">@allEnds</span>().sortById().uniq()</pre></div></div>
             
         </li>
@@ -1997,7 +2007,7 @@ defaulting to -1 (clockwise).</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  layoutCircle: (list, radius, startAngle = Math.PI/<span class="number">2</span>, direction = -<span class="number">1</span>) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">layoutCircle</span>: <span class="function"><span class="params">(list, radius, startAngle = Math.PI/<span class="number">2</span>, direction = -<span class="number">1</span>)</span> -&gt;</span>
     dTheta = <span class="number">2</span>*Math.PI/list.length
     <span class="keyword">for</span> a, i <span class="keyword">in</span> list
       a.setXY <span class="number">0</span>, <span class="number">0</span>

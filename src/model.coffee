@@ -314,7 +314,7 @@ class ABM.Model
     root.u   = ABM.util
     root.cx  = @contexts
     root.an  = @anim
-    root.wd  = ABM.world
     root.gl  = @globals
+    root.dv  = @div
     root.root= root
     root.app = @

@@ -73,7 +73,7 @@ See: <a href="http://goo.gl/dq0nN">addEventListener</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  constructor: (<span class="property">@div</span>, <span class="property">@callback</span>) -&gt;</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">constructor</span>: <span class="function"><span class="params">(<span class="property">@div</span>, <span class="property">@callback</span>)</span> -&gt;</span></pre></div></div>
             
         </li>
         
@@ -107,12 +107,12 @@ more standard down/up enabling move events.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  start: -&gt; <span class="comment"># Note: multiple calls safe</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">start</span>:<span class="function"> -&gt;</span> <span class="comment"># Note: multiple calls safe</span>
     <span class="property">@div</span>.addEventListener(<span class="string">"mousedown"</span>, <span class="property">@handleMouseDown</span>, <span class="literal">false</span>)
     document.body.addEventListener(<span class="string">"mouseup"</span>, <span class="property">@handleMouseUp</span>, <span class="literal">false</span>)
     <span class="property">@div</span>.addEventListener(<span class="string">"mousemove"</span>, <span class="property">@handleMouseMove</span>, <span class="literal">false</span>)
     <span class="property">@lastX</span>=<span class="property">@lastY</span>=<span class="property">@x</span>=<span class="property">@y</span>=<span class="property">@pixX</span>=<span class="property">@pixY</span>=NaN; <span class="property">@moved</span>=<span class="property">@down</span>=<span class="literal">false</span>
-  stop: -&gt; <span class="comment"># Note: multiple calls safe</span>
+  <span class="attribute">stop</span>:<span class="function"> -&gt;</span> <span class="comment"># Note: multiple calls safe</span>
     <span class="property">@div</span>.removeEventListener(<span class="string">"mousedown"</span>, <span class="property">@handleMouseDown</span>, <span class="literal">false</span>)
     document.body.removeEventListener(<span class="string">"mouseup"</span>, <span class="property">@handleMouseUp</span>, <span class="literal">false</span>)
     <span class="property">@div</span>.removeEventListener(<span class="string">"mousemove"</span>, <span class="property">@handleMouseMove</span>, <span class="literal">false</span>)
@@ -131,10 +131,10 @@ more standard down/up enabling move events.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  handleMouseDown: (e) =&gt; <span class="property">@down</span>=<span class="literal">true</span>; <span class="property">@setXY</span> e
-  handleMouseUp: =&gt; <span class="property">@down</span>=<span class="literal">false</span>
-  handleMouseMove: (e) =&gt; <span class="property">@setXY</span> e
-  setXY: (e) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">handleMouseDown</span>: <span class="function"><span class="params">(e)</span> =&gt;</span> <span class="property">@down</span>=<span class="literal">true</span>; <span class="property">@setXY</span> e
+  <span class="attribute">handleMouseUp</span>:<span class="function"> =&gt;</span> <span class="property">@down</span>=<span class="literal">false</span>
+  <span class="attribute">handleMouseMove</span>: <span class="function"><span class="params">(e)</span> =&gt;</span> <span class="property">@setXY</span> e
+  <span class="attribute">setXY</span>: <span class="function"><span class="params">(e)</span> -&gt;</span>
     <span class="property">@lastX</span> = <span class="property">@x</span>; <span class="property">@lastY</span> = <span class="property">@y</span>
     <span class="property">@pixX</span> = e.offsetX; <span class="property">@pixY</span> = e.offsetY
     [<span class="property">@x</span>, <span class="property">@y</span>] = ABM.patches.pixelXYtoPatchXY(<span class="property">@pixX</span>,<span class="property">@pixY</span>)

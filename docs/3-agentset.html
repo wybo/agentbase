@@ -99,10 +99,10 @@ but thus far we&#39;ve resolved all related problems.</p>
         <li id="section-2">
             <div class="annotation">
               
-              <div class="pilwrap for-h3">
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-2">&#182;</a>
               </div>
-              <h3>Static members</h3>
+              <h3 id="static-members">Static members</h3>
 
             </div>
             
@@ -125,7 +125,7 @@ randomEven = evens.oneOf()</code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="property">@asSet</span>: (a, setType = ABM.AgentSet) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="property">@asSet</span>: <span class="function"><span class="params">(a, setType = ABM.AgentSet)</span> -&gt;</span>
     a.__proto__ = setType.prototype ? setType.constructor.prototype <span class="comment"># setType.__proto__</span>
     a</pre></div></div>
             
@@ -145,7 +145,7 @@ with three fields: id, x, y.</p>
 ABM.AgentSet.asSet AS # Convert AS to AgentSet in place
    [{id:1,x:0,y:1}, {id:2,x:8,y:0}, {id:3,x:6,y:4},
     {id:4,x:1,y:3}, {id:5,x:1,y:1}]</code></pre>
-<h3>Constructor and add/remove agents.</h3>
+<h3 id="constructor-and-add-remove-agents-">Constructor and add/remove agents.</h3>
 
             </div>
             
@@ -164,7 +164,7 @@ This sub-array feature is how breeds are managed, see class <code>Model</code></
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  constructor: (<span class="property">@agentClass</span>, <span class="property">@name</span>, <span class="property">@mainSet</span>) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">constructor</span>: <span class="function"><span class="params">(<span class="property">@agentClass</span>, <span class="property">@name</span>, <span class="property">@mainSet</span>)</span> -&gt;</span>
     <span class="keyword">super</span>(<span class="number">0</span>) <span class="comment"># doesn't yield empty array if already instances in the mainSet</span>
     <span class="property">@breeds</span> = [] <span class="keyword">unless</span> <span class="property">@mainSet</span>?
     <span class="property">@agentClass</span>::breed = @ <span class="comment"># let the breed know I'm it's agentSet</span>
@@ -184,7 +184,7 @@ This sub-array feature is how breeds are managed, see class <code>Model</code></
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  create: -&gt;</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">create</span>:<span class="function"> -&gt;</span></pre></div></div>
             
         </li>
         
@@ -202,7 +202,7 @@ Returns the object for chaining. The set will be sorted by <code>id</code>.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  add: (o) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">add</span>: <span class="function"><span class="params">(o)</span> -&gt;</span>
     <span class="keyword">if</span> <span class="property">@mainSet</span>? <span class="keyword">then</span> <span class="property">@mainSet</span>.add o <span class="keyword">else</span> o.id = <span class="property">@ID</span>++
     <span class="property">@push</span> o; o</pre></div></div>
             
@@ -225,7 +225,7 @@ array is unsorted, simply call <code>sortById</code> first, see <code>sortById</
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  remove: (o) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">remove</span>: <span class="function"><span class="params">(o)</span> -&gt;</span>
     u.removeItem <span class="property">@mainSet</span>, o <span class="keyword">if</span> <span class="property">@mainSet</span>?
     u.removeItem @, o
     @</pre></div></div>
@@ -243,7 +243,7 @@ array is unsorted, simply call <code>sortById</code> first, see <code>sortById</
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  setDefault: (name, value) -&gt; <span class="property">@agentClass</span>::[name] = value; @</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">setDefault</span>: <span class="function"><span class="params">(name, value)</span> -&gt;</span> <span class="property">@agentClass</span>::[name] = value; @</pre></div></div>
             
         </li>
         
@@ -260,7 +260,7 @@ Return agentset.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  own: (vars) -&gt; <span class="comment"># maybe not set default if val is null?</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">own</span>: <span class="function"><span class="params">(vars)</span> -&gt;</span> <span class="comment"># maybe not set default if val is null?</span></pre></div></div>
             
         </li>
         
@@ -295,7 +295,7 @@ REMIND: match NetLogo sematics in terms of own variables.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  setBreed: (a) -&gt; <span class="comment"># change agent a to be in this breed</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">setBreed</span>: <span class="function"><span class="params">(a)</span> -&gt;</span> <span class="comment"># change agent a to be in this breed</span>
     u.removeItem a.breed, a, <span class="string">"id"</span> <span class="keyword">if</span> a.breed.mainSet?
     u.insertItem @, a, <span class="string">"id"</span> <span class="keyword">if</span> <span class="property">@mainSet</span>?
     proto = a.__proto__ = <span class="property">@agentClass</span>.prototype
@@ -317,7 +317,7 @@ Breeds is a string of space separated names:
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  exclude: (breeds) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">exclude</span>: <span class="function"><span class="params">(breeds)</span> -&gt;</span>
     breeds = breeds.split(<span class="string">" "</span>)
     <span class="property">@asSet</span> (o <span class="keyword">for</span> o <span class="keyword">in</span> @ <span class="keyword">when</span> o.breed.name <span class="keyword">not</span> <span class="keyword">in</span> breeds)</pre></div></div>
             
@@ -344,7 +344,7 @@ agents for a distance calculation, for example.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  floodFill: (aset, fCandidate, fJoin, fNeighbors, asetLast=[]) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">floodFill</span>: <span class="function"><span class="params">(aset, fCandidate, fJoin, fNeighbors, asetLast=[])</span> -&gt;</span>
     fJoin p, asetLast <span class="keyword">for</span> p <span class="keyword">in</span> aset
     asetNext = []
     <span class="keyword">for</span> p <span class="keyword">in</span> aset
@@ -371,7 +371,7 @@ as.sortById().uniq() # [{id:0,x:0,y:1}, {id:1,x:8,y:0},
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  uniq: -&gt; u.uniq(@)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">uniq</span>:<span class="function"> -&gt;</span> u.uniq(@)</pre></div></div>
             
         </li>
         
@@ -387,7 +387,7 @@ Used by agentset methods creating new agentsets.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  asSet: (a, setType = @) -&gt; ABM.AgentSet.asSet a, setType <span class="comment"># setType = ABM.AgentSet</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">asSet</span>: <span class="function"><span class="params">(a, setType = @)</span> -&gt;</span> ABM.AgentSet.asSet a, setType <span class="comment"># setType = ABM.AgentSet</span></pre></div></div>
             
         </li>
         
@@ -402,7 +402,7 @@ Used by agentset methods creating new agentsets.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  asOrderedSet: (a) -&gt; <span class="property">@asSet</span>(a).sortById()</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">asOrderedSet</span>: <span class="function"><span class="params">(a)</span> -&gt;</span> <span class="property">@asSet</span>(a).sortById()</pre></div></div>
             
         </li>
         
@@ -417,7 +417,7 @@ Used by agentset methods creating new agentsets.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  toString: -&gt; <span class="string">"["</span>+(a.toString() <span class="keyword">for</span> a <span class="keyword">in</span> @).join(<span class="string">", "</span>)+<span class="string">"]"</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">toString</span>:<span class="function"> -&gt;</span> <span class="string">"["</span>+(a.toString() <span class="keyword">for</span> a <span class="keyword">in</span> @).join(<span class="string">", "</span>)+<span class="string">"]"</span></pre></div></div>
             
         </li>
         
@@ -425,10 +425,10 @@ Used by agentset methods creating new agentsets.</p>
         <li id="section-19">
             <div class="annotation">
               
-              <div class="pilwrap for-h3">
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
-              <h3>Property Utilities</h3>
+              <h3 id="property-utilities">Property Utilities</h3>
 <p>Property access, also useful for debugging<br></p>
 
             </div>
@@ -447,7 +447,7 @@ Used by agentset methods creating new agentsets.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  getProp: (prop) -&gt; o[prop] <span class="keyword">for</span> o <span class="keyword">in</span> @</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">getProp</span>: <span class="function"><span class="params">(prop)</span> -&gt;</span> o[prop] <span class="keyword">for</span> o <span class="keyword">in</span> @</pre></div></div>
             
         </li>
         
@@ -464,7 +464,7 @@ Used by agentset methods creating new agentsets.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  getPropWith: (prop, value) -&gt; <span class="property">@asSet</span> (o <span class="keyword">for</span> o <span class="keyword">in</span> @ <span class="keyword">when</span> o[prop] <span class="keyword">is</span> value)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">getPropWith</span>: <span class="function"><span class="params">(prop, value)</span> -&gt;</span> <span class="property">@asSet</span> (o <span class="keyword">for</span> o <span class="keyword">in</span> @ <span class="keyword">when</span> o[prop] <span class="keyword">is</span> value)</pre></div></div>
             
         </li>
         
@@ -485,7 +485,7 @@ AS1.setProp &quot;x&quot;, 2 # {id:4,x:2,y:3},{id:5,x:2,y:1}</code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  setProp: (prop, value) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">setProp</span>: <span class="function"><span class="params">(prop, value)</span> -&gt;</span>
     <span class="keyword">if</span> u.isArray value
     <span class="keyword">then</span> o[prop] = value[i] <span class="keyword">for</span> o,i <span class="keyword">in</span> @; @
     <span class="keyword">else</span> o[prop] = value <span class="keyword">for</span> o <span class="keyword">in</span> @; @</pre></div></div>
@@ -505,9 +505,9 @@ max = AS.maxProp &quot;y&quot;  # 4</code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  maxProp: (prop) -&gt; u.aMax <span class="property">@getProp</span>(prop)
-  minProp: (prop) -&gt; u.aMin <span class="property">@getProp</span>(prop)
-  histOfProp: (prop, bin=<span class="number">1</span>) -&gt; u.histOf @, bin, prop</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">maxProp</span>: <span class="function"><span class="params">(prop)</span> -&gt;</span> u.aMax <span class="property">@getProp</span>(prop)
+  <span class="attribute">minProp</span>: <span class="function"><span class="params">(prop)</span> -&gt;</span> u.aMin <span class="property">@getProp</span>(prop)
+  <span class="attribute">histOfProp</span>: <span class="function"><span class="params">(prop, bin=<span class="number">1</span>)</span> -&gt;</span> u.histOf @, bin, prop</pre></div></div>
             
         </li>
         
@@ -515,16 +515,16 @@ max = AS.maxProp &quot;y&quot;  # 4</code></pre>
         <li id="section-24">
             <div class="annotation">
               
-              <div class="pilwrap for-h3">
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
-              <h3>Array Utilities, often from ABM.util</h3>
+              <h3 id="array-utilities-often-from-abm-util">Array Utilities, often from ABM.util</h3>
 <p>Randomize the agentset</p>
 <pre><code>AS.shuffle(); AS.getProp &quot;id&quot; # [3, 2, 1, 4, 5] </code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  shuffle: -&gt; u.shuffle @</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">shuffle</span>:<span class="function"> -&gt;</span> u.shuffle @</pre></div></div>
             
         </li>
         
@@ -541,7 +541,7 @@ AS.sortById(); AS.getProp &quot;id&quot;  # [1, 2, 3, 4, 5]</code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  sortById: -&gt; u.sortBy @, <span class="string">"id"</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">sortById</span>:<span class="function"> -&gt;</span> u.sortBy @, <span class="string">"id"</span></pre></div></div>
             
         </li>
         
@@ -562,7 +562,7 @@ as.getProp &quot;id&quot;  # [2, 4, 0, 1, 3]</code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  clone: -&gt; <span class="property">@asSet</span> u.clone @</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">clone</span>:<span class="function"> -&gt;</span> <span class="property">@asSet</span> u.clone @</pre></div></div>
             
         </li>
         
@@ -579,7 +579,7 @@ l=AS.last(); p=[l.x,l.y] # [1,1]</code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  last: -&gt; u.last @</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">last</span>:<span class="function"> -&gt;</span> u.last @</pre></div></div>
             
         </li>
         
@@ -596,7 +596,7 @@ AS.getPropWith(&quot;x&quot;, 99).any() #false</code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  any: -&gt; u.any @</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">any</span>:<span class="function"> -&gt;</span> u.any @</pre></div></div>
             
         </li>
         
@@ -613,7 +613,7 @@ as.getProp &quot;id&quot;  # [1, 2, 3, 4] </code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  other: (a) -&gt; <span class="property">@asSet</span> (o <span class="keyword">for</span> o <span class="keyword">in</span> @ <span class="keyword">when</span> o <span class="keyword">isnt</span> a) <span class="comment"># could clone &amp; remove</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">other</span>: <span class="function"><span class="params">(a)</span> -&gt;</span> <span class="property">@asSet</span> (o <span class="keyword">for</span> o <span class="keyword">in</span> @ <span class="keyword">when</span> o <span class="keyword">isnt</span> a) <span class="comment"># could clone &amp; remove</span></pre></div></div>
             
         </li>
         
@@ -629,7 +629,7 @@ as.getProp &quot;id&quot;  # [1, 2, 3, 4] </code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  oneOf: -&gt; u.oneOf @</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">oneOf</span>:<span class="function"> -&gt;</span> u.oneOf @</pre></div></div>
             
         </li>
         
@@ -645,7 +645,7 @@ as.getProp &quot;id&quot;  # [1, 2, 3, 4] </code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  nOf: (n) -&gt; <span class="property">@asSet</span> u.nOf @, n</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">nOf</span>: <span class="function"><span class="params">(n)</span> -&gt;</span> <span class="property">@asSet</span> u.nOf @, n</pre></div></div>
             
         </li>
         
@@ -665,8 +665,8 @@ AS.maxOneOf((a)-&gt;a.x+a.y, true) # {id:2,x:6,y:4},10 </code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  minOneOf: (f, valueToo=<span class="literal">false</span>) -&gt; u.minOneOf @, f, valueToo
-  maxOneOf: (f, valueToo=<span class="literal">false</span>) -&gt; u.maxOneOf @, f, valueToo</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">minOneOf</span>: <span class="function"><span class="params">(f, valueToo=<span class="literal">false</span>)</span> -&gt;</span> u.minOneOf @, f, valueToo
+  <span class="attribute">maxOneOf</span>: <span class="function"><span class="params">(f, valueToo=<span class="literal">false</span>)</span> -&gt;</span> u.maxOneOf @, f, valueToo</pre></div></div>
             
         </li>
         
@@ -674,10 +674,10 @@ AS.maxOneOf((a)-&gt;a.x+a.y, true) # {id:2,x:6,y:4},10 </code></pre>
         <li id="section-33">
             <div class="annotation">
               
-              <div class="pilwrap for-h3">
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
-              <h3>Drawing</h3>
+              <h3 id="drawing">Drawing</h3>
 
             </div>
             
@@ -696,7 +696,7 @@ calls each agent&#39;s draw(ctx) method.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  draw: (ctx) -&gt; 
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">draw</span>: <span class="function"><span class="params">(ctx)</span> -&gt;</span> 
     u.clearCtx(ctx); o.draw(ctx) <span class="keyword">for</span> o <span class="keyword">in</span> @ <span class="keyword">when</span> <span class="keyword">not</span> o.hidden; <span class="literal">null</span></pre></div></div>
             
         </li>
@@ -713,8 +713,8 @@ To show/hide an individual object, set its prototype: o.hidden = bool</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  show: -&gt; o.hidden = <span class="literal">false</span> <span class="keyword">for</span> o <span class="keyword">in</span> @; <span class="property">@draw</span>(ABM.contexts[<span class="property">@name</span>])
-  hide: -&gt; o.hidden = <span class="literal">true</span> <span class="keyword">for</span> o <span class="keyword">in</span> @; <span class="property">@draw</span>(ABM.contexts[<span class="property">@name</span>])</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">show</span>:<span class="function"> -&gt;</span> o.hidden = <span class="literal">false</span> <span class="keyword">for</span> o <span class="keyword">in</span> @; <span class="property">@draw</span>(ABM.contexts[<span class="property">@name</span>])
+  <span class="attribute">hide</span>:<span class="function"> -&gt;</span> o.hidden = <span class="literal">true</span> <span class="keyword">for</span> o <span class="keyword">in</span> @; <span class="property">@draw</span>(ABM.contexts[<span class="property">@name</span>])</pre></div></div>
             
         </li>
         
@@ -722,10 +722,10 @@ To show/hide an individual object, set its prototype: o.hidden = bool</p>
         <li id="section-36">
             <div class="annotation">
               
-              <div class="pilwrap for-h3">
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-36">&#182;</a>
               </div>
-              <h3>Topology</h3>
+              <h3 id="topology">Topology</h3>
 
             </div>
             
@@ -745,7 +745,7 @@ depending on patches.isTorus, and patches width/height if needed.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  inRadius: (o, d, meToo=<span class="literal">false</span>) -&gt; <span class="comment"># for any objects w/ x,y</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">inRadius</span>: <span class="function"><span class="params">(o, d, meToo=<span class="literal">false</span>)</span> -&gt;</span> <span class="comment"># for any objects w/ x,y</span>
     d2 = d*d; x=o.x; y=o.y
     <span class="keyword">if</span> ABM.patches.isTorus
       w=ABM.patches.numX; h=ABM.patches.numY
@@ -769,7 +769,7 @@ a <code>heading</code> from object <code>o</code>.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  inCone: (o, heading, cone, radius, meToo=<span class="literal">false</span>) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">inCone</span>: <span class="function"><span class="params">(o, heading, cone, radius, meToo=<span class="literal">false</span>)</span> -&gt;</span>
     rSet = <span class="property">@inRadius</span> o, radius, meToo
     x=o.x; y=o.y
     <span class="keyword">if</span> ABM.patches.isTorus
@@ -786,10 +786,10 @@ a <code>heading</code> from object <code>o</code>.</p>
         <li id="section-39">
             <div class="annotation">
               
-              <div class="pilwrap for-h3">
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-39">&#182;</a>
               </div>
-              <h3>Debugging</h3>
+              <h3 id="debugging">Debugging</h3>
 
             </div>
             
@@ -826,10 +826,10 @@ ABM.agents.with(&quot;o.id&lt;100&quot;).ask(&quot;o.color=[255,0,0]&quot;)</cod
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  ask: (f) -&gt; 
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">ask</span>: <span class="function"><span class="params">(f)</span> -&gt;</span> 
     eval(<span class="string">"f=function(o){return "</span>+f+<span class="string">";}"</span>) <span class="keyword">if</span> u.isString f
     f(o) <span class="keyword">for</span> o <span class="keyword">in</span> @; @
-  <span class="reserved">with</span>: (f) -&gt; 
+  <span class="attribute">with</span>: <span class="function"><span class="params">(f)</span> -&gt;</span> 
     eval(<span class="string">"f=function(o){return "</span>+f+<span class="string">";}"</span>) <span class="keyword">if</span> u.isString f
     <span class="property">@asSet</span> (o <span class="keyword">for</span> o <span class="keyword">in</span> @ <span class="keyword">when</span> f(o))</pre></div></div>
             

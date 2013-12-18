@@ -77,7 +77,7 @@ Our example models use CoffeeScript directly within the browser via `text/coffee
           </script>
         </head>
         <body>
-          <div id="layers" style="padding:20"></div>
+          <div id="layers"></div>
         </body>
       </html>
 

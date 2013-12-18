@@ -14,7 +14,7 @@ srcDir = "src/"
 extrasDir = "extras/"
 toolsDir = 'tools/'
 libDir = 'lib/'
-modelsDir = 'models/'
+# modelsDir = 'models/'
 ASNames = "util shapes agentset agentsets model".split(" ")
 ASPaths = ("#{srcDir}#{f}.coffee" for f in ASNames)
 ASPath = "#{srcDir}agentscript.coffee"
@@ -24,12 +24,10 @@ JSNames = XNames.concat ["agentscript"]
 
 task 'all', 'Compile, minify, create docs', ->
   invoke 'build'
-  invoke 'doc'
-  # console.log "checking models for map use" # until maps work correctly
-  # shell.exec "grep '\\.\\./agentscript.js' models/*.html"
-  invoke 'wc'
   invoke 'minify'
-  
+  invoke 'wc'
+  invoke 'doc'
+
 compileFile = (path) ->
   console.log "Compiling #{path}"
   coffeeName = path.replace /^.*\//, ''
@@ -62,22 +60,36 @@ task 'doc', 'Create documentation from source files', ->
     #{cpfiles}
     docco #{tmpfiles.join(" ")} -o docs
     docco #{XPaths.join(" ")} -o docs
-  """, ->
+  """, -> #{silent:true}, (code,output) -> console.log output
 # task 'xdoc', 'Create documentation for addons', ->
 #   shell.exec """
 #     docco #{XPaths.join(" ")} -o docs
 #   """, ->
+
+task 'git:prep', 'cake all; git add/status', ->
+  # Looks like I can't cake all w/o async problems
+  # invoke 'all'
+  # shell.exec """
+  #   git add .
+  #   git status
+  # """ #, (code,output)->console.log output
+  shell.exec "git add ."
+  # sometimes the git status does not appear, use callback instead
+  shell.exec "git status", {silent:true}, (code,output)->console.log output
+
 
 task 'git:diff', 'git diff the core and extras .coffee files', ->
   coffeeFiles = ASPaths.concat(XPaths).join(' ')
   exec "git diff #{coffeeFiles} | #{editor}"
 
 task 'git:diffmodels', 'git diff the sample models', ->
-  exec "git diff #{modelsDir}*html | #{editor}"
+  exec "git diff models sketches | #{editor}"
+  # exec "git diff #{modelsDir}*html | #{editor}"
 
 task 'minify', 'Create minified version of coffeescript.js', ->
   console.log "uglify javascript files"
   for file in JSNames
+    console.log file
     shell.exec "uglifyjs #{libDir}#{file}.js -c -m -o #{libDir}#{file}.min.js", ->
   
 task 'update:cs', 'Update coffee-script.js', ->
@@ -110,6 +122,10 @@ task 'wc', 'Count the lines of coffeescript & javascript', ->
 
   
 task 'test', 'Testing 1,2,3...', ->
+  # shell.exec "git add ."
+  # shell.exec("git status").output
+  shell.exec("git add . && git status", (code,output)->console.log output)
+
   # coffeeFiles = XPaths.concat(ASPath).join " "
   # libFiles = shell.ls("lib/*").join(" ").replace /lib\/[^ ]*min\.js/g,''
 
@@ -132,10 +148,11 @@ task 'test', 'Testing 1,2,3...', ->
   #   cp #{coffeeFiles} .
   #   cp #{libFiles} .
   # """, ->
-  coffeeFiles = ASPaths.concat(XPaths).join(' ')
-  exec """
-    git diff #{coffeeFiles} | #{editor}
-  """
+
+  # coffeeFiles = ASPaths.concat(XPaths).join(' ')
+  # exec """
+  #   git diff #{coffeeFiles} | #{editor}
+  # """
   
   
 

@@ -89,13 +89,13 @@ Our UI via Firebase is &quot;alpha&quot; at this point and uses the NetLogo desi
             </div>
             
             <div class="content"><div class='highlight'><pre>  
-  constructor: (<span class="property">@fbname</span>, <span class="property">@model</span>, <span class="property">@ui</span>) -&gt;
+  <span class="attribute">constructor</span>: <span class="function"><span class="params">(<span class="property">@fbname</span>, <span class="property">@model</span>, <span class="property">@ui</span>)</span> -&gt;</span>
     <span class="property">@fb</span> = <span class="keyword">new</span> Firebase fbname
     <span class="property">@refs</span> = {}; <span class="property">@refs</span>[k] = <span class="property">@fb</span>.child(k) <span class="keyword">for</span> k,v <span class="keyword">of</span> <span class="property">@ui</span>
     <span class="property">@vals</span> = {}; <span class="property">@vals</span>[k] = v.val <span class="keyword">for</span> k,v <span class="keyword">of</span> <span class="property">@ui</span>
     <span class="property">@resetModel</span>()
-    <span class="property">@fb</span>.set ui, (val)-&gt;console.log <span class="keyword">if</span> val? <span class="keyword">then</span> <span class="string">"FB error: <span class="subst">#{val}</span>"</span> <span class="keyword">else</span> <span class="string">"FB ready"</span>
-    <span class="property">@fb</span>.<span class="literal">on</span> <span class="string">'child_changed'</span>, (snapshot) =&gt;
+    <span class="property">@fb</span>.set ui, <span class="function"><span class="params">(val)</span>-&gt;</span>console.log <span class="keyword">if</span> val? <span class="keyword">then</span> <span class="string">"FB error: <span class="subst">#{val}</span>"</span> <span class="keyword">else</span> <span class="string">"FB ready"</span>
+    <span class="property">@fb</span>.<span class="literal">on</span> <span class="string">'child_changed'</span>, <span class="function"><span class="params">(snapshot)</span> =&gt;</span>
       console.log <span class="string">"childChange"</span>, snapshot.name(), snapshot.val().val
       <span class="property">@setModelValue</span> snapshot.name(), snapshot.val().val
     console.log <span class="string">"--- Firebase setup"</span></pre></div></div>
@@ -113,7 +113,7 @@ Our UI via Firebase is &quot;alpha&quot; at this point and uses the NetLogo desi
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  setModelValue: (name, value) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">setModelValue</span>: <span class="function"><span class="params">(name, value)</span> -&gt;</span>
     console.log <span class="string">"setModelValue: <span class="subst">#{name}</span>, <span class="subst">#{value}</span>"</span>
     <span class="property">@vals</span>[name] = value
     <span class="keyword">if</span> <span class="property">@ui</span>[name].type <span class="keyword">is</span> <span class="string">"button"</span>
@@ -133,7 +133,7 @@ Our UI via Firebase is &quot;alpha&quot; at this point and uses the NetLogo desi
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  setUIValue: (name, value) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">setUIValue</span>: <span class="function"><span class="params">(name, value)</span> -&gt;</span>
     console.log <span class="string">"setUIValue: <span class="subst">#{name}</span>, <span class="subst">#{value}</span>"</span>
     <span class="property">@refs</span>[name].child(<span class="string">'val'</span>).set(value)</pre></div></div>
             
@@ -150,7 +150,7 @@ Our UI via Firebase is &quot;alpha&quot; at this point and uses the NetLogo desi
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  getUIValue: (name) -&gt; <span class="property">@vals</span>[name] <span class="comment"># last value from callback</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">getUIValue</span>: <span class="function"><span class="params">(name)</span> -&gt;</span> <span class="property">@vals</span>[name] <span class="comment"># last value from callback</span></pre></div></div>
             
         </li>
         
@@ -166,7 +166,7 @@ Useful for resetting the model back to its defaults.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  resetModel: -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">resetModel</span>:<span class="function"> -&gt;</span>
     <span class="property">@setModelValue</span> k, v.val <span class="keyword">for</span> k,v <span class="keyword">of</span> <span class="property">@ui</span> <span class="keyword">when</span> v.type <span class="keyword">isnt</span> <span class="string">"button"</span></pre></div></div>
             
         </li>
@@ -183,7 +183,7 @@ Will cause FB events for those values that differ from initial values.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  resetUI: -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">resetUI</span>:<span class="function"> -&gt;</span>
     <span class="property">@setUIValue</span> k, v.val <span class="keyword">for</span> k,v <span class="keyword">of</span> <span class="property">@ui</span> <span class="keyword">when</span> v.type <span class="keyword">isnt</span> <span class="string">"button"</span></pre></div></div>
             
         </li>

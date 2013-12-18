@@ -95,15 +95,15 @@ See: <a href="https://gist.github.com/paulirish/1579671">Paul Irish Shim</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="keyword">do</span> -&gt; 
+            <div class="content"><div class='highlight'><pre><span class="keyword">do</span><span class="function"> -&gt;</span> 
   <span class="property">@requestAnimFrame</span> = <span class="property">@requestAnimationFrame</span> <span class="keyword">or</span> <span class="literal">null</span>
   <span class="property">@cancelAnimFrame</span> = <span class="property">@cancelAnimationFrame</span> <span class="keyword">or</span> <span class="literal">null</span>
   <span class="keyword">for</span> vendor <span class="keyword">in</span> [<span class="string">'ms'</span>, <span class="string">'moz'</span>, <span class="string">'webkit'</span>, <span class="string">'o'</span>] <span class="keyword">when</span> <span class="keyword">not</span> <span class="property">@requestAnimFrame</span>
     <span class="property">@requestAnimFrame</span> <span class="keyword">or</span>= @[vendor+<span class="string">'RequestAnimationFrame'</span>]
     <span class="property">@cancelAnimFrame</span> <span class="keyword">or</span>= @[vendor+<span class="string">'CancelAnimationFrame'</span>]
     <span class="property">@cancelAnimFrame</span> <span class="keyword">or</span>= @[vendor+<span class="string">'CancelRequestAnimationFrame'</span>]
-  <span class="property">@requestAnimFrame</span> <span class="function"><span class="title">or</span></span>= (callback) -&gt; <span class="property">@setTimeout</span>(callback, <span class="number">1000</span> / <span class="number">60</span>)
-  <span class="property">@cancelAnimFrame</span> <span class="function"><span class="title">or</span></span>= (id) -&gt; <span class="property">@clearTimeout</span>(id)</pre></div></div>
+  <span class="property">@requestAnimFrame</span> <span class="function"><span class="title">or</span>= <span class="params">(callback)</span> -&gt;</span> <span class="property">@setTimeout</span>(callback, <span class="number">1000</span> / <span class="number">60</span>)
+  <span class="property">@cancelAnimFrame</span> <span class="function"><span class="title">or</span>= <span class="params">(id)</span> -&gt;</span> <span class="property">@clearTimeout</span>(id)</pre></div></div>
             
         </li>
         
@@ -119,7 +119,7 @@ Use <a href="https://github.com/kriskowal/es5-shim">es5-shim</a> if additional s
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>Array::indexOf <span class="function"><span class="title">or</span></span>= (item) -&gt; <span class="keyword">return</span> i <span class="keyword">if</span> x <span class="keyword">is</span> item <span class="keyword">for</span> x, i <span class="keyword">in</span> @; -<span class="number">1</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="attribute">Array</span>::indexOf <span class="function"><span class="title">or</span>= <span class="params">(item)</span> -&gt;</span> <span class="keyword">return</span> i <span class="keyword">if</span> x <span class="keyword">is</span> item <span class="keyword">for</span> x, i <span class="keyword">in</span> @; -<span class="number">1</span></pre></div></div>
             
         </li>
         
@@ -154,7 +154,7 @@ Alias: u is an alias for ABM.util within the agentscript module (not outside)</p
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  error: (s) -&gt; <span class="keyword">throw</span> <span class="keyword">new</span> Error s</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">error</span>: <span class="function"><span class="params">(s)</span> -&gt;</span> <span class="keyword">throw</span> <span class="keyword">new</span> Error s</pre></div></div>
             
         </li>
         
@@ -170,8 +170,8 @@ bitwise ops which are 32 bit. See <a href="http://goo.gl/WpAzT">discussion</a></
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  MaxINT: Math.pow(<span class="number">2</span>,<span class="number">53</span>); MinINT: -Math.pow(<span class="number">2</span>,<span class="number">53</span>) <span class="comment"># -@MaxINT fails, @ not defined yet</span>
-  MaxINT32: <span class="number">0</span>|<span class="number">0x7fffffff</span>; MinINT32: <span class="number">0</span>|<span class="number">0x80000000</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">MaxINT</span>: Math.pow(<span class="number">2</span>,<span class="number">53</span>); <span class="attribute">MinINT</span>: -Math.pow(<span class="number">2</span>,<span class="number">53</span>) <span class="comment"># -@MaxINT fails, @ not defined yet</span>
+  <span class="attribute">MaxINT32</span>: <span class="number">0</span>|<span class="number">0x7fffffff</span>; <span class="attribute">MinINT32</span>: <span class="number">0</span>|<span class="number">0x80000000</span></pre></div></div>
             
         </li>
         
@@ -187,11 +187,11 @@ See <a href="http://goo.gl/L0umK">underscore.coffee</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  isArray: Array.isArray <span class="keyword">or</span>
-    (obj) -&gt; !!(obj <span class="keyword">and</span> obj.concat <span class="keyword">and</span> obj.unshift <span class="keyword">and</span> <span class="keyword">not</span> obj.callee)
-  isFunction: (obj) -&gt; 
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">isArray</span>: Array.isArray <span class="keyword">or</span>
+    <span class="function"><span class="params">(obj)</span> -&gt;</span> !!(obj <span class="keyword">and</span> obj.concat <span class="keyword">and</span> obj.unshift <span class="keyword">and</span> <span class="keyword">not</span> obj.callee)
+  <span class="attribute">isFunction</span>: <span class="function"><span class="params">(obj)</span> -&gt;</span> 
     !!(obj <span class="keyword">and</span> obj.constructor <span class="keyword">and</span> obj.call <span class="keyword">and</span> obj.apply)
-  isString: (obj) -&gt; 
+  <span class="attribute">isString</span>: <span class="function"><span class="params">(obj)</span> -&gt;</span> 
     !!(obj <span class="keyword">is</span> <span class="string">''</span> <span class="keyword">or</span> (obj <span class="keyword">and</span> obj.charCodeAt <span class="keyword">and</span> obj.substr))</pre></div></div>
             
         </li>
@@ -200,17 +200,17 @@ See <a href="http://goo.gl/L0umK">underscore.coffee</a></p>
         <li id="section-8">
             <div class="annotation">
               
-              <div class="pilwrap for-h3">
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
-              <h3>Numeric Operations</h3>
+              <h3 id="numeric-operations">Numeric Operations</h3>
 <p>Replace Math.random with a simple seedable generator.
 See <a href="http://goo.gl/FafN3z">StackOverflow</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  randomSeed: (seed=<span class="number">123456</span>) -&gt;
-    Math.<span class="function"><span class="title">random</span></span> = -&gt; x=Math.sin(seed++)*<span class="number">10000</span>; x-Math.floor(x)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">randomSeed</span>: <span class="function"><span class="params">(seed=<span class="number">123456</span>)</span> -&gt;</span>
+    Math.<span class="function"><span class="title">random</span> = -&gt;</span> x=Math.sin(seed++)*<span class="number">10000</span>; x-Math.floor(x)</pre></div></div>
             
         </li>
         
@@ -225,8 +225,8 @@ See <a href="http://goo.gl/FafN3z">StackOverflow</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  randomInt: (max) -&gt; Math.floor(Math.random() * max)
-  randomInt2: (min, max) -&gt; min + Math.floor(Math.random() * (max-min))</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">randomInt</span>: <span class="function"><span class="params">(max)</span> -&gt;</span> Math.floor(Math.random() * max)
+  <span class="attribute">randomInt2</span>: <span class="function"><span class="params">(min, max)</span> -&gt;</span> min + Math.floor(Math.random() * (max-min))</pre></div></div>
             
         </li>
         
@@ -241,7 +241,7 @@ See <a href="http://goo.gl/FafN3z">StackOverflow</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  randomNormal: (mean = <span class="number">0.0</span>, sigma = <span class="number">1.0</span>) -&gt; <span class="comment"># Box-Muller</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">randomNormal</span>: <span class="function"><span class="params">(mean = <span class="number">0.0</span>, sigma = <span class="number">1.0</span>)</span> -&gt;</span> <span class="comment"># Box-Muller</span>
     u1 = <span class="number">1.0</span>-Math.random(); u2 = Math.random() <span class="comment"># u1 in (0,1]</span>
     norm = Math.sqrt(-<span class="number">2.0</span>*Math.log(u1)) * Math.cos(<span class="number">2.0</span>*Math.PI*u2)
     norm*sigma + mean</pre></div></div>
@@ -259,9 +259,9 @@ See <a href="http://goo.gl/FafN3z">StackOverflow</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  randomFloat: (max) -&gt; Math.random() * max
-  randomFloat2: (min, max) -&gt; min + Math.random() * (max-min)
-  randomCentered: (r) -&gt; <span class="property">@randomFloat2</span> -r<span class="regexp">/2, r/</span><span class="number">2</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">randomFloat</span>: <span class="function"><span class="params">(max)</span> -&gt;</span> Math.random() * max
+  <span class="attribute">randomFloat2</span>: <span class="function"><span class="params">(min, max)</span> -&gt;</span> min + Math.random() * (max-min)
+  <span class="attribute">randomCentered</span>: <span class="function"><span class="params">(r)</span> -&gt;</span> <span class="property">@randomFloat2</span> -r/<span class="number">2</span>, r/<span class="number">2</span></pre></div></div>
             
         </li>
         
@@ -276,9 +276,9 @@ See <a href="http://goo.gl/FafN3z">StackOverflow</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  log10: (n) -&gt; Math.log(n)/Math.LN10
-  logN: (n, base) -&gt; Math.log(n)/Math.log(base)
-  ln: (n) -&gt; Math.log n</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">log10</span>: <span class="function"><span class="params">(n)</span> -&gt;</span> Math.log(n)/Math.LN10
+  <span class="attribute">logN</span>: <span class="function"><span class="params">(n, base)</span> -&gt;</span> Math.log(n)/Math.log(base)
+  <span class="attribute">ln</span>: <span class="function"><span class="params">(n)</span> -&gt;</span> Math.log n</pre></div></div>
             
         </li>
         
@@ -293,7 +293,7 @@ See <a href="http://goo.gl/FafN3z">StackOverflow</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  mod: (v, n) -&gt; ((v % n) + n) % n</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">mod</span>: <span class="function"><span class="params">(v, n)</span> -&gt;</span> ((v % n) + n) % n</pre></div></div>
             
         </li>
         
@@ -308,7 +308,7 @@ See <a href="http://goo.gl/FafN3z">StackOverflow</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  wrap: (v, min, max) -&gt; min + <span class="property">@mod</span>(v-min, max-min)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">wrap</span>: <span class="function"><span class="params">(v, min, max)</span> -&gt;</span> min + <span class="property">@mod</span>(v-min, max-min)</pre></div></div>
             
         </li>
         
@@ -323,7 +323,7 @@ See <a href="http://goo.gl/FafN3z">StackOverflow</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  clamp: (v, min, max) -&gt; Math.max(Math.min(v,max),min)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">clamp</span>: <span class="function"><span class="params">(v, min, max)</span> -&gt;</span> Math.max(Math.min(v,max),min)</pre></div></div>
             
         </li>
         
@@ -338,7 +338,7 @@ See <a href="http://goo.gl/FafN3z">StackOverflow</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  sign: (v) -&gt; <span class="keyword">if</span> v&lt;<span class="number">0</span> <span class="keyword">then</span> -<span class="number">1</span> <span class="keyword">else</span> <span class="number">1</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">sign</span>: <span class="function"><span class="params">(v)</span> -&gt;</span> <span class="keyword">if</span> v&lt;<span class="number">0</span> <span class="keyword">then</span> -<span class="number">1</span> <span class="keyword">else</span> <span class="number">1</span></pre></div></div>
             
         </li>
         
@@ -354,7 +354,7 @@ Considerably faster than equivalent: Number(n.toFixed(p))</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  fixed: (n,p=<span class="number">2</span>) -&gt; p = Math.pow(<span class="number">10</span>,p); Math.round(n*p)/p</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">fixed</span>: <span class="function"><span class="params">(n,p=<span class="number">2</span>)</span> -&gt;</span> p = Math.pow(<span class="number">10</span>,p); Math.round(n*p)/p</pre></div></div>
             
         </li>
         
@@ -370,7 +370,7 @@ useful for printing</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  aToFixed: (a, p=<span class="number">2</span>) -&gt; (i.toFixed p <span class="keyword">for</span> i <span class="keyword">in</span> a)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">aToFixed</span>: <span class="function"><span class="params">(a, p=<span class="number">2</span>)</span> -&gt;</span> (i.toFixed p <span class="keyword">for</span> i <span class="keyword">in</span> a)</pre></div></div>
             
         </li>
         
@@ -385,7 +385,7 @@ useful for printing</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  tls: (n) -&gt; n.toLocaleString()</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">tls</span>: <span class="function"><span class="params">(n)</span> -&gt;</span> n.toLocaleString()</pre></div></div>
             
         </li>
         
@@ -393,10 +393,10 @@ useful for printing</p>
         <li id="section-20">
             <div class="annotation">
               
-              <div class="pilwrap for-h3">
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
-              <h3>Color and Angle Operations</h3>
+              <h3 id="color-and-angle-operations">Color and Angle Operations</h3>
 <p>Our colors are r,g,b,[a] arrays, with an optional color.str HTML
 color string property. The str value is set on the first call to colorStr</p>
 
@@ -415,7 +415,7 @@ color string property. The str value is set on the first call to colorStr</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  randomColor: (c = []) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">randomColor</span>: <span class="function"><span class="params">(c = [])</span> -&gt;</span>
     c.str = <span class="literal">null</span> <span class="keyword">if</span> c.str?
     c[i] = <span class="property">@randomInt</span>(<span class="number">256</span>) <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span><span class="number">.2</span>]
     c</pre></div></div>
@@ -433,7 +433,7 @@ color string property. The str value is set on the first call to colorStr</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  randomGray: (c = [], min = <span class="number">64</span>, max = <span class="number">192</span>) -&gt; 
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">randomGray</span>: <span class="function"><span class="params">(c = [], min = <span class="number">64</span>, max = <span class="number">192</span>)</span> -&gt;</span> 
     <span class="keyword">if</span> arguments.length <span class="keyword">is</span> <span class="number">2</span> <span class="keyword">then</span> <span class="keyword">return</span> <span class="property">@randomGray</span> <span class="literal">null</span>, c, min
     c.str = <span class="literal">null</span> <span class="keyword">if</span> c.str?
     r=<span class="property">@randomInt2</span> min,max
@@ -454,9 +454,9 @@ Default is one of 125 (5^3) colors</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  randomMapColor: (c = [], set = [<span class="number">0</span>,<span class="number">63</span>,<span class="number">127</span>,<span class="number">191</span>,<span class="number">255</span>]) -&gt; 
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">randomMapColor</span>: <span class="function"><span class="params">(c = [], set = [<span class="number">0</span>,<span class="number">63</span>,<span class="number">127</span>,<span class="number">191</span>,<span class="number">255</span>])</span> -&gt;</span> 
     <span class="property">@setColor</span> c, <span class="property">@oneOf</span>(set), <span class="property">@oneOf</span>(set), <span class="property">@oneOf</span>(set)
-  randomBrightColor: (c=[]) -&gt; <span class="property">@randomMapColor</span> c, [<span class="number">0</span>,<span class="number">127</span>,<span class="number">255</span>]</pre></div></div>
+  <span class="attribute">randomBrightColor</span>: <span class="function"><span class="params">(c=[])</span> -&gt;</span> <span class="property">@randomMapColor</span> c, [<span class="number">0</span>,<span class="number">127</span>,<span class="number">255</span>]</pre></div></div>
             
         </li>
         
@@ -472,11 +472,11 @@ Modifying an existing array minimizes GC overhead</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  setColor: (c, r, g, b, a) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">setColor</span>: <span class="function"><span class="params">(c, r, g, b, a)</span> -&gt;</span>
     c.str = <span class="literal">null</span> <span class="keyword">if</span> c.str?
     c[<span class="number">0</span>] = r; c[<span class="number">1</span>] = g; c[<span class="number">2</span>] = b; c[<span class="number">3</span>] = a <span class="keyword">if</span> a?
     c
-  setGray: (c, g, a) -&gt; <span class="property">@setColor</span> c, g, g, g, a</pre></div></div>
+  <span class="attribute">setGray</span>: <span class="function"><span class="params">(c, g, a)</span> -&gt;</span> <span class="property">@setColor</span> c, g, g, g, a</pre></div></div>
             
         </li>
         
@@ -491,7 +491,7 @@ Modifying an existing array minimizes GC overhead</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  scaleColor: (max, s, c = []) -&gt; 
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">scaleColor</span>: <span class="function"><span class="params">(max, s, c = [])</span> -&gt;</span> 
     c.str = <span class="literal">null</span> <span class="keyword">if</span> c.str?
     c[i] = <span class="property">@clamp</span>(Math.round(val*s),<span class="number">0</span>,<span class="number">255</span>) <span class="keyword">for</span> val, i <span class="keyword">in</span> max <span class="comment"># [r,g,b] must be ints</span>
     c</pre></div></div>
@@ -509,7 +509,7 @@ Modifying an existing array minimizes GC overhead</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  colorStr: (c) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">colorStr</span>: <span class="function"><span class="params">(c)</span> -&gt;</span>
     <span class="keyword">return</span> s <span class="keyword">if</span> (s = c.str)?
     <span class="property">@error</span> <span class="string">"alpha &gt; 1"</span> <span class="keyword">if</span> c.length <span class="keyword">is</span> <span class="number">4</span> <span class="keyword">and</span> c[<span class="number">3</span>] &gt; <span class="number">1</span>
     c.str = <span class="keyword">if</span> c.length <span class="keyword">is</span> <span class="number">3</span> <span class="keyword">then</span> <span class="string">"rgb(<span class="subst">#{c}</span>)"</span> <span class="keyword">else</span> <span class="string">"rgba(<span class="subst">#{c}</span>)"</span></pre></div></div>
@@ -527,7 +527,7 @@ Modifying an existing array minimizes GC overhead</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  colorsEqual: (c1, c2) -&gt; c1.toString() <span class="keyword">is</span> c2.toString()</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">colorsEqual</span>: <span class="function"><span class="params">(c1, c2)</span> -&gt;</span> c1.toString() <span class="keyword">is</span> c2.toString()</pre></div></div>
             
         </li>
         
@@ -544,7 +544,7 @@ Round for 0-255 int for gray color value.
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  rgbToGray: (c) -&gt; <span class="number">0.2126</span>*c[<span class="number">0</span>] + <span class="number">0.7152</span>*c[<span class="number">1</span>] + <span class="number">0.0722</span>*c[<span class="number">2</span>]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">rgbToGray</span>: <span class="function"><span class="params">(c)</span> -&gt;</span> <span class="number">0.2126</span>*c[<span class="number">0</span>] + <span class="number">0.7152</span>*c[<span class="number">1</span>] + <span class="number">0.0722</span>*c[<span class="number">2</span>]</pre></div></div>
             
         </li>
         
@@ -562,8 +562,8 @@ and <a href="http://goo.gl/7yP4cO">Blog Post</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  rgbToHsb: (c) -&gt;
-    r=c[<span class="number">0</span>]<span class="regexp">/255; g=c[1]/255; b=c[2]/</span><span class="number">255</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">rgbToHsb</span>: <span class="function"><span class="params">(c)</span> -&gt;</span>
+    r=c[<span class="number">0</span>]/<span class="number">255</span>; g=c[<span class="number">1</span>]/<span class="number">255</span>; b=c[<span class="number">2</span>]/<span class="number">255</span>
     max = Math.max(r,g,b); min = Math.min(r,g,b); v = max
     h = <span class="number">0</span>; d = max-min; s = <span class="keyword">if</span> max <span class="keyword">is</span> <span class="number">0</span> <span class="keyword">then</span> <span class="number">0</span> <span class="keyword">else</span> d/max
     <span class="keyword">if</span> max <span class="keyword">isnt</span> min <span class="keyword">then</span> <span class="keyword">switch</span> max
@@ -571,8 +571,8 @@ and <a href="http://goo.gl/7yP4cO">Blog Post</a></p>
       <span class="keyword">when</span> g <span class="keyword">then</span> h = (b - r) / d + <span class="number">2</span>
       <span class="keyword">when</span> b <span class="keyword">then</span> h = (r - g) / d + <span class="number">4</span>
     [Math.round(<span class="number">255</span>*h/<span class="number">6</span>), Math.round(<span class="number">255</span>*s), Math.round(<span class="number">255</span>*v)]
-  hsbToRgb: (c) -&gt;
-    h=c[<span class="number">0</span>]<span class="regexp">/255; s=c[1]/255; v=c[2]/</span><span class="number">255</span>; i = Math.floor(h*<span class="number">6</span>)
+  <span class="attribute">hsbToRgb</span>: <span class="function"><span class="params">(c)</span> -&gt;</span>
+    h=c[<span class="number">0</span>]/<span class="number">255</span>; s=c[<span class="number">1</span>]/<span class="number">255</span>; v=c[<span class="number">2</span>]/<span class="number">255</span>; i = Math.floor(h*<span class="number">6</span>)
     f = h * <span class="number">6</span> - i;        p = v * (<span class="number">1</span> - s)
     q = v * (<span class="number">1</span> - f * s);  t = v * (<span class="number">1</span> - (<span class="number">1</span> - f) * s)
     <span class="keyword">switch</span>(i % <span class="number">6</span>)
@@ -599,16 +599,16 @@ Note: Experimental, will change.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  rgbMap: (R,G=R,B=R) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">rgbMap</span>: <span class="function"><span class="params">(R,G=R,B=R)</span> -&gt;</span>
     R = (Math.round(i*<span class="number">255</span>/(R-<span class="number">1</span>)) <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span>..R]) <span class="keyword">if</span> <span class="keyword">typeof</span> R <span class="keyword">is</span> <span class="string">"number"</span>
     G = (Math.round(i*<span class="number">255</span>/(G-<span class="number">1</span>)) <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span>..G]) <span class="keyword">if</span> <span class="keyword">typeof</span> G <span class="keyword">is</span> <span class="string">"number"</span>
     B = (Math.round(i*<span class="number">255</span>/(B-<span class="number">1</span>)) <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span>..B]) <span class="keyword">if</span> <span class="keyword">typeof</span> B <span class="keyword">is</span> <span class="string">"number"</span>
     map=[]; ((map.push [r,g,b] <span class="keyword">for</span> b <span class="keyword">in</span> B) <span class="keyword">for</span> g <span class="keyword">in</span> G) <span class="keyword">for</span> r <span class="keyword">in</span> R
     map
-  grayMap: -&gt; ([i,i,i] <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span><span class="number">.255</span>])
-  hsbMap: (n=<span class="number">256</span>, s=<span class="number">255</span>,b=<span class="number">255</span>)-&gt; 
+  <span class="attribute">grayMap</span>:<span class="function"> -&gt;</span> ([i,i,i] <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span><span class="number">.255</span>])
+  <span class="attribute">hsbMap</span>: <span class="function"><span class="params">(n=<span class="number">256</span>, s=<span class="number">255</span>,b=<span class="number">255</span>)</span>-&gt;</span> 
     (<span class="property">@hsbToRgb</span> [i*<span class="number">255</span>/(n-<span class="number">1</span>),s,b] <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span>..n])
-  gradientMap: (nColors, stops, locs) -&gt;
+  <span class="attribute">gradientMap</span>: <span class="function"><span class="params">(nColors, stops, locs)</span> -&gt;</span>
     locs = (i/(stops.length-<span class="number">1</span>) <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span>..stops.length]) <span class="keyword">if</span> <span class="keyword">not</span> locs?
     ctx = <span class="property">@createCtx</span> nColors, <span class="number">1</span>
     grad = ctx.createLinearGradient <span class="number">0</span>, <span class="number">0</span>, nColors, <span class="number">0</span>
@@ -632,7 +632,7 @@ See Mozilla pixel <a href="http://goo.gl/Lxliq">manipulation article</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  isLittleEndian: -&gt;</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">isLittleEndian</span>:<span class="function"> -&gt;</span></pre></div></div>
             
         </li>
         
@@ -677,8 +677,8 @@ See Mozilla pixel <a href="http://goo.gl/Lxliq">manipulation article</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  degToRad: (degrees) -&gt; degrees * Math.PI / <span class="number">180</span>
-  radToDeg: (radians) -&gt; radians * <span class="number">180</span> / Math.PI</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">degToRad</span>: <span class="function"><span class="params">(degrees)</span> -&gt;</span> degrees * Math.PI / <span class="number">180</span>
+  <span class="attribute">radToDeg</span>: <span class="function"><span class="params">(radians)</span> -&gt;</span> radians * <span class="number">180</span> / Math.PI</pre></div></div>
             
         </li>
         
@@ -694,7 +694,7 @@ See NetLogo&#39;s <a href="http://goo.gl/CjoHuV">subtract-headings</a> for expla
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  subtractRads: (rad1, rad2) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">subtractRads</span>: <span class="function"><span class="params">(rad1, rad2)</span> -&gt;</span>
     dr = rad1-rad2; PI = Math.PI
     dr += <span class="number">2</span>*PI <span class="keyword">if</span> dr &lt;= -PI; dr -= <span class="number">2</span>*PI <span class="keyword">if</span> dr &gt; PI; dr</pre></div></div>
             
@@ -704,10 +704,10 @@ See NetLogo&#39;s <a href="http://goo.gl/CjoHuV">subtract-headings</a> for expla
         <li id="section-36">
             <div class="annotation">
               
-              <div class="pilwrap for-h3">
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-36">&#182;</a>
               </div>
-              <h3>Object Operations</h3>
+              <h3 id="object-operations">Object Operations</h3>
 
             </div>
             
@@ -724,9 +724,9 @@ See NetLogo&#39;s <a href="http://goo.gl/CjoHuV">subtract-headings</a> for expla
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  ownKeys: (obj) -&gt; (key <span class="keyword">for</span> own key, value <span class="keyword">of</span> obj)
-  ownVarKeys: (obj) -&gt; (key <span class="keyword">for</span> own key, value <span class="keyword">of</span> obj <span class="keyword">when</span> <span class="keyword">not</span> <span class="property">@isFunction</span> value)
-  ownValues: (obj) -&gt; (value <span class="keyword">for</span> own key, value <span class="keyword">of</span> obj)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">ownKeys</span>: <span class="function"><span class="params">(obj)</span> -&gt;</span> (key <span class="keyword">for</span> own key, value <span class="keyword">of</span> obj)
+  <span class="attribute">ownVarKeys</span>: <span class="function"><span class="params">(obj)</span> -&gt;</span> (key <span class="keyword">for</span> own key, value <span class="keyword">of</span> obj <span class="keyword">when</span> <span class="keyword">not</span> <span class="property">@isFunction</span> value)
+  <span class="attribute">ownValues</span>: <span class="function"><span class="params">(obj)</span> -&gt;</span> (value <span class="keyword">for</span> own key, value <span class="keyword">of</span> obj)</pre></div></div>
             
         </li>
         
@@ -734,10 +734,10 @@ See NetLogo&#39;s <a href="http://goo.gl/CjoHuV">subtract-headings</a> for expla
         <li id="section-38">
             <div class="annotation">
               
-              <div class="pilwrap for-h3">
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-38">&#182;</a>
               </div>
-              <h3>Array Operations</h3>
+              <h3 id="array-operations">Array Operations</h3>
 
             </div>
             
@@ -754,8 +754,8 @@ See NetLogo&#39;s <a href="http://goo.gl/CjoHuV">subtract-headings</a> for expla
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  any: (array) -&gt; array.length <span class="keyword">isnt</span> <span class="number">0</span>
-  empty: (array) -&gt; array.length <span class="keyword">is</span> <span class="number">0</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">any</span>: <span class="function"><span class="params">(array)</span> -&gt;</span> array.length <span class="keyword">isnt</span> <span class="number">0</span>
+  <span class="attribute">empty</span>: <span class="function"><span class="params">(array)</span> -&gt;</span> array.length <span class="keyword">is</span> <span class="number">0</span></pre></div></div>
             
         </li>
         
@@ -772,7 +772,7 @@ By giving begin/arguments, retrieve a subset of the array</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  clone: (array, begin, end) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">clone</span>: <span class="function"><span class="params">(array, begin, end)</span> -&gt;</span>
     <span class="keyword">if</span> begin? <span class="keyword">then</span> array.slice begin, end <span class="keyword">else</span> array.slice <span class="number">0</span></pre></div></div>
             
         </li>
@@ -788,7 +788,7 @@ By giving begin/arguments, retrieve a subset of the array</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  last: (array) -&gt; 
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">last</span>: <span class="function"><span class="params">(array)</span> -&gt;</span> 
     <span class="property">@error</span> <span class="string">"last: empty array"</span> <span class="keyword">if</span> <span class="property">@empty</span> array
     array[array.length-<span class="number">1</span>]</pre></div></div>
             
@@ -805,7 +805,7 @@ By giving begin/arguments, retrieve a subset of the array</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  oneOf: (array) -&gt; 
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">oneOf</span>: <span class="function"><span class="params">(array)</span> -&gt;</span> 
     <span class="property">@error</span> <span class="string">"oneOf: empty array"</span> <span class="keyword">if</span> <span class="property">@empty</span> array
     array[<span class="property">@randomInt</span> array.length]</pre></div></div>
             
@@ -823,7 +823,7 @@ Note: array elements presumed unique, i.e. objects or distinct primitives</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  nOf: (array, n) -&gt; <span class="comment"># Note: clone, shuffle then first n: poor performance</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">nOf</span>: <span class="function"><span class="params">(array, n)</span> -&gt;</span> <span class="comment"># Note: clone, shuffle then first n: poor performance</span>
     n = Math.min(array.length, Math.floor(n)) <span class="comment"># OK if n is float</span>
     r = []; <span class="keyword">while</span> r.length &lt; n
       o = <span class="property">@oneOf</span>(array); r.push o <span class="keyword">unless</span> o <span class="keyword">in</span> r
@@ -842,7 +842,7 @@ Note: array elements presumed unique, i.e. objects or distinct primitives</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  contains: (array, item, f) -&gt; <span class="property">@indexOf</span>(array, item, f) &gt;= <span class="number">0</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">contains</span>: <span class="function"><span class="params">(array, item, f)</span> -&gt;</span> <span class="property">@indexOf</span>(array, item, f) &gt;= <span class="number">0</span></pre></div></div>
             
         </li>
         
@@ -858,7 +858,7 @@ Error if item not in array.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  removeItem: (array, item, f) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">removeItem</span>: <span class="function"><span class="params">(array, item, f)</span> -&gt;</span>
     <span class="keyword">unless</span> (i = <span class="property">@indexOf</span> array, item, f) &lt; <span class="number">0</span> <span class="keyword">then</span> array.splice i, <span class="number">1</span> 
     <span class="keyword">else</span> <span class="property">@error</span> <span class="string">"removeItem: item not found"</span> <span class="comment">#; array</span></pre></div></div>
             
@@ -876,7 +876,7 @@ Error if an item not in array.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  removeItems: (array, items, f) -&gt; <span class="property">@removeItem</span>(array,i,f) <span class="keyword">for</span> i <span class="keyword">in</span> items; array</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">removeItems</span>: <span class="function"><span class="params">(array, items, f)</span> -&gt;</span> <span class="property">@removeItem</span>(array,i,f) <span class="keyword">for</span> i <span class="keyword">in</span> items; array</pre></div></div>
             
         </li>
         
@@ -891,7 +891,7 @@ Error if an item not in array.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  insertItem: (array, item, f) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">insertItem</span>: <span class="function"><span class="params">(array, item, f)</span> -&gt;</span>
     i = <span class="property">@sortedIndex</span> array, item, f
     error <span class="string">"insertItem: item already in array"</span> <span class="keyword">if</span> array[i] <span class="keyword">is</span> item
     array.splice i, <span class="number">0</span>, item</pre></div></div>
@@ -910,7 +910,7 @@ Clever! See <a href="http://goo.gl/TT2SY">cookbook</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  shuffle: (array) -&gt; array.sort -&gt; <span class="number">0.5</span> - Math.random()</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">shuffle</span>: <span class="function"><span class="params">(array)</span> -&gt;</span> array.sort<span class="function"> -&gt;</span> <span class="number">0.5</span> - Math.random()</pre></div></div>
             
         </li>
         
@@ -933,19 +933,19 @@ max = maxOneOf array, &quot;x&quot;</code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  minOneOf: (array, f, valueToo=<span class="literal">false</span>) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">minOneOf</span>: <span class="function"><span class="params">(array, f, valueToo=<span class="literal">false</span>)</span> -&gt;</span>
     <span class="property">@error</span> <span class="string">"minOneOf: empty array"</span> <span class="keyword">if</span> <span class="property">@empty</span> array
     r = Infinity; o = <span class="literal">null</span>; f = <span class="property">@propFcn</span> f <span class="keyword">if</span> <span class="property">@isString</span> f
     <span class="keyword">for</span> a <span class="keyword">in</span> array
       (r = r1; o = a) <span class="keyword">if</span> (r1=f(a)) &lt; r
     <span class="keyword">if</span> valueToo <span class="keyword">then</span> [o, r] <span class="keyword">else</span> o
-  maxOneOf: (array, f, valueToo=<span class="literal">false</span>) -&gt;
+  <span class="attribute">maxOneOf</span>: <span class="function"><span class="params">(array, f, valueToo=<span class="literal">false</span>)</span> -&gt;</span>
     <span class="property">@error</span> <span class="string">"maxOneOf: empty array"</span> <span class="keyword">if</span> <span class="property">@empty</span> array
     r = -Infinity; o = <span class="literal">null</span>; f = <span class="property">@propFcn</span> f <span class="keyword">if</span> <span class="property">@isString</span> f
     <span class="keyword">for</span> a <span class="keyword">in</span> array
       (r = r1; o = a) <span class="keyword">if</span> (r1=f(a)) &gt; r
     <span class="keyword">if</span> valueToo <span class="keyword">then</span> [o, r] <span class="keyword">else</span> o
-  firstOneOf: (array, f) -&gt;
+  <span class="attribute">firstOneOf</span>: <span class="function"><span class="params">(array, f)</span> -&gt;</span>
     <span class="keyword">return</span> i <span class="keyword">for</span> a,i <span class="keyword">in</span> array <span class="keyword">when</span> f(a); <span class="keyword">return</span> -<span class="number">1</span></pre></div></div>
             
         </li>
@@ -970,7 +970,7 @@ h = histOf b, 2, &quot;id&quot;</code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  histOf: (array, bin=<span class="number">1</span>, <span class="function"><span class="title">f</span></span>=(i)-&gt;i) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">histOf</span>: <span class="function"><span class="params">(array, bin=<span class="number">1</span>, f=(i)-&gt;i)</span> -&gt;</span>
     r = []; f = <span class="property">@propFcn</span> f <span class="keyword">if</span> <span class="property">@isString</span> f
     <span class="keyword">for</span> a <span class="keyword">in</span> array
       i = Math.floor f(a)/bin
@@ -997,9 +997,9 @@ sortBy array, &quot;i&quot;
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  sortBy: (array, f) -&gt; 
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">sortBy</span>: <span class="function"><span class="params">(array, f)</span> -&gt;</span> 
    f = <span class="property">@propFcn</span> f <span class="keyword">if</span> <span class="property">@isString</span> f <span class="comment"># use item[f] if f is string</span>
-   array.sort (a,b) -&gt; f(a) - f(b)</pre></div></div>
+   array.sort <span class="function"><span class="params">(a,b)</span> -&gt;</span> f(a) - f(b)</pre></div></div>
             
         </li>
         
@@ -1024,7 +1024,7 @@ uniq b
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  uniq: (array) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">uniq</span>: <span class="function"><span class="params">(array)</span> -&gt;</span>
     <span class="keyword">return</span> array <span class="keyword">if</span> array.length &lt; <span class="number">2</span> <span class="comment"># return if empty or singlton</span>
     array.splice i,<span class="number">1</span> <span class="keyword">for</span> i <span class="keyword">in</span> [array.length-<span class="number">1.</span><span class="number">.1</span>] <span class="keyword">by</span> -<span class="number">1</span> <span class="keyword">when</span> array[i-<span class="number">1</span>] <span class="keyword">is</span> array[i]
     array</pre></div></div>
@@ -1043,7 +1043,9 @@ uniq b
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  flatten: (matrix) -&gt; matrix.reduce( (a,b) -&gt; a.concat b )</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">flatten</span>: <span class="function"><span class="params">(matrix)</span> -&gt;</span> matrix.reduce<span class="function"><span class="params">( (a,b) -&gt; a.concat b )</span>
+  
+</span></pre></div></div>
             
         </li>
         
@@ -1058,7 +1060,7 @@ uniq b
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  aProp: (array, prop) -&gt; (a[prop] <span class="keyword">for</span> a <span class="keyword">in</span> array)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">aProp</span>: <span class="function"><span class="params">(array, prop)</span> -&gt;</span> (a[prop] <span class="keyword">for</span> a <span class="keyword">in</span> array)</pre></div></div>
             
         </li>
         
@@ -1074,12 +1076,12 @@ Iterate rather than reduce: work with typed arrays</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  aMax: (array) -&gt; v=array[<span class="number">0</span>]; v=Math.max v,a <span class="keyword">for</span> a <span class="keyword">in</span> array; v
-  aMin: (array) -&gt; v=array[<span class="number">0</span>]; v=Math.min v,a <span class="keyword">for</span> a <span class="keyword">in</span> array; v
-  aSum: (array) -&gt; v=<span class="number">0</span>; v += a <span class="keyword">for</span> a <span class="keyword">in</span> array; v
-  aAvg: (array) -&gt; <span class="property">@aSum</span>(array)/array.length
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">aMax</span>: <span class="function"><span class="params">(array)</span> -&gt;</span> v=array[<span class="number">0</span>]; v=Math.max v,a <span class="keyword">for</span> a <span class="keyword">in</span> array; v
+  <span class="attribute">aMin</span>: <span class="function"><span class="params">(array)</span> -&gt;</span> v=array[<span class="number">0</span>]; v=Math.min v,a <span class="keyword">for</span> a <span class="keyword">in</span> array; v
+  <span class="attribute">aSum</span>: <span class="function"><span class="params">(array)</span> -&gt;</span> v=<span class="number">0</span>; v += a <span class="keyword">for</span> a <span class="keyword">in</span> array; v
+  <span class="attribute">aAvg</span>: <span class="function"><span class="params">(array)</span> -&gt;</span> <span class="property">@aSum</span>(array)/array.length
   
-  aNaNs: (array) -&gt; (i <span class="keyword">for</span> v,i <span class="keyword">in</span> array <span class="keyword">when</span> isNaN v)</pre></div></div>
+  <span class="attribute">aNaNs</span>: <span class="function"><span class="params">(array)</span> -&gt;</span> (i <span class="keyword">for</span> v,i <span class="keyword">in</span> array <span class="keyword">when</span> isNaN v)</pre></div></div>
             
         </li>
         
@@ -1094,10 +1096,10 @@ Iterate rather than reduce: work with typed arrays</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  aPairwise: (a1, a2, f) -&gt; v=<span class="number">0</span>; f(v,a2[i]) <span class="keyword">for</span> v,i <span class="keyword">in</span> a1 
-  aPairSum: (a1, a2) -&gt; <span class="property">@aPairwise</span> a1, a2, (a,b)-&gt;a+b
-  aPairDif: (a1, a2) -&gt; <span class="property">@aPairwise</span> a1, a2, (a,b)-&gt;a-b
-  aPairMul: (a1, a2) -&gt; <span class="property">@aPairwise</span> a1, a2, (a,b)-&gt;a*b</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">aPairwise</span>: <span class="function"><span class="params">(a1, a2, f)</span> -&gt;</span> v=<span class="number">0</span>; f(v,a2[i]) <span class="keyword">for</span> v,i <span class="keyword">in</span> a1 
+  <span class="attribute">aPairSum</span>: <span class="function"><span class="params">(a1, a2)</span> -&gt;</span> <span class="property">@aPairwise</span> a1, a2, <span class="function"><span class="params">(a,b)</span>-&gt;</span>a+b
+  <span class="attribute">aPairDif</span>: <span class="function"><span class="params">(a1, a2)</span> -&gt;</span> <span class="property">@aPairwise</span> a1, a2, <span class="function"><span class="params">(a,b)</span>-&gt;</span>a-b
+  <span class="attribute">aPairMul</span>: <span class="function"><span class="params">(a1, a2)</span> -&gt;</span> <span class="property">@aPairwise</span> a1, a2, <span class="function"><span class="params">(a,b)</span>-&gt;</span>a*b</pre></div></div>
             
         </li>
         
@@ -1112,7 +1114,7 @@ Iterate rather than reduce: work with typed arrays</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  typedToJS: (typedArray) -&gt; (i <span class="keyword">for</span> i <span class="keyword">in</span> typedArray)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">typedToJS</span>: <span class="function"><span class="params">(typedArray)</span> -&gt;</span> (i <span class="keyword">for</span> i <span class="keyword">in</span> typedArray)</pre></div></div>
             
         </li>
         
@@ -1129,7 +1131,7 @@ Scale is in [0-1], and the result is in [lo,hi]
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  lerp: (lo, hi, scale) -&gt; lo + (hi-lo)*scale <span class="comment"># @clamp(scale, 0, 1)</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">lerp</span>: <span class="function"><span class="params">(lo, hi, scale)</span> -&gt;</span> lo + (hi-lo)*scale <span class="comment"># @clamp(scale, 0, 1)</span></pre></div></div>
             
         </li>
         
@@ -1144,7 +1146,7 @@ Scale is in [0-1], and the result is in [lo,hi]
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  lerp2: (x0, y0, x1, y1, scale) -&gt; [<span class="property">@lerp</span>(x0,x1,scale), <span class="property">@lerp</span>(y0,y1,scale)]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">lerp2</span>: <span class="function"><span class="params">(x0, y0, x1, y1, scale)</span> -&gt;</span> [<span class="property">@lerp</span>(x0,x1,scale), <span class="property">@lerp</span>(y0,y1,scale)]</pre></div></div>
             
         </li>
         
@@ -1160,7 +1162,7 @@ Note: to have a half-open interval, [lo,hi), try hi=hi-.00009</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  normalize: (array, lo = <span class="number">0</span>, hi = <span class="number">1</span>) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">normalize</span>: <span class="function"><span class="params">(array, lo = <span class="number">0</span>, hi = <span class="number">1</span>)</span> -&gt;</span>
     min = <span class="property">@aMin</span> array; max = <span class="property">@aMax</span> array; scale = <span class="number">1</span>/(max-min)
     (<span class="property">@lerp</span>(lo, hi, scale*(num-min)) <span class="keyword">for</span> num <span class="keyword">in</span> array)</pre></div></div>
             
@@ -1180,7 +1182,7 @@ Adapted from underscore&#39;s _.sortedIndex.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  sortedIndex: (array, item, <span class="function"><span class="title">f</span></span>=(o)-&gt;o) -&gt; <span class="comment"># update to _.sortedIndex someday</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">sortedIndex</span>: <span class="function"><span class="params">(array, item, f=(o)-&gt;o)</span> -&gt;</span> <span class="comment"># update to _.sortedIndex someday</span>
     f = <span class="property">@propFcn</span> f <span class="keyword">if</span> <span class="property">@isString</span> f <span class="comment"># use item[f] if f is string</span></pre></div></div>
             
         </li>
@@ -1215,7 +1217,7 @@ Adapted from underscore&#39;s _.sortedIndex.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  identity: (o) -&gt; o</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">identity</span>: <span class="function"><span class="params">(o)</span> -&gt;</span> o</pre></div></div>
             
         </li>
         
@@ -1230,7 +1232,7 @@ Adapted from underscore&#39;s _.sortedIndex.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  propFcn: (prop) -&gt; (o)-&gt;o[prop]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">propFcn</span>: <span class="function"><span class="params">(prop)</span> -&gt;</span> <span class="function"><span class="params">(o)</span>-&gt;</span>o[prop]</pre></div></div>
             
         </li>
         
@@ -1248,7 +1250,7 @@ Property can be string or function. If property is &quot;&quot;, use identity de
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  indexOf: (array, item, property)-&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">indexOf</span>: <span class="function"><span class="params">(array, item, property)</span>-&gt;</span>
     <span class="keyword">if</span> property?
       i = <span class="property">@sortedIndex</span> array, item, <span class="keyword">if</span> property <span class="keyword">is</span> <span class="string">""</span> <span class="keyword">then</span> <span class="literal">null</span> <span class="keyword">else</span> property
       <span class="keyword">if</span> array[i] <span class="keyword">is</span> item <span class="keyword">then</span> i <span class="keyword">else</span> -<span class="number">1</span>
@@ -1260,10 +1262,10 @@ Property can be string or function. If property is &quot;&quot;, use identity de
         <li id="section-66">
             <div class="annotation">
               
-              <div class="pilwrap for-h3">
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-66">&#182;</a>
               </div>
-              <h3>Topology Operations</h3>
+              <h3 id="topology-operations">Topology Operations</h3>
 
             </div>
             
@@ -1281,7 +1283,7 @@ Property can be string or function. If property is &quot;&quot;, use identity de
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  radsToward: (x1, y1, x2, y2) -&gt; Math.atan2 y2-y1, x2-x1</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">radsToward</span>: <span class="function"><span class="params">(x1, y1, x2, y2)</span> -&gt;</span> Math.atan2 y2-y1, x2-x1</pre></div></div>
             
         </li>
         
@@ -1298,7 +1300,7 @@ I.e. is p2 in cone/heading/radius from p1?</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  inCone: (heading, cone, radius, x1, y1, x2, y2) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">inCone</span>: <span class="function"><span class="params">(heading, cone, radius, x1, y1, x2, y2)</span> -&gt;</span>
     <span class="keyword">if</span> radius &lt; <span class="property">@distance</span> x1, y1, x2, y2 <span class="keyword">then</span> <span class="keyword">return</span> <span class="literal">false</span>
     angle12 = <span class="property">@radsToward</span> x1, y1, x2, y2 <span class="comment"># angle from 1 to 2</span>
     cone/<span class="number">2</span> &gt;=Math.abs <span class="property">@subtractRads</span>(heading, angle12)</pre></div></div>
@@ -1317,8 +1319,8 @@ The squared distance is used for comparisons to avoid the Math.sqrt fcn.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  distance: (x1, y1, x2, y2) -&gt; dx = x1-x2; dy = y1-y2; Math.sqrt dx*dx + dy*dy
-  sqDistance: (x1, y1, x2, y2) -&gt; dx = x1-x2; dy = y1-y2; dx*dx + dy*dy</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">distance</span>: <span class="function"><span class="params">(x1, y1, x2, y2)</span> -&gt;</span> dx = x1-x2; dy = y1-y2; Math.sqrt dx*dx + dy*dy
+  <span class="attribute">sqDistance</span>: <span class="function"><span class="params">(x1, y1, x2, y2)</span> -&gt;</span> dx = x1-x2; dy = y1-y2; dx*dx + dy*dy</pre></div></div>
             
         </li>
         
@@ -1334,7 +1336,7 @@ Default to 0,0 origin, optional x,y origin.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  polarToXY: (r, theta, x=<span class="number">0</span>, y=<span class="number">0</span>) -&gt; [x+r*Math.cos(theta), y+r*Math.sin(theta)]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">polarToXY</span>: <span class="function"><span class="params">(r, theta, x=<span class="number">0</span>, y=<span class="number">0</span>)</span> -&gt;</span> [x+r*Math.cos(theta), y+r*Math.sin(theta)]</pre></div></div>
             
         </li>
         
@@ -1368,9 +1370,9 @@ A and B must also include the towards-reflections around A, thus 4 points.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  torusDistance: (x1, y1, x2, y2, w, h) -&gt; 
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">torusDistance</span>: <span class="function"><span class="params">(x1, y1, x2, y2, w, h)</span> -&gt;</span> 
     Math.sqrt <span class="property">@torusSqDistance</span> x1, y1, x2, y2, w, h
-  torusSqDistance: (x1, y1, x2, y2, w, h) -&gt;
+  <span class="attribute">torusSqDistance</span>: <span class="function"><span class="params">(x1, y1, x2, y2, w, h)</span> -&gt;</span>
     dx = Math.abs x2-x1; dy = Math.abs y2-y1
     dxMin = Math.min dx, w-dx; dyMin = Math.min dy, h-dy
     dxMin*dxMin + dyMin*dyMin</pre></div></div>
@@ -1388,7 +1390,7 @@ A and B must also include the towards-reflections around A, thus 4 points.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  torusWraps: (x1, y1, x2, y2, w, h) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">torusWraps</span>: <span class="function"><span class="params">(x1, y1, x2, y2, w, h)</span> -&gt;</span>
     dx = Math.abs x2-x1; dy = Math.abs y2-y1
     dx &gt; w-dx <span class="keyword">or</span> dy &gt; h-dy</pre></div></div>
             
@@ -1405,7 +1407,7 @@ A and B must also include the towards-reflections around A, thus 4 points.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  torus4Pts: (x1, y1, x2, y2, w, h) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">torus4Pts</span>: <span class="function"><span class="params">(x1, y1, x2, y2, w, h)</span> -&gt;</span>
     x2r = <span class="keyword">if</span> x2&lt;x1 <span class="keyword">then</span> x2+w <span class="keyword">else</span> x2-w
     y2r = <span class="keyword">if</span> y2&lt;y1 <span class="keyword">then</span> y2+h <span class="keyword">else</span> y2-h
     [ [x2,y2], [x2r,y2], [x2,y2r], [x2r,y2r] ]</pre></div></div>
@@ -1423,7 +1425,7 @@ A and B must also include the towards-reflections around A, thus 4 points.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  torusPt: (x1, y1, x2, y2, w, h) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">torusPt</span>: <span class="function"><span class="params">(x1, y1, x2, y2, w, h)</span> -&gt;</span>
     x2r = <span class="keyword">if</span> x2&lt;x1 <span class="keyword">then</span> x2+w <span class="keyword">else</span> x2-w
     y2r = <span class="keyword">if</span> y2&lt;y1 <span class="keyword">then</span> y2+h <span class="keyword">else</span> y2-h
     x = <span class="keyword">if</span> Math.abs(x2r-x1) &lt; Math.abs(x2-x1) <span class="keyword">then</span> x2r <span class="keyword">else</span> x2
@@ -1443,7 +1445,7 @@ A and B must also include the towards-reflections around A, thus 4 points.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  torusRadsToward: (x1, y1, x2, y2, w, h) -&gt; 
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">torusRadsToward</span>: <span class="function"><span class="params">(x1, y1, x2, y2, w, h)</span> -&gt;</span> 
     [x2,y2] = <span class="property">@torusPt</span> x1, y1, x2, y2, w, h
     <span class="property">@radsToward</span> x1, y1, x2, y2</pre></div></div>
             
@@ -1461,7 +1463,7 @@ and within distance radius from x1,x2 considering all torus reflections.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  inTorusCone: (heading, cone, radius, x1, y1, x2, y2, w, h) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">inTorusCone</span>: <span class="function"><span class="params">(heading, cone, radius, x1, y1, x2, y2, w, h)</span> -&gt;</span>
     <span class="keyword">for</span> p <span class="keyword">in</span> <span class="property">@torus4Pts</span> x1, y1, x2, y2, w, h
       <span class="keyword">return</span> <span class="literal">true</span> <span class="keyword">if</span> <span class="property">@inCone</span> heading, cone, radius, x1, y1, p[<span class="number">0</span>], p[<span class="number">1</span>]
     <span class="literal">false</span></pre></div></div>
@@ -1472,15 +1474,15 @@ and within distance radius from x1,x2 considering all torus reflections.</p>
         <li id="section-77">
             <div class="annotation">
               
-              <div class="pilwrap for-h3">
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-77">&#182;</a>
               </div>
-              <h3>File I/O</h3>
+              <h3 id="file-i-o">File I/O</h3>
 <p>Cache of file names used by file imports below</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  fileIndex: {}</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">fileIndex</span>: {}</pre></div></div>
             
         </li>
         
@@ -1495,13 +1497,13 @@ and within distance radius from x1,x2 considering all torus reflections.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  importImage: (name, <span class="function"><span class="title">f</span></span> = -&gt;) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">importImage</span>: <span class="function"><span class="params">(name, f = -&gt;)</span> -&gt;</span>
     <span class="keyword">if</span> (img=<span class="property">@fileIndex</span>[name])? <span class="comment"># wtf? or ((img=name).width and img.height)</span>
       f(img) <span class="comment">#if img.isDone</span>
     <span class="keyword">else</span>
       <span class="property">@fileIndex</span>[name] = img = <span class="keyword">new</span> Image()
       img.isDone = <span class="literal">false</span>
-      img.<span class="function"><span class="title">onload</span></span> = -&gt; f(img); img.isDone = <span class="literal">true</span>
+      img.<span class="function"><span class="title">onload</span> = -&gt;</span> f(img); img.isDone = <span class="literal">true</span>
       img.src = name
     img</pre></div></div>
             
@@ -1520,7 +1522,7 @@ method is &quot;GET&quot; or &quot;POST&quot;. f is function to call onload, def
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  xhrLoadFile: (name, method=<span class="string">"GET"</span>, type=<span class="string">"text"</span>, <span class="function"><span class="title">f</span></span> = -&gt;) -&gt; <span class="comment"># AJAX async request</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">xhrLoadFile</span>: <span class="function"><span class="params">(name, method=<span class="string">"GET"</span>, type=<span class="string">"text"</span>, f = -&gt;)</span> -&gt;</span> <span class="comment"># AJAX async request</span>
     <span class="keyword">if</span> (xhr=<span class="property">@fileIndex</span>[name])?
       f(xhr.response)
     <span class="keyword">else</span>
@@ -1528,7 +1530,7 @@ method is &quot;GET&quot; or &quot;POST&quot;. f is function to call onload, def
       xhr.isDone = <span class="literal">false</span>
       xhr.open method, name <span class="comment"># POST mainly for security and large files</span>
       xhr.responseType = type
-      xhr.<span class="function"><span class="title">onload</span></span> = -&gt; f(xhr.response); xhr.isDone = <span class="literal">true</span>
+      xhr.<span class="function"><span class="title">onload</span> = -&gt;</span> f(xhr.response); xhr.isDone = <span class="literal">true</span>
       xhr.send()
     xhr</pre></div></div>
             
@@ -1545,9 +1547,10 @@ method is &quot;GET&quot; or &quot;POST&quot;. f is function to call onload, def
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  filesLoaded: (files = <span class="property">@fileIndex</span>) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">filesLoaded</span>: <span class="function"><span class="params">(files = <span class="property">@fileIndex</span>)</span> -&gt;</span>
     array = (v.isDone <span class="keyword">for</span> v <span class="keyword">in</span> (<span class="property">@ownValues</span> files))
-    array.reduce ((a,b)-&gt;a <span class="keyword">and</span> b), <span class="literal">true</span></pre></div></div>
+    array.reduce <span class="function"><span class="params">((a,b)-&gt;a <span class="keyword">and</span> b)</span>, <span class="title">true</span>
+</span></pre></div></div>
             
         </li>
         
@@ -1562,7 +1565,7 @@ method is &quot;GET&quot; or &quot;POST&quot;. f is function to call onload, def
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  waitOnFiles: (f, files = <span class="property">@fileIndex</span>) -&gt; <span class="property">@waitOn</span> (=&gt; <span class="property">@filesLoaded</span> files), f</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">waitOnFiles</span>: <span class="function"><span class="params">(f, files = <span class="property">@fileIndex</span>)</span> -&gt;</span> <span class="property">@waitOn</span> (<span class="function">=&gt;</span> <span class="property">@filesLoaded</span> files), f</pre></div></div>
             
         </li>
         
@@ -1577,8 +1580,8 @@ method is &quot;GET&quot; or &quot;POST&quot;. f is function to call onload, def
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  waitOn: (done, f) -&gt;
-    <span class="keyword">if</span> done() <span class="keyword">then</span> f() <span class="keyword">else</span> setTimeout (=&gt; <span class="property">@waitOn</span>(done, f)), <span class="number">1000</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">waitOn</span>: <span class="function"><span class="params">(done, f)</span> -&gt;</span>
+    <span class="keyword">if</span> done() <span class="keyword">then</span> f() <span class="keyword">else</span> setTimeout (<span class="function">=&gt;</span> <span class="property">@waitOn</span>(done, f)), <span class="number">1000</span></pre></div></div>
             
         </li>
         
@@ -1586,17 +1589,17 @@ method is &quot;GET&quot; or &quot;POST&quot;. f is function to call onload, def
         <li id="section-83">
             <div class="annotation">
               
-              <div class="pilwrap for-h3">
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-83">&#182;</a>
               </div>
-              <h3>Image Data Operations</h3>
+              <h3 id="image-data-operations">Image Data Operations</h3>
 <p>Make a copy of an image.
 Note: new image will have the naturalWidth/Height of input img.
 Should be sync</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  cloneImage: (img) -&gt; (i=<span class="keyword">new</span> Image()).src = img.src; i</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">cloneImage</span>: <span class="function"><span class="params">(img)</span> -&gt;</span> (i=<span class="keyword">new</span> Image()).src = img.src; i</pre></div></div>
             
         </li>
         
@@ -1613,9 +1616,9 @@ The function f = f(imageData, rgbIndex) -&gt; number</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  imageToData: (img, f=<span class="property">@pixelByte</span>(<span class="number">0</span>), arrayType=Uint8ClampedArray) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">imageToData</span>: <span class="function"><span class="params">(img, f=<span class="property">@pixelByte</span>(<span class="number">0</span>), arrayType=Uint8ClampedArray)</span> -&gt;</span>
     <span class="property">@imageRowsToData</span> img, img.height, f, arrayType
-  imageRowsToData: (img, rowsPerSlice, f=<span class="property">@pixelByte</span>(<span class="number">0</span>), arrayType=Uint8ClampedArray) -&gt;
+  <span class="attribute">imageRowsToData</span>: <span class="function"><span class="params">(img, rowsPerSlice, f=<span class="property">@pixelByte</span>(<span class="number">0</span>), arrayType=Uint8ClampedArray)</span> -&gt;</span>
     rowsDone = <span class="number">0</span>; data = <span class="keyword">new</span> arrayType img.width*img.height
     <span class="keyword">while</span> rowsDone &lt; img.height
       rows = Math.min img.height - rowsDone, rowsPerSlice
@@ -1640,11 +1643,11 @@ They return a fcn in a closure which &quot;sees&quot; the args and variables</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  pixelBytesToInt: (a) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">pixelBytesToInt</span>: <span class="function"><span class="params">(a)</span> -&gt;</span>
     ImageByteFmts = [[<span class="number">2</span>],[<span class="number">1</span>,<span class="number">2</span>],[<span class="number">0</span>,<span class="number">1</span>,<span class="number">2</span>],[<span class="number">3</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">2</span>]]
     a=ImageByteFmts[a-<span class="number">1</span>] <span class="keyword">if</span> <span class="keyword">typeof</span> a <span class="keyword">is</span> <span class="string">"number"</span>
-    (id,i)-&gt;val = <span class="number">0</span>; val = val*<span class="number">256</span> + id[i+j] <span class="keyword">for</span> j <span class="keyword">in</span> a; val
-  pixelByte: (n) -&gt; (id,i)-&gt;id[i+n]</pre></div></div>
+    <span class="function"><span class="params">(id,i)</span>-&gt;</span>val = <span class="number">0</span>; val = val*<span class="number">256</span> + id[i+j] <span class="keyword">for</span> j <span class="keyword">in</span> a; val
+  <span class="attribute">pixelByte</span>: <span class="function"><span class="params">(n)</span> -&gt;</span> <span class="function"><span class="params">(id,i)</span>-&gt;</span>id[i+n]</pre></div></div>
             
         </li>
         
@@ -1652,15 +1655,15 @@ They return a fcn in a closure which &quot;sees&quot; the args and variables</p>
         <li id="section-86">
             <div class="annotation">
               
-              <div class="pilwrap for-h3">
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-86">&#182;</a>
               </div>
-              <h3>Canvas/Context Operations</h3>
+              <h3 id="canvas-context-operations">Canvas/Context Operations</h3>
 <p>Create a new canvas of given width/height</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  createCanvas: (width, height) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">createCanvas</span>: <span class="function"><span class="params">(width, height)</span> -&gt;</span>
     can = document.createElement <span class="string">'canvas'</span>
     can.width = width; can.height = height
     can</pre></div></div>
@@ -1679,7 +1682,7 @@ Note ctx.canvas is the canvas for the ctx, and can be use as an image.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  createCtx: (width, height, ctxType=<span class="string">"2d"</span>) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">createCtx</span>: <span class="function"><span class="params">(width, height, ctxType=<span class="string">"2d"</span>)</span> -&gt;</span>
     can = <span class="property">@createCanvas</span> width, height
     <span class="keyword">if</span> ctxType <span class="keyword">is</span> <span class="string">"2d"</span>
     <span class="keyword">then</span> can.getContext <span class="string">"2d"</span> 
@@ -1701,18 +1704,18 @@ and with the z-index of z.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  createLayer: (div, width, height, z, ctx = <span class="string">"2d"</span>) -&gt; <span class="comment"># a canvas ctx object</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">createLayer</span>: <span class="function"><span class="params">(div, width, height, z, ctx = <span class="string">"2d"</span>)</span> -&gt;</span> <span class="comment"># a canvas ctx object</span>
     <span class="keyword">if</span> ctx <span class="keyword">is</span> <span class="string">"img"</span> 
     <span class="keyword">then</span> element = ctx = <span class="keyword">new</span> Image(); ctx.width = width; ctx.height=height
     <span class="keyword">else</span> element = (ctx=<span class="property">@createCtx</span>(width, height, ctx)).canvas
     <span class="property">@insertLayer</span> div, element, width, height, z
     ctx
-  insertLayer: (div, element, w, h, z) -&gt;
+  <span class="attribute">insertLayer</span>: <span class="function"><span class="params">(div, element, w, h, z)</span> -&gt;</span>
     element.setAttribute <span class="string">'style'</span>, <span class="comment"># Note: this erases existing style, el.style.position doesnt</span>
     <span class="string">"position:absolute;top:0;left:0;width:<span class="subst">#{w}</span>;height:<span class="subst">#{h}</span>;z-index:<span class="subst">#{z}</span>"</span>
     div.appendChild(element)
 
-  setCtxSmoothing: (ctx, smoothing) -&gt;
+  <span class="attribute">setCtxSmoothing</span>: <span class="function"><span class="params">(ctx, smoothing)</span> -&gt;</span>
     ctx.imageSmoothingEnabled = smoothing
     ctx.mozImageSmoothingEnabled = smoothing
     ctx.oImageSmoothingEnabled = smoothing
@@ -1731,7 +1734,7 @@ and with the z-index of z.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  setIdentity: (ctx) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">setIdentity</span>: <span class="function"><span class="params">(ctx)</span> -&gt;</span>
     ctx.save() <span class="comment"># revert to native 2D transform</span>
     ctx.setTransform <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span></pre></div></div>
             
@@ -1748,7 +1751,7 @@ and with the z-index of z.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  clearCtx: (ctx) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">clearCtx</span>: <span class="function"><span class="params">(ctx)</span> -&gt;</span>
     <span class="keyword">if</span> ctx.save? <span class="comment"># test for 2D ctx</span>
       <span class="property">@setIdentity</span> ctx <span class="comment"># ctx.canvas.width = ctx.canvas.width not used so as to preserve patch coords</span>
       ctx.clearRect <span class="number">0</span>, <span class="number">0</span>, ctx.canvas.width, ctx.canvas.height
@@ -1770,7 +1773,7 @@ and with the z-index of z.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  fillCtx: (ctx, color) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">fillCtx</span>: <span class="function"><span class="params">(ctx, color)</span> -&gt;</span>
     <span class="keyword">if</span> ctx.fillStyle? <span class="comment"># test for 2D ctx</span>
       <span class="property">@setIdentity</span> ctx
       ctx.fillStyle = <span class="property">@colorStr</span>(color)
@@ -1794,7 +1797,7 @@ Use setIdentity .. reset if a transform is being used by caller.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  ctxDrawText: (ctx, string, x, y, color = [<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>], setIdentity = <span class="literal">true</span>) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">ctxDrawText</span>: <span class="function"><span class="params">(ctx, string, x, y, color = [<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>], setIdentity = <span class="literal">true</span>)</span> -&gt;</span>
     <span class="property">@setIdentity</span>(ctx) <span class="keyword">if</span> setIdentity
     ctx.fillStyle = <span class="property">@colorStr</span> color;  ctx.fillText(string, x, y)
     ctx.restore() <span class="keyword">if</span> setIdentity</pre></div></div>
@@ -1818,9 +1821,9 @@ Use setIdentity .. reset if a transform is being used by caller.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  ctxTextParams: (ctx, font, align = <span class="string">"center"</span>, baseline = <span class="string">"middle"</span>) -&gt; 
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">ctxTextParams</span>: <span class="function"><span class="params">(ctx, font, align = <span class="string">"center"</span>, baseline = <span class="string">"middle"</span>)</span> -&gt;</span> 
     ctx.font = font; ctx.textAlign = align; ctx.textBaseline = baseline
-  elementTextParams: (e, font, align = <span class="string">"center"</span>, baseline = <span class="string">"middle"</span>) -&gt; 
+  <span class="attribute">elementTextParams</span>: <span class="function"><span class="params">(e, font, align = <span class="string">"center"</span>, baseline = <span class="string">"middle"</span>)</span> -&gt;</span> 
     e = e.canvas <span class="keyword">if</span> e.canvas?
     e.style.font = font; e.style.textAlign = align; e.style.textBaseline = baseline</pre></div></div>
             
@@ -1839,7 +1842,7 @@ Note: to convert a ctx to an &quot;image&quot; (drawImage) use ctx.canvas</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  imageToCtx: (img, w, h) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">imageToCtx</span>: <span class="function"><span class="params">(img, w, h)</span> -&gt;</span>
     <span class="keyword">if</span> w? <span class="keyword">and</span> h?
       ctx = <span class="property">@createCtx</span> w, h
       ctx.drawImage img, <span class="number">0</span>, <span class="number">0</span>, w, h
@@ -1847,7 +1850,7 @@ Note: to convert a ctx to an &quot;image&quot; (drawImage) use ctx.canvas</p>
       ctx = <span class="property">@createCtx</span> img.width, img.height
       ctx.drawImage img, <span class="number">0</span>, <span class="number">0</span>
     ctx
-  imageSliceToCtx: (img, sx, sy, sw, sh, ctx) -&gt;
+  <span class="attribute">imageSliceToCtx</span>: <span class="function"><span class="params">(img, sx, sy, sw, sh, ctx)</span> -&gt;</span>
     <span class="keyword">if</span> ctx?
     <span class="keyword">then</span> ctx.canvas.width = sw; ctx.canvas.height = sh
     <span class="keyword">else</span> ctx = <span class="property">@createCtx</span> sw, sh
@@ -1870,10 +1873,10 @@ Fix: use ctx.canvas for programatic imaging.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  ctxToDataUrl: (ctx) -&gt; ctx.canvas.toDataURL <span class="string">"image/png"</span>
-  ctxToDataUrlImage: (ctx, f) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">ctxToDataUrl</span>: <span class="function"><span class="params">(ctx)</span> -&gt;</span> ctx.canvas.toDataURL <span class="string">"image/png"</span>
+  <span class="attribute">ctxToDataUrlImage</span>: <span class="function"><span class="params">(ctx, f)</span> -&gt;</span>
     img = <span class="keyword">new</span> Image()
-    (img.<span class="function"><span class="title">onload</span></span> = -&gt; f(img)) <span class="keyword">if</span> f?
+    (img.<span class="function"><span class="title">onload</span> = -&gt;</span> f(img)) <span class="keyword">if</span> f?
     img.src = ctx.canvas.toDataURL <span class="string">"image/png"</span>
     img</pre></div></div>
             
@@ -1890,7 +1893,7 @@ Fix: use ctx.canvas for programatic imaging.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  ctxToImageData: (ctx) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">ctxToImageData</span>: <span class="function"><span class="params">(ctx)</span> -&gt;</span>
     ctx.getImageData <span class="number">0</span>, <span class="number">0</span>, ctx.canvas.width, ctx.canvas.height</pre></div></div>
             
         </li>
@@ -1923,10 +1926,10 @@ See <a href="http://goo.gl/VUlhY">this tutorial</a>.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  drawCenteredImage: (ctx, img, rad, x, y, dx, dy) -&gt; <span class="comment"># presume save/restore surrounds this</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">drawCenteredImage</span>: <span class="function"><span class="params">(ctx, img, rad, x, y, dx, dy)</span> -&gt;</span> <span class="comment"># presume save/restore surrounds this</span>
     ctx.translate x, y <span class="comment"># translate to center</span>
     ctx.rotate rad
-    ctx.drawImage img, -dx<span class="regexp">/2, -dy/</span><span class="number">2</span></pre></div></div>
+    ctx.drawImage img, -dx/<span class="number">2</span>, -dy/<span class="number">2</span></pre></div></div>
             
         </li>
         
@@ -1941,7 +1944,7 @@ See <a href="http://goo.gl/VUlhY">this tutorial</a>.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  copyCtx: (ctx0) -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">copyCtx</span>: <span class="function"><span class="params">(ctx0)</span> -&gt;</span>
     ctx = <span class="property">@createCtx</span> ctx0.canvas.width, ctx0.canvas.height
     ctx.drawImage ctx0.canvas, <span class="number">0</span>, <span class="number">0</span>
     ctx</pre></div></div>
@@ -1959,7 +1962,7 @@ See <a href="http://goo.gl/VUlhY">this tutorial</a>.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  resizeCtx: (ctx, width, height, scale = <span class="literal">false</span>) -&gt; <span class="comment"># http://goo.gl/Tp90B</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">resizeCtx</span>: <span class="function"><span class="params">(ctx, width, height, scale = <span class="literal">false</span>)</span> -&gt;</span> <span class="comment"># http://goo.gl/Tp90B</span>
     copy = <span class="property">@copyCtx</span> ctx
     ctx.canvas.width = width; ctx.canvas.height = height
     ctx.drawImage copy.canvas, <span class="number">0</span>, <span class="number">0</span></pre></div></div>

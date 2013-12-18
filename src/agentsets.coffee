@@ -117,7 +117,7 @@ class ABM.Patches extends ABM.AgentSet
   cacheAgentsHere: -> p.agents = [] for p in @; null
 
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
-  # if browser does not support these flags.
+  # if browser does not support smoothing flags.
   usePixels: (@drawWithPixels=true) ->
     ctx = ABM.contexts.patches
     u.setCtxSmoothing ctx, not @drawWithPixels
@@ -264,8 +264,12 @@ class ABM.Patches extends ABM.AgentSet
   # Draw the patches via pixel manipulation rather than 2D drawRect.
   # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq)
   drawScaledPixels: (ctx) -> 
-    # Note u.setIdentity ctx & ctx.restore() not needed, pixel ops don't use transform
+    # u.setIdentity ctx & ctx.restore() only needed if patch size 
+    # not 1, pixel ops don't use transform but @size>1 uses
+    # a drawimage
+    u.setIdentity ctx if @size isnt 1
     if @pixelsData32? then @drawScaledPixels32 ctx else @drawScaledPixels8 ctx
+    ctx.restore() if @size isnt 1
   # The 8-bit version for drawScaledPixels.  Used for systems w/o typed arrays
   drawScaledPixels8: (ctx) ->
     data = @pixelsData
