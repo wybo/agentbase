@@ -76,6 +76,17 @@ task 'git:prep', 'cake all; git add/status', ->
   shell.exec "git add ."
   # sometimes the git status does not appear, use callback instead
   shell.exec "git status", {silent:true}, (code,output)->console.log output
+task 'git:commit', 'commit, push, handle gh-page branch', ->
+  shell.exec """
+    git commit
+    git push origin master
+    git checkout gh-pages
+    git merge master 
+    git push origin gh-pages
+    git checkout master
+  """, ->
+
+
 
 
 task 'git:diff', 'git diff the core and extras .coffee files', ->
