@@ -164,7 +164,6 @@ ABM.DataSet = class DataSet
   # It also returns the two derivitive DataSets, dzdx, dzdy for
   # those wanting to use the results of the two convolutions.
   slopeAndAspect: (noNaNs=true, posAngle=true) -> 
-    n = 2
     dzdx = @dzdx() # sub left z from right
     dzdy = @dzdy() # sub bottom z from top
     aspect = []; slope = []

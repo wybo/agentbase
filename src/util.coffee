@@ -259,7 +259,7 @@ ABM.util = u =
 
   # Return o when f(o) min/max in array. Error if array empty.
   # If f is a string, return element with max value of that property.
-  # If "valueToo" then return an array of the element and the value;
+  # If "valueToo" then return a 2-array of the element and the value;
   # used for cases where f is costly function.
   # 
   #     array = [{x:1,y:2}, {x:3,y:4}]
@@ -267,13 +267,13 @@ ABM.util = u =
   #     [min, dist2] = minOneOf array, ((o)->o.x*o.x+o.y*o.y), true
   #     # returns {x: 3, y: 4}
   #     max = maxOneOf array, "x"
-  minOneOf: (array, f, valueToo=false) ->
+  minOneOf: (array, f=@identity, valueToo=false) ->
     @error "minOneOf: empty array" if @empty array
     r = Infinity; o = null; f = @propFcn f if @isString f
     for a in array
       (r = r1; o = a) if (r1=f(a)) < r
     if valueToo then [o, r] else o
-  maxOneOf: (array, f, valueToo=false) ->
+  maxOneOf: (array, f=@identity, valueToo=false) ->
     @error "maxOneOf: empty array" if @empty array
     r = -Infinity; o = null; f = @propFcn f if @isString f
     for a in array

@@ -73,7 +73,9 @@ See: <a href="http://goo.gl/dq0nN">addEventListener</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">constructor</span>: <span class="function"><span class="params">(<span class="property">@div</span>, <span class="property">@callback</span>)</span> -&gt;</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">constructor</span>: <span class="function"><span class="params">(<span class="property">@div</span>, <span class="property">@callback</span>)</span> -&gt;</span>
+    <span class="property">@lastX</span>=Infinity; <span class="property">@lastY</span>=Infinity
+    <span class="property">@start</span>()</pre></div></div>
             
         </li>
         
@@ -84,23 +86,7 @@ See: <a href="http://goo.gl/dq0nN">addEventListener</a></p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
-              <p>@div = document.getElementById divName</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    <span class="property">@lastX</span>=Infinity; <span class="property">@lastY</span>=Infinity
-    <span class="property">@start</span>()</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-4">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-4">&#182;</a>
-              </div>
-              <p>Start/stop the mouseListeners.  Note that NL&#39;s model is to have
+              <p>Start/stop the mouseListeners.  Note that NetLogo&#39;s model is to have
 mouse move events always on, rather than starting/stopping them
 on mouse down/up.  We may want do make that optional, using the
 more standard down/up enabling move events.</p>
@@ -121,11 +107,11 @@ more standard down/up enabling move events.</p>
         </li>
         
         
-        <li id="section-5">
+        <li id="section-4">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-5">&#182;</a>
+                <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
               <p>Handlers for eventListeners</p>
 

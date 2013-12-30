@@ -923,7 +923,7 @@ Clever! See <a href="http://goo.gl/TT2SY">cookbook</a></p>
               </div>
               <p>Return o when f(o) min/max in array. Error if array empty.
 If f is a string, return element with max value of that property.
-If &quot;valueToo&quot; then return an array of the element and the value;
+If &quot;valueToo&quot; then return a 2-array of the element and the value;
 used for cases where f is costly function.</p>
 <pre><code>array = [{x:1,y:2}, {x:3,y:4}]
 # returns {x: 1, y: 2} 5
@@ -933,13 +933,13 @@ max = maxOneOf array, &quot;x&quot;</code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">minOneOf</span>: <span class="function"><span class="params">(array, f, valueToo=<span class="literal">false</span>)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">minOneOf</span>: <span class="function"><span class="params">(array, f=<span class="property">@identity</span>, valueToo=<span class="literal">false</span>)</span> -&gt;</span>
     <span class="property">@error</span> <span class="string">"minOneOf: empty array"</span> <span class="keyword">if</span> <span class="property">@empty</span> array
     r = Infinity; o = <span class="literal">null</span>; f = <span class="property">@propFcn</span> f <span class="keyword">if</span> <span class="property">@isString</span> f
     <span class="keyword">for</span> a <span class="keyword">in</span> array
       (r = r1; o = a) <span class="keyword">if</span> (r1=f(a)) &lt; r
     <span class="keyword">if</span> valueToo <span class="keyword">then</span> [o, r] <span class="keyword">else</span> o
-  <span class="attribute">maxOneOf</span>: <span class="function"><span class="params">(array, f, valueToo=<span class="literal">false</span>)</span> -&gt;</span>
+  <span class="attribute">maxOneOf</span>: <span class="function"><span class="params">(array, f=<span class="property">@identity</span>, valueToo=<span class="literal">false</span>)</span> -&gt;</span>
     <span class="property">@error</span> <span class="string">"maxOneOf: empty array"</span> <span class="keyword">if</span> <span class="property">@empty</span> array
     r = -Infinity; o = <span class="literal">null</span>; f = <span class="property">@propFcn</span> f <span class="keyword">if</span> <span class="property">@isString</span> f
     <span class="keyword">for</span> a <span class="keyword">in</span> array

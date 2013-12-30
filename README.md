@@ -2,12 +2,6 @@
 
 AgentScript is a minimalist Agent Based Modeling (ABM) framework based on [NetLogo](http://ccl.northwestern.edu/netlogo/) agent semantics.  Its goal is to promote the Agent Oriented Programming model in a highly deployable [CoffeeScript](http://coffeescript.org/)/JavaScript implementation. Please drop by our [Google Group](https://groups.google.com/forum/?hl=en#!forum/agentscript) to get involved. We have a gh-pages site [agentscript.org](http://agentscript.org/).
 
-#### Build
-
-Cake is used to build agentscript.coffee from individual source files, and to compile into agentscript.js, agentscript.min.js, and agentscript.map.  The map file allows debugging in Chrome via CoffeeScript source.
-
-See the template.html and models/*.html files for example models.  The individual .coffee files are documented via Jeremy Ashkenas's [docco](http://jashkenas.github.com/docco/) in the docs/ dir. See the Cakefile for details.
-
 #### Documentation
 
 Currently the documentation is hosted directly on our [GitHub Pages](http://backspaces.github.io/agentscript) or directly from [agentscript.org](http://agentscript.org/) from the docco generated html found in the doc/ directory.
@@ -81,9 +75,36 @@ Our example models use CoffeeScript directly within the browser via `text/coffee
         </body>
       </html>
 
-You may see this by running a sample model, then use the browser's View Page Source.  (Google "view page source")
+You may see this by running a sample model, then use the browser's View Page Source.
 
-Similarly, the models will print to the "javascript console" while they run. (Google "view javascript console")
+Often the models will print to the "javascript console" while they run.
+
+#### Building a Model
+
+Class Model is an "abstract class" with three abscract methods:
+
+    startup() Called from Model ctor for loading files needed by model.
+    setup()   Called during startup and by Model.reset()
+    step()    Called by animator to advance the model one step
+
+CoffeeScript modelers simply subclass ABM.Model, supplying the three abstract methods.  All the samole models use this, as does the docs/ template example.
+
+JavaScript modelers can simply replace the empty ABM.Model abstract methods:
+
+    myModel = function () {
+      var u = ABM.util; // useful alias for utilities
+      ABM.Model.prototype.startup = function () {...};
+      ABM.Model.prototype.setup = function () {...};
+      ABM.Model.prototype.step = function () {...};
+
+      // Startup like CoffeeScript examples
+      var model = new ABM.Model("layers", 13, -16, 16, -16, 16, true)
+        .debug() // Debug: Put Model vars in global name space
+        .start();
+    }
+
+See [sketches/jsmodel.html](sketches/jsmodel.html) for a random walker in JavaScript.  We'll also have more of our models/ converted to JavaScript in the future.
+
 
 #### Files
     
@@ -98,6 +119,43 @@ Similarly, the models will print to the "javascript console" while they run. (Go
     src/                Component .coffee files for agentscript.coffee
     tools/              coffee-script.js and others
     
+#### Build
+
+Cake is used to build agentscript.coffee from individual source files, and to compile into lib/ as agentscript.js, agentscript.min.js, and agentscript.map.  The map file allows debugging in Chrome via CoffeeScript source.
+
+The "extras" are libraries that augment agentscript and are individually compiled into lib/ as .js, .min.js, and .map files by Cake.  Here are the primary cake tasks:
+
+    cake watch         # Watch for source file updates, invoke builds
+    cake all           # Compile coffee, minify js, create docs
+    cake git:diff      # git diff the core and extras .coffee files
+    cake git:prep      # cake all; git add/status
+    cake git:commit    # commit locally, push to github
+    cake git:pages     # checkout gh-pages, merge master, push to gh-pages, checkout master
+
+
+If you are forking/pulling agentscript, you will have to manage the Cake builds.  These current require node plugins for coffeescript and shelljs, installed via npm.
+
+    https://github.com/arturadib/shelljs
+    http://jashkenas.github.io/coffee-script/extras/coffee-script.js
+
+All forked repos must be aware that we have a gh-pages branch.  This somewhat complicates the build workflow.  You should also make sure you are in the master at all times; our cake tasks should take care of all gh-pages branch usage.
+
+Before any commit, please make sure all the models work as expected, they are our "unit tests".  We'll be adding more, smaller tests, soon. Similarly make sure the docco files display correctly.  They can be built with "cake all" or "cake doc". Note that all single line comments are converted into docs, using Markdown.  Be careful not to mistakenly add a "code" comment to the docs!
+
+Pull requests will be accepted without your building your own gh-pages as long as both the tests run and the README.md runs OK locally.  Generally the test models and docs will run locally with a file:// url but http://localhost is safer.  Sublime/Textmate markdown viewers should work for this.
+
+The typical workflow looks like:
+
+* cake watch - compile coffee files when they change.
+* cake all - compile & minify all code, create docs. Done before git add to insure everything is ready for git.
+* cake git:diff - diff all source and related files.  Good for creating complete commit comments.
+* cake git:prep - in master, invokes "cake all", git add ., git status.  Used prior to commiting, stages all files.  Remember to git rm any files that are removed so that remote correctly sync'ed.
+* cake git:commit - in master, commit locally and push to github
+* cake git:pages - checkout gh-pages branch, merge master, push to github, change back to master.
+
+The git:pages task should be run with no watch task running, otherwise unintential compiles will occur with changing to the gh-pages branch.  Similarly, be careful your editor isn't confused by the gh-pages change .. it completely changes your working directory.  The cake git:commit task will warn you to be careful, prompting for a go-ahead.
+
+
 #### License
 
 Copyright Owen Densmore, RedfishGroup LLC, 2012, 2013<br>

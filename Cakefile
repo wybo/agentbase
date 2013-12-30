@@ -7,8 +7,13 @@
 fs     = require 'fs'
 {exec} = require 'child_process'
 shell  = require 'shelljs'
+readline= require 'readline'
+# Note: try https://github.com/mgutz/execSync
 
 editor= shell.exec("git config --get core.editor",{silent:true}).output
+prompt = (qstring,f) -> # prompt w/ question, respond with f(ans)
+  rl=readline.createInterface {input:process.stdin, output:process.stdout}
+  rl.question qstring, (ans) -> rl.close(); f(ans)
 
 srcDir = "src/"
 extrasDir = "extras/"
@@ -22,7 +27,7 @@ XNames = "data mouse fbui".split(" ")
 XPaths = ("#{extrasDir}#{f}.coffee" for f in XNames)
 JSNames = XNames.concat ["agentscript"]
 
-task 'all', 'Compile, minify, create docs', ->
+task 'all', 'Compile coffee, minify js, create docs', ->
   invoke 'build'
   invoke 'minify'
   invoke 'wc'
@@ -58,7 +63,7 @@ task 'doc', 'Create documentation from source files', ->
     rm /tmp/*.coffee docs/*.html
     grep -v '^ *<' < models/template.html > #{template}
     #{cpfiles}
-    docco #{tmpfiles.join(" ")} -o docs
+    docco #{tmpfiles.join(" ")} -o docs  &&
     docco #{XPaths.join(" ")} -o docs
   """, -> #{silent:true}, (code,output) -> console.log output
 # task 'xdoc', 'Create documentation for addons', ->
@@ -66,41 +71,46 @@ task 'doc', 'Create documentation from source files', ->
 #     docco #{XPaths.join(" ")} -o docs
 #   """, ->
 
-task 'git:prep', 'cake all; git add/status', ->
-  # Looks like I can't cake all w/o async problems
-  # invoke 'all'
-  # shell.exec """
-  #   git add .
-  #   git status
-  # """ #, (code,output)->console.log output
-  shell.exec "git add ."
-  # sometimes the git status does not appear, use callback instead
-  shell.exec "git status", {silent:true}, (code,output)->console.log output
-task 'git:commit', 'commit, push, handle gh-page branch', ->
+task 'git:prep', 'master: cake all; git add/status', ->
+  # call doc task from shell .. async problems otherwise
   shell.exec """
+    git checkout master
+    cake 'all'
+    git add .
+    git status
+  """, ->
+task 'git:commit', 'master: commit, push to github', ->
+  shell.exec """
+    git checkout master
     git commit
     git push origin master
-    git checkout gh-pages
-    git merge master 
-    git push origin gh-pages
-    git checkout master
   """, ->
-
-
-
-
+task 'git:pages', 'gh-pages: merge master, push to github gh-page', ->
+  console.log """
+  This will checkout the gh-pages branchs, making your working
+  directory completely changed, causing "watch" tasks and editors with
+  project files open to potentially behave incorrectly.
+  """
+  prompt "OK to proceed!?! [y or CR / n or Ctl-C] ", (ans) ->
+    if ans.match(/[yY]|^$/) # default is yes, CR OK
+      shell.exec """
+        git checkout gh-pages
+        git merge master 
+        git push origin gh-pages
+        git checkout master
+      """, ->
 task 'git:diff', 'git diff the core and extras .coffee files', ->
   coffeeFiles = ASPaths.concat(XPaths).join(' ')
-  exec "git diff #{coffeeFiles} | #{editor}"
-
-task 'git:diffmodels', 'git diff the sample models', ->
-  exec "git diff models sketches | #{editor}"
-  # exec "git diff #{modelsDir}*html | #{editor}"
+  diffFiles = "Cakefile README.md #{coffeeFiles} models sketches"
+  exec "git diff #{diffFiles} | #{editor}"
+task 'git:diffhead', 'git diff staged/head core, extras, models', ->
+  coffeeFiles = ASPaths.concat(XPaths).join(' ')
+  diffFiles = "Cakefile README.md #{coffeeFiles} models sketches"
+  exec "git diff --staged #{diffFiles} | #{editor}"
 
 task 'minify', 'Create minified version of coffeescript.js', ->
   console.log "uglify javascript files"
   for file in JSNames
-    console.log file
     shell.exec "uglifyjs #{libDir}#{file}.js -c -m -o #{libDir}#{file}.min.js", ->
   
 task 'update:cs', 'Update coffee-script.js', ->
@@ -130,12 +140,19 @@ task 'wc', 'Count the lines of coffeescript & javascript', ->
   console.log "code: #{ASPath}: #{wcCode(ASPath)}"
   console.log "code: #{jsPath}: #{wcCode(jsPath)}"
 
-
-  
+prompt = (q,f) ->
+  rl=readline.createInterface {input:process.stdin, output:process.stdout}
+  rl.question q, (ans) -> rl.close(); f(ans)
 task 'test', 'Testing 1,2,3...', ->
-  # shell.exec "git add ."
-  # shell.exec("git status").output
-  shell.exec("git add . && git status", (code,output)->console.log output)
+  shell.exec "git checkout master"
+  prompt "you sure!?! [y/n]", (ans) ->
+    console.log "answer:#{ans} #{ans.length}"
+    if ans.match(/[yY]|^$/) # default is yes, CR OK
+      shell.exec """
+        git status
+      """, ->
+  # shell.exec("git add . && git status", (code,output)->console.log output)
+  # shell.exec("git add . && git status", (code,output)->console.log output)
 
   # coffeeFiles = XPaths.concat(ASPath).join " "
   # libFiles = shell.ls("lib/*").join(" ").replace /lib\/[^ ]*min\.js/g,''

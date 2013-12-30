@@ -3,10 +3,9 @@
 class ABM.Mouse
   # Create and start mouse obj, args: name of div, and a callback method.
   constructor: (@div, @callback) ->
-    # @div = document.getElementById divName
     @lastX=Infinity; @lastY=Infinity
     @start()
-  # Start/stop the mouseListeners.  Note that NL's model is to have
+  # Start/stop the mouseListeners.  Note that NetLogo's model is to have
   # mouse move events always on, rather than starting/stopping them
   # on mouse down/up.  We may want do make that optional, using the
   # more standard down/up enabling move events.
