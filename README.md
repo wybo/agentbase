@@ -87,7 +87,7 @@ Class Model is an "abstract class" with three abscract methods:
     setup()   Called during startup and by Model.reset()
     step()    Called by animator to advance the model one step
 
-CoffeeScript modelers simply subclass ABM.Model, supplying the three abstract methods.  All the samole models use this, as does the docs/ template example.
+CoffeeScript modelers simply subclass ABM.Model, supplying the three abstract methods.  All the sample models do this, as does the docs/ template example.
 
 JavaScript modelers can simply replace the empty ABM.Model abstract methods:
 
