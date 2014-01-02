@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>AgentScript Model</title>
+    <title>Simple Model</title>
     <script src="../lib/agentscript.js"></script>
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
@@ -23,9 +23,9 @@
           a.forward 1
 
     # div, size, minX, maxX, minY, maxY, torus=true, neighbors=true
-    model = new MyModel "layers", 10, -25, 25, -20, 20, true
-    model.debug() # Debug: Put Model vars in global name space
-    model.start() # Run model immediately after startup initialization
+    model = new MyModel("layers", 10, -25, 25, -20, 20, true)
+      .debug() # Debug: Put Model vars in global name space
+      .start() # Run model immediately after startup initialization
 
     </script>
   </head>

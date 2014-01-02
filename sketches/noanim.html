@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>AgentScript Model</title>
+    <title>No Animation Model</title>
     <script src="../lib/agentscript.js"></script>
     <script src="../lib/mouse.js"></script>
     <script src="../tools/coffee-script.js"></script>
@@ -30,9 +30,9 @@
         d = u.aSum (a.distanceXY @mouse.x, @mouse.y for a in l.bothEnds())
         d - l.length() < 1 / @patches.size
 
-    model = new MyModel "layers", 25, -8, 8, -8, 8
-    model.debug() # Debug: Put Model vars in global name space
-    # ABM.model.once() # Run model just one step
+    # Note: do not call start()
+    model = new MyModel("layers", 25, -8, 8, -8, 8)
+      .debug() # Debug: Put Model vars in global name space
     </script>
   </head>
   <body onload="ABM.model.once()">

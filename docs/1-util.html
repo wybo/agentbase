@@ -768,12 +768,14 @@ See NetLogo&#39;s <a href="http://goo.gl/CjoHuV">subtract-headings</a> for expla
               </div>
               <p>Make a copy of the array. Needed when you don&#39;t want to modify the given
 array with mutator methods like sort, splice or your own functions.
-By giving begin/arguments, retrieve a subset of the array</p>
+By giving begin/arguments, retrieve a subset of the array.
+Works with TypedArrays too.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>  <span class="attribute">clone</span>: <span class="function"><span class="params">(array, begin, end)</span> -&gt;</span>
-    <span class="keyword">if</span> begin? <span class="keyword">then</span> array.slice begin, end <span class="keyword">else</span> array.slice <span class="number">0</span></pre></div></div>
+    op = <span class="keyword">if</span> array.slice? <span class="keyword">then</span> <span class="string">"slice"</span> <span class="keyword">else</span> <span class="string">"subarray"</span>
+    <span class="keyword">if</span> begin? <span class="keyword">then</span> array[op] begin, end <span class="keyword">else</span> array[op] <span class="number">0</span></pre></div></div>
             
         </li>
         

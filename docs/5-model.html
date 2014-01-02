@@ -342,13 +342,7 @@ Example:</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  <span class="attribute">contextsInit</span>: {
-    <span class="attribute">patches</span>:   {<span class="attribute">z</span>:<span class="number">0</span>,  <span class="attribute">ctx</span>:<span class="string">"2d"</span>}
-    <span class="attribute">image</span>:     {<span class="attribute">z</span>:<span class="number">5</span>,  <span class="attribute">ctx</span>:<span class="string">"img"</span>}
-    <span class="attribute">drawing</span>:   {<span class="attribute">z</span>:<span class="number">10</span>, <span class="attribute">ctx</span>:<span class="string">"2d"</span>}
-    <span class="attribute">links</span>:     {<span class="attribute">z</span>:<span class="number">20</span>, <span class="attribute">ctx</span>:<span class="string">"2d"</span>}
-    <span class="attribute">agents</span>:    {<span class="attribute">z</span>:<span class="number">30</span>, <span class="attribute">ctx</span>:<span class="string">"2d"</span>}
-    <span class="attribute">spotlight</span>: {<span class="attribute">z</span>:<span class="number">40</span>, <span class="attribute">ctx</span>:<span class="string">"2d"</span>}
-  }</pre></div></div>
+    <span class="attribute">patches</span>:   {<span class="attribute">z</span>:<span class="number">10</span>,  <span class="attribute">ctx</span>:<span class="string">"2d"</span>}</pre></div></div>
             
         </li>
         
@@ -358,6 +352,25 @@ Example:</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>image:   {z:15,  ctx:&quot;img&quot;} # Experimental</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="attribute">drawing</span>:   {<span class="attribute">z</span>:<span class="number">20</span>, <span class="attribute">ctx</span>:<span class="string">"2d"</span>}
+    <span class="attribute">links</span>:     {<span class="attribute">z</span>:<span class="number">30</span>, <span class="attribute">ctx</span>:<span class="string">"2d"</span>}
+    <span class="attribute">agents</span>:    {<span class="attribute">z</span>:<span class="number">40</span>, <span class="attribute">ctx</span>:<span class="string">"2d"</span>}
+    <span class="attribute">spotlight</span>: {<span class="attribute">z</span>:<span class="number">50</span>, <span class="attribute">ctx</span>:<span class="string">"2d"</span>}
+  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>Constructor: </p>
 <ul>
@@ -382,11 +395,11 @@ Example:</p>
         </li>
         
         
-        <li id="section-18">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <ul>
 <li>Create 2D canvas contexts layered on top of each other.</li>
@@ -409,11 +422,11 @@ ctx.restore() # restore patch coord system</code></pre>
         </li>
         
         
-        <li id="section-19">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>One of the layers is used for drawing only, not an agentset:</p>
 
@@ -425,11 +438,11 @@ ctx.restore() # restore patch coord system</code></pre>
         </li>
         
         
-        <li id="section-20">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>Setup spotlight layer, also not an agentset:</p>
 
@@ -440,11 +453,11 @@ ctx.restore() # restore patch coord system</code></pre>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>Initialize animator to default: 30fps, not async</p>
 
@@ -455,11 +468,11 @@ ctx.restore() # restore patch coord system</code></pre>
         </li>
         
         
-        <li id="section-22">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>Set drawing controls.  Default to drawing each agentset.
 Optimization: If any of these is set to false, the associated
@@ -472,11 +485,11 @@ agentset is drawn only once, remaining static after that.</p>
         </li>
         
         
-        <li id="section-23">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>Initialize agentsets.</p>
 
@@ -489,11 +502,11 @@ agentset is drawn only once, remaining static after that.</p>
         </li>
         
         
-        <li id="section-24">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>Initialize model global resources</p>
 
@@ -509,11 +522,11 @@ agentset is drawn only once, remaining static after that.</p>
         </li>
         
         
-        <li id="section-25">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
               <p>Initialize/reset world parameters.</p>
 
@@ -537,11 +550,11 @@ agentset is drawn only once, remaining static after that.</p>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <h3 id="optimizations-">Optimizations:</h3>
 
@@ -550,11 +563,11 @@ agentset is drawn only once, remaining static after that.</p>
         </li>
         
         
-        <li id="section-27">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               <p>Modelers &quot;tune&quot; their model by adjusting flags:<br>
 <code>@refreshLinks, @refreshAgents, @refreshPatches</code><br>
@@ -569,11 +582,11 @@ if browser does not support imageSmoothingEnabled or equivalent.</p>
         </li>
         
         
-        <li id="section-28">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>Patches are all the same static default color, just &quot;clear&quot; entire canvas.
 Don&#39;t use if patch breeds have different colors.</p>
@@ -585,11 +598,11 @@ Don&#39;t use if patch breeds have different colors.</p>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>Have patches cache the agents currently on them.
 Optimizes Patch p.agentsHere method</p>
@@ -601,11 +614,11 @@ Optimizes Patch p.agentsHere method</p>
         </li>
         
         
-        <li id="section-30">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <p>Have agents cache the links with them as a node.
 Optimizes Agent a.myLinks method</p>
@@ -617,11 +630,11 @@ Optimizes Agent a.myLinks method</p>
         </li>
         
         
-        <li id="section-31">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+                <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
               <p>Have patches cache the given patchRect.
 Optimizes patchRect, inRadius and inCone</p>
@@ -633,11 +646,11 @@ Optimizes patchRect, inRadius and inCone</p>
         </li>
         
         
-        <li id="section-32">
+        <li id="section-33">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-32">&#182;</a>
+                <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
               <h3 id="user-model-creation">User Model Creation</h3>
 <p>A user&#39;s model is made by subclassing Model and over-riding these
@@ -648,11 +661,11 @@ two abstract methods. <code>super</code> need not be called.</p>
         </li>
         
         
-        <li id="section-33">
+        <li id="section-34">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-33">&#182;</a>
+                <a class="pilcrow" href="#section-34">&#182;</a>
               </div>
               <p>Initialize model resources (images, files) here.<br>Uses util.waitOn so can be be async.</p>
 
@@ -663,11 +676,11 @@ two abstract methods. <code>super</code> need not be called.</p>
         </li>
         
         
-        <li id="section-34">
+        <li id="section-35">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-34">&#182;</a>
+                <a class="pilcrow" href="#section-35">&#182;</a>
               </div>
               <p>Initialize your model variables and defaults here.
 If async used, make sure step/draw are aware of possible missing data.</p>
@@ -679,11 +692,11 @@ If async used, make sure step/draw are aware of possible missing data.</p>
         </li>
         
         
-        <li id="section-35">
+        <li id="section-36">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-35">&#182;</a>
+                <a class="pilcrow" href="#section-36">&#182;</a>
               </div>
               <p>Update/step your model here</p>
 
@@ -694,11 +707,11 @@ If async used, make sure step/draw are aware of possible missing data.</p>
         </li>
         
         
-        <li id="section-36">
+        <li id="section-37">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-36">&#182;</a>
+                <a class="pilcrow" href="#section-37">&#182;</a>
               </div>
               <h3 id="animation-and-reset-methods">Animation and Reset methods</h3>
 <p>Convenience access to animator:</p>
@@ -712,11 +725,11 @@ If async used, make sure step/draw are aware of possible missing data.</p>
         </li>
         
         
-        <li id="section-37">
+        <li id="section-38">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-37">&#182;</a>
+                <a class="pilcrow" href="#section-38">&#182;</a>
               </div>
               <p>Animate once by <code>step(); draw()</code>. For UI and debugging from console.
 Will advance the ticks/draws counters.</p>
@@ -728,11 +741,11 @@ Will advance the ticks/draws counters.</p>
         </li>
         
         
-        <li id="section-38">
+        <li id="section-39">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-38">&#182;</a>
+                <a class="pilcrow" href="#section-39">&#182;</a>
               </div>
               <p>Stop and reset the model, restarting if restart is true</p>
 
@@ -757,11 +770,11 @@ Will advance the ticks/draws counters.</p>
         </li>
         
         
-        <li id="section-39">
+        <li id="section-40">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-39">&#182;</a>
+                <a class="pilcrow" href="#section-40">&#182;</a>
               </div>
               <h3 id="animation-">Animation.</h3>
 
@@ -770,11 +783,11 @@ Will advance the ticks/draws counters.</p>
         </li>
         
         
-        <li id="section-40">
+        <li id="section-41">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-40">&#182;</a>
+                <a class="pilcrow" href="#section-41">&#182;</a>
               </div>
               <p>Call the agentset draw methods if either the first draw call or
 their &quot;refresh&quot; flags are set.  The latter are simple optimizations
@@ -791,11 +804,11 @@ to avoid redrawing the same static scene. Called by animator.</p>
         </li>
         
         
-        <li id="section-41">
+        <li id="section-42">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-41">&#182;</a>
+                <a class="pilcrow" href="#section-42">&#182;</a>
               </div>
               <p>Creates a spotlight effect on an agent, so we can follow it throughout the model.
 Use:</p>
@@ -817,11 +830,11 @@ Use:</p>
         </li>
         
         
-        <li id="section-42">
+        <li id="section-43">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-42">&#182;</a>
+                <a class="pilcrow" href="#section-43">&#182;</a>
               </div>
               <h3 id="breeds">Breeds</h3>
 
@@ -830,11 +843,11 @@ Use:</p>
         </li>
         
         
-        <li id="section-43">
+        <li id="section-44">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-43">&#182;</a>
+                <a class="pilcrow" href="#section-44">&#182;</a>
               </div>
               <p>Three versions of NL&#39;s <code>breed</code> commands.</p>
 <pre><code>@patchBreeds &quot;streets buildings&quot;
@@ -871,11 +884,11 @@ not usable due to the patches being prebuilt.  Stay tuned.</p>
         </li>
         
         
-        <li id="section-44">
+        <li id="section-45">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-44">&#182;</a>
+                <a class="pilcrow" href="#section-45">&#182;</a>
               </div>
               <p>Utility for models to create agentsets from arrays.  Ex:</p>
 <pre><code>even = @asSet (a for a in @agents when a.id % 2 is 0)
@@ -888,11 +901,11 @@ even.shuffle().getProp(&quot;id&quot;) # [6, 0, 4, 2, 8]</code></pre>
         </li>
         
         
-        <li id="section-45">
+        <li id="section-46">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-45">&#182;</a>
+                <a class="pilcrow" href="#section-46">&#182;</a>
               </div>
               <p>A simple debug aid which places short names in the global name space.
 Note we avoid using the actual name, such as &quot;patches&quot; because this

@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>AgentScript Model</title>
+    <title>Firebase UI Model</title>
     <script src="../lib/agentscript.js"></script>
     <script src="../tools/coffee-script.js"></script>
     <script src='https://cdn.firebase.com/v0/firebase.js'></script>
@@ -119,10 +119,9 @@
 
     # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors
     #   Defaults: 13, -16, 16, -16, 16, false, true
-    model = new MyModel "layers", 15, -16, 16, -16, 16, true, false
-    # model = new MyModel "layers", 16, 0, 78, 0, 40, true, false
-    model.debug() # Debug: Put Model vars in global name space
-    # model.start() # Run model immediately after startup initialization
+    # Don't start, let UI start/stop model
+    model = new MyModel("layers", 15, -16, 16, -16, 16, true, false)
+      .debug() # Debug: Put Model vars in global name space
 
     </script>
   </head>

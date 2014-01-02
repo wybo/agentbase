@@ -1,0 +1,51 @@
+<html>
+  <head>
+    <title>Background Model</title>
+    <script src="../lib/agentscript.js"></script>
+    <script src="../tools/coffee-script.js"></script>
+    <script type="text/coffeescript">
+    
+    u = ABM.util # shortcut for ABM.util
+    class MyModel extends ABM.Model
+      moveDrawing: false
+      constructor: -> # no need for args, super manages passing on to Model
+        console.log @contextsInit
+        @contextsInit.patches.z += 1 # make sure patches.z > 0
+        if @moveDrawing
+          @contextsInit.drawing.z = 0
+        else
+          @contextsInit.myCtx = {z:0,  ctx:"2d"}
+        super
+      startup: -> # called by Model constructor, sync
+        @img = u.importImage "data/redfish512t.png"
+      setup: -> # called by Model constructor and reset()
+        @refreshPatches = false
+        @agents.create 25, (a)->a.size = 3
+        # patches transparent except for red axes
+        @patches.setDefault "color", [0,0,0,0]
+        p.color = [255,0,0] for p in @patches when p.x is 0 or p.y is 0
+        # draw img to myCtx or drawing layer
+        if @moveDrawing
+          @patches.installDrawing @img
+        else
+          @patches.installDrawing @img, @contexts.myCtx
+      step: ->
+        for a in @agents
+          a.rotate u.randomCentered(u.degToRad(40))
+          a.forward 1
+
+    # MyModel::contextsInit.patches.z += 1 # make sure patches.z > 0
+    # MyModel.contextsInit.myCtx = {z:0,  ctx:"2d"}
+    # div, size, minX, maxX, minY, maxY, torus=true, neighbors=true
+    model = new MyModel("layers", 10, -25, 25, -25, 25, true)
+      .debug() # Debug: Put Model vars in global name space
+      .start() # Run model immediately after startup initialization
+
+    </script>
+  </head>
+  <body>
+    <div id="layers"></div>
+  </body>
+</html>
+
+

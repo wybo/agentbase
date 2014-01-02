@@ -218,9 +218,11 @@ ABM.util = u =
   empty: (array) -> array.length is 0
   # Make a copy of the array. Needed when you don't want to modify the given
   # array with mutator methods like sort, splice or your own functions.
-  # By giving begin/arguments, retrieve a subset of the array
+  # By giving begin/arguments, retrieve a subset of the array.
+  # Works with TypedArrays too.
   clone: (array, begin, end) ->
-    if begin? then array.slice begin, end else array.slice 0
+    op = if array.slice? then "slice" else "subarray"
+    if begin? then array[op] begin, end else array[op] 0
   # Return last element of array.  Error if empty.
   last: (array) -> 
     @error "last: empty array" if @empty array
@@ -1971,12 +1973,12 @@ class ABM.Model
   # 
   #     v.z++ for k,v of ABM.Model::contextsInit # increase each z value by one
   contextsInit: {
-    patches:   {z:0,  ctx:"2d"}
-    image:     {z:5,  ctx:"img"}
-    drawing:   {z:10, ctx:"2d"}
-    links:     {z:20, ctx:"2d"}
-    agents:    {z:30, ctx:"2d"}
-    spotlight: {z:40, ctx:"2d"}
+    patches:   {z:10,  ctx:"2d"}
+    # image:   {z:15,  ctx:"img"} # Experimental
+    drawing:   {z:20, ctx:"2d"}
+    links:     {z:30, ctx:"2d"}
+    agents:    {z:40, ctx:"2d"}
+    spotlight: {z:50, ctx:"2d"}
   }
   # Constructor: 
   #
