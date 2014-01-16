@@ -79,9 +79,8 @@ class ABM.Model
   # Example:
   # 
   #     v.z++ for k,v of ABM.Model::contextsInit # increase each z value by one
-  contextsInit: {
-    patches:   {z:10,  ctx:"2d"}
-    # image:   {z:15,  ctx:"img"} # Experimental
+  contextsInit: { # Experimental: image:   {z:15,  ctx:"img"} 
+    patches:   {z:10, ctx:"2d"}
     drawing:   {z:20, ctx:"2d"}
     links:     {z:30, ctx:"2d"}
     agents:    {z:40, ctx:"2d"}

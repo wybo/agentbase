@@ -211,6 +211,21 @@ ABM.util = u =
   ownVarKeys: (obj) -> (key for own key, value of obj when not @isFunction value)
   ownValues: (obj) -> (value for own key, value of obj)
 
+  # Parse a string to its JS value.
+  # If s isn't a JS expression, return decoded string
+  parseToPrimitive: (s) -> # http://goo.gl/jxb6Ae http://goo.gl/mQsQan
+    try JSON.parse(s); catch e then decodeURIComponent(s)
+  # Return URL queryString as object, defaulting to this page's.
+  # If query element has no "=", set value to true.
+  # Otherwise use parseToPrimitive. [StackOverflow](http://goo.gl/vIwdG6)
+  parseQueryString: (query = window.location.search.substring(1)) ->
+    res = {}
+    for s in query.split "&" when query.length isnt 0
+      t=s.split "="
+      res[t[0]]=if t.length is 1 then true else @parseToPrimitive(t[1])
+    res
+
+
 # ### Array Operations
   
   # Does the array have any elements? Is the array empty?

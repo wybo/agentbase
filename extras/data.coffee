@@ -230,14 +230,14 @@ ABM.ImageDataSet = class ImageDataSet extends DataSet
   # slice of that height; used for huge images.
   # Defaults to gray scale and Uint8ClampedArray
   # img may be a canvas
-  constructor: (@img, @f=u.pixelByte(0), @arrayType=Uint8ClampedArray, @rowsPerSlice) ->
+  constructor: (img, @f=u.pixelByte(0), @arrayType=Uint8ClampedArray, @rowsPerSlice) ->
     super() # start out as an empty dataset
-    return unless @img?
-    @parse @img
-  parse: (@img) ->
-    @rowsPerSlice or= @img.height
-    data = u.imageRowsToData @img, @rowsPerSlice, @f, @arrayType
-    @reset @img.width, @img.height, data
+    return unless img?
+    @parse img
+  parse: (img) ->
+    @rowsPerSlice or= img.height
+    data = u.imageRowsToData img, @rowsPerSlice, @f, @arrayType
+    @reset img.width, img.height, data
     
 ABM.PatchDataSet = class PatchDataSet extends DataSet
   constructor: (f, arrayType=Array) ->

@@ -703,14 +703,14 @@ img may be a canvas</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">constructor</span>: <span class="function"><span class="params">(<span class="property">@img</span>, <span class="property">@f</span>=u.pixelByte(<span class="number">0</span>), <span class="property">@arrayType</span>=Uint8ClampedArray, <span class="property">@rowsPerSlice</span>)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">constructor</span>: <span class="function"><span class="params">(img, <span class="property">@f</span>=u.pixelByte(<span class="number">0</span>), <span class="property">@arrayType</span>=Uint8ClampedArray, <span class="property">@rowsPerSlice</span>)</span> -&gt;</span>
     <span class="keyword">super</span>() <span class="comment"># start out as an empty dataset</span>
-    <span class="keyword">return</span> <span class="keyword">unless</span> <span class="property">@img</span>?
-    <span class="property">@parse</span> <span class="property">@img</span>
-  <span class="attribute">parse</span>: <span class="function"><span class="params">(<span class="property">@img</span>)</span> -&gt;</span>
-    <span class="property">@rowsPerSlice</span> <span class="keyword">or</span>= <span class="property">@img</span>.height
-    data = u.imageRowsToData <span class="property">@img</span>, <span class="property">@rowsPerSlice</span>, <span class="property">@f</span>, <span class="property">@arrayType</span>
-    <span class="property">@reset</span> <span class="property">@img</span>.width, <span class="property">@img</span>.height, data
+    <span class="keyword">return</span> <span class="keyword">unless</span> img?
+    <span class="property">@parse</span> img
+  <span class="attribute">parse</span>: <span class="function"><span class="params">(img)</span> -&gt;</span>
+    <span class="property">@rowsPerSlice</span> <span class="keyword">or</span>= img.height
+    data = u.imageRowsToData img, <span class="property">@rowsPerSlice</span>, <span class="property">@f</span>, <span class="property">@arrayType</span>
+    <span class="property">@reset</span> img.width, img.height, data
     
 ABM.PatchDataSet = <span class="class"><span class="keyword">class</span> <span class="title">PatchDataSet</span> <span class="keyword">extends</span> <span class="title">DataSet</span></span>
   <span class="attribute">constructor</span>: <span class="function"><span class="params">(f, arrayType=Array)</span> -&gt;</span>
