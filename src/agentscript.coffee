@@ -1929,7 +1929,7 @@ class ABM.Animator
   constructor: (@model, @rate=30, @multiStep=false, @isHeadless=false) -> @reset()
   # Adjust animator.  Call before model.start()
   # in setup() to change default settings
-  setRate: (@rate, @multiStep=false) -> @resetTimes() # Change rate while running?
+  setRate: (@rate, @multiStep=@multiStep ? false) -> @resetTimes() # Change rate while running?
   # start/stop model, often used for debugging and resetting model
   start: ->
     return unless @stopped # avoid multiple animates
