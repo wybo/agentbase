@@ -133,10 +133,11 @@ The "extras" are libraries that augment agentscript and are individually compile
     cake git:pages     # checkout gh-pages, merge master, push to gh-pages, checkout master
 
 
-If you are forking/pulling agentscript, you will have to manage the Cake builds.  These current require node plugins for coffeescript and shelljs, installed via npm.
+If you are forking/pulling agentscript, you will have to manage the Cake builds.  These currently require node plugins for [coffeescript](http://jashkenas.github.io/coffee-script/extras/coffee-script.js), [shelljs](https://github.com/arturadib/shelljs), and optionally [docco](http://jashkenas.github.io/docco/).
 
-    https://github.com/arturadib/shelljs
-    http://jashkenas.github.io/coffee-script/extras/coffee-script.js
+      npm install shelljs
+      sudo npm install -g coffee-script
+      sudo npm install -g docco
 
 All forked repos must be aware that we have a gh-pages branch.  This somewhat complicates the build workflow.  You should also make sure you are in the master at all times; our cake tasks should take care of all gh-pages branch usage.
 
