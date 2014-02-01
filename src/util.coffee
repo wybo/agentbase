@@ -502,6 +502,7 @@ ABM.util = u =
     else
       @fileIndex[name] = img = new Image()
       img.isDone = false
+      img.crossOrigin = "Anonymous"
       img.onload = -> f(img); img.isDone = true
       img.src = name
     img
@@ -659,7 +660,7 @@ ABM.util = u =
     ctx.drawImage img, sx, sy, sw, sh, 0, 0, sw, sh
     ctx
 
-  # Convert a context to an image, executing function f on completion.
+  # Convert a canvas to an image, executing fcn f on completion.
   # Generally can skip callback but see [stackoverflow](http://goo.gl/kIk2U)
   # Note: uses toDataURL thus possible cross origin problems.
   # Fix: use ctx.canvas for programatic imaging.

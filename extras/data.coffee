@@ -39,7 +39,7 @@ ABM.DataSet = class DataSet
 
   # 2D Dataset: width/height and an array with length = width*height
   constructor: (width=0, height=0, data=[]) -> 
-    @useNearest=false
+    @setDefaults()
     @reset width, height, data
   # Reset a dataset to have new width, height and data.  Allows creating
   # an empty dataset and having it filled by another function.
@@ -52,8 +52,21 @@ ABM.DataSet = class DataSet
   # Check that x,y are valid coords (floats), from top-left of dataset.
   checkXY: (x,y) ->
     u.error "x,y out of range: #{x},#{y}" unless (0<=x<=@width-1 and 0<=y<=@height-1)
-  # Sample the dataset.
+
+  # Set dataset transform parameters.
+  setDefaults: ->
+    @useNearest=false
+    @crop=false
+    @normalize=true
+    @alpha=255
+    @gray=true
   setSampler: (@useNearest) ->
+  setConvolveCrop: (@crop) ->
+  setImageNormalize: (@normalize) ->
+  setImageAlpha: (@alpha) -> # pixel alpha: [0,255]
+  setImageGray: (@gray) ->
+
+  # Sample the dataset.
   sample: (x,y) -> if @useNearest then @nearest x,y else @bilinear x,y
   # Sample dataset using nearest neighbor. x,y floats in range
   nearest: (x,y) -> @getXY Math.round(x), Math.round(y)
@@ -83,30 +96,26 @@ ABM.DataSet = class DataSet
     for i in [0...@height]
       s += "\n" + "#{i}: #{data.slice i*@width, (i+1)*@width}"
     s.replace /,/g, sep
-  # Convert dataset into an image. Normalize data to be allowable image data.
-  # NOTE: alpha below is pixel value .. i.e. 0-255, not HTML value: 0-1
-  toImage: (gray = true, normalize = true, alpha = 255)->
-    @toContext(gray, normalize, alpha).canvas
-  toContext: (gray = true, normalize = true, alpha = 255)->
+  # Convert dataset into an image.
+  toImage: -> @toContext().canvas
+  toContext: ->
     ctx = u.createCtx @width, @height
     idata = ctx.getImageData(0, 0, @width, @height); ta = idata.data
-    max = Math.pow(2, if gray then 8 else 24)
-    norm = if normalize
+    max = Math.pow(2, if @gray then 8 else 24)
+    norm = if @normalize
     then u.normalize @data, 0, max - 0.000001
     else (u.clamp Math.round(d), 0, max-1 for d in @data)
     for num, i in norm
-      j=4*i; ta[j+3] = alpha
-      if gray
+      j=4*i; ta[j+3] = @alpha
+      if @gray
       then ta[j] = ta[j+1] = ta[j+2] = Math.floor num
       else ta[j]=num>>>16; ta[j+1]=(num>>8)&0xff; ta[j+2]=num&0xff
     ctx.putImageData idata, 0, 0
     window.idata = idata; window.ctx = ctx
     ctx
   # Show dataset as image in patch drawing layer or patch colors, return image
-  toDrawing: (gray = true, normalize = true, alpha = 255) -> 
-    ABM.patches.installDrawing(img=@toImage gray, normalize, alpha); img
-  toPatchColors: (gray = true, normalize = true, alpha = 255) -> 
-    ABM.patches.installColors(img=@toImage gray, normalize, alpha); img
+  toDrawing: -> ABM.patches.installDrawing(img=@toImage()); img
+  toPatchColors: -> ABM.patches.installColors(img=@toImage()); img
   # Resample dataset to patch width/height and set named patch variable.
   # Note this "insets" the dataset so the variable is sampled the center of the patch.
   # The dataset can be sampled directly to its edges .. i.e. in agent coords.
@@ -148,11 +157,14 @@ ABM.DataSet = class DataSet
   # See [Convolution article](http://goo.gl/ubFiji)
   convolve: (kernel,factor=1) -> # Factory: return new convolved dataset
     array = []; n = []
-    for y in [0...@height] by 1
-      for x in [0...@width] by 1
+    if @crop
+    then x0=y0=1; h=@height-1; w=@width-1
+    else x0=y0=0; h=@height; w=@width
+    for y in [y0...h] by 1
+      for x in [x0...w] by 1
         @neighborhood x,y,n
         array.push u.aSum(u.aPairMul(kernel, n))*factor
-    new DataSet @width, @height, array
+    new DataSet w-x0, h-y0, array
   # A few common convolutions.  dzdx/y are also called horiz/vert Sobel
   dzdx: (n=2,factor=1/8) -> @convolve([-1,0,1,-n,0,n,-1,0,1],factor)
   dzdy: (n=2,factor=1/8) -> @convolve([1,n,1,0,0,0,-1,-n,-1],factor)
@@ -166,9 +178,9 @@ ABM.DataSet = class DataSet
   slopeAndAspect: (noNaNs=true, posAngle=true) -> 
     dzdx = @dzdx() # sub left z from right
     dzdy = @dzdy() # sub bottom z from top
-    aspect = []; slope = []
-    for y in [0...@height] by 1
-      for x in [0...@width] by 1
+    aspect = []; slope = []; h = dzdx.height; w = dzdx.width
+    for y in [0...h] by 1
+      for x in [0...w] by 1
         gx = dzdx.getXY(x,y); gy = dzdy.getXY(x,y)
         slope.push Math.atan(Math.sqrt(gx*gx + gy*gy)) #/(@cellsize)) # radians
         while noNaNs and gx is gy
@@ -178,8 +190,8 @@ ABM.DataSet = class DataSet
         # positive radians in [0,2PI] if desired
         rad += 2*Math.PI if posAngle and rad < 0
         aspect.push rad
-    slope = new DataSet @width, @height, slope
-    aspect = new DataSet @width, @height, aspect
+    slope = new DataSet w, h, slope
+    aspect = new DataSet w, h, aspect
     [slope, aspect, dzdx, dzdy]
   # Return a subset of the dataset. x,y,width,height integers
   subset: (x, y, width, height) ->

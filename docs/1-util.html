@@ -1544,6 +1544,7 @@ and within distance radius from x1,x2 considering all torus reflections.</p>
     <span class="keyword">else</span>
       <span class="property">@fileIndex</span>[name] = img = <span class="keyword">new</span> Image()
       img.isDone = <span class="literal">false</span>
+      img.crossOrigin = <span class="string">"Anonymous"</span>
       img.<span class="function"><span class="title">onload</span> = -&gt;</span> f(img); img.isDone = <span class="literal">true</span>
       img.src = name
     img</pre></div></div>
@@ -1907,7 +1908,7 @@ Note: to convert a ctx to an &quot;image&quot; (drawImage) use ctx.canvas</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-97">&#182;</a>
               </div>
-              <p>Convert a context to an image, executing function f on completion.
+              <p>Convert a canvas to an image, executing fcn f on completion.
 Generally can skip callback but see <a href="http://goo.gl/kIk2U">stackoverflow</a>
 Note: uses toDataURL thus possible cross origin problems.
 Fix: use ctx.canvas for programatic imaging.</p>

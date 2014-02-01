@@ -8,6 +8,8 @@ class ABM.FirebaseUI
   #       background:  type:"choice", vals: ["black","red","random"], val: "red"
   #       useConsole:  type:"switch", val: true
   #       population:  type:"slider", min:25,  step:25,  max:1000, val:500
+  #       filename:    type:"input",  val:"test.png"
+  #       result:      type:"output"  val: json
   #       vision:
   #         type:"slider", setter:"setVision", min:.5, step:.5, max:10, val:3
   #
@@ -37,9 +39,10 @@ class ABM.FirebaseUI
       if value then @setUIValue name, false else return
     if (setter=@ui[name].setter)? then @model[setter](value) else @model[name]=value
   # Set the Firebase json value 
-  setUIValue: (name, value) ->
-    console.log "setUIValue: #{name}, #{value}"
-    @refs[name].child('val').set(value)
+  setUIValue: (name, value, push=false) ->
+    console.log "setUIValue: #{name}, #{value}, #{push}"
+    # @refs[name].child('val').set(value)
+    @refs[name].child('val')[if push then "push" else "set"](value)
   # Get the current UI value for the given model property
   getUIValue: (name) -> @vals[name] # last value from callback
   # Reset the model instance variables to initial json tree.

@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>Firebase UI Model</title>
+    <title>Flock UI Model</title>
     <script src="../lib/agentscript.js"></script>
     <script src="../tools/coffee-script.js"></script>
     <script src='https://cdn.firebase.com/v0/firebase.js'></script>
@@ -20,6 +20,8 @@
         useConsole:     type:"switch", val: true
         population:     type:"slider", min:25,  step:25,  max:1000, val:500
         minSeparation:  type:"slider", min:.25, step:.25, max:5,    val:.75
+        name:           type:"input", val:""
+        log:            type:"output", val:"" 
         vision:
          type:"slider", setter:"setVision", min:.5, step:.5, max:10, val:3
         maxTurn:
@@ -71,8 +73,10 @@
         console.log "Mange Firebase UI at #{@uiUrl}"
 
       step: ->
-        if @useConsole and @anim.ticks % 100 is 0
-          console.log @anim.toString(), "flock alignment: #{@reportFlockVectorSize()}"
+        if @useConsole and @anim.ticks % 25 is 0
+          vec=@reportFlockVectorSize()
+          console.log @anim.toString(), "flock alignment: #{vec}" if @useConsole
+          @ui.setUIValue "log", {alignment: vec, step: @anim.ticks}, true
         @flock(a) for a in @agents
         if @anim.draws is 2 # Show the sprite sheet if there is one after first draw
           sheet = u.last(u.s.spriteSheets) if u.s.spriteSheets.length isnt 0

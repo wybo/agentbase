@@ -247,18 +247,20 @@ class ABM.Patches extends ABM.AgentSet
   # Draws, or "imports" an image URL into the patches as their color property.
   # The drawing is scaled to the number of x,y patches, thus one pixel
   # per patch.  The colors are then transferred to the patches.
-  importColors: (imageSrc, f) ->
+  # Map is a color map, only for gray for now
+  importColors: (imageSrc, f, map) ->
     u.importImage imageSrc, (img) => # fat arrow, this context
-      @installColors(img)
+      @installColors(img, map)
       f() if f?
   # Direct install image into the patch colors, not async.
-  installColors: (img) ->
+  installColors: (img, map) ->
     u.setIdentity @pixelsCtx
     @pixelsCtx.drawImage img, 0, 0, @numX, @numY # scale if needed
     data = @pixelsCtx.getImageData(0, 0, @numX, @numY).data
     for p in @
       i = @pixelByteIndex p
-      p.color = [data[i++], data[i++], data[i]] # promote initial default
+      # promote initial default
+      p.color = if map? then map[i] else [data[i++],data[i++],data[i]] 
     @pixelsCtx.restore() # restore patch transform
 
   # Draw the patches via pixel manipulation rather than 2D drawRect.

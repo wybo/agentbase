@@ -154,7 +154,7 @@ The parse method converts a string into a dataset. Async</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  <span class="attribute">constructor</span>: <span class="function"><span class="params">(width=<span class="number">0</span>, height=<span class="number">0</span>, data=[])</span> -&gt;</span> 
-    <span class="property">@useNearest</span>=<span class="literal">false</span>
+    <span class="property">@setDefaults</span>()
     <span class="property">@reset</span> width, height, data</pre></div></div>
             
         </li>
@@ -203,12 +203,21 @@ an empty dataset and having it filled by another function.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
-              <p>Sample the dataset.</p>
+              <p>Set dataset transform parameters.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">setSampler</span>: <span class="function"><span class="params">(<span class="property">@useNearest</span>)</span> -&gt;</span>
-  <span class="attribute">sample</span>: <span class="function"><span class="params">(x,y)</span> -&gt;</span> <span class="keyword">if</span> <span class="property">@useNearest</span> <span class="keyword">then</span> <span class="property">@nearest</span> x,y <span class="keyword">else</span> <span class="property">@bilinear</span> x,y</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">setDefaults</span>:<span class="function"> -&gt;</span>
+    <span class="property">@useNearest</span>=<span class="literal">false</span>
+    <span class="property">@crop</span>=<span class="literal">false</span>
+    <span class="property">@normalize</span>=<span class="literal">true</span>
+    <span class="property">@alpha</span>=<span class="number">255</span>
+    <span class="property">@gray</span>=<span class="literal">true</span>
+  <span class="attribute">setSampler</span>: <span class="function"><span class="params">(<span class="property">@useNearest</span>)</span> -&gt;</span>
+  <span class="attribute">setConvolveCrop</span>: <span class="function"><span class="params">(<span class="property">@crop</span>)</span> -&gt;</span>
+  <span class="attribute">setImageNormalize</span>: <span class="function"><span class="params">(<span class="property">@normalize</span>)</span> -&gt;</span>
+  <span class="attribute">setImageAlpha</span>: <span class="function"><span class="params">(<span class="property">@alpha</span>)</span> -&gt;</span> <span class="comment"># pixel alpha: [0,255]</span>
+  <span class="attribute">setImageGray</span>: <span class="function"><span class="params">(<span class="property">@gray</span>)</span> -&gt;</span></pre></div></div>
             
         </li>
         
@@ -219,11 +228,11 @@ an empty dataset and having it filled by another function.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
-              <p>Sample dataset using nearest neighbor. x,y floats in range</p>
+              <p>Sample the dataset.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">nearest</span>: <span class="function"><span class="params">(x,y)</span> -&gt;</span> <span class="property">@getXY</span> Math.round(x), Math.round(y)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">sample</span>: <span class="function"><span class="params">(x,y)</span> -&gt;</span> <span class="keyword">if</span> <span class="property">@useNearest</span> <span class="keyword">then</span> <span class="property">@nearest</span> x,y <span class="keyword">else</span> <span class="property">@bilinear</span> x,y</pre></div></div>
             
         </li>
         
@@ -233,6 +242,21 @@ an empty dataset and having it filled by another function.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>Sample dataset using nearest neighbor. x,y floats in range</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">nearest</span>: <span class="function"><span class="params">(x,y)</span> -&gt;</span> <span class="property">@getXY</span> Math.round(x), Math.round(y)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
               <p>Sample dataset using bilinear (2D) interpolation. x,y floats in range</p>
 
@@ -245,11 +269,11 @@ an empty dataset and having it filled by another function.</p>
         </li>
         
         
-        <li id="section-12">
+        <li id="section-13">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
+                <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
               <p>Edge case: If x is width-1, x0 is width-1, x is 0, dx is 1</p>
 
@@ -260,11 +284,11 @@ an empty dataset and having it filled by another function.</p>
         </li>
         
         
-        <li id="section-13">
+        <li id="section-14">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-13">&#182;</a>
+                <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
               <p>Edge case: fij is 0 if beyond data array; undefined -&gt; 0
 if fij wrap on x, x is 0, dx is 1; return f00<em>dy+f01</em>y, linear on y</p>
@@ -277,11 +301,11 @@ if fij wrap on x, x is 0, dx is 1; return f00<em>dy+f01</em>y, linear on y</p>
         </li>
         
         
-        <li id="section-14">
+        <li id="section-15">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-14">&#182;</a>
+                <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
               <p>Convert x,y ints to index into data array</p>
 
@@ -292,11 +316,11 @@ if fij wrap on x, x is 0, dx is 1; return f00<em>dy+f01</em>y, linear on y</p>
         </li>
         
         
-        <li id="section-15">
+        <li id="section-16">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
+                <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <p>Convert int index into data array into x,y ints</p>
 
@@ -307,11 +331,11 @@ if fij wrap on x, x is 0, dx is 1; return f00<em>dy+f01</em>y, linear on y</p>
         </li>
         
         
-        <li id="section-16">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <p>Get data at x,y int offset into data array</p>
 
@@ -322,11 +346,11 @@ if fij wrap on x, x is 0, dx is 1; return f00<em>dy+f01</em>y, linear on y</p>
         </li>
         
         
-        <li id="section-17">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>Set the data and int x,y coord of data array</p>
 
@@ -337,11 +361,11 @@ if fij wrap on x, x is 0, dx is 1; return f00<em>dy+f01</em>y, linear on y</p>
         </li>
         
         
-        <li id="section-18">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>Return a printable string for dataset.
 If p &lt; 0, print data, otherwise use toFixed to truncate to p precision</p>
@@ -358,29 +382,27 @@ If p &lt; 0, print data, otherwise use toFixed to truncate to p precision</p>
         </li>
         
         
-        <li id="section-19">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
-              <p>Convert dataset into an image. Normalize data to be allowable image data.
-NOTE: alpha below is pixel value .. i.e. 0-255, not HTML value: 0-1</p>
+              <p>Convert dataset into an image.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">toImage</span>: <span class="function"><span class="params">(gray = <span class="literal">true</span>, normalize = <span class="literal">true</span>, alpha = <span class="number">255</span>)</span>-&gt;</span>
-    <span class="property">@toContext</span>(gray, normalize, alpha).canvas
-  <span class="attribute">toContext</span>: <span class="function"><span class="params">(gray = <span class="literal">true</span>, normalize = <span class="literal">true</span>, alpha = <span class="number">255</span>)</span>-&gt;</span>
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">toImage</span>:<span class="function"> -&gt;</span> <span class="property">@toContext</span>().canvas
+  <span class="attribute">toContext</span>:<span class="function"> -&gt;</span>
     ctx = u.createCtx <span class="property">@width</span>, <span class="property">@height</span>
     idata = ctx.getImageData(<span class="number">0</span>, <span class="number">0</span>, <span class="property">@width</span>, <span class="property">@height</span>); ta = idata.data
-    max = Math.pow(<span class="number">2</span>, <span class="keyword">if</span> gray <span class="keyword">then</span> <span class="number">8</span> <span class="keyword">else</span> <span class="number">24</span>)
-    norm = <span class="keyword">if</span> normalize
+    max = Math.pow(<span class="number">2</span>, <span class="keyword">if</span> <span class="property">@gray</span> <span class="keyword">then</span> <span class="number">8</span> <span class="keyword">else</span> <span class="number">24</span>)
+    norm = <span class="keyword">if</span> <span class="property">@normalize</span>
     <span class="keyword">then</span> u.normalize <span class="property">@data</span>, <span class="number">0</span>, max - <span class="number">0.000001</span>
     <span class="keyword">else</span> (u.clamp Math.round(d), <span class="number">0</span>, max-<span class="number">1</span> <span class="keyword">for</span> d <span class="keyword">in</span> <span class="property">@data</span>)
     <span class="keyword">for</span> num, i <span class="keyword">in</span> norm
-      j=<span class="number">4</span>*i; ta[j+<span class="number">3</span>] = alpha
-      <span class="keyword">if</span> gray
+      j=<span class="number">4</span>*i; ta[j+<span class="number">3</span>] = <span class="property">@alpha</span>
+      <span class="keyword">if</span> <span class="property">@gray</span>
       <span class="keyword">then</span> ta[j] = ta[j+<span class="number">1</span>] = ta[j+<span class="number">2</span>] = Math.floor num
       <span class="keyword">else</span> ta[j]=num&gt;&gt;&gt;<span class="number">16</span>; ta[j+<span class="number">1</span>]=(num&gt;&gt;<span class="number">8</span>)&amp;<span class="number">0xff</span>; ta[j+<span class="number">2</span>]=num&amp;<span class="number">0xff</span>
     ctx.putImageData idata, <span class="number">0</span>, <span class="number">0</span>
@@ -390,29 +412,27 @@ NOTE: alpha below is pixel value .. i.e. 0-255, not HTML value: 0-1</p>
         </li>
         
         
-        <li id="section-20">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
-              </div>
-              <p>Show dataset as image in patch drawing layer or patch colors, return image</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">toDrawing</span>: <span class="function"><span class="params">(gray = <span class="literal">true</span>, normalize = <span class="literal">true</span>, alpha = <span class="number">255</span>)</span> -&gt;</span> 
-    ABM.patches.installDrawing(img=<span class="property">@toImage</span> gray, normalize, alpha); img
-  <span class="attribute">toPatchColors</span>: <span class="function"><span class="params">(gray = <span class="literal">true</span>, normalize = <span class="literal">true</span>, alpha = <span class="number">255</span>)</span> -&gt;</span> 
-    ABM.patches.installColors(img=<span class="property">@toImage</span> gray, normalize, alpha); img</pre></div></div>
-            
-        </li>
-        
-        
         <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>Show dataset as image in patch drawing layer or patch colors, return image</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">toDrawing</span>:<span class="function"> -&gt;</span> ABM.patches.installDrawing(img=<span class="property">@toImage</span>()); img
+  <span class="attribute">toPatchColors</span>:<span class="function"> -&gt;</span> ABM.patches.installColors(img=<span class="property">@toImage</span>()); img</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>Resample dataset to patch width/height and set named patch variable.
 Note this &quot;insets&quot; the dataset so the variable is sampled the center of the patch.
@@ -429,11 +449,11 @@ The dataset can be sampled directly to its edges .. i.e. in agent coords.</p>
         </li>
         
         
-        <li id="section-22">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>Sample via transformed coords.
 x,y is in topleft-bottomright box: [tlx,tly,tlx+w,tly-h]</p>
@@ -450,11 +470,11 @@ x,y is in topleft-bottomright box: [tlx,tly,tlx+w,tly-h]</p>
         </li>
         
         
-        <li id="section-23">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>Resample dataset to new width, height</p>
 
@@ -472,11 +492,11 @@ x,y is in topleft-bottomright box: [tlx,tly,tlx+w,tly-h]</p>
         </li>
         
         
-        <li id="section-24">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>Return neighbor values of the given x,y of the dataset.
 Off-edge neighbors revert to nearest edge value.</p>
@@ -495,11 +515,11 @@ Off-edge neighbors revert to nearest edge value.</p>
         </li>
         
         
-        <li id="section-25">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
               <p>Return a new dataset of same size convolved with the given kernel 3x3 matrix.
 See <a href="http://goo.gl/ubFiji">Convolution article</a></p>
@@ -508,20 +528,23 @@ See <a href="http://goo.gl/ubFiji">Convolution article</a></p>
             
             <div class="content"><div class='highlight'><pre>  <span class="attribute">convolve</span>: <span class="function"><span class="params">(kernel,factor=<span class="number">1</span>)</span> -&gt;</span> <span class="comment"># Factory: return new convolved dataset</span>
     array = []; n = []
-    <span class="keyword">for</span> y <span class="keyword">in</span> [<span class="number">0.</span>..<span class="property">@height</span>] <span class="keyword">by</span> <span class="number">1</span>
-      <span class="keyword">for</span> x <span class="keyword">in</span> [<span class="number">0.</span>..<span class="property">@width</span>] <span class="keyword">by</span> <span class="number">1</span>
+    <span class="keyword">if</span> <span class="property">@crop</span>
+    <span class="keyword">then</span> x0=y0=<span class="number">1</span>; h=<span class="property">@height</span>-<span class="number">1</span>; w=<span class="property">@width</span>-<span class="number">1</span>
+    <span class="keyword">else</span> x0=y0=<span class="number">0</span>; h=<span class="property">@height</span>; w=<span class="property">@width</span>
+    <span class="keyword">for</span> y <span class="keyword">in</span> [y0...h] <span class="keyword">by</span> <span class="number">1</span>
+      <span class="keyword">for</span> x <span class="keyword">in</span> [x0...w] <span class="keyword">by</span> <span class="number">1</span>
         <span class="property">@neighborhood</span> x,y,n
         array.push u.aSum(u.aPairMul(kernel, n))*factor
-    <span class="keyword">new</span> DataSet <span class="property">@width</span>, <span class="property">@height</span>, array</pre></div></div>
+    <span class="keyword">new</span> DataSet w-x0, h-y0, array</pre></div></div>
             
         </li>
         
         
-        <li id="section-26">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>A few common convolutions.  dzdx/y are also called horiz/vert Sobel</p>
 
@@ -535,11 +558,11 @@ See <a href="http://goo.gl/ubFiji">Convolution article</a></p>
         </li>
         
         
-        <li id="section-27">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               <p>Create two new convolved datasets, slope and aspect, common in
 the use of an elevation data set. See Esri tutorials for 
@@ -552,28 +575,13 @@ those wanting to use the results of the two convolutions.</p>
             <div class="content"><div class='highlight'><pre>  <span class="attribute">slopeAndAspect</span>: <span class="function"><span class="params">(noNaNs=<span class="literal">true</span>, posAngle=<span class="literal">true</span>)</span> -&gt;</span> 
     dzdx = <span class="property">@dzdx</span>() <span class="comment"># sub left z from right</span>
     dzdy = <span class="property">@dzdy</span>() <span class="comment"># sub bottom z from top</span>
-    aspect = []; slope = []
-    <span class="keyword">for</span> y <span class="keyword">in</span> [<span class="number">0.</span>..<span class="property">@height</span>] <span class="keyword">by</span> <span class="number">1</span>
-      <span class="keyword">for</span> x <span class="keyword">in</span> [<span class="number">0.</span>..<span class="property">@width</span>] <span class="keyword">by</span> <span class="number">1</span>
+    aspect = []; slope = []; h = dzdx.height; w = dzdx.width
+    <span class="keyword">for</span> y <span class="keyword">in</span> [<span class="number">0.</span>..h] <span class="keyword">by</span> <span class="number">1</span>
+      <span class="keyword">for</span> x <span class="keyword">in</span> [<span class="number">0.</span>..w] <span class="keyword">by</span> <span class="number">1</span>
         gx = dzdx.getXY(x,y); gy = dzdy.getXY(x,y)
         slope.push Math.atan(Math.sqrt(gx*gx + gy*gy)) <span class="comment">#/(@cellsize)) # radians</span>
         <span class="keyword">while</span> noNaNs <span class="keyword">and</span> gx <span class="keyword">is</span> gy
           gx += u.randomNormal <span class="number">0</span>,<span class="number">.0001</span>; gy += u.randomNormal <span class="number">0</span>,<span class="number">.0001</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-28">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
-              </div>
-              <p>radians in [-PI,PI], downhill</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>        rad = <span class="keyword">if</span> gx <span class="keyword">is</span> gy <span class="keyword">is</span> <span class="number">0</span> <span class="keyword">then</span> NaN <span class="keyword">else</span> Math.atan2 -gy,-gx</pre></div></div>
             
         </li>
         
@@ -584,15 +592,11 @@ those wanting to use the results of the two convolutions.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
-              <p>positive radians in [0,2PI] if desired</p>
+              <p>radians in [-PI,PI], downhill</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        rad += <span class="number">2</span>*Math.PI <span class="keyword">if</span> posAngle <span class="keyword">and</span> rad &lt; <span class="number">0</span>
-        aspect.push rad
-    slope = <span class="keyword">new</span> DataSet <span class="property">@width</span>, <span class="property">@height</span>, slope
-    aspect = <span class="keyword">new</span> DataSet <span class="property">@width</span>, <span class="property">@height</span>, aspect
-    [slope, aspect, dzdx, dzdy]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>        rad = <span class="keyword">if</span> gx <span class="keyword">is</span> gy <span class="keyword">is</span> <span class="number">0</span> <span class="keyword">then</span> NaN <span class="keyword">else</span> Math.atan2 -gy,-gx</pre></div></div>
             
         </li>
         
@@ -602,6 +606,25 @@ those wanting to use the results of the two convolutions.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-30">&#182;</a>
+              </div>
+              <p>positive radians in [0,2PI] if desired</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        rad += <span class="number">2</span>*Math.PI <span class="keyword">if</span> posAngle <span class="keyword">and</span> rad &lt; <span class="number">0</span>
+        aspect.push rad
+    slope = <span class="keyword">new</span> DataSet w, h, slope
+    aspect = <span class="keyword">new</span> DataSet w, h, aspect
+    [slope, aspect, dzdx, dzdy]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-31">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <p>Return a subset of the dataset. x,y,width,height integers</p>
 
@@ -620,11 +643,11 @@ ABM.AscDataSet = <span class="class"><span class="keyword">class</span> <span cl
         </li>
         
         
-        <li id="section-31">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+                <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
               <p>An .asc GIS file a text file with a header:</p>
 <pre><code>ncols 195
@@ -640,11 +663,11 @@ NODATA_value -9999</code></pre>
         </li>
         
         
-        <li id="section-32">
+        <li id="section-33">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-32">&#182;</a>
+                <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
               <p>Constructor takes a string generally via an xhr request.
 It can be &quot;empty&quot; .. i.e. needing a second parse() call
@@ -660,11 +683,11 @@ so that it can be used in an async file operation.</p>
         </li>
         
         
-        <li id="section-33">
+        <li id="section-34">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-33">&#182;</a>
+                <a class="pilcrow" href="#section-34">&#182;</a>
               </div>
               <p>Complete an initial, empty dataset object who&#39;s string
 is read via an xhr request.</p>
@@ -687,11 +710,11 @@ ABM.ImageDataSet = <span class="class"><span class="keyword">class</span> <span 
         </li>
         
         
-        <li id="section-34">
+        <li id="section-35">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-34">&#182;</a>
+                <a class="pilcrow" href="#section-35">&#182;</a>
               </div>
               <p>An image-as-data dataset.  The parser takes an image
 data Uint8Array, enumerates it in 4-byte segments converting
