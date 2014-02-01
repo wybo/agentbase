@@ -2,7 +2,7 @@
   "name": "agentscript",
   "version": "0.0.9",
   "description": "Minimalist Agent Based Modeling (ABM) framework based on NetLogo",
-  "main": "index.js",
+  "main": "lib/agentscript.js",
   "directories": {
     "doc": "docs"
   },
