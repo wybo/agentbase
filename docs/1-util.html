@@ -1121,7 +1121,11 @@ Iterate rather than reduce: work with typed arrays</p>
   <span class="attribute">aMin</span>: <span class="function"><span class="params">(array)</span> -&gt;</span> v=array[<span class="number">0</span>]; v=Math.min v,a <span class="keyword">for</span> a <span class="keyword">in</span> array; v
   <span class="attribute">aSum</span>: <span class="function"><span class="params">(array)</span> -&gt;</span> v=<span class="number">0</span>; v += a <span class="keyword">for</span> a <span class="keyword">in</span> array; v
   <span class="attribute">aAvg</span>: <span class="function"><span class="params">(array)</span> -&gt;</span> <span class="property">@aSum</span>(array)/array.length
-  
+  <span class="attribute">aMid</span>: <span class="function"><span class="params">(array)</span> -&gt;</span> 
+    array = <span class="keyword">if</span> array.sort? <span class="keyword">then</span> <span class="property">@clone</span> array <span class="keyword">else</span> <span class="property">@typedToJS</span> array
+    array.sort()
+    array[Math.floor(array.length/<span class="number">2</span>)]
+
   <span class="attribute">aNaNs</span>: <span class="function"><span class="params">(array)</span> -&gt;</span> (i <span class="keyword">for</span> v,i <span class="keyword">in</span> array <span class="keyword">when</span> isNaN v)</pre></div></div>
             
         </li>
@@ -1151,7 +1155,8 @@ Iterate rather than reduce: work with typed arrays</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-59">&#182;</a>
               </div>
-              <p>Return a JS array given a TypedArray</p>
+              <p>Return a JS array given a TypedArray.
+To create TypedArray from JS array: new Uint8Array(jsa) etc</p>
 
             </div>
             

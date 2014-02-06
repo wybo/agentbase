@@ -362,7 +362,11 @@ ABM.util = u =
   aMin: (array) -> v=array[0]; v=Math.min v,a for a in array; v
   aSum: (array) -> v=0; v += a for a in array; v
   aAvg: (array) -> @aSum(array)/array.length
-  
+  aMid: (array) -> 
+    array = if array.sort? then @clone array else @typedToJS array
+    array.sort()
+    array[Math.floor(array.length/2)]
+
   aNaNs: (array) -> (i for v,i in array when isNaN v)
   
   # Return array composed of f pairwise on both arrays
@@ -371,7 +375,8 @@ ABM.util = u =
   aPairDif: (a1, a2) -> @aPairwise a1, a2, (a,b)->a-b
   aPairMul: (a1, a2) -> @aPairwise a1, a2, (a,b)->a*b
 
-  # Return a JS array given a TypedArray
+  # Return a JS array given a TypedArray.
+  # To create TypedArray from JS array: new Uint8Array(jsa) etc
   typedToJS: (typedArray) -> (i for i in typedArray)
   
   # Return a linear interpolation between lo and hi.
