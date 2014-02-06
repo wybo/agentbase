@@ -1,0 +1,26 @@
+{
+  "name": "agentscript",
+  "version": "0.0.9",
+  "description": "Minimalist Agent Based Modeling (ABM) framework based on NetLogo",
+  "main": "lib/agentscript.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "devDependencies": {
+    "shelljs": "~0.2.6"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/backspaces/agentscript.git"
+  },
+  "keywords": [
+    "agent",
+    "abm",
+    "modeling"
+  ],
+  "author": "Owen Densmore",
+  "license": "GPLv3",
+  "bugs": {
+    "url": "https://github.com/backspaces/agentscript/issues"
+  }
+}
