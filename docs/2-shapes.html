@@ -73,7 +73,8 @@
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>ABM.shapes = ABM.util.s = <span class="keyword">do</span><span class="function"> -&gt;</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>
+ABM.shapes = ABM.util.s = <span class="hljs-keyword">do</span><span class="hljs-function"> -&gt;</span></pre></div></div>
             
         </li>
         
@@ -92,14 +93,14 @@ and a transform such that the shape should be drawn in a -.5 to .5 square</p>
 <pre><code>ctx.save()
 ctx.fillStyle = u.colorStr color
 ctx.translate x, y; ctx.scale size, size;
-ctx.rotate heading if shape.rotate
+ctx.rotate heading <span class="hljs-keyword">if</span> shape.rotate
 ctx.beginPath(); shape.draw(ctx); ctx.closePath()
 ctx.fill()
-ctx.restore()</code></pre>
-<p>The list of current shapes, via <code>ABM.shapes.names()</code> below, is:</p>
-<pre><code>[&quot;default&quot;, &quot;triangle&quot;, &quot;arrow&quot;, &quot;bug&quot;, &quot;pyramid&quot;, 
- &quot;circle&quot;, &quot;square&quot;, &quot;pentagon&quot;, &quot;ring&quot;, &quot;cup&quot;, &quot;person&quot;]</code></pre>
-
+ctx.restore()
+</code></pre><p>The list of current shapes, via <code>ABM.shapes.names()</code> below, is:</p>
+<pre><code>[<span class="hljs-string">"default"</span>, <span class="hljs-string">"triangle"</span>, <span class="hljs-string">"arrow"</span>, <span class="hljs-string">"bug"</span>, <span class="hljs-string">"pyramid"</span>, 
+ <span class="hljs-string">"circle"</span>, <span class="hljs-string">"square"</span>, <span class="hljs-string">"pentagon"</span>, <span class="hljs-string">"ring"</span>, <span class="hljs-string">"cup"</span>, <span class="hljs-string">"person"</span>]
+</code></pre>
             </div>
             
         </li>
@@ -117,10 +118,10 @@ discription of drawing context.  It is used in adding a new shape above.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="function"><span class="title">poly</span> = <span class="params">(c, a)</span> -&gt;</span>
-    <span class="keyword">for</span> p, i <span class="keyword">in</span> a
-      <span class="keyword">if</span> i <span class="keyword">is</span> <span class="number">0</span> <span class="keyword">then</span> c.moveTo p[<span class="number">0</span>], p[<span class="number">1</span>] <span class="keyword">else</span> c.lineTo p[<span class="number">0</span>], p[<span class="number">1</span>]
-    <span class="literal">null</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-function"><span class="hljs-title">poly</span> = <span class="hljs-params">(c, a)</span> -&gt;</span>
+    <span class="hljs-keyword">for</span> p, i <span class="hljs-keyword">in</span> a
+      <span class="hljs-keyword">if</span> i <span class="hljs-keyword">is</span> <span class="hljs-number">0</span> <span class="hljs-keyword">then</span> c.moveTo p[<span class="hljs-number">0</span>], p[<span class="hljs-number">1</span>] <span class="hljs-keyword">else</span> c.lineTo p[<span class="hljs-number">0</span>], p[<span class="hljs-number">1</span>]
+    <span class="hljs-literal">null</span></pre></div></div>
             
         </li>
         
@@ -136,10 +137,10 @@ Useful for shortcuts</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="function"><span class="title">circ</span> = <span class="params">(c,x,y,s)</span>-&gt;</span>c.arc x,y,s/<span class="number">2</span>,<span class="number">0</span>,<span class="number">2</span>*Math.PI <span class="comment"># centered circle</span>
-  <span class="function"><span class="title">ccirc</span> = <span class="params">(c,x,y,s)</span>-&gt;</span>c.arc x,y,s/<span class="number">2</span>,<span class="number">0</span>,<span class="number">2</span>*Math.PI,<span class="literal">true</span> <span class="comment"># centered counter clockwise circle</span>
-  <span class="function"><span class="title">cimg</span> = <span class="params">(c,x,y,s,img)</span>-&gt;</span>c.scale <span class="number">1</span>,-<span class="number">1</span>;c.drawImage img,x-s/<span class="number">2</span>,y-s/<span class="number">2</span>,s,s;c.scale <span class="number">1</span>,-<span class="number">1</span> <span class="comment"># centered image</span>
-  <span class="function"><span class="title">csq</span> = <span class="params">(c,x,y,s)</span>-&gt;</span>c.fillRect x-s/<span class="number">2</span>, y-s/<span class="number">2</span>, s, s <span class="comment"># centered square</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-function"><span class="hljs-title">circ</span> = <span class="hljs-params">(c,x,y,s)</span>-&gt;</span>c.arc x,y,s/<span class="hljs-number">2</span>,<span class="hljs-number">0</span>,<span class="hljs-number">2</span>*Math.PI <span class="hljs-comment"># centered circle</span>
+  <span class="hljs-function"><span class="hljs-title">ccirc</span> = <span class="hljs-params">(c,x,y,s)</span>-&gt;</span>c.arc x,y,s/<span class="hljs-number">2</span>,<span class="hljs-number">0</span>,<span class="hljs-number">2</span>*Math.PI,<span class="hljs-literal">true</span> <span class="hljs-comment"># centered counter clockwise circle</span>
+  <span class="hljs-function"><span class="hljs-title">cimg</span> = <span class="hljs-params">(c,x,y,s,img)</span>-&gt;</span>c.scale <span class="hljs-number">1</span>,-<span class="hljs-number">1</span>;c.drawImage img,x-s/<span class="hljs-number">2</span>,y-s/<span class="hljs-number">2</span>,s,s;c.scale <span class="hljs-number">1</span>,-<span class="hljs-number">1</span> <span class="hljs-comment"># centered image</span>
+  <span class="hljs-function"><span class="hljs-title">csq</span> = <span class="hljs-params">(c,x,y,s)</span>-&gt;</span>c.fillRect x-s/<span class="hljs-number">2</span>, y-s/<span class="hljs-number">2</span>, s, s <span class="hljs-comment"># centered square</span></pre></div></div>
             
         </li>
         
@@ -154,8 +155,8 @@ Useful for shortcuts</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="function"><span class="title">fillSlot</span> = <span class="params">(slot, img)</span> -&gt;</span>
-    slot.ctx.save(); slot.ctx.scale <span class="number">1</span>, -<span class="number">1</span>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-function"><span class="hljs-title">fillSlot</span> = <span class="hljs-params">(slot, img)</span> -&gt;</span>
+    slot.ctx.save(); slot.ctx.scale <span class="hljs-number">1</span>, -<span class="hljs-number">1</span>
     slot.ctx.drawImage img, slot.x, -(slot.y+slot.bits), slot.bits, slot.bits    
     slot.ctx.restore()</pre></div></div>
             
@@ -187,46 +188,46 @@ Useful for shortcuts</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">default</span>:
-    <span class="attribute">rotate</span>: <span class="literal">true</span>
-    <span class="attribute">draw</span>: <span class="function"><span class="params">(c)</span> -&gt;</span> poly c, [[<span class="number">.5</span>,<span class="number">0</span>],[-<span class="number">.5</span>,-<span class="number">.5</span>],[-<span class="number">.25</span>,<span class="number">0</span>],[-<span class="number">.5</span>,<span class="number">.5</span>]]
-  <span class="attribute">triangle</span>:
-    <span class="attribute">rotate</span>: <span class="literal">true</span>
-    <span class="attribute">draw</span>: <span class="function"><span class="params">(c)</span> -&gt;</span> poly c, [[<span class="number">.5</span>,<span class="number">0</span>],[-<span class="number">.5</span>,-<span class="number">.4</span>],[-<span class="number">.5</span>,<span class="number">.4</span>]]
-  <span class="attribute">arrow</span>:
-    <span class="attribute">rotate</span>: <span class="literal">true</span>
-    <span class="attribute">draw</span>: <span class="function"><span class="params">(c)</span> -&gt;</span> poly c, [[<span class="number">.5</span>,<span class="number">0</span>],[<span class="number">0</span>,<span class="number">.5</span>],[<span class="number">0</span>,<span class="number">.2</span>],[-<span class="number">.5</span>,<span class="number">.2</span>],[-<span class="number">.5</span>,-<span class="number">.2</span>],[<span class="number">0</span>,-<span class="number">.2</span>],[<span class="number">0</span>,-<span class="number">.5</span>]]
-  <span class="attribute">bug</span>:
-    <span class="attribute">rotate</span>: <span class="literal">true</span>
-    <span class="attribute">draw</span>: <span class="function"><span class="params">(c)</span> -&gt;</span>
-      c.strokeStyle = c.fillStyle; c.lineWidth = <span class="number">.05</span>
-      poly c, [[<span class="number">.4</span>,<span class="number">.225</span>],[<span class="number">.2</span>,<span class="number">0</span>],[<span class="number">.4</span>,-<span class="number">.225</span>]]; c.stroke()
-      c.beginPath(); circ c,<span class="number">.12</span>,<span class="number">0</span>,<span class="number">.26</span>; circ c,-<span class="number">.05</span>,<span class="number">0</span>,<span class="number">.26</span>; circ c,-<span class="number">.27</span>,<span class="number">0</span>,<span class="number">.4</span>
-  <span class="attribute">pyramid</span>:
-    <span class="attribute">rotate</span>: <span class="literal">false</span>
-    <span class="attribute">draw</span>: <span class="function"><span class="params">(c)</span> -&gt;</span> poly c, [[<span class="number">0</span>,<span class="number">.5</span>],[-<span class="number">.433</span>,-<span class="number">.25</span>],[<span class="number">.433</span>,-<span class="number">.25</span>]]
-  <span class="attribute">circle</span>: <span class="comment"># Note: NetLogo's dot is simply circle with a small size</span>
-    <span class="attribute">shortcut</span>: <span class="function"><span class="params">(c,x,y,s)</span> -&gt;</span> c.beginPath(); circ c,x,y,s; c.closePath(); c.fill()
-    <span class="attribute">rotate</span>: <span class="literal">false</span>
-    <span class="attribute">draw</span>: <span class="function"><span class="params">(c)</span> -&gt;</span> circ c,<span class="number">0</span>,<span class="number">0</span>,<span class="number">1</span> <span class="comment"># c.arc 0,0,.5,0,2*Math.PI</span>
-  <span class="attribute">square</span>:
-    <span class="attribute">shortcut</span>: <span class="function"><span class="params">(c,x,y,s)</span> -&gt;</span> csq c,x,y,s
-    <span class="attribute">rotate</span>: <span class="literal">false</span>
-    <span class="attribute">draw</span>: <span class="function"><span class="params">(c)</span> -&gt;</span> csq c,<span class="number">0</span>,<span class="number">0</span>,<span class="number">1</span> <span class="comment">#c.fillRect -.5,-.5,1,1</span>
-  <span class="attribute">pentagon</span>:
-    <span class="attribute">rotate</span>: <span class="literal">false</span>
-    <span class="attribute">draw</span>: <span class="function"><span class="params">(c)</span> -&gt;</span> poly c, [[<span class="number">0</span>,<span class="number">.45</span>],[-<span class="number">.45</span>,<span class="number">.1</span>],[-<span class="number">.3</span>,-<span class="number">.45</span>],[<span class="number">.3</span>,-<span class="number">.45</span>],[<span class="number">.45</span>,<span class="number">.1</span>]]
-  <span class="attribute">ring</span>:
-    <span class="attribute">rotate</span>: <span class="literal">false</span>
-    <span class="attribute">draw</span>: <span class="function"><span class="params">(c)</span> -&gt;</span> circ c,<span class="number">0</span>,<span class="number">0</span>,<span class="number">1</span>; c.closePath(); ccirc c,<span class="number">0</span>,<span class="number">0</span>,<span class="number">.6</span>
-  <span class="attribute">person</span>:
-    <span class="attribute">rotate</span>: <span class="literal">false</span>
-    <span class="attribute">draw</span>: <span class="function"><span class="params">(c)</span> -&gt;</span>
-      poly c, [  [<span class="number">.15</span>,<span class="number">.2</span>],[<span class="number">.3</span>,<span class="number">0</span>],[<span class="number">.125</span>,-<span class="number">.1</span>],[<span class="number">.125</span>,<span class="number">.05</span>],
-      [<span class="number">.1</span>,-<span class="number">.15</span>],[<span class="number">.25</span>,-<span class="number">.5</span>],[<span class="number">.05</span>,-<span class="number">.5</span>],[<span class="number">0</span>,-<span class="number">.25</span>],
-      [-<span class="number">.05</span>,-<span class="number">.5</span>],[-<span class="number">.25</span>,-<span class="number">.5</span>],[-<span class="number">.1</span>,-<span class="number">.15</span>],[-<span class="number">.125</span>,<span class="number">.05</span>],
-      [-<span class="number">.125</span>,-<span class="number">.1</span>],[-<span class="number">.3</span>,<span class="number">0</span>],[-<span class="number">.15</span>,<span class="number">.2</span>]  ]
-      c.closePath(); circ c,<span class="number">0</span>,<span class="number">.35</span>,<span class="number">.30</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">default</span>:
+    <span class="hljs-attribute">rotate</span>: <span class="hljs-literal">true</span>
+    <span class="hljs-attribute">draw</span>: <span class="hljs-function"><span class="hljs-params">(c)</span> -&gt;</span> poly c, [[<span class="hljs-number">.5</span>,<span class="hljs-number">0</span>],[-<span class="hljs-number">.5</span>,-<span class="hljs-number">.5</span>],[-<span class="hljs-number">.25</span>,<span class="hljs-number">0</span>],[-<span class="hljs-number">.5</span>,<span class="hljs-number">.5</span>]]
+  <span class="hljs-attribute">triangle</span>:
+    <span class="hljs-attribute">rotate</span>: <span class="hljs-literal">true</span>
+    <span class="hljs-attribute">draw</span>: <span class="hljs-function"><span class="hljs-params">(c)</span> -&gt;</span> poly c, [[<span class="hljs-number">.5</span>,<span class="hljs-number">0</span>],[-<span class="hljs-number">.5</span>,-<span class="hljs-number">.4</span>],[-<span class="hljs-number">.5</span>,<span class="hljs-number">.4</span>]]
+  <span class="hljs-attribute">arrow</span>:
+    <span class="hljs-attribute">rotate</span>: <span class="hljs-literal">true</span>
+    <span class="hljs-attribute">draw</span>: <span class="hljs-function"><span class="hljs-params">(c)</span> -&gt;</span> poly c, [[<span class="hljs-number">.5</span>,<span class="hljs-number">0</span>],[<span class="hljs-number">0</span>,<span class="hljs-number">.5</span>],[<span class="hljs-number">0</span>,<span class="hljs-number">.2</span>],[-<span class="hljs-number">.5</span>,<span class="hljs-number">.2</span>],[-<span class="hljs-number">.5</span>,-<span class="hljs-number">.2</span>],[<span class="hljs-number">0</span>,-<span class="hljs-number">.2</span>],[<span class="hljs-number">0</span>,-<span class="hljs-number">.5</span>]]
+  <span class="hljs-attribute">bug</span>:
+    <span class="hljs-attribute">rotate</span>: <span class="hljs-literal">true</span>
+    <span class="hljs-attribute">draw</span>: <span class="hljs-function"><span class="hljs-params">(c)</span> -&gt;</span>
+      c.strokeStyle = c.fillStyle; c.lineWidth = <span class="hljs-number">.05</span>
+      poly c, [[<span class="hljs-number">.4</span>,<span class="hljs-number">.225</span>],[<span class="hljs-number">.2</span>,<span class="hljs-number">0</span>],[<span class="hljs-number">.4</span>,-<span class="hljs-number">.225</span>]]; c.stroke()
+      c.beginPath(); circ c,<span class="hljs-number">.12</span>,<span class="hljs-number">0</span>,<span class="hljs-number">.26</span>; circ c,-<span class="hljs-number">.05</span>,<span class="hljs-number">0</span>,<span class="hljs-number">.26</span>; circ c,-<span class="hljs-number">.27</span>,<span class="hljs-number">0</span>,<span class="hljs-number">.4</span>
+  <span class="hljs-attribute">pyramid</span>:
+    <span class="hljs-attribute">rotate</span>: <span class="hljs-literal">false</span>
+    <span class="hljs-attribute">draw</span>: <span class="hljs-function"><span class="hljs-params">(c)</span> -&gt;</span> poly c, [[<span class="hljs-number">0</span>,<span class="hljs-number">.5</span>],[-<span class="hljs-number">.433</span>,-<span class="hljs-number">.25</span>],[<span class="hljs-number">.433</span>,-<span class="hljs-number">.25</span>]]
+  <span class="hljs-attribute">circle</span>: <span class="hljs-comment"># Note: NetLogo's dot is simply circle with a small size</span>
+    <span class="hljs-attribute">shortcut</span>: <span class="hljs-function"><span class="hljs-params">(c,x,y,s)</span> -&gt;</span> c.beginPath(); circ c,x,y,s; c.closePath(); c.fill()
+    <span class="hljs-attribute">rotate</span>: <span class="hljs-literal">false</span>
+    <span class="hljs-attribute">draw</span>: <span class="hljs-function"><span class="hljs-params">(c)</span> -&gt;</span> circ c,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">1</span> <span class="hljs-comment"># c.arc 0,0,.5,0,2*Math.PI</span>
+  <span class="hljs-attribute">square</span>:
+    <span class="hljs-attribute">shortcut</span>: <span class="hljs-function"><span class="hljs-params">(c,x,y,s)</span> -&gt;</span> csq c,x,y,s
+    <span class="hljs-attribute">rotate</span>: <span class="hljs-literal">false</span>
+    <span class="hljs-attribute">draw</span>: <span class="hljs-function"><span class="hljs-params">(c)</span> -&gt;</span> csq c,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">1</span> <span class="hljs-comment">#c.fillRect -.5,-.5,1,1</span>
+  <span class="hljs-attribute">pentagon</span>:
+    <span class="hljs-attribute">rotate</span>: <span class="hljs-literal">false</span>
+    <span class="hljs-attribute">draw</span>: <span class="hljs-function"><span class="hljs-params">(c)</span> -&gt;</span> poly c, [[<span class="hljs-number">0</span>,<span class="hljs-number">.45</span>],[-<span class="hljs-number">.45</span>,<span class="hljs-number">.1</span>],[-<span class="hljs-number">.3</span>,-<span class="hljs-number">.45</span>],[<span class="hljs-number">.3</span>,-<span class="hljs-number">.45</span>],[<span class="hljs-number">.45</span>,<span class="hljs-number">.1</span>]]
+  <span class="hljs-attribute">ring</span>:
+    <span class="hljs-attribute">rotate</span>: <span class="hljs-literal">false</span>
+    <span class="hljs-attribute">draw</span>: <span class="hljs-function"><span class="hljs-params">(c)</span> -&gt;</span> circ c,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">1</span>; c.closePath(); ccirc c,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">.6</span>
+  <span class="hljs-attribute">person</span>:
+    <span class="hljs-attribute">rotate</span>: <span class="hljs-literal">false</span>
+    <span class="hljs-attribute">draw</span>: <span class="hljs-function"><span class="hljs-params">(c)</span> -&gt;</span>
+      poly c, [  [<span class="hljs-number">.15</span>,<span class="hljs-number">.2</span>],[<span class="hljs-number">.3</span>,<span class="hljs-number">0</span>],[<span class="hljs-number">.125</span>,-<span class="hljs-number">.1</span>],[<span class="hljs-number">.125</span>,<span class="hljs-number">.05</span>],
+      [<span class="hljs-number">.1</span>,-<span class="hljs-number">.15</span>],[<span class="hljs-number">.25</span>,-<span class="hljs-number">.5</span>],[<span class="hljs-number">.05</span>,-<span class="hljs-number">.5</span>],[<span class="hljs-number">0</span>,-<span class="hljs-number">.25</span>],
+      [-<span class="hljs-number">.05</span>,-<span class="hljs-number">.5</span>],[-<span class="hljs-number">.25</span>,-<span class="hljs-number">.5</span>],[-<span class="hljs-number">.1</span>,-<span class="hljs-number">.15</span>],[-<span class="hljs-number">.125</span>,<span class="hljs-number">.05</span>],
+      [-<span class="hljs-number">.125</span>,-<span class="hljs-number">.1</span>],[-<span class="hljs-number">.3</span>,<span class="hljs-number">0</span>],[-<span class="hljs-number">.15</span>,<span class="hljs-number">.2</span>]  ]
+      c.closePath(); circ c,<span class="hljs-number">0</span>,<span class="hljs-number">.35</span>,<span class="hljs-number">.30</span></pre></div></div>
             
         </li>
         
@@ -241,8 +242,8 @@ Useful for shortcuts</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">names</span>:<span class="function"> -&gt;</span>
-    (name <span class="keyword">for</span> own name, val <span class="keyword">of</span> @ <span class="keyword">when</span> val.rotate? <span class="keyword">and</span> val.draw?)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">names</span>:<span class="hljs-function"> -&gt;</span>
+    (name <span class="hljs-keyword">for</span> own name, val <span class="hljs-keyword">of</span> @ <span class="hljs-keyword">when</span> val.rotate? <span class="hljs-keyword">and</span> val.draw?)</pre></div></div>
             
         </li>
         
@@ -254,17 +255,17 @@ Useful for shortcuts</p>
                 <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
               <p>Add your own shape. Will be included in names list.  Usage:</p>
-<pre><code>ABM.shapes.add &quot;test&quot;, true, (c) -&gt; # bowtie/hourglass
-  ABM.shapes.poly c, [[-.5,-.5],[.5,.5],[-.5,.5],[.5,-.5]]</code></pre>
-<p>Note: an image that is not rotated automatically gets a shortcut. </p>
+<pre><code>ABM.shapes.add <span class="hljs-string">"test"</span>, <span class="hljs-literal">true</span>, <span class="hljs-function"><span class="hljs-params">(c)</span> -&gt;</span> <span class="hljs-comment"># bowtie/hourglass</span>
+  ABM.shapes.poly c, [[-<span class="hljs-number">.5</span>,-<span class="hljs-number">.5</span>],[<span class="hljs-number">.5</span>,<span class="hljs-number">.5</span>],[-<span class="hljs-number">.5</span>,<span class="hljs-number">.5</span>],[<span class="hljs-number">.5</span>,-<span class="hljs-number">.5</span>]]
+</code></pre><p>Note: an image that is not rotated automatically gets a shortcut. </p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">add</span>: <span class="function"><span class="params">(name, rotate, draw, shortcut)</span> -&gt;</span> <span class="comment"># draw can be an image, shortcut defaults to null</span>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">add</span>: <span class="hljs-function"><span class="hljs-params">(name, rotate, draw, shortcut)</span> -&gt;</span> <span class="hljs-comment"># draw can be an image, shortcut defaults to null</span>
     s = @[name] =
-      <span class="keyword">if</span> u.isFunction draw <span class="keyword">then</span> {rotate,draw} <span class="keyword">else</span> {rotate,<span class="attribute">img</span>:draw,<span class="attribute">draw</span>:<span class="function"><span class="params">(c)</span>-&gt;</span>cimg c,<span class="number">.5</span>,<span class="number">.5</span>,<span class="number">1</span>,<span class="property">@img</span>}
-    <span class="function"><span class="params">(s.shortcut = (c,x,y,s) -&gt; cimg c,x,y,s,<span class="property">@img</span>)</span> <span class="title">if</span> <span class="title">s</span>.<span class="title">img</span>? <span class="title">and</span> <span class="title">not</span> <span class="title">s</span>.<span class="title">rotate</span>
-    <span class="title">s</span>.<span class="title">shortcut</span> = <span class="title">shortcut</span> <span class="title">if</span> <span class="title">shortcut</span>? # <span class="title">can</span> <span class="title">override</span> <span class="title">img</span> <span class="title">default</span> <span class="title">shortcut</span> <span class="title">if</span> <span class="title">needed</span>
+      <span class="hljs-keyword">if</span> u.isFunction draw <span class="hljs-keyword">then</span> {rotate,draw} <span class="hljs-keyword">else</span> {rotate,<span class="hljs-attribute">img</span>:draw,<span class="hljs-attribute">draw</span>:<span class="hljs-function"><span class="hljs-params">(c)</span>-&gt;</span>cimg c,<span class="hljs-number">.5</span>,<span class="hljs-number">.5</span>,<span class="hljs-number">1</span>,<span class="hljs-property">@img</span>}
+    <span class="hljs-function"><span class="hljs-params">(s.shortcut = (c,x,y,s) -&gt; cimg c,x,y,s,<span class="hljs-property">@img</span>)</span> <span class="hljs-title">if</span> <span class="hljs-title">s</span>.<span class="hljs-title">img</span>? <span class="hljs-title">and</span> <span class="hljs-title">not</span> <span class="hljs-title">s</span>.<span class="hljs-title">rotate</span>
+    <span class="hljs-title">s</span>.<span class="hljs-title">shortcut</span> = <span class="hljs-title">shortcut</span> <span class="hljs-title">if</span> <span class="hljs-title">shortcut</span>? # <span class="hljs-title">can</span> <span class="hljs-title">override</span> <span class="hljs-title">img</span> <span class="hljs-title">default</span> <span class="hljs-title">shortcut</span> <span class="hljs-title">if</span> <span class="hljs-title">needed</span>
 
 </span></pre></div></div>
             
@@ -281,8 +282,8 @@ Useful for shortcuts</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">poly</span>:poly, <span class="attribute">circ</span>:circ, <span class="attribute">ccirc</span>:ccirc, <span class="attribute">cimg</span>:cimg, <span class="attribute">csq</span>:csq <span class="comment"># export utils for use by add</span>
-  <span class="attribute">spriteSheets</span>:spriteSheets <span class="comment"># export spriteSheets for debugging, showing in DOM</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">poly</span>:poly, <span class="hljs-attribute">circ</span>:circ, <span class="hljs-attribute">ccirc</span>:ccirc, <span class="hljs-attribute">cimg</span>:cimg, <span class="hljs-attribute">csq</span>:csq <span class="hljs-comment"># export utils for use by add</span>
+  <span class="hljs-attribute">spriteSheets</span>:spriteSheets <span class="hljs-comment"># export spriteSheets for debugging, showing in DOM</span></pre></div></div>
             
         </li>
         
@@ -297,31 +298,31 @@ Useful for shortcuts</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">draw</span>: <span class="function"><span class="params">(ctx, shape, x, y, size, rad, color)</span> -&gt;</span>
-    <span class="keyword">if</span> shape.shortcut?
-      ctx.fillStyle = u.colorStr color <span class="keyword">unless</span> shape.img?
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">draw</span>: <span class="hljs-function"><span class="hljs-params">(ctx, shape, x, y, size, rad, color)</span> -&gt;</span>
+    <span class="hljs-keyword">if</span> shape.shortcut?
+      ctx.fillStyle = u.colorStr color <span class="hljs-keyword">unless</span> shape.img?
       shape.shortcut ctx,x,y,size
-    <span class="keyword">else</span>
+    <span class="hljs-keyword">else</span>
       ctx.save()
       ctx.translate x, y
-      ctx.scale size, size <span class="keyword">if</span> size <span class="keyword">isnt</span> <span class="number">1</span>
-      ctx.rotate rad <span class="keyword">if</span> rad <span class="keyword">isnt</span> <span class="number">0</span>
-      <span class="keyword">if</span> shape.img? <span class="comment"># is an image, not a path function</span>
+      ctx.scale size, size <span class="hljs-keyword">if</span> size <span class="hljs-keyword">isnt</span> <span class="hljs-number">1</span>
+      ctx.rotate rad <span class="hljs-keyword">if</span> rad <span class="hljs-keyword">isnt</span> <span class="hljs-number">0</span>
+      <span class="hljs-keyword">if</span> shape.img? <span class="hljs-comment"># is an image, not a path function</span>
         shape.draw ctx
-      <span class="keyword">else</span>
+      <span class="hljs-keyword">else</span>
         ctx.fillStyle = u.colorStr color
         ctx.beginPath(); shape.draw ctx; ctx.closePath()
         ctx.fill()
       ctx.restore()
     shape
-  <span class="attribute">drawSprite</span>: <span class="function"><span class="params">(ctx, s, x, y, size, rad)</span> -&gt;</span>
-    <span class="keyword">if</span> rad <span class="keyword">is</span> <span class="number">0</span>
-      ctx.drawImage s.ctx.canvas, s.x, s.y, s.bits, s.bits, x-size/<span class="number">2</span>, y-size/<span class="number">2</span>, size, size
-    <span class="keyword">else</span>
+  <span class="hljs-attribute">drawSprite</span>: <span class="hljs-function"><span class="hljs-params">(ctx, s, x, y, size, rad)</span> -&gt;</span>
+    <span class="hljs-keyword">if</span> rad <span class="hljs-keyword">is</span> <span class="hljs-number">0</span>
+      ctx.drawImage s.ctx.canvas, s.x, s.y, s.bits, s.bits, x-size/<span class="hljs-number">2</span>, y-size/<span class="hljs-number">2</span>, size, size
+    <span class="hljs-keyword">else</span>
       ctx.save()
-      ctx.translate x, y <span class="comment"># see http://goo.gl/VUlhY for drawing centered rotated images</span>
+      ctx.translate x, y <span class="hljs-comment"># see http://goo.gl/VUlhY for drawing centered rotated images</span>
       ctx.rotate rad
-      ctx.drawImage s.ctx.canvas, s.x, s.y, s.bits, s.bits, -size/<span class="number">2</span>,-size/<span class="number">2</span>, size, size
+      ctx.drawImage s.ctx.canvas, s.x, s.y, s.bits, s.bits, -size/<span class="hljs-number">2</span>,-size/<span class="hljs-number">2</span>, size, size
       ctx.restore()
     s</pre></div></div>
             
@@ -334,15 +335,15 @@ Useful for shortcuts</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
-              <p>Convert a shape to a sprite by allocating a sprite sheet &quot;slot&quot; and drawing
+              <p>Convert a shape to a sprite by allocating a sprite sheet “slot” and drawing
 the shape to fit it. Return existing sprite if duplicate.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">shapeToSprite</span>: <span class="function"><span class="params">(name, color, size)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">shapeToSprite</span>: <span class="hljs-function"><span class="hljs-params">(name, color, size)</span> -&gt;</span>
     bits = Math.ceil ABM.patches.toBits size
     shape = @[name]
-    index = <span class="keyword">if</span> shape.img? <span class="keyword">then</span> name <span class="keyword">else</span> <span class="string">"<span class="subst">#{name}</span>-<span class="subst">#{u.colorStr(color)}</span>"</span>
+    index = <span class="hljs-keyword">if</span> shape.img? <span class="hljs-keyword">then</span> name <span class="hljs-keyword">else</span> <span class="hljs-string">"<span class="hljs-subst">#{name}</span>-<span class="hljs-subst">#{u.colorStr(color)}</span>"</span>
     ctx = spriteSheets[bits]</pre></div></div>
             
         </li>
@@ -358,9 +359,9 @@ the shape to fit it. Return existing sprite if duplicate.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">unless</span> ctx?
-      spriteSheets[bits] = ctx = u.createCtx bits*<span class="number">10</span>, bits
-      ctx.nextX = <span class="number">0</span>; ctx.nextY = <span class="number">0</span>; ctx.index = {}</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">unless</span> ctx?
+      spriteSheets[bits] = ctx = u.createCtx bits*<span class="hljs-number">10</span>, bits
+      ctx.nextX = <span class="hljs-number">0</span>; ctx.nextY = <span class="hljs-number">0</span>; ctx.index = {}</pre></div></div>
             
         </li>
         
@@ -375,7 +376,7 @@ the shape to fit it. Return existing sprite if duplicate.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">return</span> foundSlot <span class="keyword">if</span> (foundSlot = ctx.index[index])?</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">return</span> foundSlot <span class="hljs-keyword">if</span> (foundSlot = ctx.index[index])?</pre></div></div>
             
         </li>
         
@@ -386,13 +387,13 @@ the shape to fit it. Return existing sprite if duplicate.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
-              <p>Extend the sheet if we&#39;re out of space</p>
+              <p>Extend the sheet if we’re out of space</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">if</span> bits*ctx.nextX <span class="keyword">is</span> ctx.canvas.width
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> bits*ctx.nextX <span class="hljs-keyword">is</span> ctx.canvas.width
       u.resizeCtx ctx, ctx.canvas.width, ctx.canvas.height+bits
-      ctx.nextX = <span class="number">0</span>; ctx.nextY++</pre></div></div>
+      ctx.nextX = <span class="hljs-number">0</span>; ctx.nextY++</pre></div></div>
             
         </li>
         
@@ -403,7 +404,7 @@ the shape to fit it. Return existing sprite if duplicate.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
-              <p>Create the sprite &quot;slot&quot; object and install in index object</p>
+              <p>Create the sprite “slot” object and install in index object</p>
 
             </div>
             
@@ -424,13 +425,13 @@ the shape to fit it. Return existing sprite if duplicate.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">if</span> (img=shape.img)? <span class="comment"># is an image, not a path function</span>
-      <span class="keyword">if</span> img.height <span class="keyword">isnt</span> <span class="number">0</span> <span class="keyword">then</span> fillSlot(slot, img)
-      <span class="keyword">else</span> img.<span class="function"><span class="title">onload</span> = -&gt;</span> fillSlot(slot, img)
-    <span class="keyword">else</span>
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> (img=shape.img)? <span class="hljs-comment"># is an image, not a path function</span>
+      <span class="hljs-keyword">if</span> img.height <span class="hljs-keyword">isnt</span> <span class="hljs-number">0</span> <span class="hljs-keyword">then</span> fillSlot(slot, img)
+      <span class="hljs-keyword">else</span> img.<span class="hljs-function"><span class="hljs-title">onload</span> = -&gt;</span> fillSlot(slot, img)
+    <span class="hljs-keyword">else</span>
       ctx.save()
       ctx.scale bits, bits
-      ctx.translate ctx.nextX+<span class="number">.5</span>, ctx.nextY+<span class="number">.5</span>
+      ctx.translate ctx.nextX+<span class="hljs-number">.5</span>, ctx.nextY+<span class="hljs-number">.5</span>
       ctx.fillStyle = u.colorStr color
       ctx.beginPath(); shape.draw ctx; ctx.closePath()
       ctx.fill()

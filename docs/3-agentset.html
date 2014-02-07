@@ -77,21 +77,22 @@ its created instances.  It also provides, much like the <strong>ABM.util</strong
 module, many methods shared by all subclasses of AgentSet.</p>
 <p>ABM contains three agentsets created by class Model:</p>
 <ul>
-<li><code>ABM.patches</code>: the model&#39;s &quot;world&quot; grid</li>
-<li><code>ABM.agents</code>: the model&#39;s agents living on the patchs</li>
+<li><code>ABM.patches</code>: the model’s “world” grid</li>
+<li><code>ABM.agents</code>: the model’s agents living on the patchs</li>
 <li><code>ABM.links</code>: the network links connecting agent pairs</li>
 </ul>
 <p>See NetLogo <a href="http://ccl.northwestern.edu/netlogo/docs/">documentation</a>
 for explanation on the overall semantics of Agent Based Modeling
 used by AgentSets as well as Patches, Agents, and Links.</p>
 <p>Note: subclassing <code>Array</code> can be dangerous and we may have to convert
-to a different style. See Trevor Burnham&#39;s <a href="http://goo.gl/Lca8g">comments</a>
-but thus far we&#39;ve resolved all related problems.</p>
+to a different style. See Trevor Burnham’s <a href="http://goo.gl/Lca8g">comments</a>
+but thus far we’ve resolved all related problems.</p>
 <p>Because we are an array subset, @[i] == this[i] == agentset[i]</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">ABM</span>.<span class="title">AgentSet</span> <span class="keyword">extends</span> <span class="title">Array</span> </span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ABM</span>.<span class="hljs-title">AgentSet</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Array</span> </span></pre></div></div>
             
         </li>
         
@@ -119,14 +120,14 @@ but thus far we&#39;ve resolved all related problems.</p>
 an <code>AgentSet</code> .. except for the ID which only impacts the add method.
 It is primarily used to turn a comprehension into an AgentSet instance
 which then gains access to all the methods below.  Ex:</p>
-<pre><code>evens = (a for a in ABM.agents when a.id % 2 is 0)
+<pre><code>evens = (a <span class="hljs-keyword">for</span> a <span class="hljs-keyword">in</span> ABM.agents <span class="hljs-keyword">when</span> a.id % <span class="hljs-number">2</span> <span class="hljs-keyword">is</span> <span class="hljs-number">0</span>)
 ABM.AgentSet.asSet(evens)
-randomEven = evens.oneOf()</code></pre>
-
+randomEven = evens.oneOf()
+</code></pre>
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="property">@asSet</span>: <span class="function"><span class="params">(a, setType = ABM.AgentSet)</span> -&gt;</span>
-    a.__proto__ = setType.prototype ? setType.constructor.prototype <span class="comment"># setType.__proto__</span>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-property">@asSet</span>: <span class="hljs-function"><span class="hljs-params">(a, setType = ABM.AgentSet)</span> -&gt;</span>
+    a.__proto__ = setType.prototype ? setType.constructor.prototype <span class="hljs-comment"># setType.__proto__</span>
     a</pre></div></div>
             
         </li>
@@ -138,15 +139,14 @@ randomEven = evens.oneOf()</code></pre>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
-              <p>In the examples below, we&#39;ll use an array of primitive agent objects
+              <p>In the examples below, we’ll use an array of primitive agent objects
 with three fields: id, x, y.</p>
-<pre><code>AS = for i in [1..5] # long form comprehension
-  {id:i, x:u.randomInt(10), y:u.randomInt(10)}
-ABM.AgentSet.asSet AS # Convert AS to AgentSet in place
-   [{id:1,x:0,y:1}, {id:2,x:8,y:0}, {id:3,x:6,y:4},
-    {id:4,x:1,y:3}, {id:5,x:1,y:1}]</code></pre>
-<h3 id="constructor-and-add-remove-agents-">Constructor and add/remove agents.</h3>
-
+<pre><code>AS = <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [<span class="hljs-number">1.</span><span class="hljs-number">.5</span>] <span class="hljs-comment"># long form comprehension</span>
+  {<span class="hljs-attribute">id</span>:i, <span class="hljs-attribute">x</span>:u.randomInt(<span class="hljs-number">10</span>), <span class="hljs-attribute">y</span>:u.randomInt(<span class="hljs-number">10</span>)}
+ABM.AgentSet.asSet AS <span class="hljs-comment"># Convert AS to AgentSet in place</span>
+   [{<span class="hljs-attribute">id</span>:<span class="hljs-number">1</span>,<span class="hljs-attribute">x</span>:<span class="hljs-number">0</span>,<span class="hljs-attribute">y</span>:<span class="hljs-number">1</span>}, {<span class="hljs-attribute">id</span>:<span class="hljs-number">2</span>,<span class="hljs-attribute">x</span>:<span class="hljs-number">8</span>,<span class="hljs-attribute">y</span>:<span class="hljs-number">0</span>}, {<span class="hljs-attribute">id</span>:<span class="hljs-number">3</span>,<span class="hljs-attribute">x</span>:<span class="hljs-number">6</span>,<span class="hljs-attribute">y</span>:<span class="hljs-number">4</span>},
+    {<span class="hljs-attribute">id</span>:<span class="hljs-number">4</span>,<span class="hljs-attribute">x</span>:<span class="hljs-number">1</span>,<span class="hljs-attribute">y</span>:<span class="hljs-number">3</span>}, {<span class="hljs-attribute">id</span>:<span class="hljs-number">5</span>,<span class="hljs-attribute">x</span>:<span class="hljs-number">1</span>,<span class="hljs-attribute">y</span>:<span class="hljs-number">1</span>}]
+</code></pre>
             </div>
             
         </li>
@@ -158,18 +158,9 @@ ABM.AgentSet.asSet AS # Convert AS to AgentSet in place
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
-              <p>Create an empty <code>AgentSet</code> and initialize the <code>ID</code> counter for add().
-If mainSet is supplied, the new agentset is a sub-array of mainSet.
-This sub-array feature is how breeds are managed, see class <code>Model</code></p>
+              <h3 id="constructor-and-add-remove-agents-">Constructor and add/remove agents.</h3>
 
             </div>
-            
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">constructor</span>: <span class="function"><span class="params">(<span class="property">@agentClass</span>, <span class="property">@name</span>, <span class="property">@mainSet</span>)</span> -&gt;</span>
-    <span class="keyword">super</span>(<span class="number">0</span>) <span class="comment"># doesn't yield empty array if already instances in the mainSet</span>
-    <span class="property">@breeds</span> = [] <span class="keyword">unless</span> <span class="property">@mainSet</span>?
-    <span class="property">@agentClass</span>::breed = @ <span class="comment"># let the breed know I'm it's agentSet</span>
-    <span class="property">@ownVariables</span> = [] <span class="comment"># keep list of user variables</span>
-    <span class="property">@ID</span> = <span class="number">0</span> <span class="keyword">unless</span> <span class="property">@mainSet</span>? <span class="comment"># Do not set ID if I'm a subset</span></pre></div></div>
             
         </li>
         
@@ -180,11 +171,18 @@ This sub-array feature is how breeds are managed, see class <code>Model</code></
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
-              <p>Abstract method used by subclasses to create and add their instances.</p>
+              <p>Create an empty <code>AgentSet</code> and initialize the <code>ID</code> counter for add().
+If mainSet is supplied, the new agentset is a sub-array of mainSet.
+This sub-array feature is how breeds are managed, see class <code>Model</code></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">create</span>:<span class="function"> -&gt;</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@agentClass</span>, <span class="hljs-property">@name</span>, <span class="hljs-property">@mainSet</span>)</span> -&gt;</span>
+    <span class="hljs-keyword">super</span>(<span class="hljs-number">0</span>) <span class="hljs-comment"># doesn't yield empty array if already instances in the mainSet</span>
+    <span class="hljs-property">@breeds</span> = [] <span class="hljs-keyword">unless</span> <span class="hljs-property">@mainSet</span>?
+    <span class="hljs-property">@agentClass</span>::breed = @ <span class="hljs-comment"># let the breed know I'm it's agentSet</span>
+    <span class="hljs-property">@ownVariables</span> = [] <span class="hljs-comment"># keep list of user variables</span>
+    <span class="hljs-property">@ID</span> = <span class="hljs-number">0</span> <span class="hljs-keyword">unless</span> <span class="hljs-property">@mainSet</span>? <span class="hljs-comment"># Do not set ID if I'm a subset</span></pre></div></div>
             
         </li>
         
@@ -195,16 +193,11 @@ This sub-array feature is how breeds are managed, see class <code>Model</code></
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
-              <p>Add an agent to the list.  Only used by agentset factory methods. Adds
-the <code>id</code> property to all agents. Increment <code>ID</code>.
-Returns the object for chaining. The set will be sorted by <code>id</code>.</p>
-<p>By &quot;agent&quot; we mean an instance of <code>Patch</code>, <code>Agent</code> and <code>Link</code> and their breeds</p>
+              <p>Abstract method used by subclasses to create and add their instances.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">add</span>: <span class="function"><span class="params">(o)</span> -&gt;</span>
-    <span class="keyword">if</span> <span class="property">@mainSet</span>? <span class="keyword">then</span> <span class="property">@mainSet</span>.add o <span class="keyword">else</span> o.id = <span class="property">@ID</span>++
-    <span class="property">@push</span> o; o</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">create</span>:<span class="hljs-function"> -&gt;</span></pre></div></div>
             
         </li>
         
@@ -215,20 +208,16 @@ Returns the object for chaining. The set will be sorted by <code>id</code>.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
-              <p>Remove an agent from the agentset, returning the agentset.
-Note this does not change ID, thus an
-agentset can have gaps in terms of their id&#39;s. Assumes set is
-sorted by <code>id</code>. If the set is one created by <code>asSet</code>, and the original
-array is unsorted, simply call <code>sortById</code> first, see <code>sortById</code> below.</p>
-<pre><code>AS.remove(AS[3]) # [{id:0,x:0,y:1}, {id:1,x:8,y:0},
-                    {id:2,x:6,y:4}, {id:4,x:1,y:1}] </code></pre>
+              <p>Add an agent to the list.  Only used by agentset factory methods. Adds
+the <code>id</code> property to all agents. Increment <code>ID</code>.
+Returns the object for chaining. The set will be sorted by <code>id</code>.</p>
+<p>By “agent” we mean an instance of <code>Patch</code>, <code>Agent</code> and <code>Link</code> and their breeds</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">remove</span>: <span class="function"><span class="params">(o)</span> -&gt;</span>
-    u.removeItem <span class="property">@mainSet</span>, o <span class="keyword">if</span> <span class="property">@mainSet</span>?
-    u.removeItem @, o
-    @</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">add</span>: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
+    <span class="hljs-keyword">if</span> <span class="hljs-property">@mainSet</span>? <span class="hljs-keyword">then</span> <span class="hljs-property">@mainSet</span>.add o <span class="hljs-keyword">else</span> o.id = <span class="hljs-property">@ID</span>++
+    <span class="hljs-property">@push</span> o; o</pre></div></div>
             
         </li>
         
@@ -239,11 +228,20 @@ array is unsorted, simply call <code>sortById</code> first, see <code>sortById</
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
-              <p>Set the default value of a agent class, return agetnset</p>
-
+              <p>Remove an agent from the agentset, returning the agentset.
+Note this does not change ID, thus an
+agentset can have gaps in terms of their id’s. Assumes set is
+sorted by <code>id</code>. If the set is one created by <code>asSet</code>, and the original
+array is unsorted, simply call <code>sortById</code> first, see <code>sortById</code> below.</p>
+<pre><code>AS.remove(AS[<span class="hljs-number">3</span>]) <span class="hljs-comment"># [{id:0,x:0,y:1}, {id:1,x:8,y:0},</span>
+                    {<span class="hljs-attribute">id</span>:<span class="hljs-number">2</span>,<span class="hljs-attribute">x</span>:<span class="hljs-number">6</span>,<span class="hljs-attribute">y</span>:<span class="hljs-number">4</span>}, {<span class="hljs-attribute">id</span>:<span class="hljs-number">4</span>,<span class="hljs-attribute">x</span>:<span class="hljs-number">1</span>,<span class="hljs-attribute">y</span>:<span class="hljs-number">1</span>}] 
+</code></pre>
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">setDefault</span>: <span class="function"><span class="params">(name, value)</span> -&gt;</span> <span class="property">@agentClass</span>::[name] = value; @</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">remove</span>: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
+    u.removeItem <span class="hljs-property">@mainSet</span>, o <span class="hljs-keyword">if</span> <span class="hljs-property">@mainSet</span>?
+    u.removeItem @, o
+    @</pre></div></div>
             
         </li>
         
@@ -254,13 +252,11 @@ array is unsorted, simply call <code>sortById</code> first, see <code>sortById</
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
-              <p>Declare variables of an agent class. 
-Vars = a string of space separated names or an array of name strings
-Return agentset.</p>
+              <p>Set the default value of a agent class, return agetnset</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">own</span>: <span class="function"><span class="params">(vars)</span> -&gt;</span> <span class="comment"># maybe not set default if val is null?</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">setDefault</span>: <span class="hljs-function"><span class="hljs-params">(name, value)</span> -&gt;</span> <span class="hljs-property">@agentClass</span>::[name] = value; @</pre></div></div>
             
         </li>
         
@@ -271,15 +267,13 @@ Return agentset.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
-              <p>vars = vars.split(&quot; &quot;) if not u.isArray vars
-for name in vars#.split(&quot; &quot;) # if not u.isArray vars</p>
+              <p>Declare variables of an agent class. 
+Vars = a string of space separated names or an array of name strings
+Return agentset.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">for</span> name <span class="keyword">in</span> vars.split(<span class="string">" "</span>)
-      <span class="property">@setDefault</span> name, <span class="literal">null</span>
-      <span class="property">@ownVariables</span>.push name
-    @</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">own</span>: <span class="hljs-function"><span class="hljs-params">(vars)</span> -&gt;</span> <span class="hljs-comment"># maybe not set default if val is null?</span></pre></div></div>
             
         </li>
         
@@ -290,17 +284,15 @@ for name in vars#.split(&quot; &quot;) # if not u.isArray vars</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
-              <p>Move an agent from its AgentSet/breed to be in this AgentSet/breed.
-REMIND: match NetLogo sematics in terms of own variables.</p>
+              <p>vars = vars.split(“ “) if not u.isArray vars
+for name in vars#.split(“ “) # if not u.isArray vars</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">setBreed</span>: <span class="function"><span class="params">(a)</span> -&gt;</span> <span class="comment"># change agent a to be in this breed</span>
-    u.removeItem a.breed, a, <span class="string">"id"</span> <span class="keyword">if</span> a.breed.mainSet?
-    u.insertItem @, a, <span class="string">"id"</span> <span class="keyword">if</span> <span class="property">@mainSet</span>?
-    proto = a.__proto__ = <span class="property">@agentClass</span>.prototype
-    <span class="keyword">delete</span> a[k] <span class="keyword">for</span> own k,v <span class="keyword">of</span> a <span class="keyword">when</span> proto[k]?
-    a</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">for</span> name <span class="hljs-keyword">in</span> vars.split(<span class="hljs-string">" "</span>)
+      <span class="hljs-property">@setDefault</span> name, <span class="hljs-literal">null</span>
+      <span class="hljs-property">@ownVariables</span>.push name
+    @</pre></div></div>
             
         </li>
         
@@ -311,15 +303,17 @@ REMIND: match NetLogo sematics in terms of own variables.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
-              <p>Return all agents that are not of the given breeds argument.
-Breeds is a string of space separated names:
-  @patches.exclude &quot;roads houses&quot;</p>
+              <p>Move an agent from its AgentSet/breed to be in this AgentSet/breed.
+REMIND: match NetLogo sematics in terms of own variables.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">exclude</span>: <span class="function"><span class="params">(breeds)</span> -&gt;</span>
-    breeds = breeds.split(<span class="string">" "</span>)
-    <span class="property">@asSet</span> (o <span class="keyword">for</span> o <span class="keyword">in</span> @ <span class="keyword">when</span> o.breed.name <span class="keyword">not</span> <span class="keyword">in</span> breeds)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">setBreed</span>: <span class="hljs-function"><span class="hljs-params">(a)</span> -&gt;</span> <span class="hljs-comment"># change agent a to be in this breed</span>
+    u.removeItem a.breed, a, <span class="hljs-string">"id"</span> <span class="hljs-keyword">if</span> a.breed.mainSet?
+    u.insertItem @, a, <span class="hljs-string">"id"</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@mainSet</span>?
+    proto = a.__proto__ = <span class="hljs-property">@agentClass</span>.prototype
+    <span class="hljs-keyword">delete</span> a[k] <span class="hljs-keyword">for</span> own k,v <span class="hljs-keyword">of</span> a <span class="hljs-keyword">when</span> proto[k]?
+    a</pre></div></div>
             
         </li>
         
@@ -329,6 +323,25 @@ Breeds is a string of space separated names:
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>Return all agents that are not of the given breeds argument.
+Breeds is a string of space separated names:
+  @patches.exclude “roads houses”</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">exclude</span>: <span class="hljs-function"><span class="hljs-params">(breeds)</span> -&gt;</span>
+    breeds = breeds.split(<span class="hljs-string">" "</span>)
+    <span class="hljs-property">@asSet</span> (o <span class="hljs-keyword">for</span> o <span class="hljs-keyword">in</span> @ <span class="hljs-keyword">when</span> o.breed.name <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> breeds)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
               <p>Recursive floodfill:
 Arguments:</p>
@@ -344,34 +357,13 @@ agents for a distance calculation, for example.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">floodFill</span>: <span class="function"><span class="params">(aset, fCandidate, fJoin, fNeighbors, asetLast=[])</span> -&gt;</span>
-    fJoin p, asetLast <span class="keyword">for</span> p <span class="keyword">in</span> aset
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">floodFill</span>: <span class="hljs-function"><span class="hljs-params">(aset, fCandidate, fJoin, fNeighbors, asetLast=[])</span> -&gt;</span>
+    fJoin p, asetLast <span class="hljs-keyword">for</span> p <span class="hljs-keyword">in</span> aset
     asetNext = []
-    <span class="keyword">for</span> p <span class="keyword">in</span> aset
-      <span class="keyword">for</span> n <span class="keyword">in</span> fNeighbors(p) <span class="keyword">when</span> fCandidate n
-        asetNext.push n <span class="keyword">if</span> asetNext.indexOf(n) &lt; <span class="number">0</span>
-    <span class="property">@floodFill</span> asetNext, fCandidate, fJoin, fNeighbors, aset <span class="keyword">if</span> asetNext.length &gt; <span class="number">0</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-15">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
-              </div>
-              <p>Remove adjacent duplicates, by reference, in a sorted agentset.
-Use <code>sortById</code> first if agentset not sorted.</p>
-<pre><code>as = (AS.oneOf() for i in [1..4]) # 4 random agents w/ dups
-ABM.AgentSet.asSet as # [{id:1,x:8,y:0}, {id:0,x:0,y:1},
-                         {id:0,x:0,y:1}, {id:2,x:6,y:4}]
-as.sortById().uniq() # [{id:0,x:0,y:1}, {id:1,x:8,y:0}, 
-                        {id:2,x:6,y:4}]</code></pre>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">uniq</span>:<span class="function"> -&gt;</span> u.uniq(@)</pre></div></div>
+    <span class="hljs-keyword">for</span> p <span class="hljs-keyword">in</span> aset
+      <span class="hljs-keyword">for</span> n <span class="hljs-keyword">in</span> fNeighbors(p) <span class="hljs-keyword">when</span> fCandidate n
+        asetNext.push n <span class="hljs-keyword">if</span> asetNext.indexOf(n) &lt; <span class="hljs-number">0</span>
+    <span class="hljs-property">@floodFill</span> asetNext, fCandidate, fJoin, fNeighbors, aset <span class="hljs-keyword">if</span> asetNext.length &gt; <span class="hljs-number">0</span></pre></div></div>
             
         </li>
         
@@ -382,12 +374,17 @@ as.sortById().uniq() # [{id:0,x:0,y:1}, {id:1,x:8,y:0},
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
-              <p>The static <code>ABM.AgentSet.asSet</code> as a method.
-Used by agentset methods creating new agentsets.</p>
-
+              <p>Remove adjacent duplicates, by reference, in a sorted agentset.
+Use <code>sortById</code> first if agentset not sorted.</p>
+<pre><code>as = (AS.oneOf() <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [<span class="hljs-number">1.</span><span class="hljs-number">.4</span>]) <span class="hljs-comment"># 4 random agents w/ dups</span>
+ABM.AgentSet.asSet as <span class="hljs-comment"># [{id:1,x:8,y:0}, {id:0,x:0,y:1},</span>
+                         {<span class="hljs-attribute">id</span>:<span class="hljs-number">0</span>,<span class="hljs-attribute">x</span>:<span class="hljs-number">0</span>,<span class="hljs-attribute">y</span>:<span class="hljs-number">1</span>}, {<span class="hljs-attribute">id</span>:<span class="hljs-number">2</span>,<span class="hljs-attribute">x</span>:<span class="hljs-number">6</span>,<span class="hljs-attribute">y</span>:<span class="hljs-number">4</span>}]
+as.sortById().uniq() <span class="hljs-comment"># [{id:0,x:0,y:1}, {id:1,x:8,y:0}, </span>
+                        {<span class="hljs-attribute">id</span>:<span class="hljs-number">2</span>,<span class="hljs-attribute">x</span>:<span class="hljs-number">6</span>,<span class="hljs-attribute">y</span>:<span class="hljs-number">4</span>}]
+</code></pre>
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">asSet</span>: <span class="function"><span class="params">(a, setType = @)</span> -&gt;</span> ABM.AgentSet.asSet a, setType <span class="comment"># setType = ABM.AgentSet</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">uniq</span>:<span class="hljs-function"> -&gt;</span> u.uniq(@)</pre></div></div>
             
         </li>
         
@@ -398,11 +395,12 @@ Used by agentset methods creating new agentsets.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
-              <p>Similar to above but sorted via <code>id</code>.</p>
+              <p>The static <code>ABM.AgentSet.asSet</code> as a method.
+Used by agentset methods creating new agentsets.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">asOrderedSet</span>: <span class="function"><span class="params">(a)</span> -&gt;</span> <span class="property">@asSet</span>(a).sortById()</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">asSet</span>: <span class="hljs-function"><span class="hljs-params">(a, setType = @)</span> -&gt;</span> ABM.AgentSet.asSet a, setType <span class="hljs-comment"># setType = ABM.AgentSet</span></pre></div></div>
             
         </li>
         
@@ -413,11 +411,11 @@ Used by agentset methods creating new agentsets.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
-              <p>Return string representative of agentset.</p>
+              <p>Similar to above but sorted via <code>id</code>.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">toString</span>:<span class="function"> -&gt;</span> <span class="string">"["</span>+(a.toString() <span class="keyword">for</span> a <span class="keyword">in</span> @).join(<span class="string">", "</span>)+<span class="string">"]"</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">asOrderedSet</span>: <span class="hljs-function"><span class="hljs-params">(a)</span> -&gt;</span> <span class="hljs-property">@asSet</span>(a).sortById()</pre></div></div>
             
         </li>
         
@@ -428,10 +426,11 @@ Used by agentset methods creating new agentsets.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
-              <h3 id="property-utilities">Property Utilities</h3>
-<p>Property access, also useful for debugging<br></p>
+              <p>Return string representative of agentset.</p>
 
             </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">toString</span>:<span class="hljs-function"> -&gt;</span> <span class="hljs-string">"["</span>+(a.toString() <span class="hljs-keyword">for</span> a <span class="hljs-keyword">in</span> @).join(<span class="hljs-string">", "</span>)+<span class="hljs-string">"]"</span></pre></div></div>
             
         </li>
         
@@ -442,12 +441,10 @@ Used by agentset methods creating new agentsets.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
-              <p>Return an array of a property of the agentset</p>
-<pre><code> AS.getProp &quot;x&quot; # [0, 8, 6, 1, 1]</code></pre>
+              <h3 id="property-utilities">Property Utilities</h3>
+<p>Property access, also useful for debugging<br></p>
 
             </div>
-            
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">getProp</span>: <span class="function"><span class="params">(prop)</span> -&gt;</span> o[prop] <span class="keyword">for</span> o <span class="keyword">in</span> @</pre></div></div>
             
         </li>
         
@@ -458,13 +455,12 @@ Used by agentset methods creating new agentsets.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
-              <p>Return an array of agents with the property equal to the given value</p>
-<pre><code>AS.getPropWith &quot;x&quot;, 1
-[{id:4,x:1,y:3},{id:5,x:1,y:1}]</code></pre>
-
+              <p>Return an array of a property of the agentset</p>
+<pre><code> AS.getProp <span class="hljs-string">"x"</span> <span class="hljs-comment"># [0, 8, 6, 1, 1]</span>
+</code></pre>
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">getPropWith</span>: <span class="function"><span class="params">(prop, value)</span> -&gt;</span> <span class="property">@asSet</span> (o <span class="keyword">for</span> o <span class="keyword">in</span> @ <span class="keyword">when</span> o[prop] <span class="keyword">is</span> value)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">getProp</span>: <span class="hljs-function"><span class="hljs-params">(prop)</span> -&gt;</span> o[prop] <span class="hljs-keyword">for</span> o <span class="hljs-keyword">in</span> @</pre></div></div>
             
         </li>
         
@@ -475,20 +471,13 @@ Used by agentset methods creating new agentsets.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
-              <p>Set the property of the agents to a given value.  If value
-is an array, its values will be used, indexed by agentSet&#39;s index.
-This is generally used via: getProp, modify results, setProp</p>
-<pre><code># increment x for agents with x=1
-AS1 = ABM.AgentSet.asSet AS.getPropWith(&quot;x&quot;,1)
-AS1.setProp &quot;x&quot;, 2 # {id:4,x:2,y:3},{id:5,x:2,y:1}</code></pre>
-<p>Note this changes the last two objects in the original AS above</p>
-
+              <p>Return an array of agents with the property equal to the given value</p>
+<pre><code>AS.getPropWith <span class="hljs-string">"x"</span>, <span class="hljs-number">1</span>
+[{<span class="hljs-attribute">id</span>:<span class="hljs-number">4</span>,<span class="hljs-attribute">x</span>:<span class="hljs-number">1</span>,<span class="hljs-attribute">y</span>:<span class="hljs-number">3</span>},{<span class="hljs-attribute">id</span>:<span class="hljs-number">5</span>,<span class="hljs-attribute">x</span>:<span class="hljs-number">1</span>,<span class="hljs-attribute">y</span>:<span class="hljs-number">1</span>}]
+</code></pre>
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">setProp</span>: <span class="function"><span class="params">(prop, value)</span> -&gt;</span>
-    <span class="keyword">if</span> u.isArray value
-    <span class="keyword">then</span> o[prop] = value[i] <span class="keyword">for</span> o,i <span class="keyword">in</span> @; @
-    <span class="keyword">else</span> o[prop] = value <span class="keyword">for</span> o <span class="keyword">in</span> @; @</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">getPropWith</span>: <span class="hljs-function"><span class="hljs-params">(prop, value)</span> -&gt;</span> <span class="hljs-property">@asSet</span> (o <span class="hljs-keyword">for</span> o <span class="hljs-keyword">in</span> @ <span class="hljs-keyword">when</span> o[prop] <span class="hljs-keyword">is</span> value)</pre></div></div>
             
         </li>
         
@@ -499,15 +488,20 @@ AS1.setProp &quot;x&quot;, 2 # {id:4,x:2,y:3},{id:5,x:2,y:1}</code></pre>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
-              <p>Get the agent with the min/max prop value in the agentset</p>
-<pre><code>min = AS.minProp &quot;y&quot;  # 0
-max = AS.maxProp &quot;y&quot;  # 4</code></pre>
+              <p>Set the property of the agents to a given value.  If value
+is an array, its values will be used, indexed by agentSet’s index.
+This is generally used via: getProp, modify results, setProp</p>
+<pre><code><span class="hljs-comment"># increment x for agents with x=1</span>
+AS1 = ABM.AgentSet.asSet AS.getPropWith(<span class="hljs-string">"x"</span>,<span class="hljs-number">1</span>)
+AS1.setProp <span class="hljs-string">"x"</span>, <span class="hljs-number">2</span> <span class="hljs-comment"># {id:4,x:2,y:3},{id:5,x:2,y:1}</span>
+</code></pre><p>Note this changes the last two objects in the original AS above</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">maxProp</span>: <span class="function"><span class="params">(prop)</span> -&gt;</span> u.aMax <span class="property">@getProp</span>(prop)
-  <span class="attribute">minProp</span>: <span class="function"><span class="params">(prop)</span> -&gt;</span> u.aMin <span class="property">@getProp</span>(prop)
-  <span class="attribute">histOfProp</span>: <span class="function"><span class="params">(prop, bin=<span class="number">1</span>)</span> -&gt;</span> u.histOf @, bin, prop</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">setProp</span>: <span class="hljs-function"><span class="hljs-params">(prop, value)</span> -&gt;</span>
+    <span class="hljs-keyword">if</span> u.isArray value
+    <span class="hljs-keyword">then</span> o[prop] = value[i] <span class="hljs-keyword">for</span> o,i <span class="hljs-keyword">in</span> @; @
+    <span class="hljs-keyword">else</span> o[prop] = value <span class="hljs-keyword">for</span> o <span class="hljs-keyword">in</span> @; @</pre></div></div>
             
         </li>
         
@@ -518,13 +512,15 @@ max = AS.maxProp &quot;y&quot;  # 4</code></pre>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
-              <h3 id="array-utilities-often-from-abm-util">Array Utilities, often from ABM.util</h3>
-<p>Randomize the agentset</p>
-<pre><code>AS.shuffle(); AS.getProp &quot;id&quot; # [3, 2, 1, 4, 5] </code></pre>
-
+              <p>Get the agent with the min/max prop value in the agentset</p>
+<pre><code>min = AS.minProp <span class="hljs-string">"y"</span>  <span class="hljs-comment"># 0</span>
+max = AS.maxProp <span class="hljs-string">"y"</span>  <span class="hljs-comment"># 4</span>
+</code></pre>
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">shuffle</span>:<span class="function"> -&gt;</span> u.shuffle @</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">maxProp</span>: <span class="hljs-function"><span class="hljs-params">(prop)</span> -&gt;</span> u.aMax <span class="hljs-property">@getProp</span>(prop)
+  <span class="hljs-attribute">minProp</span>: <span class="hljs-function"><span class="hljs-params">(prop)</span> -&gt;</span> u.aMin <span class="hljs-property">@getProp</span>(prop)
+  <span class="hljs-attribute">histOfProp</span>: <span class="hljs-function"><span class="hljs-params">(prop, bin=<span class="hljs-number">1</span>)</span> -&gt;</span> u.histOf @, bin, prop</pre></div></div>
             
         </li>
         
@@ -535,13 +531,9 @@ max = AS.maxProp &quot;y&quot;  # 4</code></pre>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
-              <p>Sort the agentset by the agent&#39;s <code>id</code>.</p>
-<pre><code>AS.shuffle();  AS.getProp &quot;id&quot;  # [3, 2, 1, 4, 5] 
-AS.sortById(); AS.getProp &quot;id&quot;  # [1, 2, 3, 4, 5]</code></pre>
+              <h3 id="array-utilities-often-from-abm-util">Array Utilities, often from ABM.util</h3>
 
             </div>
-            
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">sortById</span>:<span class="function"> -&gt;</span> u.sortBy @, <span class="string">"id"</span></pre></div></div>
             
         </li>
         
@@ -552,17 +544,12 @@ AS.sortById(); AS.getProp &quot;id&quot;  # [1, 2, 3, 4, 5]</code></pre>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
-              <p>Make a copy of an agentset, return as new agentset.<br>
-NOTE: does <em>not</em> duplicate the objects, simply creates a new agentset
-with references to the same agents.  Ex: create a randomized version of AS
-but without mangling AS itself:</p>
-<pre><code>as = AS.clone().shuffle()
-AS.getProp &quot;id&quot;  # [1, 2, 3, 4, 5]
-as.getProp &quot;id&quot;  # [2, 4, 0, 1, 3]</code></pre>
-
+              <p>Randomize the agentset</p>
+<pre><code>AS.shuffle(); AS.getProp <span class="hljs-string">"id"</span> <span class="hljs-comment"># [3, 2, 1, 4, 5] </span>
+</code></pre>
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">clone</span>:<span class="function"> -&gt;</span> <span class="property">@asSet</span> u.clone @</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">shuffle</span>:<span class="hljs-function"> -&gt;</span> u.shuffle @</pre></div></div>
             
         </li>
         
@@ -573,13 +560,13 @@ as.getProp &quot;id&quot;  # [2, 4, 0, 1, 3]</code></pre>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
-              <p>Return the last agent in the agentset</p>
-<pre><code>AS.last().id             # l5
-l=AS.last(); p=[l.x,l.y] # [1,1]</code></pre>
-
+              <p>Sort the agentset by the agent’s <code>id</code>.</p>
+<pre><code>AS.shuffle();  AS.getProp <span class="hljs-string">"id"</span>  <span class="hljs-comment"># [3, 2, 1, 4, 5] </span>
+AS.sortById(); AS.getProp <span class="hljs-string">"id"</span>  <span class="hljs-comment"># [1, 2, 3, 4, 5]</span>
+</code></pre>
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">last</span>:<span class="function"> -&gt;</span> u.last @</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">sortById</span>:<span class="hljs-function"> -&gt;</span> u.sortBy @, <span class="hljs-string">"id"</span></pre></div></div>
             
         </li>
         
@@ -590,13 +577,17 @@ l=AS.last(); p=[l.x,l.y] # [1,1]</code></pre>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
-              <p>Returns true if the agentset has any agents</p>
-<pre><code>AS.any()  # true
-AS.getPropWith(&quot;x&quot;, 99).any() #false</code></pre>
-
+              <p>Make a copy of an agentset, return as new agentset.<br>
+NOTE: does <em>not</em> duplicate the objects, simply creates a new agentset
+with references to the same agents.  Ex: create a randomized version of AS
+but without mangling AS itself:</p>
+<pre><code>as = AS.clone().shuffle()
+AS.getProp <span class="hljs-string">"id"</span>  <span class="hljs-comment"># [1, 2, 3, 4, 5]</span>
+as.getProp <span class="hljs-string">"id"</span>  <span class="hljs-comment"># [2, 4, 0, 1, 3]</span>
+</code></pre>
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">any</span>:<span class="function"> -&gt;</span> u.any @</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">clone</span>:<span class="hljs-function"> -&gt;</span> <span class="hljs-property">@asSet</span> u.clone @</pre></div></div>
             
         </li>
         
@@ -607,13 +598,13 @@ AS.getPropWith(&quot;x&quot;, 99).any() #false</code></pre>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
-              <p>Return an agentset without given agent a</p>
-<pre><code>as = AS.clone().other(AS[0])
-as.getProp &quot;id&quot;  # [1, 2, 3, 4] </code></pre>
-
+              <p>Return the last agent in the agentset</p>
+<pre><code>AS.last().id             <span class="hljs-comment"># l5</span>
+l=AS.last(); p=[l.x,l.y] <span class="hljs-comment"># [1,1]</span>
+</code></pre>
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">other</span>: <span class="function"><span class="params">(a)</span> -&gt;</span> <span class="property">@asSet</span> (o <span class="keyword">for</span> o <span class="keyword">in</span> @ <span class="keyword">when</span> o <span class="keyword">isnt</span> a) <span class="comment"># could clone &amp; remove</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">last</span>:<span class="hljs-function"> -&gt;</span> u.last @</pre></div></div>
             
         </li>
         
@@ -624,12 +615,13 @@ as.getProp &quot;id&quot;  # [1, 2, 3, 4] </code></pre>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
-              <p>Return random agent in agentset</p>
-<pre><code>AS.oneOf()  # {id:2,x:6,y:4}</code></pre>
-
+              <p>Returns true if the agentset has any agents</p>
+<pre><code>AS.any()  <span class="hljs-comment"># true</span>
+AS.getPropWith(<span class="hljs-string">"x"</span>, <span class="hljs-number">99</span>).any() <span class="hljs-comment">#false</span>
+</code></pre>
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">oneOf</span>:<span class="function"> -&gt;</span> u.oneOf @</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">any</span>:<span class="hljs-function"> -&gt;</span> u.any @</pre></div></div>
             
         </li>
         
@@ -640,12 +632,13 @@ as.getProp &quot;id&quot;  # [1, 2, 3, 4] </code></pre>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
-              <p>Return agentset made of n distinct agents</p>
-<pre><code>AS.nOf(3) # [{id:0,x:0,y:1}, {id:4,x:1,y:1}, {id:1,x:8,y:0}]</code></pre>
-
+              <p>Return an agentset without given agent a</p>
+<pre><code>as = AS.clone().other(AS[<span class="hljs-number">0</span>])
+as.getProp <span class="hljs-string">"id"</span>  <span class="hljs-comment"># [1, 2, 3, 4] </span>
+</code></pre>
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">nOf</span>: <span class="function"><span class="params">(n)</span> -&gt;</span> <span class="property">@asSet</span> u.nOf @, n</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">other</span>: <span class="hljs-function"><span class="hljs-params">(a)</span> -&gt;</span> <span class="hljs-property">@asSet</span> (o <span class="hljs-keyword">for</span> o <span class="hljs-keyword">in</span> @ <span class="hljs-keyword">when</span> o <span class="hljs-keyword">isnt</span> a) <span class="hljs-comment"># could clone &amp; remove</span></pre></div></div>
             
         </li>
         
@@ -656,17 +649,12 @@ as.getProp &quot;id&quot;  # [1, 2, 3, 4] </code></pre>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
-              <p>Return agent when f(o) min/max in agentset. If multiple agents have
-min/max value, return the first. Error if agentset empty.
-If f is a string, return element with min/max value of that property.
-If &quot;valueToo&quot; then return an array of the agent and the value.</p>
-<pre><code>AS.minOneOf(&quot;x&quot;) # {id:0,x:0,y:1}
-AS.maxOneOf((a)-&gt;a.x+a.y, true) # {id:2,x:6,y:4},10 </code></pre>
-
+              <p>Return random agent in agentset</p>
+<pre><code>AS.oneOf()  <span class="hljs-comment"># {id:2,x:6,y:4}</span>
+</code></pre>
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">minOneOf</span>: <span class="function"><span class="params">(f, valueToo=<span class="literal">false</span>)</span> -&gt;</span> u.minOneOf @, f, valueToo
-  <span class="attribute">maxOneOf</span>: <span class="function"><span class="params">(f, valueToo=<span class="literal">false</span>)</span> -&gt;</span> u.maxOneOf @, f, valueToo</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">oneOf</span>:<span class="hljs-function"> -&gt;</span> u.oneOf @</pre></div></div>
             
         </li>
         
@@ -677,9 +665,12 @@ AS.maxOneOf((a)-&gt;a.x+a.y, true) # {id:2,x:6,y:4},10 </code></pre>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
-              <h3 id="drawing">Drawing</h3>
-
+              <p>Return agentset made of n distinct agents</p>
+<pre><code>AS.nOf(<span class="hljs-number">3</span>) <span class="hljs-comment"># [{id:0,x:0,y:1}, {id:4,x:1,y:1}, {id:1,x:8,y:0}]</span>
+</code></pre>
             </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">nOf</span>: <span class="hljs-function"><span class="hljs-params">(n)</span> -&gt;</span> <span class="hljs-property">@asSet</span> u.nOf @, n</pre></div></div>
             
         </li>
         
@@ -690,14 +681,17 @@ AS.maxOneOf((a)-&gt;a.x+a.y, true) # {id:2,x:6,y:4},10 </code></pre>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-34">&#182;</a>
               </div>
-              <p>For agentsets who&#39;s agents have a <code>draw</code> method.
-Clears the graphics context (transparent), then
-calls each agent&#39;s draw(ctx) method.</p>
-
+              <p>Return agent when f(o) min/max in agentset. If multiple agents have
+min/max value, return the first. Error if agentset empty.
+If f is a string, return element with min/max value of that property.
+If “valueToo” then return an array of the agent and the value.</p>
+<pre><code>AS.minOneOf(<span class="hljs-string">"x"</span>) <span class="hljs-comment"># {id:0,x:0,y:1}</span>
+AS.maxOneOf<span class="hljs-function"><span class="hljs-params">((a)-&gt;a.x+a.y, <span class="hljs-literal">true</span>)</span> # {<span class="hljs-title">id</span>:2,<span class="hljs-title">x</span>:6,<span class="hljs-title">y</span>:4},10 </span>
+</code></pre>
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">draw</span>: <span class="function"><span class="params">(ctx)</span> -&gt;</span> 
-    u.clearCtx(ctx); o.draw(ctx) <span class="keyword">for</span> o <span class="keyword">in</span> @ <span class="keyword">when</span> <span class="keyword">not</span> o.hidden; <span class="literal">null</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">minOneOf</span>: <span class="hljs-function"><span class="hljs-params">(f, valueToo=<span class="hljs-literal">false</span>)</span> -&gt;</span> u.minOneOf @, f, valueToo
+  <span class="hljs-attribute">maxOneOf</span>: <span class="hljs-function"><span class="hljs-params">(f, valueToo=<span class="hljs-literal">false</span>)</span> -&gt;</span> u.maxOneOf @, f, valueToo</pre></div></div>
             
         </li>
         
@@ -708,13 +702,9 @@ calls each agent&#39;s draw(ctx) method.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-35">&#182;</a>
               </div>
-              <p>Show/Hide all of an agentset or breed.
-To show/hide an individual object, set its prototype: o.hidden = bool</p>
+              <h3 id="drawing">Drawing</h3>
 
             </div>
-            
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">show</span>:<span class="function"> -&gt;</span> o.hidden = <span class="literal">false</span> <span class="keyword">for</span> o <span class="keyword">in</span> @; <span class="property">@draw</span>(ABM.contexts[<span class="property">@name</span>])
-  <span class="attribute">hide</span>:<span class="function"> -&gt;</span> o.hidden = <span class="literal">true</span> <span class="keyword">for</span> o <span class="keyword">in</span> @; <span class="property">@draw</span>(ABM.contexts[<span class="property">@name</span>])</pre></div></div>
             
         </li>
         
@@ -725,9 +715,14 @@ To show/hide an individual object, set its prototype: o.hidden = bool</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-36">&#182;</a>
               </div>
-              <h3 id="topology">Topology</h3>
+              <p>For agentsets who’s agents have a <code>draw</code> method.
+Clears the graphics context (transparent), then
+calls each agent’s draw(ctx) method.</p>
 
             </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">draw</span>: <span class="hljs-function"><span class="hljs-params">(ctx)</span> -&gt;</span> 
+    u.clearCtx(ctx); o.draw(ctx) <span class="hljs-keyword">for</span> o <span class="hljs-keyword">in</span> @ <span class="hljs-keyword">when</span> <span class="hljs-keyword">not</span> o.hidden; <span class="hljs-literal">null</span></pre></div></div>
             
         </li>
         
@@ -738,22 +733,13 @@ To show/hide an individual object, set its prototype: o.hidden = bool</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-37">&#182;</a>
               </div>
-              <p>For ABM.patches &amp; ABM.agents which have x,y. See ABM.util doc.</p>
-<p>Return all agents in agentset within d distance from given object.
-By default excludes the given object. Uses linear/torus distance
-depending on patches.isTorus, and patches width/height if needed.</p>
+              <p>Show/Hide all of an agentset or breed.
+To show/hide an individual object, set its prototype: o.hidden = bool</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">inRadius</span>: <span class="function"><span class="params">(o, d, meToo=<span class="literal">false</span>)</span> -&gt;</span> <span class="comment"># for any objects w/ x,y</span>
-    d2 = d*d; x=o.x; y=o.y
-    <span class="keyword">if</span> ABM.patches.isTorus
-      w=ABM.patches.numX; h=ABM.patches.numY
-      <span class="property">@asSet</span> (a <span class="keyword">for</span> a <span class="keyword">in</span> @ <span class="keyword">when</span> \
-        u.torusSqDistance(x,y,a.x,a.y,w,h)&lt;=d2 <span class="keyword">and</span> (meToo <span class="keyword">or</span> a <span class="keyword">isnt</span> o))
-    <span class="keyword">else</span>
-      <span class="property">@asSet</span> (a <span class="keyword">for</span> a <span class="keyword">in</span> @ <span class="keyword">when</span> \
-        u.sqDistance(x,y,a.x,a.y)&lt;=d2 <span class="keyword">and</span> (meToo <span class="keyword">or</span> a <span class="keyword">isnt</span> o))</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">show</span>:<span class="hljs-function"> -&gt;</span> o.hidden = <span class="hljs-literal">false</span> <span class="hljs-keyword">for</span> o <span class="hljs-keyword">in</span> @; <span class="hljs-property">@draw</span>(ABM.contexts[<span class="hljs-property">@name</span>])
+  <span class="hljs-attribute">hide</span>:<span class="hljs-function"> -&gt;</span> o.hidden = <span class="hljs-literal">true</span> <span class="hljs-keyword">for</span> o <span class="hljs-keyword">in</span> @; <span class="hljs-property">@draw</span>(ABM.contexts[<span class="hljs-property">@name</span>])</pre></div></div>
             
         </li>
         
@@ -764,21 +750,9 @@ depending on patches.isTorus, and patches width/height if needed.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-38">&#182;</a>
               </div>
-              <p>As above, but also limited to the angle <code>cone</code> around
-a <code>heading</code> from object <code>o</code>.</p>
+              <h3 id="topology">Topology</h3>
 
             </div>
-            
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">inCone</span>: <span class="function"><span class="params">(o, heading, cone, radius, meToo=<span class="literal">false</span>)</span> -&gt;</span>
-    rSet = <span class="property">@inRadius</span> o, radius, meToo
-    x=o.x; y=o.y
-    <span class="keyword">if</span> ABM.patches.isTorus
-      w=ABM.patches.numX; h=ABM.patches.numY
-      <span class="property">@asSet</span> (a <span class="keyword">for</span> a <span class="keyword">in</span> rSet <span class="keyword">when</span> \
-        (a <span class="keyword">is</span> o <span class="keyword">and</span> meToo) <span class="keyword">or</span> u.inTorusCone(heading,cone,radius,x,y,a.x,a.y,w,h))
-    <span class="keyword">else</span>
-      <span class="property">@asSet</span> (a <span class="keyword">for</span> a <span class="keyword">in</span> rSet <span class="keyword">when</span> \
-        (a <span class="keyword">is</span> o <span class="keyword">and</span> meToo) <span class="keyword">or</span> u.inCone(heading,cone,radius,x,y,a.x,a.y))</pre></div></div>
             
         </li>
         
@@ -789,9 +763,22 @@ a <code>heading</code> from object <code>o</code>.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-39">&#182;</a>
               </div>
-              <h3 id="debugging">Debugging</h3>
+              <p>For ABM.patches &amp; ABM.agents which have x,y. See ABM.util doc.</p>
+<p>Return all agents in agentset within d distance from given object.
+By default excludes the given object. Uses linear/torus distance
+depending on patches.isTorus, and patches width/height if needed.</p>
 
             </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">inRadius</span>: <span class="hljs-function"><span class="hljs-params">(o, d, meToo=<span class="hljs-literal">false</span>)</span> -&gt;</span> <span class="hljs-comment"># for any objects w/ x,y</span>
+    d2 = d*d; x=o.x; y=o.y
+    <span class="hljs-keyword">if</span> ABM.patches.isTorus
+      w=ABM.patches.numX; h=ABM.patches.numY
+      <span class="hljs-property">@asSet</span> (a <span class="hljs-keyword">for</span> a <span class="hljs-keyword">in</span> @ <span class="hljs-keyword">when</span> \
+        u.torusSqDistance(x,y,a.x,a.y,w,h)&lt;=d2 <span class="hljs-keyword">and</span> (meToo <span class="hljs-keyword">or</span> a <span class="hljs-keyword">isnt</span> o))
+    <span class="hljs-keyword">else</span>
+      <span class="hljs-property">@asSet</span> (a <span class="hljs-keyword">for</span> a <span class="hljs-keyword">in</span> @ <span class="hljs-keyword">when</span> \
+        u.sqDistance(x,y,a.x,a.y)&lt;=d2 <span class="hljs-keyword">and</span> (meToo <span class="hljs-keyword">or</span> a <span class="hljs-keyword">isnt</span> o))</pre></div></div>
             
         </li>
         
@@ -802,10 +789,21 @@ a <code>heading</code> from object <code>o</code>.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-40">&#182;</a>
               </div>
-              <p>Useful in console.
-Also see <a href="http://goo.gl/1i7bd">CoffeeConsole</a> Chrome extension.</p>
+              <p>As above, but also limited to the angle <code>cone</code> around
+a <code>heading</code> from object <code>o</code>.</p>
 
             </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">inCone</span>: <span class="hljs-function"><span class="hljs-params">(o, heading, cone, radius, meToo=<span class="hljs-literal">false</span>)</span> -&gt;</span>
+    rSet = <span class="hljs-property">@inRadius</span> o, radius, meToo
+    x=o.x; y=o.y
+    <span class="hljs-keyword">if</span> ABM.patches.isTorus
+      w=ABM.patches.numX; h=ABM.patches.numY
+      <span class="hljs-property">@asSet</span> (a <span class="hljs-keyword">for</span> a <span class="hljs-keyword">in</span> rSet <span class="hljs-keyword">when</span> \
+        (a <span class="hljs-keyword">is</span> o <span class="hljs-keyword">and</span> meToo) <span class="hljs-keyword">or</span> u.inTorusCone(heading,cone,radius,x,y,a.x,a.y,w,h))
+    <span class="hljs-keyword">else</span>
+      <span class="hljs-property">@asSet</span> (a <span class="hljs-keyword">for</span> a <span class="hljs-keyword">in</span> rSet <span class="hljs-keyword">when</span> \
+        (a <span class="hljs-keyword">is</span> o <span class="hljs-keyword">and</span> meToo) <span class="hljs-keyword">or</span> u.inCone(heading,cone,radius,x,y,a.x,a.y))</pre></div></div>
             
         </li>
         
@@ -816,22 +814,9 @@ Also see <a href="http://goo.gl/1i7bd">CoffeeConsole</a> Chrome extension.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-41">&#182;</a>
               </div>
-              <p>Similar to NetLogo ask &amp; with operators.
-Allows functions as strings. Use:</p>
-<pre><code>AS.getProp(&quot;x&quot;) # [1, 8, 6, 2, 2]
-AS.with(&quot;o.x&lt;5&quot;).ask(&quot;o.x=o.x+1&quot;)
-AS.getProp(&quot;x&quot;) # [2, 8, 6, 3, 3]
-
-ABM.agents.with(&quot;o.id&lt;100&quot;).ask(&quot;o.color=[255,0,0]&quot;)</code></pre>
+              <h3 id="debugging">Debugging</h3>
 
             </div>
-            
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">ask</span>: <span class="function"><span class="params">(f)</span> -&gt;</span> 
-    eval(<span class="string">"f=function(o){return "</span>+f+<span class="string">";}"</span>) <span class="keyword">if</span> u.isString f
-    f(o) <span class="keyword">for</span> o <span class="keyword">in</span> @; @
-  <span class="attribute">with</span>: <span class="function"><span class="params">(f)</span> -&gt;</span> 
-    eval(<span class="string">"f=function(o){return "</span>+f+<span class="string">";}"</span>) <span class="keyword">if</span> u.isString f
-    <span class="property">@asSet</span> (o <span class="keyword">for</span> o <span class="keyword">in</span> @ <span class="keyword">when</span> f(o))</pre></div></div>
             
         </li>
         
@@ -842,17 +827,57 @@ ABM.agents.with(&quot;o.id&lt;100&quot;).ask(&quot;o.color=[255,0,0]&quot;)</cod
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-42">&#182;</a>
               </div>
+              <p>Useful in console.
+Also see <a href="http://goo.gl/1i7bd">CoffeeConsole</a> Chrome extension.</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-43">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-43">&#182;</a>
+              </div>
+              <p>Similar to NetLogo ask &amp; with operators.
+Allows functions as strings. Use:</p>
+<pre><code>AS.getProp(<span class="hljs-string">"x"</span>) <span class="hljs-comment"># [1, 8, 6, 2, 2]</span>
+AS.<span class="hljs-reserved">with</span>(<span class="hljs-string">"o.x&lt;5"</span>).ask(<span class="hljs-string">"o.x=o.x+1"</span>)
+AS.getProp(<span class="hljs-string">"x"</span>) <span class="hljs-comment"># [2, 8, 6, 3, 3]</span>
+
+ABM.agents.<span class="hljs-reserved">with</span>(<span class="hljs-string">"o.id&lt;100"</span>).ask(<span class="hljs-string">"o.color=[255,0,0]"</span>)
+</code></pre>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">ask</span>: <span class="hljs-function"><span class="hljs-params">(f)</span> -&gt;</span> 
+    eval(<span class="hljs-string">"f=function(o){return "</span>+f+<span class="hljs-string">";}"</span>) <span class="hljs-keyword">if</span> u.isString f
+    f(o) <span class="hljs-keyword">for</span> o <span class="hljs-keyword">in</span> @; @
+  <span class="hljs-attribute">with</span>: <span class="hljs-function"><span class="hljs-params">(f)</span> -&gt;</span> 
+    eval(<span class="hljs-string">"f=function(o){return "</span>+f+<span class="hljs-string">";}"</span>) <span class="hljs-keyword">if</span> u.isString f
+    <span class="hljs-property">@asSet</span> (o <span class="hljs-keyword">for</span> o <span class="hljs-keyword">in</span> @ <span class="hljs-keyword">when</span> f(o))</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-44">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-44">&#182;</a>
+              </div>
               <p>The example agentset AS used in the code fragments was made like this,
 slightly more useful than shown above due to the toString method.</p>
-<pre><code>class XY
-  constructor: (@x,@y) -&gt;
-  toString: -&gt; &quot;{id:#{@id},x:#{@x},y:#{@y}}&quot;
-@AS = new ABM.AgentSet # @ =&gt; global name space</code></pre>
-<p>The result of </p>
-<pre><code>AS.add new XY(u.randomInt(10), u.randomInt(10)) for i in [1..5]</code></pre>
-<p>random run, captured so we can reuse.</p>
-<pre><code>AS.add new XY(pt...) for pt in [[0,1],[8,0],[6,4],[1,3],[1,1]]</code></pre>
-
+<pre><code><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">XY</span></span>
+  <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@x</span>,<span class="hljs-property">@y</span>)</span> -&gt;</span>
+  <span class="hljs-attribute">toString</span>:<span class="hljs-function"> -&gt;</span> <span class="hljs-string">"{id:<span class="hljs-subst">#{<span class="hljs-property">@id</span>}</span>,x:<span class="hljs-subst">#{<span class="hljs-property">@x</span>}</span>,y:<span class="hljs-subst">#{<span class="hljs-property">@y</span>}</span>}"</span>
+<span class="hljs-property">@AS</span> = <span class="hljs-keyword">new</span> ABM.AgentSet <span class="hljs-comment"># @ =&gt; global name space</span>
+</code></pre><p>The result of </p>
+<pre><code>AS.add <span class="hljs-keyword">new</span> XY(u.randomInt(<span class="hljs-number">10</span>), u.randomInt(<span class="hljs-number">10</span>)) <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [<span class="hljs-number">1.</span><span class="hljs-number">.5</span>]
+</code></pre><p>random run, captured so we can reuse.</p>
+<pre><code>AS.add <span class="hljs-keyword">new</span> XY(pt...) <span class="hljs-keyword">for</span> pt <span class="hljs-keyword">in</span> [[<span class="hljs-number">0</span>,<span class="hljs-number">1</span>],[<span class="hljs-number">8</span>,<span class="hljs-number">0</span>],[<span class="hljs-number">6</span>,<span class="hljs-number">4</span>],[<span class="hljs-number">1</span>,<span class="hljs-number">3</span>],[<span class="hljs-number">1</span>,<span class="hljs-number">1</span>]]
+</code></pre>
             </div>
             
         </li>

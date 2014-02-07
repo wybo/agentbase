@@ -58,7 +58,7 @@ See: <a href="http://goo.gl/dq0nN">addEventListener</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">ABM</span>.<span class="title">Mouse</span></span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ABM</span>.<span class="hljs-title">Mouse</span></span></pre></div></div>
             
         </li>
         
@@ -73,9 +73,9 @@ See: <a href="http://goo.gl/dq0nN">addEventListener</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">constructor</span>: <span class="function"><span class="params">(<span class="property">@div</span>, <span class="property">@callback</span>)</span> -&gt;</span>
-    <span class="property">@lastX</span>=Infinity; <span class="property">@lastY</span>=Infinity
-    <span class="property">@start</span>()</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@div</span>, <span class="hljs-property">@callback</span>)</span> -&gt;</span>
+    <span class="hljs-property">@lastX</span>=Infinity; <span class="hljs-property">@lastY</span>=Infinity
+    <span class="hljs-property">@start</span>()</pre></div></div>
             
         </li>
         
@@ -86,23 +86,23 @@ See: <a href="http://goo.gl/dq0nN">addEventListener</a></p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
-              <p>Start/stop the mouseListeners.  Note that NetLogo&#39;s model is to have
+              <p>Start/stop the mouseListeners.  Note that NetLogo’s model is to have
 mouse move events always on, rather than starting/stopping them
 on mouse down/up.  We may want do make that optional, using the
 more standard down/up enabling move events.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">start</span>:<span class="function"> -&gt;</span> <span class="comment"># Note: multiple calls safe</span>
-    <span class="property">@div</span>.addEventListener(<span class="string">"mousedown"</span>, <span class="property">@handleMouseDown</span>, <span class="literal">false</span>)
-    document.body.addEventListener(<span class="string">"mouseup"</span>, <span class="property">@handleMouseUp</span>, <span class="literal">false</span>)
-    <span class="property">@div</span>.addEventListener(<span class="string">"mousemove"</span>, <span class="property">@handleMouseMove</span>, <span class="literal">false</span>)
-    <span class="property">@lastX</span>=<span class="property">@lastY</span>=<span class="property">@x</span>=<span class="property">@y</span>=<span class="property">@pixX</span>=<span class="property">@pixY</span>=NaN; <span class="property">@moved</span>=<span class="property">@down</span>=<span class="literal">false</span>
-  <span class="attribute">stop</span>:<span class="function"> -&gt;</span> <span class="comment"># Note: multiple calls safe</span>
-    <span class="property">@div</span>.removeEventListener(<span class="string">"mousedown"</span>, <span class="property">@handleMouseDown</span>, <span class="literal">false</span>)
-    document.body.removeEventListener(<span class="string">"mouseup"</span>, <span class="property">@handleMouseUp</span>, <span class="literal">false</span>)
-    <span class="property">@div</span>.removeEventListener(<span class="string">"mousemove"</span>, <span class="property">@handleMouseMove</span>, <span class="literal">false</span>)
-    <span class="property">@lastX</span>=<span class="property">@lastY</span>=<span class="property">@x</span>=<span class="property">@y</span>=<span class="property">@pixX</span>=<span class="property">@pixY</span>=NaN; <span class="property">@moved</span>=<span class="property">@down</span>=<span class="literal">false</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">start</span>:<span class="hljs-function"> -&gt;</span> <span class="hljs-comment"># Note: multiple calls safe</span>
+    <span class="hljs-property">@div</span>.addEventListener(<span class="hljs-string">"mousedown"</span>, <span class="hljs-property">@handleMouseDown</span>, <span class="hljs-literal">false</span>)
+    <span class="hljs-built_in">document</span>.body.addEventListener(<span class="hljs-string">"mouseup"</span>, <span class="hljs-property">@handleMouseUp</span>, <span class="hljs-literal">false</span>)
+    <span class="hljs-property">@div</span>.addEventListener(<span class="hljs-string">"mousemove"</span>, <span class="hljs-property">@handleMouseMove</span>, <span class="hljs-literal">false</span>)
+    <span class="hljs-property">@lastX</span>=<span class="hljs-property">@lastY</span>=<span class="hljs-property">@x</span>=<span class="hljs-property">@y</span>=<span class="hljs-property">@pixX</span>=<span class="hljs-property">@pixY</span>=NaN; <span class="hljs-property">@moved</span>=<span class="hljs-property">@down</span>=<span class="hljs-literal">false</span>
+  <span class="hljs-attribute">stop</span>:<span class="hljs-function"> -&gt;</span> <span class="hljs-comment"># Note: multiple calls safe</span>
+    <span class="hljs-property">@div</span>.removeEventListener(<span class="hljs-string">"mousedown"</span>, <span class="hljs-property">@handleMouseDown</span>, <span class="hljs-literal">false</span>)
+    <span class="hljs-built_in">document</span>.body.removeEventListener(<span class="hljs-string">"mouseup"</span>, <span class="hljs-property">@handleMouseUp</span>, <span class="hljs-literal">false</span>)
+    <span class="hljs-property">@div</span>.removeEventListener(<span class="hljs-string">"mousemove"</span>, <span class="hljs-property">@handleMouseMove</span>, <span class="hljs-literal">false</span>)
+    <span class="hljs-property">@lastX</span>=<span class="hljs-property">@lastY</span>=<span class="hljs-property">@x</span>=<span class="hljs-property">@y</span>=<span class="hljs-property">@pixX</span>=<span class="hljs-property">@pixY</span>=NaN; <span class="hljs-property">@moved</span>=<span class="hljs-property">@down</span>=<span class="hljs-literal">false</span></pre></div></div>
             
         </li>
         
@@ -117,15 +117,15 @@ more standard down/up enabling move events.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="attribute">handleMouseDown</span>: <span class="function"><span class="params">(e)</span> =&gt;</span> <span class="property">@down</span>=<span class="literal">true</span>; <span class="property">@setXY</span> e
-  <span class="attribute">handleMouseUp</span>:<span class="function"> =&gt;</span> <span class="property">@down</span>=<span class="literal">false</span>
-  <span class="attribute">handleMouseMove</span>: <span class="function"><span class="params">(e)</span> =&gt;</span> <span class="property">@setXY</span> e
-  <span class="attribute">setXY</span>: <span class="function"><span class="params">(e)</span> -&gt;</span>
-    <span class="property">@lastX</span> = <span class="property">@x</span>; <span class="property">@lastY</span> = <span class="property">@y</span>
-    <span class="property">@pixX</span> = e.offsetX; <span class="property">@pixY</span> = e.offsetY
-    [<span class="property">@x</span>, <span class="property">@y</span>] = ABM.patches.pixelXYtoPatchXY(<span class="property">@pixX</span>,<span class="property">@pixY</span>)
-    <span class="property">@moved</span> = (<span class="property">@x</span> <span class="keyword">isnt</span> <span class="property">@lastX</span>) <span class="keyword">or</span> (<span class="property">@y</span> <span class="keyword">isnt</span> <span class="property">@lastY</span>)
-    <span class="property">@callback</span>(e) <span class="keyword">if</span> <span class="property">@callback</span>?</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">handleMouseDown</span>: <span class="hljs-function"><span class="hljs-params">(e)</span> =&gt;</span> <span class="hljs-property">@down</span>=<span class="hljs-literal">true</span>; <span class="hljs-property">@setXY</span> e
+  <span class="hljs-attribute">handleMouseUp</span>:<span class="hljs-function"> =&gt;</span> <span class="hljs-property">@down</span>=<span class="hljs-literal">false</span>
+  <span class="hljs-attribute">handleMouseMove</span>: <span class="hljs-function"><span class="hljs-params">(e)</span> =&gt;</span> <span class="hljs-property">@setXY</span> e
+  <span class="hljs-attribute">setXY</span>: <span class="hljs-function"><span class="hljs-params">(e)</span> -&gt;</span>
+    <span class="hljs-property">@lastX</span> = <span class="hljs-property">@x</span>; <span class="hljs-property">@lastY</span> = <span class="hljs-property">@y</span>
+    <span class="hljs-property">@pixX</span> = e.offsetX; <span class="hljs-property">@pixY</span> = e.offsetY
+    [<span class="hljs-property">@x</span>, <span class="hljs-property">@y</span>] = ABM.patches.pixelXYtoPatchXY(<span class="hljs-property">@pixX</span>,<span class="hljs-property">@pixY</span>)
+    <span class="hljs-property">@moved</span> = (<span class="hljs-property">@x</span> <span class="hljs-keyword">isnt</span> <span class="hljs-property">@lastX</span>) <span class="hljs-keyword">or</span> (<span class="hljs-property">@y</span> <span class="hljs-keyword">isnt</span> <span class="hljs-property">@lastY</span>)
+    <span class="hljs-property">@callback</span>(e) <span class="hljs-keyword">if</span> <span class="hljs-property">@callback</span>?</pre></div></div>
             
         </li>
         
