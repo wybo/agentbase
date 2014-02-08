@@ -22,10 +22,10 @@
         # w/ refresh off and two optimizations, 22-23fps
         @agents.setUseSprites() # 24 -> 36
         
-        @anim.setRate 60, true # multistep
+        @anim.setRate 60
         
         @useConsole = true
-        @population = 500     # agents
+        @population = 300     # agents
         @setVision 3          # patches & set patch rect
         @minSeparation = 0.75 # patches
         @setMaxTurn(3.0)      # degrees -> radians
@@ -37,6 +37,18 @@
         p.color = u.randomGray 0, 100 for p in @patches
         p.sprout 1 for p in @patches.nOf(@population)
         a.color = u.randomMapColor() for a in @agents
+
+        newDomEl = (agent) ->
+          coords = ABM.model.patches.patchXYtoPixelXY(agent.x, agent.y)
+          el = document.body.appendChild(document.createElement("div"))
+          el.innerHTML = 'bird'
+          el.style.position = 'absolute'
+          el.style.webkitTransform = 'translate('+coords[0]+'px, '+coords[1]+'px)'
+          el.style.MozTransform = 'translate('+coords[0]+'px, '+coords[1]+'px)'
+          return el
+
+        @domElements = (newDomEl(agent) for agent in @agents)
+
   
       step: ->
         if @useConsole and @anim.ticks % 25 is 0
@@ -48,6 +60,14 @@
             console.log sheet if @useConsole
             document.getElementById("play").appendChild(sheet.canvas)
         @stop() if @anim.ticks is 400
+
+        @renderInDOM(a) for a in @agents
+
+      renderInDOM: (agent) ->
+        coords = @patches.patchXYtoPixelXY(agent.x, agent.y)
+        el = @domElements[agent.id]
+        el.style.webkitTransform = 'translate('+coords[0]+'px, '+coords[1]+'px)'
+        el.style.MozTransform = 'translate('+coords[0]+'px, '+coords[1]+'px)'
 
       flock: (a) -> # a is agent
         flockmates = @agents.inRadius a, @vision
@@ -86,9 +106,9 @@
         dy = (Math.cos a.heading for a in @agents).reduce (x,y) -> x+y
         Math.sqrt(dx*dx + dy*dy)/@population
 
-    # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors
-    #   Defaults: 13, -16, 16, -16, 16, false, true
-    model = new MyModel("layers", 15, -16, 16, -16, 16, true, false)
+    # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors, isHeadless
+    #   Defaults: 13, -16, 16, -16, 16, false, true, false
+    model = new MyModel("layers", 15, -16, 16, -16, 16, true, false, true)
       .debug() # Debug: Put Model vars in global name space
       .start() # Run model immediately after startup initialization
 
