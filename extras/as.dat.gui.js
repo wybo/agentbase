@@ -120,9 +120,13 @@
 
 	DatGUI.prototype.setModelValue = function(name, value) {
 		var setter = this.ui[name].setter;
+		// if you specify a setter, DatGUI will look for
+		// it in the model and call it with the new value
 		if (setter) {
 			this.model[setter](value);
 		}
+		// otherwise we assume the ui element name is
+		// the name of a model variable
 		else {
 			this.model[name] = value;
 		}
