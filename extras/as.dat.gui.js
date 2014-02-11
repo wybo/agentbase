@@ -1,10 +1,48 @@
+/*
+ *	ABM.DatGUI creates a minimal user interface for
+ *	an ABM.Model using dat.gui.
+ *
+ *  (requires http://workshop.chromeexperiments.com/examples/gui/)
+ */
+
 (function() {
   ABM.DatGUI = (function() {
 
   	/*
-  		ABM.DatGUI() accepts either:
-		an ABM.FirebaseUI or
-		an ABM.Model and a ui object
+  		The constructor accepts either:
+			an ABM.FirebaseUI or
+			an ABM.Model and a ui object, like:
+			
+			{
+				"Setup": {
+					type: "button",
+					setter: "setup"
+				},
+				"Background": {
+			        type: "choice",
+			        vals: ["image","aspect","slope"],
+			        val: "image",
+			        setter: "setBackground"
+			    },
+			    "Neighborhood": {
+			    	type: "slider",
+			    	min: 1,
+			    	max: 10,
+			    	step: 1,
+			    	val: 3,
+			    	smooth: false,
+			    	setter: "setNeighborRadius"
+			    },
+			    "refreshLinks": {
+					type: "switch",
+					val: true
+			    }
+		    }
+
+		If you pass in a FirebaseUI object, all instances of
+		the model interface in all browsers will be in sync.
+
+		TODO: Allow a subset of ui elements to remain in sync.
   	*/
 
     function DatGUI(fbuiOrModel, uiObject) {
@@ -26,18 +64,16 @@
 			if (ui.hasOwnProperty(name)) {
 				var uiEl = ui[name];
 				if (uiEl.type != 'button') {
-					// init ui model
 					this.datGuiModel[name] = uiEl.val;
 
-					// init fb listeners
 					fbui && fbui.refs[name].child('val').on('value', function(valSnap) {
 						self.datGuiModel[this.name] = valSnap.val();
 						self.updateGui();
 					}.bind({ name: name }));
 				}
 
-				// init ui ctrl
 				var ctrl = null;
+				// a uiEl can be of type "button", "choice", "switch", or "slider"
 				switch(uiEl.type) {
 					case 'button':
 						this.datGuiModel[name] = self.fbui ?
@@ -56,15 +92,26 @@
 					break;
 				}
 				if (ctrl) {
+					var callback;
 					if (self.fbui) {
-						ctrl.onChange(function(value) {
+						callback = function(value) {
 							self.fbui.setUIValue(this.name, value);
-						}.bind({ name: name }));
+						}.bind({ name: name });
 					}
 					else {
-						ctrl.onChange(function(value) {
+						callback = function(value) {
 							self.setModelValue(this.name, value);
-						}.bind({ name: name }));	
+						}.bind({ name: name });	
+					}
+					// a slider can be 'smooth', in which case
+					// the setter is called during a drag
+					if (uiEl.smooth) {
+						ctrl.onChange(callback);
+					}
+					// otherwise the setter is called at the end
+					// of the drag
+					else {
+						ctrl.onFinishChange(callback);
 					}
 				}
 			}
