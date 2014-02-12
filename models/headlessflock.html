@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>Flock Model</title>
+    <title>Headless Flock Model</title>
     <script src="../lib/agentscript.js"></script>
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
@@ -22,7 +22,8 @@
         # w/ refresh off and two optimizations, 22-23fps
         @agents.setUseSprites() # 24 -> 36
         
-        #@anim.setRate 5, false # multistep
+        # Default is untimed, fastest for headless
+        @anim.setRate 5, false # multistep
         
         @useConsole = true
         @population = 300     # agents

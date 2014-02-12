@@ -18,8 +18,8 @@ class ABM.Animator
   # Create initial animator for the model, specifying default rate (fps) and multiStep.
   # If multiStep, run the draw() and step() methods separately by draw() using
   # requestAnimFrame and step() using setTimeout.
-  constructor: (@model, @rate=30, @multiStep=@model.isHeadless) -> 
-    @isHeadless = @model.world.isHeadless; @reset()
+  constructor: (@model, @rate=30, @multiStep=model.world.isHeadless) -> 
+    @isHeadless = model.world.isHeadless; @reset()
   # Adjust animator.  Call before model.start()
   # in setup() to change default settings
   setRate: (@rate, @multiStep=@isHeadless) -> @resetTimes() # Change rate while running?
@@ -56,15 +56,17 @@ class ABM.Animator
   ticksPerSec: -> if (elapsed = @ticks-@startTick) is 0 then 0 else Math.round elapsed*1000/@ms()
   drawsPerSec: -> if (elapsed = @draws-@startDraw) is 0 then 0 else Math.round elapsed*1000/@ms()
   # Return a status string for debugging and logging performance
-  toString: -> "ticks: #{@ticks}, draws: #{@draws}, rate: #{@rate} #{@ticksPerSec()}/#{@drawsPerSec()}"
+  toString: -> "ticks: #{@ticks}, draws: #{@draws}, rate: #{@rate} tps/dps: #{@ticksPerSec()}/#{@drawsPerSec()}"
   # Animation via setTimeout and requestAnimFrame
   animateSteps: =>
     @step()
     @timeoutHandle = setTimeout @animateSteps, 10 unless @stopped
   animateDraws: =>
-    if @drawsPerSec() <= @rate
+    if @isHeadless # Use rAF when headless wants to be throttled.
+      @step() if @ticksPerSec() < @rate
+    else if @drawsPerSec() < @rate # throttle drawing to @rate
       @step() unless @multiStep
-      @draw() unless @isHeadless
+      @draw()
     @animHandle = requestAnimFrame @animateDraws unless @stopped
   animate: ->
     @animateSteps() if @multiStep
@@ -124,11 +126,12 @@ class ABM.Model
       # Setup spotlight layer, also not an agentset:
       @contexts.spotlight.globalCompositeOperation = "xor"
 
-    if isHeadless
-    # Initialize animator to headless default: 30fps, async  
-    then @anim = new ABM.Animator @, null, true, isHeadless
-    # Initialize animator to default: 30fps, not async
-    else @anim = new ABM.Animator @
+    # if isHeadless
+    # # Initialize animator to headless default: 30fps, async  
+    # then @anim = new ABM.Animator @, null, true
+    # # Initialize animator to default: 30fps, not async
+    # else 
+    @anim = new ABM.Animator @
     # Set drawing controls.  Default to drawing each agentset.
     # Optimization: If any of these is set to false, the associated
     # agentset is drawn only once, remaining static after that.
