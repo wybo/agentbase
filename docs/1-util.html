@@ -297,13 +297,14 @@ See <a href="http://goo.gl/FafN3z">StackOverflow</a></p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
-              <p>Return log n where base is 10, base, e respectively</p>
+              <p>Return log n where base is 10, base, e respectively.
+Note ln: (n) -&gt; Math.log n .. i.e. JS’s log is log base e</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">log10</span>: <span class="hljs-function"><span class="hljs-params">(n)</span> -&gt;</span> Math.log(n)/Math.LN10
-  <span class="hljs-attribute">logN</span>: <span class="hljs-function"><span class="hljs-params">(n, base)</span> -&gt;</span> Math.log(n)/Math.log(base)
-  <span class="hljs-attribute">ln</span>: <span class="hljs-function"><span class="hljs-params">(n)</span> -&gt;</span> Math.log n</pre></div></div>
+  <span class="hljs-attribute">log2</span>: <span class="hljs-function"><span class="hljs-params">(n)</span> -&gt;</span> <span class="hljs-property">@logN</span> n, <span class="hljs-number">2</span>
+  <span class="hljs-attribute">logN</span>: <span class="hljs-function"><span class="hljs-params">(n, base)</span> -&gt;</span> Math.log(n)/Math.log(base)</pre></div></div>
             
         </li>
         
@@ -1951,7 +1952,24 @@ Note: to convert a ctx to an “image” (drawImage) use ctx.canvas</p>
     <span class="hljs-keyword">then</span> ctx.canvas.width = sw; ctx.canvas.height = sh
     <span class="hljs-keyword">else</span> ctx = <span class="hljs-property">@createCtx</span> sw, sh
     ctx.drawImage img, sx, sy, sw, sh, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, sw, sh
-    ctx</pre></div></div>
+    ctx
+  <span class="hljs-attribute">imageToCtxDownStepped</span>: <span class="hljs-function"><span class="hljs-params">(img, tw, th)</span> -&gt;</span> <span class="hljs-comment"># http://goo.gl/UnLJSZ</span>
+    ctx1 = u.createCtx tw, th
+    w = img.width; h = img.height; <span class="hljs-function"><span class="hljs-title">ihalf</span> = <span class="hljs-params">(n)</span> -&gt;</span> Math.ceil n/<span class="hljs-number">2</span>
+    steps = Math.ceil(u.log2( <span class="hljs-keyword">if</span> (w/tw)&gt;(h/th) <span class="hljs-keyword">then</span> (w/tw) <span class="hljs-keyword">else</span> (h/th)) )
+    <span class="hljs-built_in">console</span>.log <span class="hljs-string">"steps"</span>, steps
+    <span class="hljs-keyword">if</span> steps &lt;= <span class="hljs-number">1</span>
+      ctx1.drawImage img, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, tw, th
+    <span class="hljs-keyword">else</span>
+      <span class="hljs-built_in">console</span>.log <span class="hljs-string">"img w/h"</span>, w, h, <span class="hljs-string">"-&gt;"</span>, ihalf(w), ihalf(h)
+      ctx = u.createCtx w = ihalf(w), h = ihalf(h); can = ctx.canvas
+      ctx.drawImage img, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, w, h
+      <span class="hljs-keyword">for</span> step <span class="hljs-keyword">in</span> [steps..<span class="hljs-number">.2</span>] <span class="hljs-comment"># 2 not 1 due to initial halving above</span>
+        <span class="hljs-built_in">console</span>.log <span class="hljs-string">"can w/h"</span>, w, h, <span class="hljs-string">"-&gt;"</span>, ihalf(w), ihalf(h)
+        ctx.drawImage can, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, w, h, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, w = ihalf(w), h = ihalf(h)
+      <span class="hljs-built_in">console</span>.log <span class="hljs-string">"target w/h"</span>, w, h, <span class="hljs-string">"-&gt;"</span>, tw, th
+      ctx1.drawImage can, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, w, h, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, tw, th
+    ctx1</pre></div></div>
             
         </li>
         
