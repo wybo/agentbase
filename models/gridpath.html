@@ -14,10 +14,12 @@
         @prob = 1
         
         # defaults
-        @patches.setDefault "labelOffset", [12,14]
         @patches.setDefault "labelColor", [255,255,255]
-        # u.ctxTextParams ABM.contexts.patches, "9px sans-serif", "right", "bottom"
-        u.elementTextParams ABM.contexts.patches, "8px sans-serif", "right", "bottom"
+        offset=Math.floor @world.size*.45
+        # @patches.setDefault "labelOffset", [12,14]
+        @patches.setDefault "labelOffset", [offset, offset]
+        u.ctxTextParams ABM.contexts.patches, "10px sans-serif", "right", "bottom"
+        # u.elementTextParams ABM.contexts.patches, "10px sans-serif", "right", "bottom"
         @agents.setDefault "shape", "circle"
         @agents.setDefault "color", ([210,0,0])
         @agents.setDefault "size", .4
@@ -85,7 +87,7 @@
     # model = new MyModel "layers", 30, 0,10, 0,10
     # model.setRootVars() # Debug: Put Model vars in global name space
     # model.start() # Run model immediately after startup initialization
-    new MyModel("layers", 30, 0,10, 0,10)
+    new MyModel("layers", 40, 0,10, 0,10)
       .start()
       .debug()
 

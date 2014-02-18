@@ -73,10 +73,11 @@ ABM.util = u =
   randomFloat: (max) -> Math.random() * max
   randomFloat2: (min, max) -> min + Math.random() * (max-min)
   randomCentered: (r) -> @randomFloat2 -r/2, r/2
-  # Return log n where base is 10, base, e respectively
+  # Return log n where base is 10, base, e respectively.
+  # Note ln: (n) -> Math.log n .. i.e. JS's log is log base e
   log10: (n) -> Math.log(n)/Math.LN10
+  log2: (n) -> @logN n, 2
   logN: (n, base) -> Math.log(n)/Math.log(base)
-  ln: (n) -> Math.log n
   # Return true [mod functin](http://goo.gl/spr24), % is remainder, not mod.
   mod: (v, n) -> ((v % n) + n) % n
   # Return v to be between min, max via mod fcn
@@ -664,6 +665,23 @@ ABM.util = u =
     else ctx = @createCtx sw, sh
     ctx.drawImage img, sx, sy, sw, sh, 0, 0, sw, sh
     ctx
+  imageToCtxDownStepped: (img, tw, th) -> # http://goo.gl/UnLJSZ
+    ctx1 = u.createCtx tw, th
+    w = img.width; h = img.height; ihalf = (n) -> Math.ceil n/2
+    steps = Math.ceil(u.log2( if (w/tw)>(h/th) then (w/tw) else (h/th)) )
+    console.log "steps", steps
+    if steps <= 1
+      ctx1.drawImage img, 0, 0, tw, th
+    else
+      console.log "img w/h", w, h, "->", ihalf(w), ihalf(h)
+      ctx = u.createCtx w = ihalf(w), h = ihalf(h); can = ctx.canvas
+      ctx.drawImage img, 0, 0, w, h
+      for step in [steps...2] # 2 not 1 due to initial halving above
+        console.log "can w/h", w, h, "->", ihalf(w), ihalf(h)
+        ctx.drawImage can, 0, 0, w, h, 0, 0, w = ihalf(w), h = ihalf(h)
+      console.log "target w/h", w, h, "->", tw, th
+      ctx1.drawImage can, 0, 0, w, h, 0, 0, tw, th
+    ctx1
 
   # Convert a canvas to an image, executing fcn f on completion.
   # Generally can skip callback but see [stackoverflow](http://goo.gl/kIk2U)
@@ -1934,8 +1952,8 @@ class ABM.Animator
   # Create initial animator for the model, specifying default rate (fps) and multiStep.
   # If multiStep, run the draw() and step() methods separately by draw() using
   # requestAnimFrame and step() using setTimeout.
-  constructor: (@model, @rate=30, @multiStep=@model.isHeadless) -> 
-    @isHeadless = @model.world.isHeadless; @reset()
+  constructor: (@model, @rate=30, @multiStep=model.world.isHeadless) -> 
+    @isHeadless = model.world.isHeadless; @reset()
   # Adjust animator.  Call before model.start()
   # in setup() to change default settings
   setRate: (@rate, @multiStep=@isHeadless) -> @resetTimes() # Change rate while running?
@@ -1972,15 +1990,17 @@ class ABM.Animator
   ticksPerSec: -> if (elapsed = @ticks-@startTick) is 0 then 0 else Math.round elapsed*1000/@ms()
   drawsPerSec: -> if (elapsed = @draws-@startDraw) is 0 then 0 else Math.round elapsed*1000/@ms()
   # Return a status string for debugging and logging performance
-  toString: -> "ticks: #{@ticks}, draws: #{@draws}, rate: #{@rate} #{@ticksPerSec()}/#{@drawsPerSec()}"
+  toString: -> "ticks: #{@ticks}, draws: #{@draws}, rate: #{@rate} tps/dps: #{@ticksPerSec()}/#{@drawsPerSec()}"
   # Animation via setTimeout and requestAnimFrame
   animateSteps: =>
     @step()
     @timeoutHandle = setTimeout @animateSteps, 10 unless @stopped
   animateDraws: =>
-    if @drawsPerSec() <= @rate
+    if @isHeadless # Use rAF when headless wants to be throttled.
+      @step() if @ticksPerSec() < @rate
+    else if @drawsPerSec() < @rate # throttle drawing to @rate
       @step() unless @multiStep
-      @draw() unless @isHeadless
+      @draw()
     @animHandle = requestAnimFrame @animateDraws unless @stopped
   animate: ->
     @animateSteps() if @multiStep
@@ -2018,12 +2038,13 @@ class ABM.Model
     @setWorld size, minX, maxX, minY, maxY, isTorus, hasNeighbors, isHeadless
     @contexts = ABM.contexts = {}
     unless isHeadless
-      (@div=document.getElementById(div)).setAttribute 'style', "position:relative"
-          
+      (@div=document.getElementById(div)).setAttribute 'style',
+        "position:relative; width=#{@world.pxWidth}; height={@world.pxHeight}"
+
       # * Create 2D canvas contexts layered on top of each other.
       # * Initialize a patch coord transform for each layer.
       # 
-      # Note: this is permanent .. there isn't the usual ctx.restore().
+      # Note: this transform is permanent .. there isn't the usual ctx.restore().
       # To use the original canvas 2D transform temporarily:
       #
       #     u.setIdentity ctx
@@ -2040,11 +2061,12 @@ class ABM.Model
       # Setup spotlight layer, also not an agentset:
       @contexts.spotlight.globalCompositeOperation = "xor"
 
-    if isHeadless
-    # Initialize animator to headless default: 30fps, async  
-    then @anim = new ABM.Animator @, null, true, isHeadless
-    # Initialize animator to default: 30fps, not async
-    else @anim = new ABM.Animator @
+    # if isHeadless
+    # # Initialize animator to headless default: 30fps, async  
+    # then @anim = new ABM.Animator @, null, true
+    # # Initialize animator to default: 30fps, not async
+    # else 
+    @anim = new ABM.Animator @
     # Set drawing controls.  Default to drawing each agentset.
     # Optimization: If any of these is set to false, the associated
     # agentset is drawn only once, remaining static after that.
