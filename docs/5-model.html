@@ -393,7 +393,8 @@ Example:</p>
     <span class="hljs-property">@setWorld</span> size, minX, maxX, minY, maxY, isTorus, hasNeighbors, isHeadless
     <span class="hljs-property">@contexts</span> = ABM.contexts = {}
     <span class="hljs-keyword">unless</span> isHeadless
-      (<span class="hljs-property">@div</span>=<span class="hljs-built_in">document</span>.getElementById(div)).setAttribute <span class="hljs-string">'style'</span>, <span class="hljs-string">"position:relative"</span></pre></div></div>
+      (<span class="hljs-property">@div</span>=<span class="hljs-built_in">document</span>.getElementById(div)).setAttribute <span class="hljs-string">'style'</span>,
+        <span class="hljs-string">"position:relative; width=<span class="hljs-subst">#{<span class="hljs-property">@world</span>.pxWidth}</span>; height={@world.pxHeight}"</span></pre></div></div>
             
         </li>
         
@@ -408,7 +409,7 @@ Example:</p>
 <li>Create 2D canvas contexts layered on top of each other.</li>
 <li>Initialize a patch coord transform for each layer.</li>
 </ul>
-<p>Note: this is permanent .. there isn’t the usual ctx.restore().
+<p>Note: this transform is permanent .. there isn’t the usual ctx.restore().
 To use the original canvas 2D transform temporarily:</p>
 <pre><code>u.setIdentity ctx
   &lt;draw <span class="hljs-keyword">in</span> <span class="hljs-reserved">native</span> coord system&gt;
