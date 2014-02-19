@@ -135,7 +135,8 @@ The "extras" are libraries that augment agentscript and are individually compile
 
 If you are forking/pulling agentscript, install the dev dependencies with
 
-    npm install
+    sudo npm install -g coffee-script   # for cake
+    npm install                         # for everything else
 
 and build with
 
