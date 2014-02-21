@@ -26,6 +26,7 @@ ASPath = "#{srcDir}agentscript.coffee"
 XNames = "data mouse fbui".split(" ")
 XPaths = ("#{extrasDir}#{f}.coffee" for f in XNames)
 JSNames = XNames.concat ["agentscript"]
+JSPaths = ["extras/as.dat.gui.js"]
 
 task 'all', 'Compile coffee, minify js, create docs', ->
   invoke 'build'
@@ -65,6 +66,7 @@ task 'doc', 'Create documentation from source files', ->
     #{cpfiles}
     docco #{tmpfiles.join(" ")} -o docs  &&
     docco #{XPaths.join(" ")} -o docs
+    docco #{JSPaths.join(" ")} -o docs
   """, -> #{silent:true}, (code,output) -> console.log output
 # task 'xdoc', 'Create documentation for addons', ->
 #   shell.exec """
