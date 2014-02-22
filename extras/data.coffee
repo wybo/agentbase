@@ -57,12 +57,12 @@ ABM.DataSet = class DataSet
   setDefaults: ->
     @useNearest=false
     @crop=false
-    @normalize=true
+    @normalizeImage=true
     @alpha=255
     @gray=true
   setSampler: (@useNearest) ->
   setConvolveCrop: (@crop) ->
-  setImageNormalize: (@normalize) ->
+  setImageNormalize: (@normalizeImage) ->
   setImageAlpha: (@alpha) -> # pixel alpha: [0,255]
   setImageGray: (@gray) ->
 
@@ -102,8 +102,9 @@ ABM.DataSet = class DataSet
     ctx = u.createCtx @width, @height
     idata = ctx.getImageData(0, 0, @width, @height); ta = idata.data
     max = Math.pow(2, if @gray then 8 else 24)
-    norm = if @normalize
-    then u.normalize @data, 0, max - 0.000001
+    norm = if @normalizeImage
+    # then u.normalize @data, 0, max - 0.000001
+    then u.normalize8 @data
     else (u.clamp Math.round(d), 0, max-1 for d in @data)
     for num, i in norm
       j=4*i; ta[j+3] = @alpha
@@ -134,6 +135,10 @@ ABM.DataSet = class DataSet
     w=ABM.world
     @coordSample px, py, w.minXcor, w.maxYcor, w.numX, w.numY
   
+  # Normalize a dataset to linear interpolation: [min,max] -> [lo, hi], float
+  normalize: (lo, hi) -> new DataSet @width, @height, u.normalize @data, lo, hi
+  # Normalize a dataset to clamped Uint8 bytes [0-255]
+  normalize8: -> new DataSet @width, @height, u.normalize8(@data)
   # Resample dataset to new width, height
   resample: (width, height) ->
     return new DataSet width,height,@data if width is @width and height is @height
@@ -168,8 +173,14 @@ ABM.DataSet = class DataSet
   # A few common convolutions.  dzdx/y are also called horiz/vert Sobel
   dzdx: (n=2,factor=1/8) -> @convolve([-1,0,1,-n,0,n,-1,0,1],factor)
   dzdy: (n=2,factor=1/8) -> @convolve([1,n,1,0,0,0,-1,-n,-1],factor)
-  laplace8: () -> @convolve([-1,-1,-1,-1,8,-1,-1,-1,-1])
-  laplace4: () -> @convolve([0,-1,0,-1,4,-1,0,-1,0])
+  laplace8: -> @convolve([-1,-1,-1,-1,8,-1,-1,-1,-1])
+  laplace4: -> @convolve([0,-1,0,-1,4,-1,0,-1,0])
+  blur: (factor=0.0625) -> @convolve([1,2,1,2,4,2,1,2,1], factor) # 1/16 = 0.0625
+  edge: -> @convolve([1,1,1,1,-7,1,1,1,1])
+
+  # Return filtered dataset by applying f to each dataset element
+  filter: (f) -> new DataSet @width, @height, (f(d) for d in @data)
+
   # Create two new convolved datasets, slope and aspect, common in
   # the use of an elevation data set. See Esri tutorials for 
   # [slope](http://goo.gl/ZcOl08) and [aspect](http://goo.gl/KoI4y5)
