@@ -391,6 +391,8 @@ ABM.util = u =
   normalize: (array, lo = 0, hi = 1) ->
     min = @aMin array; max = @aMax array; scale = 1/(max-min)
     (@lerp(lo, hi, scale*(num-min)) for num in array)
+  # Return a Uint8ClampedArray, normalized to [.5,255.5] then round/clamp to [0,255]
+  normalize8: (array) -> new Uint8ClampedArray @normalize(array,-.5,255.5)
 
   # Return array index of item, or index for item if array to remain sorted.
   # f is used to return an integer for sorting, primarily for object properties.

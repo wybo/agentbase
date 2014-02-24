@@ -26,6 +26,8 @@ The extras/ directory contains libraries that are too specialized to be in the c
 
 [**fbui.coffee**](docs/fbui.html) A simple start at a User Interface abstraction, with JSON representing buttons, sliders, switches and menus.  Each item in the JSON tree modifies the state of the model, either directly by setting Model variables or indirectly by calling a method in class Model.
 
+[**as.dat.gui**](docs/as.dat.gui.html) A [dat.GUI](https://code.google.com/p/dat-gui/) based UI using the JSON tree mentioned above to specify the UI. This gives AgentScript a sophisticated HTML/CSS/JavaScript as well as the distributed fbui above.
+
 [**mouse.coffee**](docs/mouse.html) A trivial event based interface to the mouse, mainly for direct interaction with the model's graphic layers.  It converts the mouse raw coordinates into patch coordinates.
 
 #### Sample Models
