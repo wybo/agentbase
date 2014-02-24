@@ -25,7 +25,7 @@ ASPath = "#{srcDir}agentscript.coffee"
 XNames = "data mouse fbui".split(" ")
 XJSNames = "as.dat.gui".split(" ")
 XPaths = ("#{extrasDir}#{f}.coffee" for f in XNames)
-  .concat(("#{extrasDir}#{f}.js" for f in XJSNames))
+  .concat("#{extrasDir}#{f}.js" for f in XJSNames)
 JSNames = XNames.concat(XJSNames, ["agentscript"])
 
 task 'all', 'Compile coffee, minify js, create docs', ->
