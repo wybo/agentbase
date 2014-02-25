@@ -1231,9 +1231,6 @@ class ABM.AgentSet extends Array
 #
 #     AS.add new XY(pt...) for pt in [[0,1],[8,0],[6,4],[1,3],[1,1]]
 
-# There are three agentsets and their corresponding 
-# agents: Patches/Patch, Agents/Agent, and Links/Link.
-
 # ### Patch and Patches
   
 # Class Patch instances represent a rectangle on a grid.  It holds variables\
@@ -1342,7 +1339,7 @@ class ABM.Patches extends ABM.AgentSet
       for x in [@minX..@maxX] by 1
         @add new @agentClass x, y
     @setNeighbors() if @hasNeighbors
-    @setPixels() unless @isHeadless # setup off-page canvas for pixel ops
+    @setPixels() # setup off-page canvas for pixel ops
     
   # Have patches cache the agents currently on them.
   # Optimizes p.agentsHere method.
@@ -1381,7 +1378,7 @@ class ABM.Patches extends ABM.AgentSet
       @pixelsData32 = new Uint32Array @pixelsData.buffer
       @pixelsAreLittleEndian = u.isLittleEndian()
   
-  # Draw patches.  Three cases:
+  # Draw patces.  Three cases:
   #
   # * Pixels: use pixel manipulation rather than canvas draws
   # * Monochrome: just fill canvas w/ patch default
@@ -1932,7 +1929,6 @@ class ABM.Links extends ABM.AgentSet
       a.heading = startAngle + direction*dTheta*i
       a.forward radius
     null
-      
 
 # Class Model is the control center for our AgentSets: Patches, Agents and Links.
 # Creating new models is done by subclassing class Model and overriding two 
