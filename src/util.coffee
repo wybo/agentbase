@@ -365,6 +365,13 @@ ABM.util = u =
   # Return array of property values of given array of objects
   aProp: (array, prop) -> (a[prop] for a in array)
 
+  # Return hybred array with object named properties. Good for returning multiple
+  # values from a function, and destructured assignment.
+  #
+  #     a = aToObj [1,2,3,4], ["one", "two", "three", "four"]
+  #     a = [1,2,3,4], a.one = 1, .. a.four = 4
+  aToObj: (array, names) -> array[n] = array[i] for n,i in names; array
+
   # Return scalar max/min/sum/avg of numeric array
   # Iterate rather than reduce: work with typed arrays
   aMax: (array) -> v=array[0]; v=Math.max v,a for a in array; v
