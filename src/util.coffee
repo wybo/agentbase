@@ -332,6 +332,14 @@ ABM.util = u =
    f = @propFcn f if @isString f # use item[f] if f is string
    array.sort (a,b) -> f(a) - f(b)
 
+  # Numeric sort, default to ascending. Mutator, see clone above.
+  # Works with TypedArrays too
+  sortNums: (array, ascending=true) ->
+    f = if ascending then (a,b) -> a-b else (a,b) -> b-a
+    if array.sort? then array.sort(f) else Array.prototype.sort.call(array, f)
+
+
+
   # Mutator. Removes adjacent dups, by reference, in place from sorted array.
   # Note "by reference" means litteraly same object, not copy. Returns array.
   # Clone first if you want to preserve the original array.
@@ -365,7 +373,7 @@ ABM.util = u =
   aAvg: (array) -> @aSum(array)/array.length
   aMid: (array) -> 
     array = if array.sort? then @clone array else @typedToJS array
-    array.sort()
+    @sortNums array
     array[Math.floor(array.length/2)]
 
   aNaNs: (array) -> (i for v,i in array when isNaN v)
@@ -393,6 +401,7 @@ ABM.util = u =
     (@lerp(lo, hi, scale*(num-min)) for num in array)
   # Return a Uint8ClampedArray, normalized to [.5,255.5] then round/clamp to [0,255]
   normalize8: (array) -> new Uint8ClampedArray @normalize(array,-.5,255.5)
+  normalizeInt: (array, lo, hi) -> (Math.round i for i in @normalize array, lo, hi) # clamp?
 
   # Return array index of item, or index for item if array to remain sorted.
   # f is used to return an integer for sorting, primarily for object properties.
