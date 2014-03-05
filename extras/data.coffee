@@ -101,18 +101,16 @@ ABM.DataSet = class DataSet
   toContext: ->
     ctx = u.createCtx @width, @height
     idata = ctx.getImageData(0, 0, @width, @height); ta = idata.data
-    max = Math.pow(2, if @gray then 8 else 24)
-    norm = if @normalizeImage
-    # then u.normalize @data, 0, max - 0.000001
-    then u.normalize8 @data
-    else (u.clamp Math.round(d), 0, max-1 for d in @data)
-    for num, i in norm
+    if @normalizeImage
+      data = if @gray then u.normalize8 @data else u.normalizeInt @data, 0, Math.pow(2,24)-1
+    else
+      data = (Math.round d for d in @data)
+    for num, i in data
       j=4*i; ta[j+3] = @alpha
       if @gray
       then ta[j] = ta[j+1] = ta[j+2] = Math.floor num
       else ta[j]=num>>>16; ta[j+1]=(num>>8)&0xff; ta[j+2]=num&0xff
     ctx.putImageData idata, 0, 0
-    window.idata = idata; window.ctx = ctx
     ctx
   # Show dataset as image in patch drawing layer or patch colors, return image
   toDrawing: -> ABM.patches.installDrawing(img=@toImage()); img
@@ -203,7 +201,7 @@ ABM.DataSet = class DataSet
         aspect.push rad
     slope = new DataSet w, h, slope
     aspect = new DataSet w, h, aspect
-    { slope: slope, aspect: aspect, dzdx: dzdx, dzdy: dzdy }
+    u.aToObj [slope, aspect, dzdx, dzdy], ["slope", "aspect", "dzdx", "dzdy"]
   # Return a subset of the dataset. x,y,width,height integers
   subset: (x, y, width, height) ->
     u.error "subSet: params out of range" if x+width>@width or y+height>@height
