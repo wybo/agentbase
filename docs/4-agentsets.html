@@ -287,6 +287,7 @@ representing a 1x1 square in patch coordinates (via 2D coord transforms).</p>
 <li>numX/numY:    width/height of grid.</li>
 <li>isTorus:      true if coord system wraps around at edges</li>
 <li>hasNeighbors: true if each patch caches its neighbors</li>
+<li>isHeadless:   true if not using canvas drawing</li>
 </ul>
 
             </div>
@@ -336,7 +337,7 @@ patches are started up empty and filled by “create” calls.</p>
       <span class="hljs-keyword">for</span> x <span class="hljs-keyword">in</span> [<span class="hljs-property">@minX</span>..<span class="hljs-property">@maxX</span>] <span class="hljs-keyword">by</span> <span class="hljs-number">1</span>
         <span class="hljs-property">@add</span> <span class="hljs-keyword">new</span> <span class="hljs-property">@agentClass</span> x, y
     <span class="hljs-property">@setNeighbors</span>() <span class="hljs-keyword">if</span> <span class="hljs-property">@hasNeighbors</span>
-    <span class="hljs-property">@setPixels</span>() <span class="hljs-comment"># setup off-page canvas for pixel ops</span></pre></div></div>
+    <span class="hljs-property">@setPixels</span>() <span class="hljs-keyword">unless</span> <span class="hljs-property">@isHeadless</span> <span class="hljs-comment"># setup off-page canvas for pixel ops</span></pre></div></div>
             
         </li>
         
@@ -443,7 +444,7 @@ inCone, inRect, inRadius.  Ex: flock demo model’s vision rect.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
-              <p>Draw patces.  Three cases:</p>
+              <p>Draw patches.  Three cases:</p>
 <ul>
 <li>Pixels: use pixel manipulation rather than canvas draws</li>
 <li>Monochrome: just fill canvas w/ patch default</li>
