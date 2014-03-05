@@ -398,7 +398,6 @@ Example:</p>
       isHeadless = divOrOpts.isHeadless = divOrOpts.isHeadless? <span class="hljs-keyword">or</span> <span class="hljs-keyword">not</span> div?
       <span class="hljs-property">@setWorld</span> divOrOpts
     <span class="hljs-property">@contexts</span> = ABM.contexts = {}
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'isHeadless'</span>, isHeadless)
     <span class="hljs-keyword">unless</span> isHeadless
       (<span class="hljs-property">@div</span>=<span class="hljs-built_in">document</span>.getElementById(div)).setAttribute <span class="hljs-string">'style'</span>,
         <span class="hljs-string">"position:relative; width=<span class="hljs-subst">#{<span class="hljs-property">@world</span>.pxWidth}</span>; height={@world.pxHeight}"</span></pre></div></div>

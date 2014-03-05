@@ -2061,7 +2061,6 @@ class ABM.Model
       isHeadless = divOrOpts.isHeadless = divOrOpts.isHeadless? or not div?
       @setWorld divOrOpts
     @contexts = ABM.contexts = {}
-    console.log('isHeadless', isHeadless)
     unless isHeadless
       (@div=document.getElementById(div)).setAttribute 'style',
         "position:relative; width=#{@world.pxWidth}; height={@world.pxHeight}"
