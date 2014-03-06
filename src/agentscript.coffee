@@ -1335,6 +1335,7 @@ class ABM.Patch
 # * numX/numY:    width/height of grid.
 # * isTorus:      true if coord system wraps around at edges
 # * hasNeighbors: true if each patch caches its neighbors
+# * isHeadless:   true if not using canvas drawing
 
 
 class ABM.Patches extends ABM.AgentSet
