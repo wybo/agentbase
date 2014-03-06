@@ -117,6 +117,7 @@ See [sketches/jsmodel.html](sketches/jsmodel.html) for a random walker in JavaSc
     Cakefile            cake file for build, docs etc.
     LICENSE             GPLv3 License
     README.md           This file
+    package.json        NPM Package file, see npm install below
     docs/               Docco documentation
     extras/             AgentScript extensions
     lib/                All .js/min.js and .map files
