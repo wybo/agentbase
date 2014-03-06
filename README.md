@@ -10,13 +10,17 @@ Currently the documentation is hosted directly on our [GitHub Pages](http://back
 
 [**shapes.coffee**](docs/2-shapes.html): is a simple agent shapes module containing the default shapes and a few functions for getting the named shapes and adding your own shapes.
 
-[**agentset.coffee**](docs/3-agentset.html) is the core array subclass used by patches, agents, and links.
+[**agentset.coffee**](docs/3-agentset.html) AgentSet is the core Array subclass used by patches, agents, and links.
 
-[**agentsets.coffee**](docs/4-agentsets.html) contains the three subclasses of AgentSet: Patches, Agents, and Links along with the three classes they manage: Patch, Agent, and Link.
+[**patches.coffee**](docs/4-patches.html) The Agentset subclass for class Patches and class Patch which it manages.
 
-[**model.coffee**](docs/5-model.html) is the top level integration for all the agentsets and is subclassed by all user models. 
+[**agents.coffee**](docs/5-agents.html) The Agentset subclass for class Agents and class Agent which it manages.
 
-[**template.html**](docs/6-template.html) is a trivial subclass of Model showing the basic structure how you build your own models.  In addition, the models/ directory contains 10 simple models used in teaching NetLogo. You can [run the model here.](models/template.html) 
+[**links.coffee**](docs/6-links.html) The Agentset subclass for class Links and class Link which it manages.
+
+[**model.coffee**](docs/7-model.html) is the top level integration for all the agentsets and is subclassed by all user models. 
+
+[**template.html**](docs/8-template.html) is a trivial subclass of Model showing the basic structure how you build your own models.  In addition, the models/ directory contains 10 simple models used in teaching NetLogo. You can [run the model here.](models/template.html) 
 
 #### Add-ons
 
