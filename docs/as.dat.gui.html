@@ -184,8 +184,12 @@ the model interface in all browsers will be in sync.</p>
             <div class="content"><div class='highlight'><pre>          <span class="hljs-keyword">switch</span>(uiEl.type) {
             <span class="hljs-keyword">case</span> <span class="hljs-string">'button'</span>:
               <span class="hljs-keyword">this</span>.datGuiModel[name] = self.fbui ?
-                <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span> self.fbui.setUIValue(name, <span class="hljs-literal">true</span>); } :
-                <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span> self.setModelValue(name); };
+                <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span> 
+                  self.fbui.setUIValue(<span class="hljs-keyword">this</span>.name, <span class="hljs-literal">true</span>); 
+                }.bind({ name: name }) :
+                <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+                  self.setModelValue(<span class="hljs-keyword">this</span>.name);
+                }.bind({ name: name });
               <span class="hljs-keyword">this</span>.gui.add(<span class="hljs-keyword">this</span>.datGuiModel, name);
             <span class="hljs-keyword">break</span>;
             <span class="hljs-keyword">case</span> <span class="hljs-string">'choice'</span>:

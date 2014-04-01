@@ -28,10 +28,13 @@
       # processed by `starup`.  Useful for large files, but here just
       # for an example, not needed by simple models.
       startup: -> # called by constructor
-        # Add a few new shapes; u.s. is ABM.shapes.
-        u.s.add "cc", true, u.importImage("data/coffee.png")
-        u.s.add "redfish", false, u.importImage("data/redfish64t.png")
+        # Add new shapes; u.s. is ABM.shapes.
         u.s.add "bowtie", true, (c) -> u.s.poly c, [[-.5,-.5],[.5,.5],[-.5,.5],[.5,-.5]]        
+        # The following two example lines don't work when opened locally
+        # in Chrome (they work fine from a webserver). Uncomment if you'd
+        # like to add custom images.
+        # u.s.add "cc", true, u.importImage("data/coffee.png")
+        # u.s.add "redfish", false, u.importImage("data/redfish64t.png")
       # Initialize our model via the `setup` abstract method.
       # This model simply creates `population` agents with
       # arbitrary shapes with `size` size and `speed` velocity.
