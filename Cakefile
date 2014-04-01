@@ -2,12 +2,14 @@
 # all of which can be installed locally by running `npm install`.
 
 fs     = require 'fs'
+path   = require 'path'
 {exec} = require 'child_process'
 shell  = require 'shelljs'
 readline= require 'readline'
 # Note: try https://github.com/mgutz/execSync
 
-shell.env['PATH'] = "./node_modules/.bin:"+shell.env['PATH']
+node_modules = path.join(path.dirname(fs.realpathSync(__filename)), '/node_modules/.bin')
+shell.env['PATH'] = node_modules+":"+shell.env['PATH']
 
 editor= shell.exec("git config --get core.editor",{silent:true}).output
 prompt = (qstring,f) -> # prompt w/ question, respond with f(ans)
