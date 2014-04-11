@@ -132,22 +132,21 @@ Cake is used to build agentscript.coffee from individual source files, and to co
 
 The "extras" are libraries that augment agentscript and are individually compiled into lib/ as .js, .min.js, and .map files by Cake.  Here are the primary cake tasks:
 
-    cake watch         # Watch for source file updates, invoke builds
-    cake all           # Compile coffee, minify js, create docs
-    cake git:diff      # git diff the core and extras .coffee files
-    cake git:prep      # cake all; git add/status
-    cake git:commit    # commit locally, push to github
-    cake git:pages     # checkout gh-pages, merge master, push to gh-pages, checkout master
+    watch         # Watch for source file updates, invoke builds
+    all           # Compile coffee, minify js, create docs
+    git:diff      # git diff the core and extras .coffee files
+    git:prep      # cake all; git add/status
+    git:commit    # commit locally, push to github
+    git:pages     # checkout gh-pages, merge master, push to gh-pages, checkout master
 
 
 If you are forking/pulling agentscript, install the dev dependencies with
 
-    sudo npm install -g coffee-script   # for cake
-    npm install                         # for everything else
+    npm install
 
 and build with
 
-    cake all
+    node build.js all
 
 We're currently using [coffeescript](http://jashkenas.github.io/coffee-script/extras/coffee-script.js), [shelljs](https://github.com/arturadib/shelljs), [uglifyjs](https://github.com/mishoo/UglifyJS), and optionally [docco](http://jashkenas.github.io/docco/).
 
