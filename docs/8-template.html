@@ -124,13 +124,11 @@ for an example, not needed by simple models.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
-              <p>Add a few new shapes; u.s. is ABM.shapes.</p>
+              <p>Add new shapes; u.s. is ABM.shapes.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        u.s.add <span class="hljs-string">"cc"</span>, <span class="hljs-literal">true</span>, u.importImage(<span class="hljs-string">"data/coffee.png"</span>)
-        u.s.add <span class="hljs-string">"redfish"</span>, <span class="hljs-literal">false</span>, u.importImage(<span class="hljs-string">"data/redfish64t.png"</span>)
-        u.s.add <span class="hljs-string">"bowtie"</span>, <span class="hljs-literal">true</span>, <span class="hljs-function"><span class="hljs-params">(c)</span> -&gt;</span> u.s.poly c, [[-<span class="hljs-number">.5</span>,-<span class="hljs-number">.5</span>],[<span class="hljs-number">.5</span>,<span class="hljs-number">.5</span>],[-<span class="hljs-number">.5</span>,<span class="hljs-number">.5</span>],[<span class="hljs-number">.5</span>,-<span class="hljs-number">.5</span>]]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>        u.s.add <span class="hljs-string">"bowtie"</span>, <span class="hljs-literal">true</span>, <span class="hljs-function"><span class="hljs-params">(c)</span> -&gt;</span> u.s.poly c, [[-<span class="hljs-number">.5</span>,-<span class="hljs-number">.5</span>],[<span class="hljs-number">.5</span>,<span class="hljs-number">.5</span>],[-<span class="hljs-number">.5</span>,<span class="hljs-number">.5</span>],[<span class="hljs-number">.5</span>,-<span class="hljs-number">.5</span>]]</pre></div></div>
             
         </li>
         
@@ -141,7 +139,12 @@ for an example, not needed by simple models.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
-              <p>Initialize our model via the <code>setup</code> abstract method.
+              <p>The following two example lines don’t work when opened locally
+in Chrome (they work fine from a webserver). Uncomment if you’d
+like to add custom images.
+u.s.add “cc”, true, u.importImage(“data/coffee.png”)
+u.s.add “redfish”, false, u.importImage(“data/redfish64t.png”)
+Initialize our model via the <code>setup</code> abstract method.
 This model simply creates <code>population</code> agents with
 arbitrary shapes with <code>size</code> size and <code>speed</code> velocity.
 We also periodically change the patch colors to random gray values.</p>
