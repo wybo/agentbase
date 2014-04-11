@@ -6,12 +6,11 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css" />
-	<link rel="stylesheet" href="style.css" />
 
 	<script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
 	<script src="../lib/agentscript.js"></script>
 	<script src="../lib/data.js"></script>
-	<script src="../lib/tile.data.js"></script>
+	<script src="../lib/data.tile.js"></script>
 
 	<script>
 		var map, elevationLayer, model, tileSet;
@@ -36,7 +35,7 @@
 
 
 		    // tile dataset
-		    TileDataSet.prototype.parseTileData = function(data) {
+		    ABM.TileDataSet.prototype.parseTileData = function(data) {
 		        var r = data[0],
 		        g = data[1],
 		        b = data[2],
@@ -44,7 +43,7 @@
 		        return elevation;
 		    }
 
-			tileSet = new TileDataSet();
+			tileSet = new ABM.TileDataSet();
 
 		    // model
 			ABM.Model.prototype.setup = function() {
