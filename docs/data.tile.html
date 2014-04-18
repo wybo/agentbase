@@ -260,9 +260,14 @@ inside of the Agentscript wrapper</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>        	leafletLayer.on(<span class="hljs-string">'tileload'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(e)</span> {</span>
-        		<span class="hljs-keyword">var</span> tilePoint = urlToTileCoords(e.url),
-        			tile = ABM.util.imageToCtx(e.tile, <span class="hljs-keyword">this</span>.tileSize, <span class="hljs-keyword">this</span>.tileSize);
+        		<span class="hljs-keyword">var</span> tilePoint = urlToTileCoords(e.url);
+
+                <span class="hljs-keyword">if</span> (!tilePoint) {
+                    console.log(<span class="hljs-string">"err: couldn't parse tile coordinates for"</span>, e.url);
+                    <span class="hljs-keyword">return</span>;
+                }
         		
+                <span class="hljs-keyword">var</span> tile = ABM.util.imageToCtx(e.tile, <span class="hljs-keyword">this</span>.tileSize, <span class="hljs-keyword">this</span>.tileSize);
         		<span class="hljs-keyword">this</span>.addTile(tilePoint, tile);
         	}.bind(<span class="hljs-keyword">this</span>));</pre></div></div>
             
@@ -382,9 +387,9 @@ finished loading</p>
         	}.bind(<span class="hljs-keyword">this</span>));
 
         	<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">urlToTileCoords</span><span class="hljs-params">(url)</span> {</span>
-        		<span class="hljs-keyword">var</span> coordRegex = <span class="hljs-regexp">/.*\/(\d+)\/(\d+)\/(\d+)\.png/</span>;
+        		<span class="hljs-keyword">var</span> coordRegex = <span class="hljs-regexp">/.*\/(\d+)\/(\d+)\/(\d+)\.png$/</span>;
         		<span class="hljs-keyword">var</span> coords = coordRegex.exec(url);
-        		<span class="hljs-keyword">return</span> {
+        		<span class="hljs-keyword">return</span> coords &amp;&amp; {
         			z: coords[<span class="hljs-number">1</span>],
         			x: coords[<span class="hljs-number">2</span>],
         			y: coords[<span class="hljs-number">3</span>]
