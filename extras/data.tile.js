@@ -27,41 +27,41 @@
 
         TileDataSet.prototype = new ABM.DataSet();
 
-        TileDataSet.prototype.getXY = function(x, y) {
-        	this.checkXY(x, y);
+        // TileDataSet.prototype.getXY = function(x, y) {
+        // 	this.checkXY(x, y);
 
-        	var tileCtx = this.getTileContainingPoint(x, y);
+        // 	var tileCtx = this.getTileContainingPoint(x, y);
         	
-        	var pixelCoord = {
-        		x: this.origin.x + x,
-        		y: this.origin.y + y
-        	};
+        // 	var pixelCoord = {
+        // 		x: this.origin.x + x,
+        // 		y: this.origin.y + y
+        // 	};
 
-        	var xOffset = pixelCoord.x % this.tileSize,
-        		yOffset = pixelCoord.y % this.tileSize;
+        // 	var xOffset = pixelCoord.x % this.tileSize,
+        // 		yOffset = pixelCoord.y % this.tileSize;
 
-        	var imageData = tileCtx.getImageData(xOffset, yOffset, 1, 1).data;
-        	var res = this.parseTileData(imageData);
-        	return res;
-        }
+        // 	var imageData = tileCtx.getImageData(xOffset, yOffset, 1, 1).data;
+        // 	var res = this.parseTileData(imageData);
+        // 	return res;
+        // }
 
-        TileDataSet.prototype.bilinear = function(x, y) {
-        	this.checkXY(x, y);
+        // TileDataSet.prototype.bilinear = function(x, y) {
+        // 	this.checkXY(x, y);
 
-        	var x0 = Math.floor(x),
-        		y0 = Math.floor(y),
-        		x = x - x0,
-        		y = y - y0,
-        		dx = 1 - x,
-        		dy = 1 - y;
+        // 	var x0 = Math.floor(x),
+        // 		y0 = Math.floor(y),
+        // 		x = x - x0,
+        // 		y = y - y0,
+        // 		dx = 1 - x,
+        // 		dy = 1 - y;
 
-        	var f00 = this.getXY(x0, y0),
-        		f01 = this.getXY(x0, y0+1),
-        		f10 = this.getXY(x0+1, y0),
-        		f11 = this.getXY(x0+1, y0+1);
+        // 	var f00 = this.getXY(x0, y0),
+        // 		f01 = this.getXY(x0, y0+1),
+        // 		f10 = this.getXY(x0+1, y0),
+        // 		f11 = this.getXY(x0+1, y0+1);
 
-        	return f00*dx*dy + f10*x*dy + f01*dx*y + f11*x*y;
-        }
+        // 	return f00*dx*dy + f10*x*dy + f01*dx*y + f11*x*y;
+        // }
 
         TileDataSet.prototype.addTile = function(tilePoint, tile) {
         	var tileId = [tilePoint.z, tilePoint.x, tilePoint.y].join("/");
@@ -85,6 +85,47 @@
         	}
 
         	return tileCtx;
+        }
+
+        TileDataSet.prototype.importTileData = function() {
+            this.data = new Array(this.width*this.height);
+
+            var topLeft = this.origin,
+                bottomRight = {
+                    x: topLeft.x + this.width,
+                    y: topLeft.y + this.height
+                };
+
+            var topLeftOffsetX = topLeft.x % this.tileSize,
+                topLeftOffsetY = topLeft.y % this.tileSize,
+                bottomRightOffsetX = bottomRight.x % this.tileSize,
+                bottomRightOffsetY = bottomRight.y % this.tileSize;
+
+            for (var tileX = topLeft.x; tileX < bottomRight.x; tileX += this.tileSize) {
+                for (var tileY = topLeft.y; tileY < bottomRight.y; tileY += this.tileSize) {
+                    var curTile = getTileContainingPoint(x, y);
+                    var imageData = curTile.getImageData(0,0,this.tileSize,this.tileSize);
+                    
+                    var startXY = { x: 0, y: 0 };
+                    var endXY = { x: this.tileSize, y: this.tileSize };
+                    if (tileX == topLeft.x)
+                        startXY.x = topLeftOffsetX;
+                    if (tileX == Math.floor(bottomRight.x / this.tileSize))
+                        endXY.x = bottomRightOffsetX;
+                    if (tileY == topLeft.y)
+                        startXY.y = topLeftOffsetY;
+                    if (tileY == Math.floor(bottomRight.y / this.tileSize))
+                        endXY.y = bottomRightOffsetY;
+                    
+                    for (var x = startXY.x; x < endXY.x; x++) {
+                        for (var y = startXY.y; y < enXY.y; y++) {
+                            var idx = this.toIndex(tileX-topLeft.x+x, tileY-topLeft.y+y);
+                            this.data[idx] = this.parseTileData(imageData[y*this.tileSize+x]);
+                        }
+                    }
+
+                }
+            }
         }
 
         // Depending on how your data is
@@ -114,7 +155,7 @@
         		this.height = mapSize.y;
         	}
 
-        	this.tileSize = this.tileSize || leafletLayer._getTileSize();
+        	this.tileSize = leafletLayer._getTileSize();
         	this.origin = this.leafletMap.getPixelBounds().min;
         	this.zoom = leafletMap.getZoom();
 
