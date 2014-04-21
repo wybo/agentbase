@@ -141,10 +141,46 @@ for an example, not needed by simple models.</p>
               </div>
               <p>The following two example lines don’t work when opened locally
 in Chrome (they work fine from a webserver). Uncomment if you’d
-like to add custom images.
-u.s.add “cc”, true, u.importImage(“data/coffee.png”)
-u.s.add “redfish”, false, u.importImage(“data/redfish64t.png”)
-Initialize our model via the <code>setup</code> abstract method.
+like to add custom images.</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>u.s.add “cc”, true, u.importImage(“data/coffee.png”)</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>u.s.add “redfish”, false, u.importImage(“data/redfish64t.png”)</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Initialize our model via the <code>setup</code> abstract method.
 This model simply creates <code>population</code> agents with
 arbitrary shapes with <code>size</code> size and <code>speed</code> velocity.
 We also periodically change the patch colors to random gray values.</p>
@@ -156,11 +192,11 @@ We also periodically change the patch colors to random gray values.</p>
         </li>
         
         
-        <li id="section-5">
+        <li id="section-8">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-5">&#182;</a>
+                <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
               <p>First, we initialize our model instance variables.
 Most instance variables are parameters we would like
@@ -177,11 +213,11 @@ an external UI to setup for us.</p>
         </li>
         
         
-        <li id="section-6">
+        <li id="section-9">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-6">&#182;</a>
+                <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
               <p>Set the default agent size (conserves storage)</p>
 
@@ -192,11 +228,11 @@ an external UI to setup for us.</p>
         </li>
         
         
-        <li id="section-7">
+        <li id="section-10">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-7">&#182;</a>
+                <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
               <p>Set the agent to convert shape to bitmap for better performance.</p>
 
@@ -207,11 +243,11 @@ an external UI to setup for us.</p>
         </li>
         
         
-        <li id="section-8">
+        <li id="section-11">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-8">&#182;</a>
+                <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
               <p>Set animation to 30fps, without multiple steps per draw:</p>
 
@@ -222,11 +258,11 @@ an external UI to setup for us.</p>
         </li>
         
         
-        <li id="section-9">
+        <li id="section-12">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-9">&#182;</a>
+                <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
               <p>The patch grid will have been setup for us.  Here we initialize
 patch variables, either built-in ones or any new patch variables
@@ -241,11 +277,11 @@ random gray value.</p>
         </li>
         
         
-        <li id="section-10">
+        <li id="section-13">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
+                <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
               <p>Set x,y axes different color, use [0,0,0,0] for transparent pixel test</p>
 
@@ -256,11 +292,11 @@ random gray value.</p>
         </li>
         
         
-        <li id="section-11">
+        <li id="section-14">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-11">&#182;</a>
+                <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
               <p>Our empty @agents AgentSet will have been created.  Here we
 add <code>population</code> Agents we use in our model.
@@ -280,11 +316,11 @@ on our modeel’s <code>startCircle</code> variable.</p>
         </li>
         
         
-        <li id="section-12">
+        <li id="section-15">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
+                <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
               <p>Print number of agents and patches to the console.
 Note CoffeeScript
@@ -297,11 +333,11 @@ Note CoffeeScript
         </li>
         
         
-        <li id="section-13">
+        <li id="section-16">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-13">&#182;</a>
+                <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <p>Print number of agents with each shape</p>
 
@@ -314,11 +350,11 @@ Note CoffeeScript
         </li>
         
         
-        <li id="section-14">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-14">&#182;</a>
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <p>Update our model via the second abstract method, <code>step</code></p>
 
@@ -329,11 +365,11 @@ Note CoffeeScript
         </li>
         
         
-        <li id="section-15">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>First, update our agents via <code>updateAgents</code> below</p>
 
@@ -344,11 +380,11 @@ Note CoffeeScript
         </li>
         
         
-        <li id="section-16">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>Every 100 steps, update our patches, print stats to 
 the console, and use the Model refresh flag to redraw
@@ -364,11 +400,11 @@ the patches. Otherwise don’t refresh.</p>
         </li>
         
         
-        <li id="section-17">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>Add use of our first pull request:</p>
 
@@ -388,11 +424,11 @@ the patches. Otherwise don’t refresh.</p>
         </li>
         
         
-        <li id="section-18">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>Stop the animation at 1000. Restart by <code>ABM.model.start()</code> in console.</p>
 
@@ -405,11 +441,11 @@ the patches. Otherwise don’t refresh.</p>
         </li>
         
         
-        <li id="section-19">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>Three of our own methods to manage agents &amp; patches
 and report model state.</p>
@@ -421,11 +457,11 @@ and report model state.</p>
         </li>
         
         
-        <li id="section-20">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>Have our agent “wiggle” by changing
 our heading by +/- <code>wiggle/2</code> radians</p>
@@ -437,11 +473,11 @@ our heading by +/- <code>wiggle/2</code> radians</p>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>Then move forward by our speed.</p>
 
@@ -453,11 +489,11 @@ our heading by +/- <code>wiggle/2</code> radians</p>
         </li>
         
         
-        <li id="section-22">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>Update patch colors to be a random gray.
 Note we modify the existing color, GC minimization.</p>
@@ -470,11 +506,11 @@ Note we modify the existing color, GC minimization.</p>
         </li>
         
         
-        <li id="section-23">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
               <p>Report the average heading, in radians and degrees</p>
 
@@ -487,11 +523,11 @@ Note we modify the existing color, GC minimization.</p>
         </li>
         
         
-        <li id="section-24">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>Note: multiline strings. block strings also available.</p>
 
@@ -505,11 +541,11 @@ average heading of agents:
         </li>
         
         
-        <li id="section-25">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               <p>Now that we’ve build our class, we call it with Model’s
 constructor arguments:</p>
