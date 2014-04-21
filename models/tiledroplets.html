@@ -8,12 +8,24 @@
 	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css" />
 
 	<script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
+	<script src="../tools/dat.gui.min.js"></script>
+	
 	<script src="../lib/agentscript.js"></script>
 	<script src="../lib/data.js"></script>
 	<script src="../lib/data.tile.js"></script>
+	<script src="../lib/as.dat.gui.js"></script>
 
 	<script>
-		var map, elevationLayer, model, tileSet;
+		var map, elevationLayer, terrainLayer, model, tileSet, slopeAndAspect;
+
+		var ui = {
+			"layer": {
+				type: "choice",
+				val: "terrain",
+				vals: ["terrain", "altitude", "slope", "aspect"],
+				setter: "setLayer"
+			}
+		};
 
 		function init() {
 			// map
@@ -23,7 +35,7 @@
 		    }).setView([31.5,-110], 13);
 
 		    var mapUrl = 'http://{s}.tiles.mapbox.com/v3/bennlich.hmi0c6k3/{z}/{x}/{y}.png';
-			L.tileLayer(mapUrl, {
+			terrainLayer = L.tileLayer(mapUrl, {
 				attribution: '<a href="http://www.mapbox.com/about/maps/" target="_blank">Terms &amp; Feedback</a>'
 			}).addTo(map);
 
@@ -56,7 +68,7 @@
 		        
 		        this.agents.setDefault("shape", "square");
 		        this.agents.setDefault("size", .5);
-		        this.agents.setDefault("color", [255,0,0]);
+		        this.agents.setDefault("color", [60, 157, 255]);
 		        this.patches.cacheRect(this.vision, false);
 		    }
 
@@ -93,13 +105,38 @@
 		        }
 		    }
 
+		    ABM.Model.prototype.setLayer = function(name) {
+		    	var name = name || this.layerName;
+		    	this.layerName = name;
+		    	switch(name) {
+		    		case "terrain":
+		    			map.getContainer().style['z-index'] = 15;
+		    		break;
+		    		case "altitude":
+		    			map.getContainer().style['z-index'] = 0;
+		    			tileSet.toPatchColors();
+		    		break;
+		    		case "slope":
+		    			map.getContainer().style['z-index'] = 0;
+		        		slopeAndAspect.slope.toPatchColors();
+		    		break;
+		    		case "aspect":
+		    			map.getContainer().style['z-index'] = 0;
+		    			slopeAndAspect.aspect.toPatchColors();
+		    		break;
+		    	}
+		    	model.refreshPatches = true;
+		    	model.draw();
+        		model.refreshPatches = false;
+		    }
+
 			model = new ABM.Model({
 				div: "model",
-				size: 2,
+				size: 4,
 				minX: 1,
-				maxX: 250,
+				maxX: 256,
 				minY: 1,
-				maxY: 250
+				maxY: 192
 			});
 
 		    // bind tile dataset to leaflet
@@ -111,23 +148,30 @@
 		        model.stop();
 		        
 		        console.log('importing elevation data');
+		        tileSet.importTileData();
 		        tileSet.toPatchVar('elevation');
 		        console.log('done');
 
 		        console.log('calculating slope and aspect');
-		        model.refreshPatches = true;
-		        new ABM.PatchDataSet('elevation').slopeAndAspect().slope.toPatchColors();
-		        model.draw();
-		        model.refreshPatches = false;
+		        slopeAndAspect = tileSet.slopeAndAspect();
+		        model.setLayer();
 		        console.log('done');
 
 		        model.rain();
 		        model.start();
 		    });
+
+		    new ABM.DatGUI(model, ui);
 		}
 	</script>
+
+	<style type="text/css">
+		.dg.ac {
+			z-index: 100 !important;
+		}
+	</style>
 </head>
-<body onload="init();">
+<body onload="init();" style="margin: 0px;">
 	<div id="model"></div>
 	<div id="map"></div>
 </body>
