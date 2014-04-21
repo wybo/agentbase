@@ -3,11 +3,6 @@
 // easier to get data out of a tile server and into a model.
 
 // TODO:
-// * Rather than accessing data directly from tiles, it
-//   would make more sense to access data from a data[] array
-//   that we keep up to date as tile data is loaded. This would make
-//   it easy to support other DataSet functions, like convolve()
-//   and slopeAndAspect()
 // * Gracefully handle the min and max zoom options of L.tileLayer
 
 (function() {
@@ -27,47 +22,13 @@
 
         TileDataSet.prototype = new ABM.DataSet();
 
-        // TileDataSet.prototype.getXY = function(x, y) {
-        // 	this.checkXY(x, y);
-
-        // 	var tileCtx = this.getTileContainingPoint(x, y);
-        	
-        // 	var pixelCoord = {
-        // 		x: this.origin.x + x,
-        // 		y: this.origin.y + y
-        // 	};
-
-        // 	var xOffset = pixelCoord.x % this.tileSize,
-        // 		yOffset = pixelCoord.y % this.tileSize;
-
-        // 	var imageData = tileCtx.getImageData(xOffset, yOffset, 1, 1).data;
-        // 	var res = this.parseTileData(imageData);
-        // 	return res;
-        // }
-
-        // TileDataSet.prototype.bilinear = function(x, y) {
-        // 	this.checkXY(x, y);
-
-        // 	var x0 = Math.floor(x),
-        // 		y0 = Math.floor(y),
-        // 		x = x - x0,
-        // 		y = y - y0,
-        // 		dx = 1 - x,
-        // 		dy = 1 - y;
-
-        // 	var f00 = this.getXY(x0, y0),
-        // 		f01 = this.getXY(x0, y0+1),
-        // 		f10 = this.getXY(x0+1, y0),
-        // 		f11 = this.getXY(x0+1, y0+1);
-
-        // 	return f00*dx*dy + f10*x*dy + f01*dx*y + f11*x*y;
-        // }
-
         TileDataSet.prototype.addTile = function(tilePoint, tile) {
         	var tileId = [tilePoint.z, tilePoint.x, tilePoint.y].join("/");
         	this.tiles[tileId] = tile;
         }
 
+        // Get the tile containing a point (x,y) specified
+        // in pixels relative to the dataset origin.
         TileDataSet.prototype.getTileContainingPoint = function(x, y) {
         	var zoom = this.zoom,
         		pixelCoord = {
@@ -87,40 +48,70 @@
         	return tileCtx;
         }
 
+        // Copy data from all tiles into the data[] array.
+        // You would typically call this once after adding all data tiles,
+        // or after receiving a 'tilesready' event.
         TileDataSet.prototype.importTileData = function() {
             this.data = new Array(this.width*this.height);
 
-            var topLeft = this.origin,
-                bottomRight = {
-                    x: topLeft.x + this.width,
-                    y: topLeft.y + this.height
+            var mapTopLeft = this.origin, // in pixels
+                mapBottomRight = {
+                    x: mapTopLeft.x + this.width,
+                    y: mapTopLeft.y + this.height
+                },
+                mapTopLeftTile = { // in tiles
+                    x: Math.floor(mapTopLeft.x / this.tileSize),
+                    y: Math.floor(mapTopLeft.y / this.tileSize)
                 };
 
-            var topLeftOffsetX = topLeft.x % this.tileSize,
-                topLeftOffsetY = topLeft.y % this.tileSize,
-                bottomRightOffsetX = bottomRight.x % this.tileSize,
-                bottomRightOffsetY = bottomRight.y % this.tileSize;
+            var borderTileOffsets = {
+                left: mapTopLeft.x % this.tileSize,
+                top: mapTopLeft.y % this.tileSize,
+                right: mapBottomRight.x % this.tileSize,
+                bottom: mapBottomRight.y % this.tileSize
+            };
 
-            for (var tileX = topLeft.x; tileX < bottomRight.x; tileX += this.tileSize) {
-                for (var tileY = topLeft.y; tileY < bottomRight.y; tileY += this.tileSize) {
-                    var curTile = getTileContainingPoint(x, y);
+            var tilesWide = Math.floor(this.width / this.tileSize),
+                tilesHigh = Math.floor(this.height / this.tileSize);
+
+            // iterate through visible tiles
+            for (var tileX = 0; tileX <= tilesWide; tileX++) {
+                for (var tileY = 0; tileY <= tilesHigh; tileY++) {
+                    var curTile = this.getTileContainingPoint(tileX*this.tileSize, tileY*this.tileSize);
                     var imageData = curTile.getImageData(0,0,this.tileSize,this.tileSize);
                     
-                    var startXY = { x: 0, y: 0 };
-                    var endXY = { x: this.tileSize, y: this.tileSize };
-                    if (tileX == topLeft.x)
-                        startXY.x = topLeftOffsetX;
-                    if (tileX == Math.floor(bottomRight.x / this.tileSize))
-                        endXY.x = bottomRightOffsetX;
-                    if (tileY == topLeft.y)
-                        startXY.y = topLeftOffsetY;
-                    if (tileY == Math.floor(bottomRight.y / this.tileSize))
-                        endXY.y = bottomRightOffsetY;
+                    var curTilePos = { // in pixels
+                        left: (mapTopLeftTile.x + tileX) * this.tileSize,
+                        top: (mapTopLeftTile.y + tileY) * this.tileSize
+                    };
                     
-                    for (var x = startXY.x; x < endXY.x; x++) {
-                        for (var y = startXY.y; y < enXY.y; y++) {
-                            var idx = this.toIndex(tileX-topLeft.x+x, tileY-topLeft.y+y);
-                            this.data[idx] = this.parseTileData(imageData[y*this.tileSize+x]);
+                    var tileStartCoord = { x: 0, y: 0 };
+                    var tileEndCoord = { x: this.tileSize-1, y: this.tileSize-1 };
+                    if (tileX == 0)
+                        tileStartCoord.x = borderTileOffsets.left;
+                    if ((tileX + 1)*this.tileSize > this.width)
+                        tileEndCoord.x = borderTileOffsets.right;
+                    if (tileY == 0)
+                        tileStartCoord.y = borderTileOffsets.top;
+                    if ((tileY + 1)*this.tileSize > this.height)
+                        tileEndCoord.y = borderTileOffsets.bottom;
+
+                    // iterate through visible tile pixels
+                    for (var x = tileStartCoord.x; x <= tileEndCoord.x; x++) {
+                        for (var y = tileStartCoord.y; y <= tileEndCoord.y; y++) {
+                            var dataCoord = {
+                                x: x + curTilePos.left - mapTopLeft.x,
+                                y: y + curTilePos.top - mapTopLeft.y
+                            };
+                            var idx = this.toIndex(dataCoord.x, dataCoord.y),
+                                imageIdx = 4*(y*this.tileSize+x);
+
+                            this.data[idx] = this.parseTileData([
+                                imageData.data[imageIdx],
+                                imageData.data[imageIdx+1],
+                                imageData.data[imageIdx+2],
+                                imageData.data[imageIdx+3]
+                            ]);
                         }
                     }
 
@@ -132,8 +123,7 @@
         // encoded in your tiles, you may
         // want to implement a custom parser
 
-        // The imageData paramater is image pixel data
-        // returned by ctx.getImageData()
+        // The imageData paramater is of the form [r, g, b, a]
         TileDataSet.prototype.parseTileData = function(imageData) {
         	return imageData;
         }

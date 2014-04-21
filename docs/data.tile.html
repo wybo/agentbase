@@ -80,11 +80,6 @@ easier to get data out of a tile server and into a model.</p>
               </div>
               <p>TODO:</p>
 <ul>
-<li>Rather than accessing data directly from tiles, it
-would make more sense to access data from a data[] array
-that we keep up to date as tile data is loaded. This would make
-it easy to support other DataSet functions, like convolve()
-and slopeAndAspect()</li>
 <li>Gracefully handle the min and max zoom options of L.tileLayer</li>
 </ul>
 
@@ -108,48 +103,26 @@ and slopeAndAspect()</li>
 
         TileDataSet.prototype = <span class="hljs-keyword">new</span> ABM.DataSet();
 
-        TileDataSet.prototype.getXY = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(x, y)</span> {</span>
-        	<span class="hljs-keyword">this</span>.checkXY(x, y);
-
-        	<span class="hljs-keyword">var</span> tileCtx = <span class="hljs-keyword">this</span>.getTileContainingPoint(x, y);
-        	
-        	<span class="hljs-keyword">var</span> pixelCoord = {
-        		x: <span class="hljs-keyword">this</span>.origin.x + x,
-        		y: <span class="hljs-keyword">this</span>.origin.y + y
-        	};
-
-        	<span class="hljs-keyword">var</span> xOffset = pixelCoord.x % <span class="hljs-keyword">this</span>.tileSize,
-        		yOffset = pixelCoord.y % <span class="hljs-keyword">this</span>.tileSize;
-
-        	<span class="hljs-keyword">var</span> imageData = tileCtx.getImageData(xOffset, yOffset, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>).data;
-        	<span class="hljs-keyword">var</span> res = <span class="hljs-keyword">this</span>.parseTileData(imageData);
-        	<span class="hljs-keyword">return</span> res;
-        }
-
-        TileDataSet.prototype.bilinear = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(x, y)</span> {</span>
-        	<span class="hljs-keyword">this</span>.checkXY(x, y);
-
-        	<span class="hljs-keyword">var</span> x0 = <span class="hljs-built_in">Math</span>.floor(x),
-        		y0 = <span class="hljs-built_in">Math</span>.floor(y),
-        		x = x - x0,
-        		y = y - y0,
-        		dx = <span class="hljs-number">1</span> - x,
-        		dy = <span class="hljs-number">1</span> - y;
-
-        	<span class="hljs-keyword">var</span> f00 = <span class="hljs-keyword">this</span>.getXY(x0, y0),
-        		f01 = <span class="hljs-keyword">this</span>.getXY(x0, y0+<span class="hljs-number">1</span>),
-        		f10 = <span class="hljs-keyword">this</span>.getXY(x0+<span class="hljs-number">1</span>, y0),
-        		f11 = <span class="hljs-keyword">this</span>.getXY(x0+<span class="hljs-number">1</span>, y0+<span class="hljs-number">1</span>);
-
-        	<span class="hljs-keyword">return</span> f00*dx*dy + f10*x*dy + f01*dx*y + f11*x*y;
-        }
-
         TileDataSet.prototype.addTile = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(tilePoint, tile)</span> {</span>
         	<span class="hljs-keyword">var</span> tileId = [tilePoint.z, tilePoint.x, tilePoint.y].join(<span class="hljs-string">"/"</span>);
         	<span class="hljs-keyword">this</span>.tiles[tileId] = tile;
-        }
+        }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Get the tile containing a point (x,y) specified
+in pixels relative to the dataset origin.</p>
 
-        TileDataSet.prototype.getTileContainingPoint = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(x, y)</span> {</span>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        TileDataSet.prototype.getTileContainingPoint = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(x, y)</span> {</span>
         	<span class="hljs-keyword">var</span> zoom = <span class="hljs-keyword">this</span>.zoom,
         		pixelCoord = {
         			x: <span class="hljs-keyword">this</span>.origin.x + x,
@@ -171,11 +144,118 @@ and slopeAndAspect()</li>
         </li>
         
         
-        <li id="section-3">
+        <li id="section-4">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-3">&#182;</a>
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Copy data from all tiles into the data[] array.
+You would typically call this once after adding all data tiles,
+or after receiving a ‘tilesready’ event.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        TileDataSet.prototype.importTileData = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+            <span class="hljs-keyword">this</span>.data = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Array</span>(<span class="hljs-keyword">this</span>.width*<span class="hljs-keyword">this</span>.height);
+
+            <span class="hljs-keyword">var</span> mapTopLeft = <span class="hljs-keyword">this</span>.origin, <span class="hljs-comment">// in pixels</span>
+                mapBottomRight = {
+                    x: mapTopLeft.x + <span class="hljs-keyword">this</span>.width,
+                    y: mapTopLeft.y + <span class="hljs-keyword">this</span>.height
+                },
+                mapTopLeftTile = { <span class="hljs-comment">// in tiles</span>
+                    x: <span class="hljs-built_in">Math</span>.floor(mapTopLeft.x / <span class="hljs-keyword">this</span>.tileSize),
+                    y: <span class="hljs-built_in">Math</span>.floor(mapTopLeft.y / <span class="hljs-keyword">this</span>.tileSize)
+                };
+
+            <span class="hljs-keyword">var</span> borderTileOffsets = {
+                left: mapTopLeft.x % <span class="hljs-keyword">this</span>.tileSize,
+                top: mapTopLeft.y % <span class="hljs-keyword">this</span>.tileSize,
+                right: mapBottomRight.x % <span class="hljs-keyword">this</span>.tileSize,
+                bottom: mapBottomRight.y % <span class="hljs-keyword">this</span>.tileSize
+            };
+
+            <span class="hljs-keyword">var</span> tilesWide = <span class="hljs-built_in">Math</span>.floor(<span class="hljs-keyword">this</span>.width / <span class="hljs-keyword">this</span>.tileSize),
+                tilesHigh = <span class="hljs-built_in">Math</span>.floor(<span class="hljs-keyword">this</span>.height / <span class="hljs-keyword">this</span>.tileSize);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>iterate through visible tiles</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> tileX = <span class="hljs-number">0</span>; tileX &lt;= tilesWide; tileX++) {
+                <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> tileY = <span class="hljs-number">0</span>; tileY &lt;= tilesHigh; tileY++) {
+                    <span class="hljs-keyword">var</span> curTile = <span class="hljs-keyword">this</span>.getTileContainingPoint(tileX*<span class="hljs-keyword">this</span>.tileSize, tileY*<span class="hljs-keyword">this</span>.tileSize);
+                    <span class="hljs-keyword">var</span> imageData = curTile.getImageData(<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-keyword">this</span>.tileSize,<span class="hljs-keyword">this</span>.tileSize);
+                    
+                    <span class="hljs-keyword">var</span> curTilePos = { <span class="hljs-comment">// in pixels</span>
+                        left: (mapTopLeftTile.x + tileX) * <span class="hljs-keyword">this</span>.tileSize,
+                        top: (mapTopLeftTile.y + tileY) * <span class="hljs-keyword">this</span>.tileSize
+                    };
+                    
+                    <span class="hljs-keyword">var</span> tileStartCoord = { x: <span class="hljs-number">0</span>, y: <span class="hljs-number">0</span> };
+                    <span class="hljs-keyword">var</span> tileEndCoord = { x: <span class="hljs-keyword">this</span>.tileSize-<span class="hljs-number">1</span>, y: <span class="hljs-keyword">this</span>.tileSize-<span class="hljs-number">1</span> };
+                    <span class="hljs-keyword">if</span> (tileX == <span class="hljs-number">0</span>)
+                        tileStartCoord.x = borderTileOffsets.left;
+                    <span class="hljs-keyword">if</span> ((tileX + <span class="hljs-number">1</span>)*<span class="hljs-keyword">this</span>.tileSize &gt; <span class="hljs-keyword">this</span>.width)
+                        tileEndCoord.x = borderTileOffsets.right;
+                    <span class="hljs-keyword">if</span> (tileY == <span class="hljs-number">0</span>)
+                        tileStartCoord.y = borderTileOffsets.top;
+                    <span class="hljs-keyword">if</span> ((tileY + <span class="hljs-number">1</span>)*<span class="hljs-keyword">this</span>.tileSize &gt; <span class="hljs-keyword">this</span>.height)
+                        tileEndCoord.y = borderTileOffsets.bottom;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>iterate through visible tile pixels</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> x = tileStartCoord.x; x &lt;= tileEndCoord.x; x++) {
+                        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> y = tileStartCoord.y; y &lt;= tileEndCoord.y; y++) {
+                            <span class="hljs-keyword">var</span> dataCoord = {
+                                x: x + curTilePos.left - mapTopLeft.x,
+                                y: y + curTilePos.top - mapTopLeft.y
+                            };
+                            <span class="hljs-keyword">var</span> idx = <span class="hljs-keyword">this</span>.toIndex(dataCoord.x, dataCoord.y),
+                                imageIdx = <span class="hljs-number">4</span>*(y*<span class="hljs-keyword">this</span>.tileSize+x);
+
+                            <span class="hljs-keyword">this</span>.data[idx] = <span class="hljs-keyword">this</span>.parseTileData([
+                                imageData.data[imageIdx],
+                                imageData.data[imageIdx+<span class="hljs-number">1</span>],
+                                imageData.data[imageIdx+<span class="hljs-number">2</span>],
+                                imageData.data[imageIdx+<span class="hljs-number">3</span>]
+                            ]);
+                        }
+                    }
+
+                }
+            }
+        }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
               <p>Depending on how your data is
 encoded in your tiles, you may
@@ -186,14 +266,13 @@ want to implement a custom parser</p>
         </li>
         
         
-        <li id="section-4">
+        <li id="section-8">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-4">&#182;</a>
+                <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
-              <p>The imageData paramater is image pixel data
-returned by ctx.getImageData()</p>
+              <p>The imageData paramater is of the form [r, g, b, a]</p>
 
             </div>
             
@@ -204,11 +283,11 @@ returned by ctx.getImageData()</p>
         </li>
         
         
-        <li id="section-5">
+        <li id="section-9">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-5">&#182;</a>
+                <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
               <p>Use Leaflet to dynamically load tiles into your dataset;
 you should call this after initializing your model. Note
@@ -224,11 +303,11 @@ the tile layer must be an instance of L.CrossOriginTileLayer
         </li>
         
         
-        <li id="section-6">
+        <li id="section-10">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-6">&#182;</a>
+                <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
               <p>by default, put the Leaflet div
 inside of the Agentscript wrapper</p>
@@ -249,11 +328,11 @@ inside of the Agentscript wrapper</p>
         </li>
         
         
-        <li id="section-7">
+        <li id="section-11">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-7">&#182;</a>
+                <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
               <p>Keep track of tiles as they are loaded</p>
 
@@ -274,11 +353,11 @@ inside of the Agentscript wrapper</p>
         </li>
         
         
-        <li id="section-8">
+        <li id="section-12">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-8">&#182;</a>
+                <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
               <p>Clear tile storage on zoom</p>
 
@@ -291,11 +370,11 @@ inside of the Agentscript wrapper</p>
         </li>
         
         
-        <li id="section-9">
+        <li id="section-13">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-9">&#182;</a>
+                <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
               <p>Keep map top-left corner up to date</p>
 
@@ -308,11 +387,11 @@ inside of the Agentscript wrapper</p>
         </li>
         
         
-        <li id="section-10">
+        <li id="section-14">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
+                <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
               <p>Keep zoom up to date</p>
 
@@ -325,11 +404,11 @@ inside of the Agentscript wrapper</p>
         </li>
         
         
-        <li id="section-11">
+        <li id="section-15">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-11">&#182;</a>
+                <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
               <p>Provide a way to listen for ‘tilesready’ events
 by wrapping the leafletLayer’s event listener</p>
@@ -349,11 +428,11 @@ by wrapping the leafletLayer’s event listener</p>
         </li>
         
         
-        <li id="section-12">
+        <li id="section-16">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
+                <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <p>Fire ‘tilesready’ events only when the map
 is finished moving and the current tiles are
@@ -408,11 +487,11 @@ finished loading</p>
         </li>
         
         
-        <li id="section-13">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-13">&#182;</a>
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <p>Alert Leaflet that its dimensions have changed</p>
 
@@ -430,11 +509,11 @@ finished loading</p>
         </li>
         
         
-        <li id="section-14">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-14">&#182;</a>
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <h1 id="l-crossorigintilelayer">L.CrossOriginTileLayer</h1>
 
@@ -447,11 +526,11 @@ finished loading</p>
         </li>
         
         
-        <li id="section-15">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>Setting the crossOrigin attribute of the tiles
 lets us access their imagedata</p>
