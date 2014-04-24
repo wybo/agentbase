@@ -10,11 +10,11 @@
 # ABM contains three agentsets created by class Model:
 #
 # * `ABM.patches`: the model's "world" grid
-# * `ABM.agents`: the model's agents living on the patchs
+# * `ABM.agents`: the model's agents living on the patches
 # * `ABM.links`: the network links connecting agent pairs
 #
 # See NetLogo [documentation](http://ccl.northwestern.edu/netlogo/docs/)
-# for explanation on the overall semantics of Agent Based Modeling
+# for explanation of the overall semantics of Agent Based Modeling
 # used by AgentSets as well as Patches, Agents, and Links.
 #
 # Note: subclassing `Array` can be dangerous and we may have to convert
@@ -85,7 +85,7 @@ class ABM.AgentSet extends Array
     u.removeItem @, o
     @
 
-  # Set the default value of a agent class, return agetnset
+  # Set the default value of an agent class, return agentset
   setDefault: (name, value) -> @agentClass::[name] = value; @
   # Declare variables of an agent class. 
   # Vars = a string of space separated names or an array of name strings

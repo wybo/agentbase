@@ -926,11 +926,11 @@ ABM.shapes = ABM.util.s = do ->
 # ABM contains three agentsets created by class Model:
 #
 # * `ABM.patches`: the model's "world" grid
-# * `ABM.agents`: the model's agents living on the patchs
+# * `ABM.agents`: the model's agents living on the patches
 # * `ABM.links`: the network links connecting agent pairs
 #
 # See NetLogo [documentation](http://ccl.northwestern.edu/netlogo/docs/)
-# for explanation on the overall semantics of Agent Based Modeling
+# for explanation of the overall semantics of Agent Based Modeling
 # used by AgentSets as well as Patches, Agents, and Links.
 #
 # Note: subclassing `Array` can be dangerous and we may have to convert
@@ -1001,7 +1001,7 @@ class ABM.AgentSet extends Array
     u.removeItem @, o
     @
 
-  # Set the default value of a agent class, return agetnset
+  # Set the default value of a agent class, return agentset
   setDefault: (name, value) -> @agentClass::[name] = value; @
   # Declare variables of an agent class. 
   # Vars = a string of space separated names or an array of name strings
@@ -1247,14 +1247,12 @@ class ABM.AgentSet extends Array
 #
 #     AS.add new XY(pt...) for pt in [[0,1],[8,0],[6,4],[1,3],[1,1]]
 
-# ### Patch and Patches
+# ### Patch & Patches
   
-# Class Patch instances represent a rectangle on a grid.  It holds variables\
+# Class Patch instances represent a rectangle on a grid.  They hold variables
 # that are in the patches the agents live on.  The set of all patches (ABM.patches)
 # is the world on which the agents live and the model runs.
 class ABM.Patch
-  # Constructor & Class Variables:
-  #
   # Constructor & Class Variables:
   # * id:         unique identifier, promoted by agentset create() factory method
   # * breed:      the agentset this agent belongs to
@@ -1827,7 +1825,7 @@ class ABM.Agents extends ABM.AgentSet
     as = @inRect a, radius, radius, true
     super a, radius, meToo # as.inRadius a, radius, meToo
 
-# ### Link and Links
+# ### Link & Links
   
 # Class Link connects two agent endpoints for graph modeling.
 class ABM.Link
@@ -2241,7 +2239,7 @@ class ABM.Model
 #     @embers and @fires
 #     @spokes and @rims 
 #
-# These agentset's `create` method create subclasses of Agent/Link.
+# These agentsets' `create` methods create subclasses of Agent/Link.
 # Use of <breed>.setDefault methods work as for agents/links, creating default
 # values for the breed set:
 #

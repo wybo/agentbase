@@ -292,7 +292,7 @@ class ABM.Model
 #     @embers and @fires
 #     @spokes and @rims 
 #
-# These agentset's `create` method create subclasses of Agent/Link.
+# These agentsets' `create` methods create subclasses of Agent/Link.
 # Use of <breed>.setDefault methods work as for agents/links, creating default
 # values for the breed set:
 #

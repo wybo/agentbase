@@ -1,4 +1,4 @@
-# ### Link and Links
+# ### Link & Links
   
 # Class Link connects two agent endpoints for graph modeling.
 class ABM.Link
