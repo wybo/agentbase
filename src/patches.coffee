@@ -1,11 +1,9 @@
-# ### Patch and Patches
+# ### Patch & Patches
   
-# Class Patch instances represent a rectangle on a grid.  It holds variables\
+# Class Patch instances represent a rectangle on a grid.  They hold variables
 # that are in the patches the agents live on.  The set of all patches (ABM.patches)
 # is the world on which the agents live and the model runs.
 class ABM.Patch
-  # Constructor & Class Variables:
-  #
   # Constructor & Class Variables:
   # * id:         unique identifier, promoted by agentset create() factory method
   # * breed:      the agentset this agent belongs to
