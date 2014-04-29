@@ -145,10 +145,15 @@ class ABM.Model
     # agentset is drawn only once, remaining static after that.
     @refreshLinks = @refreshAgents = @refreshPatches = true
 
+    # Extend class prototypes
+    Patches = @extend(ABM.Patches); Patch = @extend(ABM.Patch)
+    Agents = @extend(ABM.Agents); Agent = @extend(ABM.Agent)
+    Links = @extend(ABM.Links); Link = @extend(ABM.Link)
+
     # Initialize agentsets.
-    @patches = ABM.patches = new ABM.Patches ABM.Patch, "patches"
-    @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
-    @links = ABM.links = new ABM.Links ABM.Link, "links"
+    @patches = ABM.patches = new Patches Patch, "patches"
+    @agents = ABM.agents = new Agents Agent, "agents"
+    @links = ABM.links = new Links Link, "links"
 
     # Initialize model global resources
     @debugging = false
@@ -320,6 +325,15 @@ class ABM.Model
   #     even = @asSet (a for a in @agents when a.id % 2 is 0)
   #     even.shuffle().getProp("id") # [6, 0, 4, 2, 8]
   asSet: (a, setType = ABM.AgentSet) -> ABM.AgentSet.asSet a, setType
+
+  # Add this model to a class's prototype
+  extend: (aClass) ->
+    model = @
+    class extendedClass extends aClass
+      model: model
+      constructor: ->
+        super
+    return extendedClass;
 
   # A simple debug aid which places short names in the global name space.
   # Note we avoid using the actual name, such as "patches" because this
