@@ -20,22 +20,24 @@ class ABM.Patch
   # of none.  n and n4 are promoted by the Patches agent set 
   # if world.neighbors is true, the default.
 
-  id: null            # unique id, promoted by agentset create factory method
-  breed: null         # set by the agentSet owning this patch
-  x:null; y:null      # The patch position in the patch grid
-  n:null; n4:null     # The neighbors, n: 8, n4: 4. null OK if model doesn't need them.
-  color: [0,0,0]      # The patch color
-  hidden: false       # draw me?
-  label: null         # text for the patch
-  labelColor: [0,0,0] # text color
-  labelOffset: [0,0]  # text offset from the patch center
-  pRect: null         # Performance: cached rect of neighborhood larger than n.
+  id: null              # unique id, promoted by agentset create factory method
+  breed: null           # set by the agentSet owning this patch
+  x:null                # The patch position in the patch grid
+  y:null
+  n:null                # The neighbors, n: 8, n4: 4. null OK if model doesn't need them.
+  n4:null
+  color: [0, 0, 0]      # The patch color
+  hidden: false         # draw me?
+  label: null           # text for the patch
+  labelColor: [0, 0, 0] # text color
+  labelOffset: [0, 0]   # text offset from the patch center
+  pRect: null           # Performance: cached rect of neighborhood larger than n.
   
   # New Patch: Just set x,y. Neighbors set by Patches constructor if needed.
   constructor: (@x, @y) ->
 
   # Return a string representation of the patch.
-  toString: -> "{id:#{@id} xy:#{[@x,@y]} c:#{@color}}"
+  toString: -> "{id:#{@id} xy:#{[@x, @y]} c:#{@color}}"
 
   # Set patch color to `c` scaled by `s`. Usage:
   #
@@ -43,17 +45,17 @@ class ABM.Patch
   #     p.scaleColor @foodColor, p.foodPheromone # ants model
   #
   # Promotes color if currently using the default.
-  scaleColor: (c, s) -> 
+  scaleColor: (c, s) ->
     @color = u.clone @color unless @.hasOwnProperty("color")
     u.scaleColor c, s, @color
   
   # Draw the patch and its text label if there is one.
   draw: (ctx) ->
     ctx.fillStyle = u.colorStr @color
-    ctx.fillRect @x-.5, @y-.5, 1, 1
+    ctx.fillRect @x - .5, @y - .5, 1, 1
     if @label? # REMIND: should be 2nd pass.
-      [x,y] = @breed.patchXYtoPixelXY @x, @y
-      u.ctxDrawText ctx, @label, x+@labelOffset[0], y+@labelOffset[1], @labelColor
+      [x, y] = @breed.patchXYtoPixelXY @x, @y
+      u.ctxDrawText ctx, @label, x + @labelOffset[0], y + @labelOffset[1], @labelColor
   
   # Return an array of the agents on this patch.
   # If patches.cacheAgentsHere has created an @agents instance
@@ -71,7 +73,9 @@ class ABM.Patch
   # proc is called on the new agent after inserting in its agentSet.
   sprout: (num = 1, breed = ABM.agents, init = ->) ->
     breed.create num, (a) => # fat arrow so that @ = this patch
-      a.setXY @x, @y; init(a); a
+      a.setXY @x, @y
+      init(a)
+      a
 
 # Class Patches is a singleton 2D matrix of Patch instances, each patch 
 # representing a 1x1 square in patch coordinates (via 2D coord transforms).
@@ -114,20 +118,20 @@ class ABM.Patches extends ABM.AgentSet
 
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
   # if browser does not support smoothing flags.
-  usePixels: (@drawWithPixels=true) ->
+  usePixels: (@drawWithPixels = true) ->
     ctx = ABM.contexts.patches
     u.setCtxSmoothing ctx, not @drawWithPixels
 
   # Optimization: Cache a single set by modeler for use by patchRect,
   # inCone, inRect, inRadius.  Ex: flock demo model's vision rect.
-  cacheRect: (radius, meToo=false) ->
+  cacheRect: (radius, meToo = false) ->
     for p in @
       p.pRect = @patchRect p, radius, radius, meToo
-      p.pRect.radius = radius#; p.pRect.meToo = meToo
+      p.pRect.radius = radius #; p.pRect.meToo = meToo
     radius
 
   # Install neighborhoods in patches
-  setNeighbors: -> 
+  setNeighbors: ->
     for p in @
       p.n =  @patchRect p, 1, 1
       p.n4 = @asSet (n for n in p.n when n.x is p.x or n.y is p.y)
@@ -136,10 +140,14 @@ class ABM.Patches extends ABM.AgentSet
   # 
   setPixels: ->
     if @size is 1
-    then @usePixels(); @pixelsCtx = ABM.contexts.patches
-    else @pixelsCtx = u.createCtx @numX, @numY
+      @usePixels()
+      @pixelsCtx = ABM.contexts.patches
+    else
+      @pixelsCtx = u.createCtx @numX, @numY
+
     @pixelsImageData = @pixelsCtx.getImageData(0, 0, @numX, @numY)
     @pixelsData = @pixelsImageData.data
+
     if @pixelsData instanceof Uint8Array # Check for typed arrays
       @pixelsData32 = new Uint32Array @pixelsData.buffer
       @pixelsAreLittleEndian = u.isLittleEndian()
@@ -156,55 +164,61 @@ class ABM.Patches extends ABM.AgentSet
 # #### Patch grid coord system utilities:
   
   # Return the patch id/index given integer x,y in patch coords
-  patchIndex: (x,y) -> x-@minX + @numX*(@maxY-y)
+  patchIndex: (x, y) -> x - @minX + @numX * (@maxY - y)
   # Return the patch at matrix position x,y where 
   # x & y are both valid integer patch coordinates.
-  patchXY: (x,y) -> @[@patchIndex x,y]
+  patchXY: (x, y) -> @[@patchIndex x, y]
   
   # Return x,y float values to be between min/max patch coord values
-  clamp: (x,y) -> [u.clamp(x, @minXcor, @maxXcor), u.clamp(y, @minYcor, @maxYcor)]
+  clamp: (x, y) -> [u.clamp(x, @minXcor, @maxXcor), u.clamp(y, @minYcor, @maxYcor)]
   
   # Return x,y float values to be modulo min/max patch coord values.
-  wrap: (x,y)  -> [u.wrap(x, @minXcor, @maxXcor),  u.wrap(y, @minYcor, @maxYcor)]
+  wrap: (x, y) -> [u.wrap(x, @minXcor, @maxXcor), u.wrap(y, @minYcor, @maxYcor)]
   
   # Return x,y float values to be between min/max patch values
   # using either clamp/wrap above according to isTorus topology.
-  coord: (x,y) -> #returns a valid world coord (real, not int)
-    if @isTorus then @wrap x,y else @clamp x,y
+  coord: (x, y) -> #returns a valid world coord (real, not int)
+    if @isTorus then @wrap x, y else @clamp x, y
   # Return true if on world or torus, false if non-torus and off-world
-  isOnWorld: (x,y) -> @isTorus or (@minXcor<=x<=@maxXcor and @minYcor<=y<=@maxYcor)
+  isOnWorld: (x, y) -> @isTorus or (@minXcor <= x <= @maxXcor and @minYcor <= y <= @maxYcor)
 
   # Return patch at x,y float values according to topology.
-  patch: (x,y) -> 
-    [x,y]=@coord x,y
+  patch: (x, y) ->
+    [x, y]=@coord x, y
     x = u.clamp Math.round(x), @minX, @maxX
     y = u.clamp Math.round(y), @minY, @maxY
     @patchXY x, y
   
   # Return a random valid float x,y point in patch space
-  randomPt: -> [u.randomFloat2(@minXcor,@maxXcor), u.randomFloat2(@minYcor,@maxYcor)]
+  randomPt: -> [u.randomFloat2(@minXcor, @maxXcor), u.randomFloat2(@minYcor, @maxYcor)]
 
 # #### Patch metrics
   
   # Convert patch measure to pixels
-  toBits: (p) -> p*@size
+  toBits: (p) -> p * @size
   # Convert bit measure to patches
-  fromBits: (b) -> b/@size
+  fromBits: (b) -> b / @size
 
 # #### Patch utilities
   
   # Return an array of patches in a rectangle centered on the given 
   # patch `p`, dx, dy units to the right/left and up/down. 
   # Exclude `p` unless meToo is true, default false.
-  patchRect: (p, dx, dy, meToo=false) ->
+  patchRect: (p, dx, dy, meToo = false) ->
     return p.pRect if p.pRect? and p.pRect.radius is dx # and p.pRect.radius is dy
     rect = []; # REMIND: optimize if no wrapping, rect inside patch boundaries
-    for y in [p.y-dy..p.y+dy] by 1 # by 1: perf: avoid bidir JS for loop
-      for x in [p.x-dx..p.x+dx] by 1
-        if @isTorus or (@minX<=x<=@maxX and @minY<=y<=@maxY)
+    for y in [(p.y - dy)..(p.y + dy)] by 1 # by 1: perf: avoid bidir JS for loop
+      for x in [(p.x - dx)..(p.x + dx)] by 1
+        if @isTorus or (@minX <= x <= @maxX and @minY <= y <= @maxY)
           if @isTorus
-            x+=@numX if x<@minX; x-=@numX if x>@maxX
-            y+=@numY if y<@minY; y-=@numY if y>@maxY
+            if x < @minX
+              x += @numX
+            if x > @maxX
+              x -= @numX
+            if y < @minY
+              y += @numY
+            if y > @maxY
+              y -= @numY
           pnext = @patchXY x, y # much faster than coord()
           unless pnext?
             u.error "patchRect: x,y out of bounds, see console.log"
@@ -224,7 +238,7 @@ class ABM.Patches extends ABM.AgentSet
       @installDrawing img
       f() if f?
   # Direct install image into the given context, not async.
-  installDrawing: (img, ctx=ABM.contexts.drawing) ->
+  installDrawing: (img, ctx = ABM.contexts.drawing) ->
     u.setIdentity ctx
     ctx.drawImage img, 0, 0, ctx.canvas.width, ctx.canvas.height
     ctx.restore() # restore patch transform
@@ -232,12 +246,12 @@ class ABM.Patches extends ABM.AgentSet
   # Utility function for pixel manipulation.  Given a patch, returns the 
   # native canvas index i into the pixel data.
   # The top-left order simplifies finding pixels in data sets
-  pixelByteIndex: (p) -> 4*p.id # Uint8
+  pixelByteIndex: (p) -> 4 * p.id # Uint8
   pixelWordIndex: (p) -> p.id   # Uint32
   # Convert pixel location (top/left offset i.e. mouse) to patch coords (float)
-  pixelXYtoPatchXY: (x,y) -> [@minXcor+(x/@size), @maxYcor-(y/@size)]
+  pixelXYtoPatchXY: (x, y) -> [@minXcor + (x / @size), @maxYcor - (y / @size)]
   # Convert patch coords (float) to pixel location (top/left offset i.e. mouse)
-  patchXYtoPixelXY: (x,y) -> [(x-@minXcor)*@size, (@maxYcor-y)*@size]
+  patchXYtoPixelXY: (x, y) -> [( x - @minXcor) * @size, (@maxYcor - y) * @size]
   
     
   # Draws, or "imports" an image URL into the patches as their color property.
@@ -256,12 +270,12 @@ class ABM.Patches extends ABM.AgentSet
     for p in @
       i = @pixelByteIndex p
       # promote initial default
-      p.color = if map? then map[i] else [data[i++],data[i++],data[i]] 
+      p.color = if map? then map[i] else [data[i++], data[i++], data[i]]
     @pixelsCtx.restore() # restore patch transform
 
   # Draw the patches via pixel manipulation rather than 2D drawRect.
   # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq)
-  drawScaledPixels: (ctx) -> 
+  drawScaledPixels: (ctx) ->
     # u.setIdentity ctx & ctx.restore() only needed if patch size 
     # not 1, pixel ops don't use transform but @size>1 uses
     # a drawimage
@@ -272,9 +286,14 @@ class ABM.Patches extends ABM.AgentSet
   drawScaledPixels8: (ctx) ->
     data = @pixelsData
     for p in @
-      i = @pixelByteIndex p; c = p.color
-      a = if c.length is 4 then c[3] else 255
-      data[i+j] = c[j] for j in [0..2]; data[i+3] = a
+      i = @pixelByteIndex p
+      c = p.color
+      if c.length is 4
+        a = c[3]
+      else
+        a = 255
+      data[i + j] = c[j] for j in [0..2]
+      data[i + 3] = a
     @pixelsCtx.putImageData @pixelsImageData, 0, 0
     return if @size is 1
     ctx.drawImage @pixelsCtx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height
@@ -282,7 +301,8 @@ class ABM.Patches extends ABM.AgentSet
   drawScaledPixels32: (ctx) ->
     data = @pixelsData32
     for p in @
-      i = @pixelWordIndex p; c = p.color
+      i = @pixelWordIndex p
+      c = p.color
       a = if c.length is 4 then c[3] else 255
       if @pixelsAreLittleEndian
       then data[i] = (a << 24) | (c[2] << 16) | (c[1] << 8) | c[0]
@@ -291,7 +311,7 @@ class ABM.Patches extends ABM.AgentSet
     return if @size is 1
     ctx.drawImage @pixelsCtx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height
 
-  floodFill: (aset, fCandidate, fJoin, fCallback, fNeighbors=((p)->p.n), asetLast=[]) ->
+  floodFill: (aset, fCandidate, fJoin, fCallback, fNeighbors=((p) -> p.n), asetLast = []) ->
     super aset, fCandidate, fJoin, fCallback, fNeighbors, asetLast
 
   # Diffuse the value of patch variable `p.v` by distributing `rate` percent
@@ -304,8 +324,10 @@ class ABM.Patches extends ABM.AgentSet
       p._diffuseNext = 0 for p in @
     # pass 1: calculate contribution of all patches to themselves and neighbors
     for p in @
-      dv = p[v]*rate; dv8 = dv/8; nn = p.n.length
-      p._diffuseNext += p[v] - dv + (8-nn)*dv8
+      dv = p[v] * rate
+      dv8 = dv / 8
+      nn = p.n.length
+      p._diffuseNext += p[v] - dv + (8 - nn) * dv8
       n._diffuseNext += dv8 for n in p.n
     # pass 2: set new value for all patches, zero temp, modify color if c given
     for p in @

@@ -14,15 +14,15 @@ class ABM.Link
   # * labelOffset:the x,y offset of my label from my x,y location
   # * hidden:     whether or not to draw this link
 
-  id: null            # unique id, promoted by agentset create factory method
-  breed: null         # my agentSet, set by the agentSet owning me
-  end1:null; end2:null# My two endpoints, using agents. Promoted by ctor
-  color: [130,130,130]# my color
-  thickness: 2        # my thickness in pixels, default to 2
-  hidden: false       # draw me?
-  label: null         # my text
-  labelColor: [0,0,0] # its color
-  labelOffset: [0,0]  # its offset from my midpoint
+  id: null               # unique id, promoted by agentset create factory method
+  breed: null            # my agentSet, set by the agentSet owning me
+  end1:null; end2:null   # My two endpoints, using agents. Promoted by ctor
+  color: [130, 130, 130] # my color
+  thickness: 2           # my thickness in pixels, default to 2
+  hidden: false          # draw me?
+  label: null            # my text
+  labelColor: [0, 0, 0]  # its color
+  labelOffset: [0, 0]    # its offset from my midpoint
   constructor: (@end1, @end2) ->
     if @end1.links?
       @end1.links.push @
@@ -52,8 +52,8 @@ class ABM.Link
     ctx.restore()
     if @label?
       [x0, y0]  = u.lerp2 @end1.x, @end1.y, @end2.x, @end2.y, .5
-      [x,y] = ABM.patches.patchXYtoPixelXY x0, y0
-      u.ctxDrawText ctx, @label, x+@labelOffset[0], y+@labelOffset[1], @labelColor
+      [x, y] = ABM.patches.patchXYtoPixelXY x0, y0
+      u.ctxDrawText ctx, @label, x + @labelOffset[0], y + @labelOffset[1], @labelColor
   
   # Remove this link from the agent set
   die: ->
@@ -110,8 +110,8 @@ class ABM.Links extends ABM.AgentSet
   # at the given start angle (default to pi/2 or "up") and in the
   # +1 or -1 direction (counder clockwise or clockwise) 
   # defaulting to -1 (clockwise).
-  layoutCircle: (list, radius, startAngle = Math.PI/2, direction = -1) ->
-    dTheta = 2*Math.PI/list.length
+  layoutCircle: (list, radius, startAngle = Math.PI / 2, direction = -1) ->
+    dTheta = 2 * Math.PI / list.length
     for a, i in list
       a.setXY 0, 0
       a.heading = startAngle + direction*dTheta*i

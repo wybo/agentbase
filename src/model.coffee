@@ -18,11 +18,12 @@ class ABM.Animator
   # Create initial animator for the model, specifying default rate (fps) and multiStep.
   # If multiStep, run the draw() and step() methods separately by draw() using
   # requestAnimFrame and step() using setTimeout.
-  constructor: (@model, @rate=30, @multiStep=model.world.isHeadless) -> 
-    @isHeadless = model.world.isHeadless; @reset()
+  constructor: (@model, @rate = 30, @multiStep = model.world.isHeadless) ->
+    @isHeadless = model.world.isHeadless
+    @reset()
   # Adjust animator.  Call before model.start()
   # in setup() to change default settings
-  setRate: (@rate, @multiStep=@isHeadless) -> @resetTimes() # Change rate while running?
+  setRate: (@rate, @multiStep = @isHeadless) -> @resetTimes() # Change rate while running?
   # start/stop model, often used for debugging and resetting model
   start: ->
     return unless @stopped # avoid multiple animates
@@ -31,9 +32,12 @@ class ABM.Animator
     @animate()
   stop: ->
     @stopped = true
-    if @animHandle? then cancelAnimFrame @animHandle
-    if @timeoutHandle? then clearTimeout @timeoutHandle
-    if @intervalHandle? then clearInterval @intervalHandle
+    if @animHandle?
+      cancelAnimFrame @animHandle
+    if @timeoutHandle?
+      clearTimeout @timeoutHandle
+    if @intervalHandle?
+      clearInterval @intervalHandle
     @animHandle = @timerHandle = @intervalHandle = null
   # Internal util: reset time instance variables
   resetTimes: ->
@@ -41,20 +45,38 @@ class ABM.Animator
     @startTick = @ticks
     @startDraw = @draws
   # Reset used by model.reset when resetting model.
-  reset: -> @stop(); @ticks = @draws = 0
+  reset: ->
+    @stop()
+    @ticks = @draws = 0
   # Two handlers used by animation loop
-  step: -> @ticks++; @model.step()
-  draw: -> @draws++; @model.draw()
+  step: ->
+    @ticks++
+    @model.step()
+  draw: ->
+    @draws++
+    @model.draw()
   # step and draw the model once, mainly debugging
-  once: -> @step(); @draw()
+  once: ->
+    @step()
+    @draw()
   # Get current time, with high resolution timer if available
   now: -> (performance ? Date).now()
   # Time in ms since starting animator
-  ms: -> @now()-@startMS
+  ms: -> @now() - @startMS
   # Get ticks/draws per second. They will differ if multiStep.
   # The "if" is to avoid from ms=0
-  ticksPerSec: -> if (elapsed = @ticks-@startTick) is 0 then 0 else Math.round elapsed*1000/@ms()
-  drawsPerSec: -> if (elapsed = @draws-@startDraw) is 0 then 0 else Math.round elapsed*1000/@ms()
+  ticksPerSec: ->
+    elapsed = @ticks - @startTick
+    if elapsed is 0
+      0
+    else
+      Math.round elapsed * 1000 / @ms()
+  drawsPerSec: ->
+    elapsed = @draws - @startDraw
+    if elapsed is 0
+      0
+    else
+      Math.round elapsed * 1000 / @ms()
   # Return a status string for debugging and logging performance
   toString: -> "ticks: #{@ticks}, draws: #{@draws}, rate: #{@rate} tps/dps: #{@ticksPerSec()}/#{@drawsPerSec()}"
   # Animation via setTimeout and requestAnimFrame
@@ -75,8 +97,8 @@ class ABM.Animator
 # ### Class Model
 
 ABM.models = {} # user space, put your models here
-class ABM.Model  
-  
+
+class ABM.Model
   # Class variable for layers parameters. 
   # Can be added to by programmer to modify/create layers, **before** starting your own model.
   # Example:
@@ -96,10 +118,8 @@ class ABM.Model
   # * setup patch coord transforms for each layer context
   # * intialize various instance variables
   # * call `setup` abstract method
-  constructor: (
-    divOrOpts, size=13, minX=-16, maxX=16, minY=-16, maxY=16,
-    isTorus=false, hasNeighbors=true, isHeadless=false
-  ) ->
+  constructor: (divOrOpts, size = 13, minX = -16, maxX = 16, minY = -16, maxY = 16,
+      isTorus = false, hasNeighbors = true, isHeadless = false) ->
     ABM.model = @
     if typeof divOrOpts is 'string'
       div = divOrOpts
@@ -156,32 +176,47 @@ class ABM.Model
     @globalNames = null; @globalNames = u.ownKeys @
     @globalNames.set = false
     @startup()
-    u.waitOnFiles => @modelReady=true; @setup(); @globals() unless @globalNames.set
+    u.waitOnFiles => @modelReady = true; @setup(); @globals() unless @globalNames.set
 
   # Initialize/reset world parameters.
   setWorld: (opts) ->
-    w = defaults = { size: 13, minX: -16, maxX: 16, minY: -16, maxY: 16, isTorus: false, hasNeighbors: true, isHeadless: false }
-    for own k,v of opts
+    w = defaults = {size: 13, minX: -16, maxX: 16, minY: -16, maxY: 16, isTorus: false, hasNeighbors: true, isHeadless: false}
+    for own k, v of opts
       w[k] = v
     {size, minX, maxX, minY, maxY, isTorus, hasNeighbors, isHeadless} = w
-    numX = maxX-minX+1; numY = maxY-minY+1; pxWidth = numX*size; pxHeight = numY*size
-    minXcor=minX-.5; maxXcor=maxX+.5; minYcor=minY-.5; maxYcor=maxY+.5
-    ABM.world = @world = {size,minX,maxX,minY,maxY,minXcor,maxXcor,minYcor,maxYcor,
-      numX,numY,pxWidth,pxHeight,isTorus,hasNeighbors,isHeadless}
+    numX = maxX - minX + 1
+    numY = maxY - minY + 1
+    pxWidth = numX * size
+    pxHeight = numY*size
+    minXcor = minX - .5
+    maxXcor = maxX + .5
+    minYcor = minY - .5
+    maxYcor = maxY + .5
+    ABM.world = @world = {size, minX, maxX, minY, maxY, minXcor, maxXcor, minYcor, maxYcor,
+      numX, numY, pxWidth, pxHeight, isTorus, hasNeighbors, isHeadless}
   setWorldDeprecated: (size, minX, maxX, minY, maxY, isTorus, hasNeighbors, isHeadless) ->
-    numX = maxX-minX+1; numY = maxY-minY+1; pxWidth = numX*size; pxHeight = numY*size
-    minXcor=minX-.5; maxXcor=maxX+.5; minYcor=minY-.5; maxYcor=maxY+.5
-    ABM.world = @world = {size,minX,maxX,minY,maxY,minXcor,maxXcor,minYcor,maxYcor,
-      numX,numY,pxWidth,pxHeight,isTorus,hasNeighbors,isHeadless}
+    numX = maxX - minX + 1
+    numY = maxY - minY + 1
+    pxWidth = numX * size
+    pxHeight = numY * size
+    minXcor = minX - .5
+    maxXcor = maxX + .5
+    minYcor = minY - .5
+    maxYcor = maxY + .5
+    ABM.world = @world = {size, minX, maxX, minY, maxY, minXcor, maxXcor, minYcor, maxYcor,
+      numX, numY, pxWidth, pxHeight, isTorus, hasNeighbors, isHeadless}
   setCtxTransform: (ctx) ->
-    ctx.canvas.width = @world.pxWidth; ctx.canvas.height = @world.pxHeight
+    ctx.canvas.width = @world.pxWidth
+    ctx.canvas.height = @world.pxHeight
     ctx.save()
     ctx.scale @world.size, -@world.size
     ctx.translate -(@world.minXcor), -(@world.maxYcor)
   globals: (globalNames) ->
-    if globalNames? 
-    then @globalNames = globalNames; @globalNames.set = true
-    else @globalNames = u.removeItems u.ownKeys(@), @globalNames
+    if globalNames?
+      @globalNames = globalNames
+      @globalNames.set = true
+    else
+      @globalNames = u.removeItems u.ownKeys(@), @globalNames
 
 #### Optimizations:
   
@@ -207,7 +242,8 @@ class ABM.Model
   
   # Have patches cache the given patchRect.
   # Optimizes patchRect, inRadius and inCone
-  setCachePatchRect:(radius,meToo=false)->@patches.cacheRect radius,meToo
+  setCachePatchRect:(radius, meToo = false) ->
+    @patches.cacheRect radius, meToo
   
 #### User Model Creation
 # A user's model is made by subclassing Model and over-riding these
@@ -228,17 +264,17 @@ class ABM.Model
 
   # Start/stop the animation
   start: -> u.waitOn (=> @modelReady), (=> @anim.start()); @
-  stop:  -> @anim.stop()
+  stop: -> @anim.stop()
   # Animate once by `step(); draw()`. For UI and debugging from console.
   # Will advance the ticks/draws counters.
-  once: -> @stop() unless @anim.stopped; @anim.once() 
+  once: -> @stop() unless @anim.stopped; @anim.once()
 
   # Stop and reset the model, restarting if restart is true
-  reset: (restart = false) -> 
+  reset: (restart = false) ->
     console.log "reset: anim"
     @anim.reset() # stop & reset ticks/steps counters
     console.log "reset: contexts"
-    (v.restore(); @setCtxTransform v) for k,v of @contexts when v.canvas? # clear/resize b4 agentsets
+    (v.restore(); @setCtxTransform v) for k, v of @contexts when v.canvas? # clear/resize b4 agentsets
     console.log "reset: patches"
     @patches = ABM.patches = new ABM.Patches ABM.Patch, "patches"
     console.log "reset: agents"
@@ -255,11 +291,15 @@ class ABM.Model
 # Call the agentset draw methods if either the first draw call or
 # their "refresh" flags are set.  The latter are simple optimizations
 # to avoid redrawing the same static scene. Called by animator.
-  draw: (force=@anim.stopped) ->
-    @patches.draw @contexts.patches  if force or @refreshPatches or @anim.draws is 1
-    @links.draw   @contexts.links    if force or @refreshLinks   or @anim.draws is 1
-    @agents.draw  @contexts.agents   if force or @refreshAgents  or @anim.draws is 1
-    @drawSpotlight @spotlightAgent, @contexts.spotlight  if @spotlightAgent?
+  draw: (force = @anim.stopped) ->
+    if force or @refreshPatches or @anim.draws is 1
+      @patches.draw @contexts.patches
+    if force or @refreshLinks or @anim.draws is 1
+      @links.draw @contexts.links
+    if force or @refreshAgents  or @anim.draws is 1
+      @agents.draw @contexts.agents
+    if @spotlightAgent?
+      @drawSpotlight @spotlightAgent, @contexts.spotlight
 
 # Creates a spotlight effect on an agent, so we can follow it throughout the model.
 # Use:
@@ -272,11 +312,10 @@ class ABM.Model
 
   drawSpotlight: (agent, ctx) ->
     u.clearCtx ctx
-    u.fillCtx ctx, [0,0,0,0.6]
+    u.fillCtx ctx, [0, 0, 0, 0.6]
     ctx.beginPath()
-    ctx.arc agent.x, agent.y, 3, 0, 2*Math.PI, false
+    ctx.arc agent.x, agent.y, 3, 0, 2 * Math.PI, false
     ctx.fill()
-
 
 # ### Breeds
   
@@ -302,7 +341,9 @@ class ABM.Model
 # not usable due to the patches being prebuilt.  Stay tuned.
   
   createBreeds: (s, agentClass, breedSet) ->
-    breeds = []; breeds.classes = {}; breeds.sets = {}
+    breeds = []
+    breeds.classes = {}
+    breeds.sets = {}
     for b in s.split(" ")
       c = class Breed extends agentClass
       breed = @[b] = # add @<breed> to local scope
@@ -312,8 +353,8 @@ class ABM.Model
       breeds.classes["#{b}Class"] = c
     breeds
   patchBreeds: (s) -> @patches.breeds = @createBreeds s, ABM.Patch, ABM.Patches
-  agentBreeds: (s) -> @agents.breeds  = @createBreeds s, ABM.Agent, ABM.Agents
-  linkBreeds:  (s) -> @links.breeds   = @createBreeds s, ABM.Link,  ABM.Links
+  agentBreeds: (s) -> @agents.breeds = @createBreeds s, ABM.Agent, ABM.Agents
+  linkBreeds:  (s) -> @links.breeds = @createBreeds s, ABM.Link,  ABM.Links
   
   # Utility for models to create agentsets from arrays.  Ex:
   #
@@ -325,7 +366,7 @@ class ABM.Model
   # Note we avoid using the actual name, such as "patches" because this
   # can cause our modules to mistakenly depend on a global name.
   # See [CoffeeConsole](http://goo.gl/1i7bd) Chrome extension too.
-  debug: (@debugging=true)->u.waitOn (=>@modelReady),(=>@setRootVars()); @
+  debug: (@debugging = true) -> u.waitOn (=> @modelReady), (=> @setRootVars()); @
   setRootVars: ->
     root.ps  = @patches
     root.p0  = @patches[0]

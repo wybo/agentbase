@@ -23,7 +23,7 @@
 #
 # Because we are an array subset, @[i] == this[i] == agentset[i]
 
-class ABM.AgentSet extends Array 
+class ABM.AgentSet extends Array
 # ### Static members
   
   # `asSet` is a static wrapper function converting an array of agents into
@@ -69,8 +69,12 @@ class ABM.AgentSet extends Array
   #
   # By "agent" we mean an instance of `Patch`, `Agent` and `Link` and their breeds
   add: (o) ->
-    if @mainSet? then @mainSet.add o else o.id = @ID++
-    @push o; o
+    if @mainSet?
+      @mainSet.add o
+    else
+      o.id = @ID++
+    @push o
+    o
 
   # Remove an agent from the agentset, returning the agentset.
   # Note this does not change ID, thus an
@@ -81,7 +85,8 @@ class ABM.AgentSet extends Array
   #     AS.remove(AS[3]) # [{id:0,x:0,y:1}, {id:1,x:8,y:0},
   #                         {id:2,x:6,y:4}, {id:4,x:1,y:1}] 
   remove: (o) ->
-    u.removeItem @mainSet, o if @mainSet?
+    if @mainSet?
+      u.removeItem @mainSet, o
     u.removeItem @, o
     @
 
@@ -104,7 +109,7 @@ class ABM.AgentSet extends Array
     u.removeItem a.breed, a, "id" if a.breed.mainSet?
     u.insertItem @, a, "id" if @mainSet?
     proto = a.__proto__ = @agentClass.prototype
-    delete a[k] for own k,v of a when proto[k]?
+    delete a[k] for own k, v of a when proto[k]?
     a
 
   # Return all agents that are not of the given breeds argument.
@@ -127,16 +132,15 @@ class ABM.AgentSet extends Array
   # asetLast generally [] but can used if the join function uses the prior
   # agents for a distance calculation, for example.
   #
-  floodFill: (aset, fCandidate, fJoin, fCallback, fNeighbors, asetLast=[]) ->
+  floodFill: (aset, fCandidate, fJoin, fCallback, fNeighbors, asetLast = []) ->
     fJoin p, asetLast for p in aset
     asetNext = []
     for p in aset
       for n in fNeighbors(p) when fCandidate n
         asetNext.push n if asetNext.indexOf(n) < 0
     if fCallback? then fCallback(aset, asetNext)
-    @floodFill asetNext, fCandidate, fJoin, fCallback, fNeighbors, aset if asetNext.length > 0
-
-    
+    if asetNext.length > 0
+      @floodFill asetNext, fCandidate, fJoin, fCallback, fNeighbors, aset
   
   # Remove adjacent duplicates, by reference, in a sorted agentset.
   # Use `sortById` first if agentset not sorted.
@@ -156,7 +160,7 @@ class ABM.AgentSet extends Array
   asOrderedSet: (a) -> @asSet(a).sortById()
 
   # Return string representative of agentset.
-  toString: -> "["+(a.toString() for a in @).join(", ")+"]"
+  toString: -> "[" + (a.toString() for a in @).join(", ") + "]"
 
 # ### Property Utilities
 # Property access, also useful for debugging<br>
@@ -183,8 +187,9 @@ class ABM.AgentSet extends Array
   # Note this changes the last two objects in the original AS above
   setProp: (prop, value) ->
     if u.isArray value
-    then o[prop] = value[i] for o,i in @; @
-    else o[prop] = value for o in @; @
+      o[prop] = value[i] for o, i in @; @
+    else
+      o[prop] = value for o in @; @
   
   # Get the agent with the min/max prop value in the agentset
   #
@@ -192,7 +197,7 @@ class ABM.AgentSet extends Array
   #     max = AS.maxProp "y"  # 4
   maxProp: (prop) -> u.aMax @getProp(prop)
   minProp: (prop) -> u.aMin @getProp(prop)
-  histOfProp: (prop, bin=1) -> u.histOf @, bin, prop
+  histOfProp: (prop, bin = 1) -> u.histOf @, bin, prop
   
 # ### Array Utilities, often from ABM.util
 
@@ -252,21 +257,27 @@ class ABM.AgentSet extends Array
   # 
   #     AS.minOneOf("x") # {id:0,x:0,y:1}
   #     AS.maxOneOf((a)->a.x+a.y, true) # {id:2,x:6,y:4},10 
-  minOneOf: (f, valueToo=false) -> u.minOneOf @, f, valueToo
-  maxOneOf: (f, valueToo=false) -> u.maxOneOf @, f, valueToo
+  minOneOf: (f, valueToo = false) -> u.minOneOf @, f, valueToo
+  maxOneOf: (f, valueToo = false) -> u.maxOneOf @, f, valueToo
 
 # ### Drawing
   
   # For agentsets who's agents have a `draw` method.
   # Clears the graphics context (transparent), then
   # calls each agent's draw(ctx) method.
-  draw: (ctx) -> 
-    u.clearCtx(ctx); o.draw(ctx) for o in @ when not o.hidden; null
+  draw: (ctx) ->
+    u.clearCtx(ctx)
+    o.draw(ctx) for o in @ when not o.hidden
+    null
   
   # Show/Hide all of an agentset or breed.
   # To show/hide an individual object, set its prototype: o.hidden = bool
-  show: -> o.hidden = false for o in @; @draw(ABM.contexts[@name])
-  hide: -> o.hidden = true for o in @; @draw(ABM.contexts[@name])
+  show: ->
+    o.hidden = false for o in @
+    @draw(ABM.contexts[@name])
+  hide: ->
+    o.hidden = true for o in @
+    @draw(ABM.contexts[@name])
 
 # ### Topology
   
@@ -275,27 +286,32 @@ class ABM.AgentSet extends Array
   # Return all agents in agentset within d distance from given object.
   # By default excludes the given object. Uses linear/torus distance
   # depending on patches.isTorus, and patches width/height if needed.
-  inRadius: (o, d, meToo=false) -> # for any objects w/ x,y
-    d2 = d*d; x=o.x; y=o.y
+  inRadius: (o, d, meToo = false) -> # for any objects w/ x,y
+    d2 = d * d
+    x = o.x
+    y= o.y
     if ABM.patches.isTorus
-      w=ABM.patches.numX; h=ABM.patches.numY
+      w = ABM.patches.numX
+      h = ABM.patches.numY
       @asSet (a for a in @ when \
-        u.torusSqDistance(x,y,a.x,a.y,w,h)<=d2 and (meToo or a isnt o))
+        u.torusSqDistance(x, y, a.x, a.y, w, h) <= d2 and (meToo or a isnt o))
     else
       @asSet (a for a in @ when \
-        u.sqDistance(x,y,a.x,a.y)<=d2 and (meToo or a isnt o))
+        u.sqDistance(x, y, a.x, a.y) <= d2 and (meToo or a isnt o))
   # As above, but also limited to the angle `cone` around
   # a `heading` from object `o`.
-  inCone: (o, heading, cone, radius, meToo=false) ->
+  inCone: (o, heading, cone, radius, meToo = false) ->
     rSet = @inRadius o, radius, meToo
-    x=o.x; y=o.y
+    x = o.x
+    y = o.y
     if ABM.patches.isTorus
-      w=ABM.patches.numX; h=ABM.patches.numY
+      w = ABM.patches.numX
+      h = ABM.patches.numY
       @asSet (a for a in rSet when \
-        (a is o and meToo) or u.inTorusCone(heading,cone,radius,x,y,a.x,a.y,w,h))
+        (a is o and meToo) or u.inTorusCone(heading, cone, radius, x, y, a.x, a.y, w, h))
     else
       @asSet (a for a in rSet when \
-        (a is o and meToo) or u.inCone(heading,cone,radius,x,y,a.x,a.y))    
+        (a is o and meToo) or u.inCone(heading, cone, radius, x, y, a.x, a.y))
 
 # ### Debugging
   
@@ -310,11 +326,11 @@ class ABM.AgentSet extends Array
   #     AS.getProp("x") # [2, 8, 6, 3, 3]
   #
   #     ABM.agents.with("o.id<100").ask("o.color=[255,0,0]")
-  ask: (f) -> 
-    eval("f=function(o){return "+f+";}") if u.isString f
+  ask: (f) ->
+    eval("f=function(o){return " + f + ";}") if u.isString f
     f(o) for o in @; @
-  with: (f) -> 
-    eval("f=function(o){return "+f+";}") if u.isString f
+  with: (f) ->
+    eval("f=function(o){return " + f + ";}") if u.isString f
     @asSet (o for o in @ when f(o))
 
 # The example agentset AS used in the code fragments was made like this,
