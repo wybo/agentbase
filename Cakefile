@@ -9,12 +9,14 @@ readline= require 'readline'
 # Note: try https://github.com/mgutz/execSync
 
 node_modules = path.join(path.dirname(fs.realpathSync(__filename)), '/node_modules/.bin')
-shell.env['PATH'] = node_modules+":"+shell.env['PATH']
+shell.env['PATH'] = node_modules + ":" + shell.env['PATH']
 
-editor= shell.exec("git config --get core.editor",{silent:true}).output
-prompt = (qstring,f) -> # prompt w/ question, respond with f(ans)
-  rl=readline.createInterface {input:process.stdin, output:process.stdout}
-  rl.question qstring, (ans) -> rl.close(); f(ans)
+editor= shell.exec("git config --get core.editor", {silent:true}).output
+prompt = (qstring, f) -> # prompt w/ question, respond with f(ans)
+  rl = readline.createInterface {input:process.stdin, output:process.stdout}
+  rl.question qstring, (ans) ->
+    rl.close()
+    f(ans)
 
 srcDir = "src/"
 extrasDir = "extras/"
@@ -67,9 +69,9 @@ task 'cat', 'Concatenate agentscript files', ->
   shell.cat(ASPaths).to(ASPath)
 
 task 'doc', 'Create documentation from source files', ->
-  tmpfiles = ("/tmp/#{i+1}-#{f}.coffee" for f,i in ASNames)
-  template = "/tmp/#{i+1}-template.coffee"
-  cpfiles = ("cp #{f} #{tmpfiles[i]}" for f,i in ASPaths).join "; "
+  tmpfiles = ("/tmp/#{i + 1}-#{f}.coffee" for f, i in ASNames)
+  template = "/tmp/#{i + 1}-template.coffee"
+  cpfiles = ("cp #{f} #{tmpfiles[i]}" for f, i in ASPaths).join "; "
   tmpfiles.push template
   shell.exec """
     rm /tmp/*.coffee docs/*.html
@@ -146,7 +148,7 @@ task 'watch', 'Watch for source file updates, invoke builds', ->
         compileFile path
 
 wcCode = (file) ->
-  shell.grep('-v',/^ *[#/]|^ *$|^ *root|setRootVars|^ *console/, file).split('\n').length
+  shell.grep('-v', /^ *[#/]|^ *$|^ *root|setRootVars|^ *console/, file).split('\n').length
 task 'wc', 'Count the lines of coffeescript & javascript', ->
   jsPath = ASPath.replace("#{srcDir}","#{libDir}").replace('coffee','js')
   console.log "code: #{ASPath}: #{wcCode(ASPath)}"
@@ -154,7 +156,9 @@ task 'wc', 'Count the lines of coffeescript & javascript', ->
 
 prompt = (q,f) ->
   rl=readline.createInterface {input:process.stdin, output:process.stdout}
-  rl.question q, (ans) -> rl.close(); f(ans)
+  rl.question q, (ans) ->
+    rl.close()
+    f(ans)
 task 'test', 'Testing 1,2,3...', ->
   shell.exec "git checkout master"
   prompt "you sure!?! [y/n]", (ans) ->
