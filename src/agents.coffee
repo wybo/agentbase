@@ -29,7 +29,9 @@ class ABM.Agent
   # This can be a huge savings in memory.
   id: null              # unique id, promoted by agentset create factory method
   breed: null           # my agentSet, set by the agentSet owning me
-  x: 0; y: 0; p: null   # my location and the patch I'm on
+  x: 0                  # my location
+  y: 0
+  p: null               # the patch I'm on
   size: 1               # my size in patch coords
   color: null           # default color, overrides random color if set
   shape: "default"      # my shape
@@ -37,7 +39,7 @@ class ABM.Agent
   label: null           # my text
   labelColor: [0, 0, 0] # its color
   labelOffset: [0, 0]   # its offset from my x,y
-  penDown: false        # if my pen is down, I draw my path between changes in x,y
+  penDown: false        # if my pen is down, I draw my path between changes in x, y
   penSize: 1            # the pen thickness in pixels
   heading: null         # the direction I'm pointed in, in radians
   sprite: null          # an image of me for optimized drawing
@@ -52,9 +54,9 @@ class ABM.Agent
     @links = [] if @cacheLinks
 
   # Set agent color to `c` scaled by `s`. Usage: see patch.scaleColor
-  scaleColor: (c, s) ->
+  scaleColor: (color, s) ->
     @color = u.clone @color unless @hasOwnProperty "color" # promote color to inst var
-    u.scaleColor c, s, @color
+    u.scaleColor color, s, @color
   
   # Return a string representation of the agent.
   toString: -> "{id:#{@id} xy:#{u.aToFixed [@x, @y]} c:#{@color} h: #{@heading.toFixed 2}}"
