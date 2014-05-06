@@ -26,19 +26,24 @@ class ABM.Model
   # * setup patch coord transforms for each layer context
   # * intialize various instance variables
   # * call `setup` abstract method
-  constructor: (divOrOpts, size = 13, minX = -16, maxX = 16, minY = -16, maxY = 16,
-      isTorus = false, hasNeighbors = true, isHeadless = false) ->
+  constructor: (divOrOptions, size = 13, minX = -16, maxX = 16, minY = -16,
+      maxY = 16, isTorus = false, hasNeighbors = true, isHeadless = false) ->
+
     ABM.model = @
-    if typeof divOrOpts is 'string'
-      div = divOrOpts
-      @setWorldDeprecated size, minX, maxX, minY, maxY, isTorus, hasNeighbors, isHeadless
+
+    if typeof divOrOptions is 'string'
+      div = divOrOptions
+      @setWorldDeprecated size, minX, maxX, minY, maxY, isTorus, hasNeighbors,
+        isHeadless
     else
-      div = divOrOpts.div
-      isHeadless = divOrOpts.isHeadless = divOrOpts.isHeadless? or not div?
-      @setWorld divOrOpts
+      div = divOrOptions.div
+      isHeadless = divOrOptions.isHeadless = divOrOptions.isHeadless? or not div?
+      @setWorld divOrOptions
+
     @contexts = ABM.contexts = {}
+
     unless isHeadless
-      (@div=document.getElementById(div)).setAttribute 'style',
+      (@div = document.getElementById(div)).setAttribute 'style',
         "position:relative; width:#{@world.pxWidth}px; height:#{@world.pxHeight}px"
 
       # * Create 2D canvas contexts layered on top of each other.
@@ -50,11 +55,14 @@ class ABM.Model
       #     u.setIdentity ctx
       #       <draw in native coord system>
       #     ctx.restore() # restore patch coord system
-      for own k,v of @contextsInit
-        @contexts[k] = ctx = u.createLayer @div, @world.pxWidth, @world.pxHeight, v.z, v.ctx
-        @setCtxTransform ctx if ctx.canvas?
-        if ctx.canvas? then ctx.canvas.style.pointerEvents = 'none'
-        u.elementTextParams ctx, "10px sans-serif", "center", "middle"
+      for own k, v of @contextsInit
+        @contexts[k] = context = u.createLayer @div, @world.pxWidth,
+          @world.pxHeight, v.z, v.ctx
+        if context.canvas?
+          @setCtxTransform context
+        if context.canvas?
+          context.canvas.style.pointerEvents = 'none'
+        u.elementTextParams context, "10px sans-serif", "center", "middle"
 
       # One of the layers is used for drawing only, not an agentset:
       @drawing = ABM.drawing = @contexts.drawing
@@ -84,25 +92,23 @@ class ABM.Model
     @globalNames = null; @globalNames = u.ownKeys @
     @globalNames.set = false
     @startup()
-    u.waitOnFiles => @modelReady = true; @setup(); @globals() unless @globalNames.set
+    u.waitOnFiles =>
+      @modelReady = true
+      @setup()
+      @globals() unless @globalNames.set
 
   # Initialize/reset world parameters.
-  setWorld: (opts) ->
-    w = defaults = {size: 13, minX: -16, maxX: 16, minY: -16, maxY: 16, isTorus: false, hasNeighbors: true, isHeadless: false}
-    for own k, v of opts
-      w[k] = v
-    {size, minX, maxX, minY, maxY, isTorus, hasNeighbors, isHeadless} = w
-    numX = maxX - minX + 1
-    numY = maxY - minY + 1
-    pxWidth = numX * size
-    pxHeight = numY*size
-    minXcor = minX - .5
-    maxXcor = maxX + .5
-    minYcor = minY - .5
-    maxYcor = maxY + .5
-    ABM.world = @world = {size, minX, maxX, minY, maxY, minXcor, maxXcor, minYcor, maxYcor,
-      numX, numY, pxWidth, pxHeight, isTorus, hasNeighbors, isHeadless}
-  setWorldDeprecated: (size, minX, maxX, minY, maxY, isTorus, hasNeighbors, isHeadless) ->
+  setWorld: (options) ->
+    defaults = {
+      size: 13, minX: -16, maxX: 16, minY: -16, maxY: 16, isTorus: false,
+      hasNeighbors: true, isHeadless: false
+    }
+
+    for own k, v of defaults
+      options[k] ?= v
+
+    {size, minX, maxX, minY, maxY, isTorus, hasNeighbors, isHeadless} = options
+
     numX = maxX - minX + 1
     numY = maxY - minY + 1
     pxWidth = numX * size
@@ -111,14 +117,33 @@ class ABM.Model
     maxXcor = maxX + .5
     minYcor = minY - .5
     maxYcor = maxY + .5
-    ABM.world = @world = {size, minX, maxX, minY, maxY, minXcor, maxXcor, minYcor, maxYcor,
-      numX, numY, pxWidth, pxHeight, isTorus, hasNeighbors, isHeadless}
+    ABM.world = @world = {
+      size, minX, maxX, minY, maxY, minXcor, maxXcor, minYcor, maxYcor, numX,
+      numY, pxWidth, pxHeight, isTorus, hasNeighbors, isHeadless
+    }
+
+  setWorldDeprecated: (size, minX, maxX, minY, maxY, isTorus, hasNeighbors,
+      isHeadless) ->
+    numX = maxX - minX + 1
+    numY = maxY - minY + 1
+    pxWidth = numX * size
+    pxHeight = numY * size
+    minXcor = minX - .5
+    maxXcor = maxX + .5
+    minYcor = minY - .5
+    maxYcor = maxY + .5
+    ABM.world = @world = {
+      size, minX, maxX, minY, maxY, minXcor, maxXcor, minYcor, maxYcor, numX,
+      numY, pxWidth, pxHeight, isTorus, hasNeighbors, isHeadless
+    }
+
   setCtxTransform: (ctx) ->
     ctx.canvas.width = @world.pxWidth
     ctx.canvas.height = @world.pxHeight
     ctx.save()
     ctx.scale @world.size, -@world.size
     ctx.translate -(@world.minXcor), -(@world.maxYcor)
+
   globals: (globalNames) ->
     if globalNames?
       @globalNames = globalNames
@@ -171,7 +196,9 @@ class ABM.Model
 # Convenience access to animator:
 
   # Start/stop the animation
-  start: -> u.waitOn (=> @modelReady), (=> @anim.start()); @
+  start: ->
+    u.waitOn (=> @modelReady), (=> @anim.start())
+    @
   stop: -> @anim.stop()
   # Animate once by `step(); draw()`. For UI and debugging from console.
   # Will advance the ticks/draws counters.
@@ -182,7 +209,8 @@ class ABM.Model
     console.log "reset: anim"
     @anim.reset() # stop & reset ticks/steps counters
     console.log "reset: contexts"
-    (v.restore(); @setCtxTransform v) for k, v of @contexts when v.canvas? # clear/resize b4 agentsets
+    # clear/resize b4 agentsets
+    (v.restore(); @setCtxTransform v) for k, v of @contexts when v.canvas?
     console.log "reset: patches"
     @patches = ABM.patches = new ABM.Patches ABM.Patch, "patches"
     console.log "reset: agents"
@@ -209,7 +237,8 @@ class ABM.Model
     if @spotlightAgent?
       @drawSpotlight @spotlightAgent, @contexts.spotlight
 
-# Creates a spotlight effect on an agent, so we can follow it throughout the model.
+# Creates a spotlight effect on an agent, so we can follow it
+# throughout the model.
 # Use:
 #
 #     @setSpotliight breed.oneOf()
@@ -262,7 +291,7 @@ class ABM.Model
     breeds
   patchBreeds: (s) -> @patches.breeds = @createBreeds s, ABM.Patch, ABM.Patches
   agentBreeds: (s) -> @agents.breeds = @createBreeds s, ABM.Agent, ABM.Agents
-  linkBreeds:  (s) -> @links.breeds = @createBreeds s, ABM.Link,  ABM.Links
+  linkBreeds: (s) -> @links.breeds = @createBreeds s, ABM.Link,  ABM.Links
   
   # Utility for models to create agentsets from arrays.  Ex:
   #
@@ -274,7 +303,9 @@ class ABM.Model
   # Note we avoid using the actual name, such as "patches" because this
   # can cause our modules to mistakenly depend on a global name.
   # See [CoffeeConsole](http://goo.gl/1i7bd) Chrome extension too.
-  debug: (@debugging = true) -> u.waitOn (=> @modelReady), (=> @setRootVars()); @
+  debug: (@debugging = true) ->
+    u.waitOn (=> @modelReady), (=> @setRootVars())
+    @
   setRootVars: ->
     root.ps  = @patches
     root.p0  = @patches[0]

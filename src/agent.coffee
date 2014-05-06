@@ -96,7 +96,7 @@ class ABM.Agent
   draw: (ctx) ->
     shape = ABM.shapes[@shape]
     rad = if shape.rotate then @heading else 0 # radians
-    if @sprite? or @breed.useSprites 
+    if @sprite? or @breed.useSprites
       @setSprite() unless @sprite? # lazy evaluation of useSprites
       ABM.shapes.drawSprite ctx, @sprite, @x, @y, @size, rad
     else
@@ -166,7 +166,7 @@ class ABM.Agent
   patchAt: (dx, dy) ->
     x = @x + dx
     y = @y + dy
-    if ABM.patches.isOnWorld x, y 
+    if ABM.patches.isOnWorld x, y
       ABM.patches.patch x, y
     else
       null
@@ -184,13 +184,13 @@ class ABM.Agent
   hatch: (num = 1, breed = ABM.agents, init = ->) ->
     breed.create num, (a) => # fat arrow so that @ = this agent
       a.setXY @x, @y # for side effects like patches.agentsHere
-      a[k] = v for own k, v of @ when k isnt "id"    
+      a[k] = v for own k, v of @ when k isnt "id"
       init(a) # Important: init called after object inserted in agent set
       a
 
   # Return the members of the given agentset that are within radius distance 
   # from me, and within cone radians of my heading using patch topology
-  inCone: (aset, cone, radius, meToo = false) -> 
+  inCone: (aset, cone, radius, meToo = false) ->
     aset.inCone @p, @heading, cone, radius, meToo # REMIND: @p vs @?
   
   # Return other end of link from me

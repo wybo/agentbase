@@ -55,7 +55,8 @@ class ABM.Patch
     ctx.fillRect @x - .5, @y - .5, 1, 1
     if @label? # REMIND: should be 2nd pass.
       [x, y] = @breed.patchXYtoPixelXY @x, @y
-      u.ctxDrawText ctx, @label, x + @labelOffset[0], y + @labelOffset[1], @labelColor
+      u.ctxDrawText ctx, @label, x + @labelOffset[0], y + @labelOffset[1],
+        @labelColor
   
   # Return an array of the agents on this patch.
   # If patches.cacheAgentsHere has created an @agents instance

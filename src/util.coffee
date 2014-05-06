@@ -526,7 +526,8 @@ ABM.util = u =
   
   # Convert polar r,theta to cartesian x,y.
   # Default to 0,0 origin, optional x,y origin.
-  polarToXY: (r, theta, x = 0, y = 0) -> [x + r * Math.cos(theta), y + r * Math.sin(theta)]
+  polarToXY: (r, theta, x = 0, y = 0) ->
+    [x + r * Math.cos(theta), y + r * Math.sin(theta)]
 
   # Return the [torus distance](http://goo.gl/PgJ5N) and distance squared
   # between two points A(x1, y1) and B(x2, y2):
@@ -552,7 +553,7 @@ ABM.util = u =
   #     -----+---------------+-----
   #      B3  |           B2  |
   #          |               |
-  torusDistance: (x1, y1, x2, y2, w, h) -> 
+  torusDistance: (x1, y1, x2, y2, w, h) ->
     Math.sqrt @torusSqDistance x1, y1, x2, y2, w, h
   torusSqDistance: (x1, y1, x2, y2, w, h) ->
     dx = Math.abs x2-x1
@@ -643,7 +644,8 @@ ABM.util = u =
   # The function f = f(imageData, rgbIndex) -> number
   imageToData: (img, f = @pixelByte(0), arrayType = Uint8ClampedArray) ->
     @imageRowsToData img, img.height, f, arrayType
-  imageRowsToData: (img, rowsPerSlice, f = @pixelByte(0), arrayType = Uint8ClampedArray) ->
+  imageRowsToData: (img, rowsPerSlice, f = @pixelByte(0),
+      arrayType = Uint8ClampedArray) ->
     rowsDone = 0; data = new arrayType img.width * img.height
     while rowsDone < img.height
       rows = Math.min img.height - rowsDone, rowsPerSlice
@@ -777,7 +779,7 @@ ABM.util = u =
     w = img.width
     h = img.height
     ihalf = (n) -> Math.ceil n / 2
-    steps = Math.ceil(u.log2(if (w / tw) > (h / th) then (w / tw) else (h / th)) )
+    steps = Math.ceil(u.log2(if (w / tw) > (h / th) then (w / tw) else (h / th)))
     console.log "steps", steps
     if steps <= 1
       ctx1.drawImage img, 0, 0, tw, th
@@ -814,7 +816,8 @@ ABM.util = u =
   
   # Draw an image centered at x, y w/ image size dx, dy.
   # See [this tutorial](http://goo.gl/VUlhY).
-  drawCenteredImage: (ctx, img, rad, x, y, dx, dy) -> # presume save/restore surrounds this
+  drawCenteredImage: (ctx, img, rad, x, y, dx, dy) ->
+    # presume save/restore surrounds this
     ctx.translate x, y # translate to center
     ctx.rotate rad
     ctx.drawImage img, -dx / 2, -dy / 2

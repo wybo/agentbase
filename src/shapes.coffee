@@ -57,7 +57,8 @@ ABM.shapes = ABM.util.s = do ->
     draw: (c) -> poly c, [[.5, 0], [-.5, -.4],[-.5, .4]]
   arrow:
     rotate: true
-    draw: (c) -> poly c, [[.5,0], [0, .5], [0, .2], [-.5, .2], [-.5, -.2], [0, -.2], [0, -.5]]
+    draw: (c) ->
+      poly c, [[.5,0], [0, .5], [0, .2], [-.5, .2], [-.5, -.2], [0, -.2], [0, -.5]]
   bug:
     rotate: true
     draw: (c) ->
@@ -86,7 +87,8 @@ ABM.shapes = ABM.util.s = do ->
     draw: (c) -> csq c, 0, 0, 1 #c.fillRect -.5,-.5,1,1
   pentagon:
     rotate: false
-    draw: (c) -> poly c, [[0, .45], [-.45, .1], [-.3, -.45], [.3, -.45], [.45, .1]]
+    draw: (c) ->
+      poly c, [[0, .45], [-.45, .1], [-.3, -.45], [.3, -.45], [.45, .1]]
   ring:
     rotate: false
     draw: (c) ->
@@ -97,10 +99,9 @@ ABM.shapes = ABM.util.s = do ->
     rotate: false
     draw: (c) ->
       poly c, [
-        [.15, .2], [.3, 0], [.125, -.1], [.125, .05],
-        [.1, -.15], [.25, -.5], [.05, -.5], [0, -.25],
-        [-.05, -.5], [-.25, -.5], [-.1, -.15], [-.125, .05],
-        [-.125, -.1], [-.3, 0], [-.15, .2]
+        [.15, .2], [.3, 0], [.125, -.1], [.125, .05], [.1, -.15], [.25, -.5],
+        [.05, -.5], [0, -.25], [-.05, -.5], [-.25, -.5], [-.1, -.15],
+        [-.125, .05], [-.125, -.1], [-.3, 0], [-.15, .2]
       ]
       c.closePath()
       circ c, 0, .35, .30
@@ -114,10 +115,18 @@ ABM.shapes = ABM.util.s = do ->
   #
   # Note: an image that is not rotated automatically gets a shortcut. 
   add: (name, rotate, draw, shortcut) -> # draw can be an image, shortcut defaults to null
-    s = @[name] =
-      if u.isFunction draw then {rotate, draw} else {rotate, img:draw, draw:(c) -> cimg c, .5, .5, 1, @img}
-    (s.shortcut = (c, x, y, s) -> cimg c, x, y, s, @img) if s.img? and not s.rotate
-    s.shortcut = shortcut if shortcut? # can override img default shortcut if needed
+    if u.isFunction draw
+      s = {rotate, draw}
+    else
+      s = {rotate, img:draw, draw:(c) -> cimg c, .5, .5, 1, @img}
+
+    @[name] = s
+
+    if shortcut? # can override img default shortcut if needed
+      s.shortcut = shortcut
+    else if s.img? and not s.rotate
+      s.shortcut = (c, x, y, s) ->
+        cimg c, x, y, s, @img
 
   # Add local private objects for use by add() and debugging
   poly:poly, circ:circ, ccirc:ccirc, cimg:cimg, csq:csq # export utils for use by add
@@ -145,12 +154,14 @@ ABM.shapes = ABM.util.s = do ->
     shape
   drawSprite: (ctx, s, x, y, size, rad) ->
     if rad is 0
-      ctx.drawImage s.ctx.canvas, s.x, s.y, s.bits, s.bits, x-size / 2, y-size / 2, size, size
+      ctx.drawImage s.ctx.canvas, s.x, s.y, s.bits, s.bits, x-size / 2,
+        y-size / 2, size, size
     else
       ctx.save()
       ctx.translate x, y # see http://goo.gl/VUlhY for drawing centered rotated images
       ctx.rotate rad
-      ctx.drawImage s.ctx.canvas, s.x, s.y, s.bits, s.bits, -size / 2, -size / 2, size, size
+      ctx.drawImage s.ctx.canvas, s.x, s.y, s.bits, s.bits, -size / 2,
+        -size / 2, size, size
       ctx.restore()
     s
   # Convert a shape to a sprite by allocating a sprite sheet "slot" and drawing
@@ -170,7 +181,7 @@ ABM.shapes = ABM.util.s = do ->
     return foundSlot if (foundSlot = ctx.index[index])?
     # Extend the sheet if we're out of space
     if bits*ctx.nextX is ctx.canvas.width
-      u.resizeCtx ctx, ctx.canvas.width, ctx.canvas.height+bits
+      u.resizeCtx ctx, ctx.canvas.width, ctx.canvas.height + bits
       ctx.nextX = 0
       ctx.nextY++
     # Create the sprite "slot" object and install in index object

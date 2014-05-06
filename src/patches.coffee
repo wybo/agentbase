@@ -36,7 +36,9 @@ class ABM.Patches extends ABM.AgentSet
   # Have patches cache the agents currently on them.
   # Optimizes p.agentsHere method.
   # Call before first agent is created.
-  cacheAgentsHere: -> p.agents = [] for p in @; null
+  cacheAgentsHere: ->
+    p.agents = [] for p in @
+    null
 
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
   # if browser does not support smoothing flags.
@@ -92,17 +94,20 @@ class ABM.Patches extends ABM.AgentSet
   patchXY: (x, y) -> @[@patchIndex x, y]
   
   # Return x,y float values to be between min/max patch coord values
-  clamp: (x, y) -> [u.clamp(x, @minXcor, @maxXcor), u.clamp(y, @minYcor, @maxYcor)]
+  clamp: (x, y) ->
+    [u.clamp(x, @minXcor, @maxXcor), u.clamp(y, @minYcor, @maxYcor)]
   
   # Return x,y float values to be modulo min/max patch coord values.
-  wrap: (x, y) -> [u.wrap(x, @minXcor, @maxXcor), u.wrap(y, @minYcor, @maxYcor)]
+  wrap: (x, y) ->
+    [u.wrap(x, @minXcor, @maxXcor), u.wrap(y, @minYcor, @maxYcor)]
   
   # Return x,y float values to be between min/max patch values
   # using either clamp/wrap above according to isTorus topology.
   coord: (x, y) -> #returns a valid world coord (real, not int)
     if @isTorus then @wrap x, y else @clamp x, y
   # Return true if on world or torus, false if non-torus and off-world
-  isOnWorld: (x, y) -> @isTorus or (@minXcor <= x <= @maxXcor and @minYcor <= y <= @maxYcor)
+  isOnWorld: (x, y) ->
+    @isTorus or (@minXcor <= x <= @maxXcor and @minYcor <= y <= @maxYcor)
 
   # Return patch at x,y float values according to topology.
   patch: (x, y) ->
@@ -112,7 +117,8 @@ class ABM.Patches extends ABM.AgentSet
     @patchXY x, y
   
   # Return a random valid float x,y point in patch space
-  randomPt: -> [u.randomFloat2(@minXcor, @maxXcor), u.randomFloat2(@minYcor, @maxYcor)]
+  randomPt: ->
+    [u.randomFloat2(@minXcor, @maxXcor), u.randomFloat2(@minYcor, @maxYcor)]
 
 # #### Patch metrics
   
@@ -233,7 +239,8 @@ class ABM.Patches extends ABM.AgentSet
     return if @size is 1
     ctx.drawImage @pixelsCtx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height
 
-  floodFill: (aset, fCandidate, fJoin, fCallback, fNeighbors=((p) -> p.n), asetLast = []) ->
+  floodFill: (aset, fCandidate, fJoin, fCallback, fNeighbors = ((p) -> p.n),
+      asetLast = []) ->
     super aset, fCandidate, fJoin, fCallback, fNeighbors, asetLast
 
   # Diffuse the value of patch variable `p.v` by distributing `rate` percent
