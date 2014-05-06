@@ -23,10 +23,11 @@ extrasDir = "extras/"
 toolsDir = 'tools/'
 libDir = 'lib/'
 varDir = 'var/'
-# modelsDir = 'models/'
-ASNames = "util shapes agentset patches agents links model".split(" ")
-ASPaths = ("#{srcDir}#{f}.coffee" for f in ASNames)
-ASPath = "#{varDir}agentscript.coffee"
+firstFileNames = ['util.coffee', 'agentset.coffee']
+FileNames = firstFileNames.concat(
+  fs.readdirSync(srcDir).filter (file) -> file not in firstFileNames)
+FilePaths = ("#{srcDir}#{file}" for file in FileNames)
+MergedPath = "#{varDir}agentscript.coffee"
 XNames = "data mouse fbui".split(" ")
 XJSNames = "as.dat.gui data.tile".split(" ")
 XPaths = ("#{extrasDir}#{f}.coffee" for f in XNames)
@@ -60,18 +61,17 @@ task 'build', 'Compile agentscript and libraries from source files', ->
   invoke 'build:extras'
 task 'build:agentscript', 'Compile agentscript from source files', ->
   invoke 'cat'
-  compileFile ASPath
+  compileFile MergedPath
 task 'build:extras', 'Compile all libraries from their source file', ->
   compileFile name for name in XPaths
 
 task 'cat', 'Concatenate agentscript files', ->
-  # console.log "Concatenating source files -> #{ASPath}"
-  shell.cat(ASPaths).to(ASPath)
+  shell.cat(FilePaths).to(MergedPath)
 
 task 'doc', 'Create documentation from source files', ->
-  tmpfiles = ("/tmp/#{i + 1}-#{f}.coffee" for f, i in ASNames)
+  tmpfiles = ("/tmp/#{i + 1}-#{file}" for file, i in FileNames)
   template = "/tmp/#{i + 1}-template.coffee"
-  cpfiles = ("cp #{f} #{tmpfiles[i]}" for f, i in ASPaths).join "; "
+  cpfiles = ("cp #{f} #{tmpfiles[i]}" for f, i in FilePaths).join "; "
   tmpfiles.push template
   shell.exec """
     rm /tmp/*.coffee docs/*.html
@@ -114,11 +114,11 @@ task 'git:pages', 'gh-pages: merge master, push to github gh-page', ->
         git checkout master
       """, ->
 task 'git:diff', 'git diff the core and extras .coffee files', ->
-  coffeeFiles = ASPaths.concat(XPaths).join(' ')
+  coffeeFiles = FilePaths.concat(XPaths).join(' ')
   diffFiles = "Cakefile README.md #{coffeeFiles} models sketches"
   exec "git diff #{diffFiles} | #{editor}"
 task 'git:diffhead', 'git diff staged/head core, extras, models', ->
-  coffeeFiles = ASPaths.concat(XPaths).join(' ')
+  coffeeFiles = FilePaths.concat(XPaths).join(' ')
   diffFiles = "Cakefile README.md #{coffeeFiles} models sketches"
   exec "git diff --staged #{diffFiles} | #{editor}"
 
@@ -135,7 +135,7 @@ task 'update:cs', 'Update coffee-script.js', ->
 task 'watch', 'Watch for source file updates, invoke builds', ->
   invoke 'build:agentscript'
   console.log "Watching source directory"
-  for path in ASPaths then do (path) ->
+  for path in FilePaths then do (path) ->
     fs.watchFile path, (curr, prev) ->
       if +curr.mtime isnt +prev.mtime
         console.log "#{path}: #{curr.mtime}"
@@ -150,8 +150,8 @@ task 'watch', 'Watch for source file updates, invoke builds', ->
 wcCode = (file) ->
   shell.grep('-v', /^ *[#/]|^ *$|^ *root|setRootVars|^ *console/, file).split('\n').length
 task 'wc', 'Count the lines of coffeescript & javascript', ->
-  jsPath = ASPath.replace("#{srcDir}","#{libDir}").replace('coffee','js')
-  console.log "code: #{ASPath}: #{wcCode(ASPath)}"
+  jsPath = MergedPath.replace("#{srcDir}","#{libDir}").replace('coffee','js')
+  console.log "code: #{MergedPath}: #{wcCode(MergedPath)}"
   console.log "code: #{jsPath}: #{wcCode(jsPath)}"
 
 prompt = (q,f) ->
