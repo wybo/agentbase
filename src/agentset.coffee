@@ -37,7 +37,6 @@ class ABM.AgentSet extends Array
   @asSet: (a, setType = ABM.AgentSet) ->
     a.__proto__ = setType.prototype ? setType.constructor.prototype # setType.__proto__
     a
-
   
   # In the examples below, we'll use an array of primitive agent objects
   # with three fields: id, x, y.

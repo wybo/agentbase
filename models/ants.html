@@ -48,7 +48,7 @@
         @updatePatches()
 
       setupPatches: ->
-        for p in @patches
+        for p in @patches.create()
           p.isNest = false ; p.isFood = false 
           # REMIND: agentsOwn etc; NL defaults to 0
           p.foodPheromone = 0; p.nestPheromone = 0

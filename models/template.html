@@ -64,7 +64,7 @@
         # patch variables, either built-in ones or any new patch variables
         # our model needs. In this case, we set the built-in color to a
         # random gray value.
-        for p in @patches
+        for p in @patches.create()
           p.color = u.randomGray()
           # Set x,y axes different color, use [0,0,0,0] for transparent pixel test
           p.color = [255,0,0] if p.x is 0 or p.y is 0

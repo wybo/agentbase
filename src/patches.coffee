@@ -20,18 +20,18 @@ class ABM.Patches extends ABM.AgentSet
   constructor: -> # agentClass, name, mainSet
     super # call super with all the args I was called with
     @monochrome = false # set to true to optimize patches all default color
-    @[k] = v for own k,v of ABM.world # add world items to patches
-    @populate() unless @mainSet?
+    @[k] = v for own k, v of ABM.world # add world items to patches
   
   # Setup patch world from world parameters.
   # Note that this is done as separate method so like other agentsets,
   # patches are started up empty and filled by "create" calls.
-  populate: -> # TopLeft to BottomRight, exactly as canvas imagedata
+  create: -> # TopLeft to BottomRight, exactly as canvas imagedata
     for y in [@maxY..@minY] by -1
       for x in [@minX..@maxX] by 1
         @add new @agentClass x, y
     @setNeighbors() if @hasNeighbors
     @setPixels() unless @isHeadless # setup off-page canvas for pixel ops
+    @
     
   # Have patches cache the agents currently on them.
   # Optimizes p.agentsHere method.

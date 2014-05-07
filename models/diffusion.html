@@ -26,11 +26,12 @@
         # defaults
         @agents.setDefault "size", 1.5
 
+        for p in @patches.create()
+          p.heat = 0
+
         @agents.create @population
         # @agents.create @population, (a) => # fat arrow for @patches etc
         #   a.size = 1.5
-        for p in @patches
-          p.heat = 0
       step: ->
         console.log @anim.toString() if @anim.ticks % 100 is 0
         for p in @patches

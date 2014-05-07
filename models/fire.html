@@ -8,7 +8,7 @@
     u = ABM.util # ABM.util alias, u.s is also ABM.shape accessor.
     class MyModel extends ABM.Model
       setup: ->
-        @agentBreeds "embers fires"
+        @agentBreeds ["embers", "fires"]
         @agents.setDefault "shape", "square"
         @agents.setDefault "color", [255,0,0]
         @agents.setDefault "heading", 0 # override promotion to random angle
@@ -29,7 +29,7 @@
         @anim.setRate 60, false
         
 
-        for p in @patches when u.randomInt(100) < @density
+        for p in @patches.create() when u.randomInt(100) < @density
           # u.setColor p.color, 0, 255, 0
           p.color = [0, 255, 0] # override default, set per patch color
         @ignite p for p in @patches when p.x is @patches.minX
@@ -40,7 +40,7 @@
         # console.log "fires: ", @fires; window.fires = @fires
         # console.log "agents:", @agents
       ignite: (p) ->
-        p.sprout 1, @fires, (a) -> 
+        p.sprout 1, @fires, (a) ->
           #a.breed = "fires"
           #a.color = [255, 0, 0]
         p.color = [0, 0, 0] # in original model but apparently not needed, refresh off?

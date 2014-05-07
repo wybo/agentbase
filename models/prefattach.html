@@ -19,6 +19,7 @@
         @agents.setDefault "shape", "circle"
         @links.setDefault "thickness", .75 # Easier to see thiner link
         
+        @patches.create()
         @agents.create 1; @makeNode @agents[0]
       step: ->
         @makeNode @findPartner()

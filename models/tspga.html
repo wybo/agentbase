@@ -8,7 +8,7 @@
     u = ABM.util # ABM.util alias, u.s is also ABM.shape accessor.
     class MyModel extends ABM.Model
       setup: ->
-        @agentBreeds "nodes travelers"
+        @agentBreeds ["nodes", "travelers"]
         
         # no optimizations: 44fps
         @refreshPatches = false # for static patches
@@ -42,11 +42,12 @@
 
         # p.color = [250, 250, 0] for p in @patches
         
+        @patches.create()
         # @setupNode a for a in @agents.create @nodeCount
         @setupNode n for n in @nodes.create @nodeCount
         
         @createTourLinks @nodes #()
-        @bestTourLength = @links.reduce ((sum,l)->sum+l.length()), 0 
+        @bestTourLength = @links.reduce ((sum,l)->sum+l.length()), 0
         
         # @agents.create @travelersCount, (a) => @setupTraveler(a)
         @travelers.create @travelersCount, (a) => @setupTraveler(a)

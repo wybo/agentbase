@@ -47,7 +47,7 @@
         @slope.toPatchVar("slope")
         @aspect.toPatchVar("aspect")
         
-        p.sprout 1 for p in @patches
+        p.sprout 1 for p in @patches.create()
         console.log "patches: #{@patches.length}, agents: #{@agents.length}"      
       
 

@@ -28,7 +28,7 @@
 
         @anim.setRate 10
 
-        for p in @patches
+        for p in @patches.create()
           p.color = u.randomGray 160, 190
           p.occupied = false
         @drawGrid [0,0,0]

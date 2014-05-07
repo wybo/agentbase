@@ -16,14 +16,15 @@ class ABM.Agents extends ABM.AgentSet
   # Use sprites rather than drawing
   setUseSprites: (@useSprites = true) ->
   
-  # Filter to return all instances of this breed.  Note: if used by
+  # Filter to return all instances of this breed. Note: if used by
   # the mainSet, returns just the agents that are not subclassed breeds.
   in: (array) -> @asSet (o for o in array when o.breed is @)
 
-  # Factory: create num new agents stored in this agentset.The optional init
+  # Factory: create num new agents stored in this agentset. The optional init
   # proc is called on the new agent after inserting in its agentSet.
   create: (num, init = ->) -> # returns array of new agents too
     ((o) -> init(o); o) @add new @agentClass for i in [1..num] by 1 # too tricky?
+    # TODO refactor!
 
   # Remove all agents from set via agent.die()
   # Note call in reverse order to optimize list restructuring.

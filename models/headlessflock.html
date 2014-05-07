@@ -35,7 +35,7 @@
         @agents.setDefault "size", 1.5
         # @agents.setDefault "color", [255,0,0] # slightly faster! ->38/39 ??
 
-        p.color = u.randomGray 0, 100 for p in @patches
+        p.color = u.randomGray 0, 100 for p in @patches.create()
         p.sprout 1 for p in @patches.nOf(@population)
         a.color = u.randomMapColor() for a in @agents
 

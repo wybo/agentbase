@@ -13,11 +13,11 @@ class ABM.Model
   # 
   #     v.z++ for k,v of ABM.Model::contextsInit # increase each z value by one
   contextsInit: { # Experimental: image:   {z:15,  ctx:"img"} 
-    patches:   {z:10, ctx:"2d"}
-    drawing:   {z:20, ctx:"2d"}
-    links:     {z:30, ctx:"2d"}
-    agents:    {z:40, ctx:"2d"}
-    spotlight: {z:50, ctx:"2d"}
+    patches:   {z: 10, ctx: "2d"}
+    drawing:   {z: 20, ctx: "2d"}
+    links:     {z: 30, ctx: "2d"}
+    agents:    {z: 40, ctx: "2d"}
+    spotlight: {z: 50, ctx: "2d"}
   }
   # Constructor: 
   #
@@ -82,9 +82,9 @@ class ABM.Model
     @refreshLinks = @refreshAgents = @refreshPatches = true
 
     # Initialize agentsets.
-    @patches = ABM.patches = new ABM.Patches ABM.Patch, "patches"
-    @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
-    @links = ABM.links = new ABM.Links ABM.Link, "links"
+    @patchBreeds 'patches'
+    @agentBreeds 'agents'
+    @linkBreeds 'links'
 
     # Initialize model global resources
     @debugging = false
@@ -205,22 +205,22 @@ class ABM.Model
   once: -> @stop() unless @anim.stopped; @anim.once()
 
   # Stop and reset the model, restarting if restart is true
-  reset: (restart = false) ->
-    console.log "reset: anim"
-    @anim.reset() # stop & reset ticks/steps counters
-    console.log "reset: contexts"
-    # clear/resize b4 agentsets
-    (v.restore(); @setCtxTransform v) for k, v of @contexts when v.canvas?
-    console.log "reset: patches"
-    @patches = ABM.patches = new ABM.Patches ABM.Patch, "patches"
-    console.log "reset: agents"
-    @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
-    @links = ABM.links = new ABM.Links ABM.Link, "links"
-    u.s.spriteSheets.length = 0 # possibly null out entries?
-    console.log "reset: setup"
-    @setup()
-    @setRootVars() if @debugging
-    @start() if restart
+#  reset: (restart = false) ->
+#    console.log "reset: anim"
+#    @anim.reset() # stop & reset ticks/steps counters
+#    console.log "reset: contexts"
+#    # clear/resize b4 agentsets
+#    (v.restore(); @setCtxTransform v) for k, v of @contexts when v.canvas?
+#    console.log "reset: patches"
+#    @patches = ABM.patches = new ABM.Patches ABM.Patch, "patches"
+#    console.log "reset: agents"
+#    @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
+#    @links = ABM.links = new ABM.Links ABM.Link, "links"
+#    u.s.spriteSheets.length = 0 # possibly null out entries?
+#    console.log "reset: setup"
+#    @setup()
+#    @setRootVars() if @debugging
+#    @start() if restart
 
 #### Animation.
   
@@ -277,21 +277,38 @@ class ABM.Model
 # ..will set the default color for just the embers. Note: patch breeds are currently
 # not usable due to the patches being prebuilt.  Stay tuned.
   
-  createBreeds: (s, agentClass, breedSet) ->
+  createBreeds: (list, type, agentClass, breedSet) ->
+    if typeof list is 'string'
+      list = list.split(" ")
+
     breeds = []
     breeds.classes = {}
     breeds.sets = {}
-    for b in s.split(" ")
-      c = class Breed extends agentClass
-      breed = @[b] = # add @<breed> to local scope
-        new breedSet c, b, agentClass::breed # create subset agentSet
-      breeds.push breed
-      breeds.sets[b] = breed
-      breeds.classes["#{b}Class"] = c
-    breeds
-  patchBreeds: (s) -> @patches.breeds = @createBreeds s, ABM.Patch, ABM.Patches
-  agentBreeds: (s) -> @agents.breeds = @createBreeds s, ABM.Agent, ABM.Agents
-  linkBreeds: (s) -> @links.breeds = @createBreeds s, ABM.Link,  ABM.Links
+
+    resetType = false
+
+    for string in list
+      if string is type
+        ABM[type] = @[type] = new breedSet agentClass, string
+      else
+        breedClass = class Breed extends agentClass
+        breed = @[string] = # add @<breed> to local scope
+          new breedSet breedClass, string, agentClass::breed # create subset agentSet
+
+        breeds.push breed
+        breeds.sets[string] = breed
+        breeds.classes["#{string}Class"] = breedClass
+
+    @[type].breeds = breeds
+
+  patchBreeds: (list, agentClass = ABM.Patch, breedSet = ABM.Patches) ->
+    @createBreeds list, 'patches', agentClass, breedSet
+
+  agentBreeds: (list, agentClass = ABM.Agent, breedSet = ABM.Agents) ->
+    @createBreeds list, 'agents', agentClass, breedSet
+
+  linkBreeds: (list, agentClass = ABM.Link, breedSet = ABM.Links) ->
+    @createBreeds list, 'links', agentClass, breedSet
   
   # Utility for models to create agentsets from arrays.  Ex:
   #
@@ -306,6 +323,7 @@ class ABM.Model
   debug: (@debugging = true) ->
     u.waitOn (=> @modelReady), (=> @setRootVars())
     @
+
   setRootVars: ->
     root.ps  = @patches
     root.p0  = @patches[0]
