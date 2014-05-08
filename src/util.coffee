@@ -47,6 +47,11 @@ ABM.util = u =
   MinINT: -Math.pow(2, 53) # -@MaxINT fails, @ not defined yet
   MaxINT32: 0 | 0x7fffffff
   MinINT32: 0 | 0x80000000
+  Colors: {
+    black: [0, 0, 0], white: [255, 255, 255], gray: [128, 128, 128],
+    red: [255, 0, 0], yellow: [255, 255, 0], green: [0, 128, 0],
+    blue: [0, 0 ,255], purple: [128, 0, 128], brown: [165, 42, 42]
+  }
   
   # Good replacements for Javascript's badly broken`typeof` and `instanceof`
   # See [underscore.coffee](http://goo.gl/L0umK)
@@ -126,7 +131,17 @@ ABM.util = u =
 # ### Color and Angle Operations
 # Our colors are r,g,b,[a] arrays, with an optional color.str HTML
 # color string property. The str value is set on the first call to colorStr
-  
+
+  colorFromStr = (colorName) ->
+    color = @Colors[colorName]
+    @error "unless you're using basic colors, specify an rgb array [nr, nr, nr]" if !@isArray color
+    color
+
+  lightenColor = (color, fraction) ->
+    newColor = []
+    newColor[i] = @clamp(Math.round(value + fraction * 255),0,255) for value, i in color
+    newColor
+
   # Return a random RGB or gray color. Array passed to minimize garbage collection
   randomColor: (c = []) ->
     c.str = null if c.str?
@@ -174,6 +189,8 @@ ABM.util = u =
 
   # Compare two colors.  Alas, there is no array.Equal operator.
   colorsEqual: (c1, c2) -> c1.toString() is c2.toString()
+
+
 
   # Convert r,g,b to a luminance float value (not color array).
   # Round for 0-255 int for gray color value.
