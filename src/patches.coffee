@@ -46,18 +46,19 @@ class ABM.Patches extends ABM.AgentSet
     ctx = ABM.contexts.patches
     u.setCtxSmoothing ctx, not @drawWithPixels
 
-  # Optimization: Cache a single set by modeler for use by patchRect,
-  # inCone, inRect, inRadius.  Ex: flock demo model's vision rect.
+  # Optimization: Cache a single set by modeler for use by
+  # patchRectangle, inCone, inRect, inRadius.
+  # Ex: flock demo model's vision rect.
   cacheRect: (radius, meToo = false) ->
     for p in @
-      p.pRect = @patchRect p, radius, radius, meToo
+      p.pRect = @patchRectangle p, radius, radius, meToo
       p.pRect.radius = radius #; p.pRect.meToo = meToo
     radius
 
   # Install neighborhoods in patches
   setNeighbors: ->
     for p in @
-      p.n =  @patchRect p, 1, 1
+      p.n =  @patchRectangle p, 1, 1
       p.n4 = @asSet (n for n in p.n when n.x is p.x or n.y is p.y)
 
   # Setup pixels used for `drawScaledPixels` and `importColors`
@@ -132,7 +133,7 @@ class ABM.Patches extends ABM.AgentSet
   # Return an array of patches in a rectangle centered on the given 
   # patch `p`, dx, dy units to the right/left and up/down. 
   # Exclude `p` unless meToo is true, default false.
-  patchRect: (p, dx, dy, meToo = false) ->
+  patchRectangle: (p, dx, dy, meToo = false) ->
     return p.pRect if p.pRect? and p.pRect.radius is dx # and p.pRect.radius is dy
     rect = []; # REMIND: optimize if no wrapping, rect inside patch boundaries
     for y in [(p.y - dy)..(p.y + dy)] by 1 # by 1: perf: avoid bidir JS for loop
@@ -149,7 +150,7 @@ class ABM.Patches extends ABM.AgentSet
               y -= @numY
           pnext = @patchXY x, y # much faster than coord()
           unless pnext?
-            u.error "patchRect: x,y out of bounds, see console.log"
+            u.error "patchRectangle: x,y out of bounds, see console.log"
             console.log "x #{x} y #{y} p.x #{p.x} p.y #{p.y} dx #{dx} dy #{dy}"
           rect.push pnext if (meToo or p isnt pnext)
     @asSet rect

@@ -36,9 +36,9 @@ class ABM.Agents extends ABM.AgentSet
     array.push p.agentsHere()... for p in patches # concat measured slower
     if @mainSet? then @in array else @asSet array
   
-  # Return an agentset of agents within the patchRect
+  # Return an agentset of agents within the patchRectangle
   inRect: (a, dx, dy, meToo = false) ->
-    rect = ABM.patches.patchRect a.p, dx, dy, true
+    rect = ABM.patches.patchRectangle a.p, dx, dy, true
     rect = @inPatches rect
     u.removeItem rect, a unless meToo
     rect

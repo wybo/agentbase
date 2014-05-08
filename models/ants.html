@@ -52,8 +52,8 @@
           p.isNest = false ; p.isFood = false 
           # REMIND: agentsOwn etc; NL defaults to 0
           p.foodPheromone = 0; p.nestPheromone = 0
-        (p.isNest=true;p.color=@nestColor) for p in @patchRect @patches.maxX-6,0,3,3
-        (p.isFood=true;p.color=@foodColor) for p in @patchRect @patches.minX+6,0,3,3
+        (p.isNest=true;p.color=@nestColor) for p in @patchRectangle @patches.maxX-6,0,3,3
+        (p.isFood=true;p.color=@foodColor) for p in @patchRectangle @patches.minX+6,0,3,3
         null
       setupAgents: -> # a is agent
         @agents.create @population, (a) => # fat arrow for @patches etc
@@ -116,8 +116,8 @@
         null
 
       # utilities
-      patchRect: (x, y, dw, dh) ->
-        @patches.patchRect @patches.patch(x,y), dw, dh, true
+      patchRectangle: (x, y, dw, dh) ->
+        @patches.patchRectangle @patches.patch(x,y), dw, dh, true
 
     # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors
     #   Defaults: 13, -16, 16, -16, 16, false, true
