@@ -32,11 +32,14 @@ ABM.shapes = ABM.util.s = do ->
   # Centered drawing primitives: centered on x,y with a given width/height size.
   # Useful for shortcuts
   circ = (c, x, y, s) -> c.arc x, y, s / 2, 0, 2 * Math.PI # centered circle
+
   ccirc = (c, x, y, s) -> c.arc x, y, s / 2, 0, 2 * Math.PI, true # centered counter clockwise circle
+
   cimg = (c, x, y, s, img) ->
     c.scale 1,-1
     c.drawImage img, x - s / 2, y - s / 2, s, s
     c.scale 1,-1 # centered image
+
   csq = (c, x, y, s) -> c.fillRect x - s / 2, y - s / 2, s, s # centered square
   
   # An async util for delayed drawing of images into sprite slots
@@ -45,6 +48,7 @@ ABM.shapes = ABM.util.s = do ->
     slot.ctx.scale 1, -1
     slot.ctx.drawImage img, slot.x, -(slot.y + slot.bits), slot.bits, slot.bits
     slot.ctx.restore()
+
   # The spritesheet data, indexed by bits
   spriteSheets = []
   
@@ -52,13 +56,16 @@ ABM.shapes = ABM.util.s = do ->
   default:
     rotate: true
     draw: (c) -> poly c, [[.5, 0], [-.5, -.5], [-.25, 0], [-.5, .5]]
+
   triangle:
     rotate: true
     draw: (c) -> poly c, [[.5, 0], [-.5, -.4],[-.5, .4]]
+
   arrow:
     rotate: true
     draw: (c) ->
       poly c, [[.5,0], [0, .5], [0, .2], [-.5, .2], [-.5, -.2], [0, -.2], [0, -.5]]
+
   bug:
     rotate: true
     draw: (c) ->
@@ -70,9 +77,11 @@ ABM.shapes = ABM.util.s = do ->
       circ c, .12, 0, .26
       circ c, -.05, 0, .26
       circ c, -.27, 0, .4
+
   pyramid:
     rotate: false
     draw: (c) -> poly c, [[0, .5], [-.433, -.25], [.433, -.25]]
+
   circle: # Note: NetLogo's dot is simply circle with a small size
     shortcut: (c, x, y, s) ->
       c.beginPath()
@@ -81,20 +90,24 @@ ABM.shapes = ABM.util.s = do ->
       c.fill()
     rotate: false
     draw: (c) -> circ c, 0, 0, 1 # c.arc 0,0,.5,0,2*Math.PI
+
   square:
     shortcut: (c, x, y, s) -> csq c, x, y, s
     rotate: false
     draw: (c) -> csq c, 0, 0, 1 #c.fillRect -.5,-.5,1,1
+
   pentagon:
     rotate: false
     draw: (c) ->
       poly c, [[0, .45], [-.45, .1], [-.3, -.45], [.3, -.45], [.45, .1]]
+
   ring:
     rotate: false
     draw: (c) ->
       circ c, 0, 0, 1
       c.closePath()
       ccirc c, 0, 0, .6
+
   person:
     rotate: false
     draw: (c) ->
@@ -105,9 +118,11 @@ ABM.shapes = ABM.util.s = do ->
       ]
       c.closePath()
       circ c, 0, .35, .30
+
   # Return a list of the available shapes, see above.
   names: ->
     (name for own name, val of @ when val.rotate? and val.draw?)
+
   # Add your own shape. Will be included in names list.  Usage:
   #
   #     ABM.shapes.add "test", true, (c) -> # bowtie/hourglass
@@ -130,6 +145,7 @@ ABM.shapes = ABM.util.s = do ->
 
   # Add local private objects for use by add() and debugging
   poly:poly, circ:circ, ccirc:ccirc, cimg:cimg, csq:csq # export utils for use by add
+
   spriteSheets:spriteSheets # export spriteSheets for debugging, showing in DOM
 
   # Two draw procedures, one for shapes, the other for sprites made from shapes.
@@ -152,6 +168,7 @@ ABM.shapes = ABM.util.s = do ->
         ctx.fill()
       ctx.restore()
     shape
+
   drawSprite: (ctx, s, x, y, size, rad) ->
     if rad is 0
       ctx.drawImage s.ctx.canvas, s.x, s.y, s.bits, s.bits, x-size / 2,
@@ -164,6 +181,7 @@ ABM.shapes = ABM.util.s = do ->
         -size / 2, size, size
       ctx.restore()
     s
+
   # Convert a shape to a sprite by allocating a sprite sheet "slot" and drawing
   # the shape to fit it. Return existing sprite if duplicate.
   shapeToSprite: (name, color, size) ->

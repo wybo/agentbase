@@ -45,6 +45,7 @@ class ABM.Agent
   sprite: null          # an image of me for optimized drawing
   cacheLinks: false     # should I keep links to/from me in links array?.
   links: null           # array of links to/from me as an endpoint; init by ctor
+
   constructor: -> # called by agentSets create factory, not user
     @x = @y = 0
     @p = ABM.patches.patch @x, @y
@@ -159,10 +160,15 @@ class ABM.Agent
   # Returns null if non-torus and off patch world
   patchAtHeadingAndDistance: (h,d) ->
     [x, y] = u.polarToXY d, h, @x, @y; patchAt x,y
+
   patchLeftAndAhead: (dh, d) -> @patchAtHeadingAndDistance @heading + dh, d
+
   patchRightAndAhead: (dh, d) -> @patchAtHeadingAndDistance @heading - dh, d
+
   patchAhead: (d) -> @patchAtHeadingAndDistance @heading, d
+
   canMove: (d) -> @patchAhead(d)?
+
   patchAt: (dx, dy) ->
     x = @x + dx
     y = @y + dy

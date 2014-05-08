@@ -185,9 +185,11 @@ class ABM.Model
   # Initialize model resources (images, files) here.  
   # Uses util.waitOn so can be be async.
   startup: -> # called by constructor
+
   # Initialize your model variables and defaults here.
   # If async used, make sure step/draw are aware of possible missing data.
   setup: ->
+
   # Update/step your model here
   step: -> # called each step of the animation
 
@@ -199,7 +201,9 @@ class ABM.Model
   start: ->
     u.waitOn (=> @modelReady), (=> @anim.start())
     @
+
   stop: -> @anim.stop()
+
   # Animate once by `step(); draw()`. For UI and debugging from console.
   # Will advance the ticks/draws counters.
   once: -> @stop() unless @anim.stopped; @anim.once()
@@ -278,7 +282,7 @@ class ABM.Model
 # not usable due to the patches being prebuilt.  Stay tuned.
   
   createBreeds: (list, type, agentClass, breedSet) ->
-    if typeof list is 'string'
+    if u.isString list
       list = list.split(" ")
 
     breeds = []

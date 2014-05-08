@@ -90,6 +90,7 @@ class ABM.Patches extends ABM.AgentSet
   
   # Return the patch id/index given integer x,y in patch coords
   patchIndex: (x, y) -> x - @minX + @numX * (@maxY - y)
+
   # Return the patch at matrix position x,y where 
   # x & y are both valid integer patch coordinates.
   patchXY: (x, y) -> @[@patchIndex x, y]
@@ -106,6 +107,7 @@ class ABM.Patches extends ABM.AgentSet
   # using either clamp/wrap above according to isTorus topology.
   coord: (x, y) -> #returns a valid world coord (real, not int)
     if @isTorus then @wrap x, y else @clamp x, y
+
   # Return true if on world or torus, false if non-torus and off-world
   isOnWorld: (x, y) ->
     @isTorus or (@minXcor <= x <= @maxXcor and @minYcor <= y <= @maxYcor)
@@ -125,6 +127,7 @@ class ABM.Patches extends ABM.AgentSet
   
   # Convert patch measure to pixels
   toBits: (p) -> p * @size
+
   # Convert bit measure to patches
   fromBits: (b) -> b / @size
 
@@ -166,6 +169,7 @@ class ABM.Patches extends ABM.AgentSet
     u.importImage imageSrc, (img) => # fat arrow, this context
       @installDrawing img
       f() if f?
+
   # Direct install image into the given context, not async.
   installDrawing: (img, ctx = ABM.contexts.drawing) ->
     u.setIdentity ctx
@@ -176,9 +180,12 @@ class ABM.Patches extends ABM.AgentSet
   # native canvas index i into the pixel data.
   # The top-left order simplifies finding pixels in data sets
   pixelByteIndex: (p) -> 4 * p.id # Uint8
+
   pixelWordIndex: (p) -> p.id   # Uint32
+
   # Convert pixel location (top/left offset i.e. mouse) to patch coords (float)
   pixelXYtoPatchXY: (x, y) -> [@minXcor + (x / @size), @maxYcor - (y / @size)]
+
   # Convert patch coords (float) to pixel location (top/left offset i.e. mouse)
   patchXYtoPixelXY: (x, y) -> [( x - @minXcor) * @size, (@maxYcor - y) * @size]
   
@@ -191,6 +198,7 @@ class ABM.Patches extends ABM.AgentSet
     u.importImage imageSrc, (img) => # fat arrow, this context
       @installColors(img, map)
       f() if f?
+
   # Direct install image into the patch colors, not async.
   installColors: (img, map) ->
     u.setIdentity @pixelsCtx
@@ -211,6 +219,7 @@ class ABM.Patches extends ABM.AgentSet
     u.setIdentity ctx if @size isnt 1
     if @pixelsData32? then @drawScaledPixels32 ctx else @drawScaledPixels8 ctx
     ctx.restore() if @size isnt 1
+
   # The 8-bit version for drawScaledPixels.  Used for systems w/o typed arrays
   drawScaledPixels8: (ctx) ->
     data = @pixelsData
@@ -226,6 +235,7 @@ class ABM.Patches extends ABM.AgentSet
     @pixelsCtx.putImageData @pixelsImageData, 0, 0
     return if @size is 1
     ctx.drawImage @pixelsCtx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height
+
   # The 32-bit version of drawScaledPixels, with both little and big endian hardware.
   drawScaledPixels32: (ctx) ->
     data = @pixelsData32
