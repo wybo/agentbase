@@ -91,6 +91,7 @@ class ABM.AgentSet extends Array
 
   # Set the default value of an agent class, return agentset
   setDefault: (name, value) -> @agentClass::[name] = value; @
+
   # Declare variables of an agent class. 
   # Vars = a string of space separated names or an array of name strings
   # Return agentset.
@@ -195,7 +196,9 @@ class ABM.AgentSet extends Array
   #     min = AS.minProp "y"  # 0
   #     max = AS.maxProp "y"  # 4
   maxProp: (prop) -> u.aMax @getProp(prop)
+
   minProp: (prop) -> u.aMin @getProp(prop)
+
   histOfProp: (prop, bin = 1) -> u.histOf @, bin, prop
   
 # ### Array Utilities, often from ABM.util
@@ -257,6 +260,7 @@ class ABM.AgentSet extends Array
   #     AS.minOneOf("x") # {id:0,x:0,y:1}
   #     AS.maxOneOf((a)->a.x+a.y, true) # {id:2,x:6,y:4},10 
   minOneOf: (f, valueToo = false) -> u.minOneOf @, f, valueToo
+
   maxOneOf: (f, valueToo = false) -> u.maxOneOf @, f, valueToo
 
 # ### Drawing
@@ -274,6 +278,7 @@ class ABM.AgentSet extends Array
   show: ->
     o.hidden = false for o in @
     @draw(ABM.contexts[@name])
+
   hide: ->
     o.hidden = true for o in @
     @draw(ABM.contexts[@name])
@@ -297,6 +302,7 @@ class ABM.AgentSet extends Array
     else
       @asSet (a for a in @ when \
         u.sqDistance(x, y, a.x, a.y) <= d2 and (meToo or a isnt o))
+
   # As above, but also limited to the angle `cone` around
   # a `heading` from object `o`.
   inCone: (o, heading, cone, radius, meToo = false) ->
@@ -328,6 +334,7 @@ class ABM.AgentSet extends Array
   ask: (f) ->
     eval("f=function(o){return " + f + ";}") if u.isString f
     f(o) for o in @; @
+
   with: (f) ->
     eval("f=function(o){return " + f + ";}") if u.isString f
     @asSet (o for o in @ when f(o))

@@ -47,15 +47,25 @@ ABM.util = u =
   MinINT: -Math.pow(2, 53) # -@MaxINT fails, @ not defined yet
   MaxINT32: 0 | 0x7fffffff
   MinINT32: 0 | 0x80000000
+  Colors: {
+    black: [0, 0, 0], white: [255, 255, 255], gray: [128, 128, 128],
+    red: [255, 0, 0], yellow: [255, 255, 0], green: [0, 128, 0],
+    blue: [0, 0 ,255], purple: [128, 0, 128], brown: [165, 42, 42]
+  }
   
   # Good replacements for Javascript's badly broken`typeof` and `instanceof`
   # See [underscore.coffee](http://goo.gl/L0umK)
-  isArray: Array.isArray or (obj) ->
-    !!(obj and obj.concat and obj.unshift and not obj.callee)
-  isFunction: (obj) ->
-    !!(obj and obj.constructor and obj.call and obj.apply)
-  isString: (obj) ->
-    !!(obj is '' or (obj and obj.charCodeAt and obj.substr))
+  isArray: Array.isArray or (object) ->
+    !!(object and obj.concat and object.unshift and not object.callee)
+
+  isFunction: (object) ->
+    !!(object and object.constructor and object.call and object.apply)
+
+  isString: (object) ->
+    !!(object is '' or (object and object.charCodeAt and object.substr))
+
+  isNumber: (object) ->
+    !!(typeof object is "number")
   
 # ### Numeric Operations
 
@@ -68,50 +78,76 @@ ABM.util = u =
 
   # Return random int in [0,max) or [min,max)
   randomInt: (max) -> Math.floor(Math.random() * max)
+
   randomInt2: (min, max) -> min + Math.floor(Math.random() * (max-min))
+
   # Return float Gaussian normal with given mean, std deviation.
   randomNormal: (mean = 0.0, sigma = 1.0) -> # Box-Muller
     u1 = 1.0 - Math.random()
     u2 = Math.random() # u1 in (0,1]
     norm = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2)
     norm*sigma + mean
+
   # Return float in [0,max) or [min,max) or [-r/2,r/2)
   randomFloat: (max) -> Math.random() * max
+
   randomFloat2: (min, max) -> min + Math.random() * (max-min)
+
   randomCentered: (r) -> @randomFloat2 -r / 2, r / 2
+
   # Return log n where base is 10, base, e respectively.
   # Note ln: (n) -> Math.log n .. i.e. JS's log is log base e
   log10: (n) -> Math.log(n) / Math.LN10
+
   log2: (n) -> @logN n, 2
+
   logN: (n, base) -> Math.log(n) / Math.log(base)
+
   # Return true [mod functin](http://goo.gl/spr24), % is remainder, not mod.
   mod: (v, n) -> ((v % n) + n) % n
+
   # Return v to be between min, max via mod fcn
   wrap: (v, min, max) -> min + @mod(v - min, max - min)
+
   # Return v to be between min, max via clamping with min/max
   clamp: (v, min, max) -> Math.max(Math.min(v, max), min)
+
   # Return sign of a number as +/- 1
   sign: (v) -> if v < 0 then -1 else 1
+
   # Return n to given precision, default 2
   # Considerably faster than equivalent: Number(n.toFixed(p))
   fixed: (n, p = 2) ->
     p = Math.pow(10, p)
     Math.round(n * p) / p
+
   # Return an array of floating pt numbers as strings at given precision;
   # useful for printing
   aToFixed: (a, p = 2) -> (i.toFixed p for i in a)
+
   # Return localized string for number, with commas etc
   tls: (n) -> n.toLocaleString()
 
 # ### Color and Angle Operations
 # Our colors are r,g,b,[a] arrays, with an optional color.str HTML
 # color string property. The str value is set on the first call to colorStr
-  
+
+  colorFromStr = (colorName) ->
+    color = @Colors[colorName]
+    @error "unless you're using basic colors, specify an rgb array [nr, nr, nr]" if !@isArray color
+    color
+
+  lightenColor = (color, fraction) ->
+    newColor = []
+    newColor[i] = @clamp(Math.round(value + fraction * 255),0,255) for value, i in color
+    newColor
+
   # Return a random RGB or gray color. Array passed to minimize garbage collection
   randomColor: (c = []) ->
     c.str = null if c.str?
     c[i] = @randomInt(256) for i in [0..2]
     c
+
   # Note: if 2 args passed, assume they're min, max w/ default c
   randomGray: (c = [], min = 64, max = 192) ->
     if arguments.length is 2 then return @randomGray null, c, min
@@ -119,11 +155,14 @@ ABM.util = u =
     r = @randomInt2 min, max
     c[i] = r for i in [0..2]
     c
+
   # Random color from a colormap set of r,g,b values.
   # Default is one of 125 (5^3) colors
   randomMapColor: (c = [], set = [0, 63, 127, 191, 255]) ->
     @setColor c, @oneOf(set), @oneOf(set), @oneOf(set)
+
   randomBrightColor: (c = []) -> @randomMapColor c, [0, 127, 255]
+
   # Modify an existing rgb or gray color.  Alpha optional, not set if not provided.
   # Modifying an existing array minimizes GC overhead
   setColor: (c, r, g, b, a) ->
@@ -133,23 +172,31 @@ ABM.util = u =
     c[2] = b
     c[3] = a if a?
     c
+
   setGray: (c, g, a) -> @setColor c, g, g, g, a
+
   # Return new color, c, by scaling each value of the rgb color max.
   scaleColor: (max, s, c = []) ->
     c.str = null if c.str?
     c[i] = @clamp(Math.round(val * s), 0, 255) for val, i in max # [r,g,b] must be ints
     c
+
   # Return HTML color as used by canvas element.  Can include Alpha
   colorStr: (c) ->
     return s if (s = c.str)?
     @error "alpha > 1" if c.length is 4 and c[3] > 1
     c.str = if c.length is 3 then "rgb(#{c})" else "rgba(#{c})"
+
   # Compare two colors.  Alas, there is no array.Equal operator.
   colorsEqual: (c1, c2) -> c1.toString() is c2.toString()
+
+
+
   # Convert r,g,b to a luminance float value (not color array).
   # Round for 0-255 int for gray color value.
   # [Good post on image filters](http://goo.gl/pE9cV8)
   rgbToGray: (c) -> 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
+
   # RGB <> HSB (HSV) conversions.
   # RGB in [0-255], HSB in [0-1]
   # See [Wikipedia](http://en.wikipedia.org/wiki/HSV_color_space)
@@ -175,6 +222,7 @@ ABM.util = u =
       when b
         h = (r - g) / d + 4
     [Math.round(255 * h / 6), Math.round(255 * s), Math.round(255 * v)]
+
   hsbToRgb: (c) ->
     h = c[0] / 255
     s = c[1] / 255
@@ -197,15 +245,18 @@ ABM.util = u =
   # shared by a set of objects.
   # Note: Experimental, will change.
   rgbMap: (R, G = R, B = R) ->
-    R = (Math.round(i * 255 / (R - 1)) for i in [0...R]) if typeof R is "number"
-    G = (Math.round(i * 255 / (G - 1)) for i in [0...G]) if typeof G is "number"
-    B = (Math.round(i * 255 / (B - 1)) for i in [0...B]) if typeof B is "number"
+    R = (Math.round(i * 255 / (R - 1)) for i in [0...R]) if R.isNumber()
+    G = (Math.round(i * 255 / (G - 1)) for i in [0...G]) if G.isNumber()
+    B = (Math.round(i * 255 / (B - 1)) for i in [0...B]) if B.isNumber()
     map=[]
     ((map.push [r,g,b] for b in B) for g in G) for r in R
     map
+
   grayMap: -> ([i, i, i] for i in [0..255])
+
   hsbMap: (n = 256, s = 255, b = 255)->
     (@hsbToRgb [i * 255 / (n - 1), s, b] for i in [0...n])
+
   gradientMap: (nColors, stops, locs) ->
     locs = (i / (stops.length - 1) for i in [0...stops.length]) if not locs?
     ctx = @createCtx nColors, 1
@@ -223,9 +274,12 @@ ABM.util = u =
     d32 = new Uint32Array [0x01020304]
     # return true if byte order reversed
     (new Uint8ClampedArray d32.buffer)[0] is 4
+
   # Convert between degrees and radians.  We/Math package use radians.
   degToRad: (degrees) -> degrees * Math.PI / 180
+
   radToDeg: (radians) -> radians * 180 / Math.PI
+
   # Return angle in (-pi,pi] that added to rad2 = rad1
   # See NetLogo's [subtract-headings](http://goo.gl/CjoHuV) for explanation
   subtractRads: (rad1, rad2) ->
@@ -241,7 +295,9 @@ ABM.util = u =
   
   # Return object's own key or variable values
   ownKeys: (obj) -> (key for own key, value of obj)
+
   ownVarKeys: (obj) -> (key for own key, value of obj when not @isFunction value)
+
   ownValues: (obj) -> (value for own key, value of obj)
 
   # Parse a string to its JS value.
@@ -268,7 +324,9 @@ ABM.util = u =
   
   # Does the array have any elements? Is the array empty?
   any: (array) -> array.length isnt 0
+
   empty: (array) -> array.length is 0
+
   # Make a copy of the array. Needed when you don't want to modify the given
   # array with mutator methods like sort, splice or your own functions.
   # By giving begin/arguments, retrieve a subset of the array.
@@ -276,14 +334,17 @@ ABM.util = u =
   clone: (array, begin, end) ->
     op = if array.slice? then "slice" else "subarray"
     if begin? then array[op] begin, end else array[op] 0
+
   # Return last element of array.  Error if empty.
   last: (array) ->
     @error "last: empty array" if @empty array
     array[array.length - 1]
+
   # Return random element of array.  Error if empty.
   oneOf: (array) ->
     @error "oneOf: empty array" if @empty array
     array[@randomInt array.length]
+
   # Return n random elements of array. Error if n > length
   # Note: array elements presumed unique, i.e. objects or distinct primitives
   nOf: (array, n) -> # Note: clone, shuffle then first n: poor performance
@@ -296,16 +357,19 @@ ABM.util = u =
 
   # True if item is in array. Binary search if f isnt null.
   contains: (array, item, f) -> @indexOf(array, item, f) >= 0
+
   # Remove an item from an array. Binary search if f isnt null.
   # Error if item not in array.
   removeItem: (array, item, f) ->
     unless (i = @indexOf array, item, f) < 0 then array.splice i, 1
     else @error "removeItem: item not found" #; array
+
   # Remove elements in items from an array. Binary search if f isnt null.
   # Error if an item not in array.
   removeItems: (array, items, f) ->
     @removeItem(array, i, f) for i in items
     array
+
   # Insert an item in a sorted array
   insertItem: (array, item, f) ->
     i = @sortedIndex array, item, f
@@ -334,6 +398,7 @@ ABM.util = u =
     for a in array
       (r = r1; o = a) if (r1 = f(a)) < r
     if valueToo then [o, r] else o
+
   maxOneOf: (array, f = @identity, valueToo = false) ->
     @error "maxOneOf: empty array" if @empty array
     r = -Infinity
@@ -343,6 +408,7 @@ ABM.util = u =
     for a in array
       (r = r1; o = a) if (r1 = f(a)) > r
     if valueToo then [o, r] else o
+
   firstOneOf: (array, f) ->
     return i for a, i in array when f(a)
     return -1
@@ -424,15 +490,19 @@ ABM.util = u =
     v = array[0]
     v = Math.max v, a for a in array
     v
+
   aMin: (array) ->
     v = array[0]
     v = Math.min v, a for a in array
     v
+
   aSum: (array) ->
     v = 0
     v += a for a in array
     v
+
   aAvg: (array) -> @aSum(array) / array.length
+
   aMid: (array) ->
     array = if array.sort? then @clone array else @typedToJS array
     @sortNums array
@@ -445,7 +515,9 @@ ABM.util = u =
     v = 0
     f(v,a2[i]) for v, i in a1
   aPairSum: (a1, a2) -> @aPairwise a1, a2, (a, b) -> a + b
+
   aPairDif: (a1, a2) -> @aPairwise a1, a2, (a, b) -> a - b
+
   aPairMul: (a1, a2) -> @aPairwise a1, a2, (a, b) -> a * b
 
   # Return a JS array given a TypedArray.
@@ -456,8 +528,10 @@ ABM.util = u =
   # Scale is in [0-1], and the result is in [lo,hi]
   # [Why the name `lerp`?](http://goo.gl/QrzMc)
   lerp: (lo, hi, scale) -> lo + (hi - lo) * scale # @clamp(scale, 0, 1)
+
   # Return point interpolated between two points.
   lerp2: (x0, y0, x1, y1, scale) -> [@lerp(x0, x1, scale), @lerp(y0, y1, scale)]
+
   # Return an array with values in [lo, hi], defaults to [0,1].
   # Note: to have a half-open interval, [lo, hi), try hi=hi-.00009
   normalize: (array, lo = 0, hi = 1) ->
@@ -465,8 +539,10 @@ ABM.util = u =
     max = @aMax array
     scale = 1 / (max - min)
     (@lerp(lo, hi, scale * (num - min)) for num in array)
+
   # Return a Uint8ClampedArray, normalized to [.5,255.5] then round/clamp to [0,255]
   normalize8: (array) -> new Uint8ClampedArray @normalize(array, -.5, 255.5)
+
   normalizeInt: (array, lo, hi) -> (Math.round i for i in @normalize array, lo, hi) # clamp?
 
   # Return array index of item, or index for item if array to remain sorted.
@@ -489,8 +565,10 @@ ABM.util = u =
 
   # Return argument unchanged; for primitive arrays or objs sorted by reference
   identity: (o) -> o
+
   # Return a function that returns an object's property.  Property in fcn closure.
   propFcn: (prop) -> (o) -> o[prop]
+
   # Return index of value in array or -1 if not found.
   # If no property given, use Array.indexOf.
   # If property given, use binary search.
@@ -506,6 +584,7 @@ ABM.util = u =
   # Return angle in [-pi,pi] radians from x1,y1 to x2,y2
   # [See: Math.atan2](http://goo.gl/JS8DF)
   radsToward: (x1, y1, x2, y2) -> Math.atan2 y2 - y1, x2 - x1
+
   # Return true if x2,y2 is in cone radians around heading radians from x1,x2
   # and within distance radius from x1,x2.
   # I.e. is p2 in cone/heading/radius from p1?
@@ -513,12 +592,14 @@ ABM.util = u =
     if radius < @distance x1, y1, x2, y2 then return false
     angle12 = @radsToward x1, y1, x2, y2 # angle from 1 to 2
     cone / 2 >= Math.abs @subtractRads(heading, angle12)
+
   # Return the Euclidean distance and distance squared between x1,y1, x2,y2.
   # The squared distance is used for comparisons to avoid the Math.sqrt fcn.
   distance: (x1, y1, x2, y2) ->
     dx = x1 - x2
     dy = y1 - y2
     Math.sqrt dx * dx + dy * dy
+
   sqDistance: (x1, y1, x2, y2) ->
     dx = x1 - x2
     dy = y1 - y2
@@ -555,22 +636,26 @@ ABM.util = u =
   #          |               |
   torusDistance: (x1, y1, x2, y2, w, h) ->
     Math.sqrt @torusSqDistance x1, y1, x2, y2, w, h
+
   torusSqDistance: (x1, y1, x2, y2, w, h) ->
     dx = Math.abs x2-x1
     dy = Math.abs y2-y1
     dxMin = Math.min dx, w - dx
     dyMin = Math.min dy, h - dy
     dxMin*dxMin + dyMin * dyMin
+
   # Return true if closest path between x1,y1 & x2,y2 wraps around the torus.
   torusWraps: (x1, y1, x2, y2, w, h) ->
     dx = Math.abs x2 - x1
     dy = Math.abs y2 - y1
     dx > w - dx or dy > h - dy
+
   # Return 4 torus point reflections of x2,y2 around x1,y1
   torus4Pts: (x1, y1, x2, y2, w, h) ->
     x2r = if x2 < x1 then x2 + w else x2 - w
     y2r = if y2 < y1 then y2 + h else y2 - h
     [[x2, y2], [x2r, y2], [x2, y2r], [x2r, y2r]]
+
   # Return closest of 4 torus pts from A to B
   torusPt: (x1, y1, x2, y2, w, h) ->
     x2r = if x2 < x1 then x2 + w else x2 - w
@@ -578,10 +663,12 @@ ABM.util = u =
     x = if Math.abs(x2r - x1) < Math.abs(x2 - x1) then x2r else x2
     y = if Math.abs(y2r - y1) < Math.abs(y2 - y1) then y2r else y2
     [x, y]
+
   # Return the angle from x1,y1 to x2.y2 on torus using shortest reflection.
   torusRadsToward: (x1, y1, x2, y2, w, h) ->
     [x2, y2] = @torusPt x1, y1, x2, y2, w, h
     @radsToward x1, y1, x2, y2
+
   # Return true if x2,y2 is in cone radians around heading radians from x1,x2
   # and within distance radius from x1,x2 considering all torus reflections.
   inTorusCone: (heading, cone, radius, x1, y1, x2, y2, w, h) ->
@@ -593,6 +680,7 @@ ABM.util = u =
 
   # Cache of file names used by file imports below
   fileIndex: {}
+
   # Import an image, executing (async) optional function f(img) on completion
   importImage: (name, f = ->) ->
     if (img=@fileIndex[name])? # wtf? or ((img=name).width and img.height)
@@ -627,8 +715,10 @@ ABM.util = u =
   filesLoaded: (files = @fileIndex) ->
     array = (v.isDone for v in (@ownValues files))
     array.reduce ((a, b) -> a and b), true
+
   # Wait for files to be loaded before executing callback f
   waitOnFiles: (f, files = @fileIndex) -> @waitOn (=> @filesLoaded files), f
+
   # Wait for function done() to return true before calling callback f
   waitOn: (done, f) ->
     if done() then f() else setTimeout (=> @waitOn(done, f)), 1000
@@ -644,6 +734,7 @@ ABM.util = u =
   # The function f = f(imageData, rgbIndex) -> number
   imageToData: (img, f = @pixelByte(0), arrayType = Uint8ClampedArray) ->
     @imageRowsToData img, img.height, f, arrayType
+
   imageRowsToData: (img, rowsPerSlice, f = @pixelByte(0),
       arrayType = Uint8ClampedArray) ->
     rowsDone = 0; data = new arrayType img.width * img.height
@@ -655,11 +746,12 @@ ABM.util = u =
       data[dataStart+i] = f(idata, 4 * i) for i in [0...idata.length / 4] by 1
       rowsDone += rows
     data
+
   # Two utilities for Image data extraction.
   # They return a fcn in a closure which "sees" the args and variables
   pixelBytesToInt: (a) ->
     ImageByteFmts = [[2], [1, 2], [0, 1, 2], [3, 0, 1, 2]]
-    a=ImageByteFmts[a - 1] if typeof a is "number"
+    a = ImageByteFmts[a - 1] if a.isNumber()
     (id,i) ->
       val = 0
       val = val * 256 + id[i + j] for j in a
@@ -674,6 +766,7 @@ ABM.util = u =
     can.width = width
     can.height = height
     can
+
   # As above, but returing the context object.
   # Note ctx.canvas is the canvas for the ctx, and can be use as an image.
   createCtx: (width, height, ctxType = "2d") ->
@@ -707,7 +800,6 @@ ABM.util = u =
     ctx.oImageSmoothingEnabled = smoothing
     ctx.webkitImageSmoothingEnabled = smoothing
 
-
   # Install identity transform.  Call ctx.restore() to revert to previous transform
   setIdentity: (ctx) ->
     ctx.save() # revert to native 2D transform
@@ -722,6 +814,7 @@ ABM.util = u =
     else # 3D
       ctx.clearColor 0, 0, 0, 0 # transparent!
       ctx.clear ctx.COLOR_BUFFER_BIT | ctx.DEPTH_BUFFER_BIT
+
   # Fill the 2D/3D layer with the given color
   fillCtx: (ctx, color) ->
     if ctx.fillStyle? # test for 2D ctx
@@ -732,6 +825,7 @@ ABM.util = u =
     else # 3D
       ctx.clearColor color..., 1 # alpha = 1 unless color is rgba
       ctx.clear ctx.COLOR_BUFFER_BIT | ctx.DEPTH_BUFFER_BIT
+
   # Draw string of the given color at the xy location, in ctx pixel coords.
   # Use setIdentity .. reset if a transform is being used by caller.
   ctxDrawText: (ctx, string, x, y, color = [0, 0, 0], setIdentity = true) ->
@@ -749,6 +843,7 @@ ABM.util = u =
     ctx.font = font
     ctx.textAlign = align
     ctx.textBaseline = baseline
+
   elementTextParams: (e, font, align = "center", baseline = "middle") ->
     e = e.canvas if e.canvas?
     e.style.font = font
@@ -766,6 +861,7 @@ ABM.util = u =
       ctx = @createCtx img.width, img.height
       ctx.drawImage img, 0, 0
     ctx
+
   imageSliceToCtx: (img, sx, sy, sw, sh, ctx) ->
     if ctx?
       ctx.canvas.width = sw
@@ -774,6 +870,7 @@ ABM.util = u =
       ctx = @createCtx sw, sh
     ctx.drawImage img, sx, sy, sw, sh, 0, 0, sw, sh
     ctx
+
   imageToCtxDownStepped: (img, tw, th) -> # http://goo.gl/UnLJSZ
     ctx1 = u.createCtx tw, th
     w = img.width
@@ -800,11 +897,13 @@ ABM.util = u =
   # Note: uses toDataURL thus possible cross origin problems.
   # Fix: use ctx.canvas for programatic imaging.
   ctxToDataUrl: (ctx) -> ctx.canvas.toDataURL "image/png"
+
   ctxToDataUrlImage: (ctx, f) ->
     img = new Image()
     (img.onload = -> f(img)) if f?
     img.src = ctx.canvas.toDataURL "image/png"
     img
+
   # Convert a ctx to an imageData object
   ctxToImageData: (ctx) ->
     ctx.getImageData 0, 0, ctx.canvas.width, ctx.canvas.height
