@@ -356,14 +356,13 @@ Breeds is a string of space separated names:
               <p>Floodfill arguments:</p>
 <ul>
 <li>aset: initial array of agents, often a single agent: [a]</li>
-<li>fCandidate(a) -&gt; true if a is elegible to be added to the set</li>
+<li>fCandidate(a, asetLast) -&gt; true if a is elegible to be added to the set</li>
 <li>fJoin(a, asetLast) -&gt; adds a to the agentset, usually by setting a variable</li>
-<li>fCallback(aset, asetNext) -&gt; optional function to be called each iteration of floodfill;
+<li>fCallback(asetLast, asetNext) -&gt; optional function to be called each iteration of floodfill;
 if fCallback returns true, the flood is aborted</li>
 <li>fNeighbors(a) -&gt; returns the neighbors of this agent</li>
-<li>asetLast: the array of the last set of agents to join the set</li>
-<li>asetLast: defaults to []; can be used if the join function uses the prior
-agents for a distance calculation, for example</li>
+<li>asetLast: the array of the last set of agents to join the flood;
+gets passed into fJoin, fCandidate, and fCallback</li>
 </ul>
 
             </div>
@@ -390,7 +389,7 @@ This is useful if you want to watch your flood progress as an animation.</p>
     fJoin p, asetLast <span class="hljs-keyword">for</span> p <span class="hljs-keyword">in</span> aset
     asetNext = []
     <span class="hljs-keyword">for</span> p <span class="hljs-keyword">in</span> aset
-      <span class="hljs-keyword">for</span> n <span class="hljs-keyword">in</span> fNeighbors(p) <span class="hljs-keyword">when</span> fCandidate n
+      <span class="hljs-keyword">for</span> n <span class="hljs-keyword">in</span> fNeighbors(p) <span class="hljs-keyword">when</span> fCandidate n, aset
         asetNext.push n <span class="hljs-keyword">if</span> asetNext.indexOf(n) &lt; <span class="hljs-number">0</span>
     stopEarly = fCallback <span class="hljs-keyword">and</span> fCallback(aset, asetNext)
     <span class="hljs-keyword">if</span> stopEarly <span class="hljs-keyword">or</span> asetNext.length <span class="hljs-keyword">is</span> <span class="hljs-number">0</span> <span class="hljs-keyword">then</span> <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>

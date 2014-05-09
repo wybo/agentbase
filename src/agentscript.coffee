@@ -1033,14 +1033,13 @@ class ABM.AgentSet extends Array
   # Floodfill arguments:
   #
   # * aset: initial array of agents, often a single agent: [a]
-  # * fCandidate(a) -> true if a is elegible to be added to the set
+  # * fCandidate(a, asetLast) -> true if a is elegible to be added to the set
   # * fJoin(a, asetLast) -> adds a to the agentset, usually by setting a variable
-  # * fCallback(aset, asetNext) -> optional function to be called each iteration of floodfill;
+  # * fCallback(asetLast, asetNext) -> optional function to be called each iteration of floodfill;
   # if fCallback returns true, the flood is aborted
   # * fNeighbors(a) -> returns the neighbors of this agent
-  # * asetLast: the array of the last set of agents to join the set
-  # * asetLast: defaults to []; can be used if the join function uses the prior
-  # agents for a distance calculation, for example
+  # * asetLast: the array of the last set of agents to join the flood;
+  # gets passed into fJoin, fCandidate, and fCallback
   floodFill: (aset, fCandidate, fJoin, fCallback, fNeighbors, asetLast=[]) ->
     floodFunc = @floodFillOnce(aset, fCandidate, fJoin, fCallback, fNeighbors, asetLast)
     floodFunc = floodFunc() while floodFunc
@@ -1051,7 +1050,7 @@ class ABM.AgentSet extends Array
     fJoin p, asetLast for p in aset
     asetNext = []
     for p in aset
-      for n in fNeighbors(p) when fCandidate n
+      for n in fNeighbors(p) when fCandidate n, aset
         asetNext.push n if asetNext.indexOf(n) < 0
     stopEarly = fCallback and fCallback(aset, asetNext)
     if stopEarly or asetNext.length is 0 then return null
