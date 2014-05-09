@@ -87,7 +87,7 @@ Our example models use CoffeeScript directly within the browser via `text/coffee
         </body>
       </html>
 
-You may see this by running a sample model, then use the browser's View Page Source.
+You can see this by running a sample model, then using the browser's View Page Source.
 
 Often the models will print to the "JavaScript console" while they run.
 
@@ -99,7 +99,7 @@ Class Model is an "abstract class" with three abscract methods:
     setup()   Called during startup and by Model.reset()
     step()    Called by animator to advance the model one step
 
-CoffeeScript modelers simply subclass ABM.Model, supplying the three abstract methods.  All the sample models do this, as does the docs/ template example.
+CoffeeScript modelers simply subclass ABM.Model, supplying the three abstract methods.  All the sample models do this, including the docs/ template example.
 
 JavaScript modelers can simply replace the empty ABM.Model abstract methods:
 
@@ -156,11 +156,13 @@ and build with
 
 We're currently using [coffeescript](http://jashkenas.github.io/coffee-script/extras/coffee-script.js), [shelljs](https://github.com/arturadib/shelljs), [uglifyjs](https://github.com/mishoo/UglifyJS), and optionally [docco](http://jashkenas.github.io/docco/).
 
-All forked repos must be aware that we have a gh-pages branch.  This somewhat complicates the build workflow.  You should also make sure you are in the master at all times; our cake tasks should take care of all gh-pages branch usage.
+#### Contribute
 
-Before any commit, please make sure all the models work as expected, they are our "unit tests".  We'll be adding more, smaller tests, soon. Similarly make sure the docco files display correctly.  They can be built with "cake all" or "cake doc". Note that all single line comments are converted into docs, using Markdown.  Be careful not to mistakenly add a "code" comment to the docs!
+Before any commit, please make sure all the models work as expected; they are our "unit tests."  We'll be adding more, smaller tests, soon.  Generally the test models will run locally with a file:// url, but http://localhost is safer.
 
-Pull requests will be accepted without your building your own gh-pages as long as both the tests run and the README.md runs OK locally.  Generally the test models and docs will run locally with a file:// url but http://localhost is safer.  Sublime/Textmate markdown viewers should work for this.
+Similarly, make sure the docco files display correctly.  They can be built with `node build.js all` or `node build.js doc`.  Sublime/Textmate markdown viewers should work for this.  Note that all single line comments are converted into docs using Markdown.  Be careful not to mistakenly add a "code" comment to the docs!
+
+Pull requests will be accepted without your building your own gh-pages as long as the tests run OK locally.  However, if you want to be awesome, once your pull request is accepted, merge your changes into the gh-pages branch, update the README.md, and send another pull request!
 
 The typical workflow looks like:
 
@@ -171,7 +173,7 @@ The typical workflow looks like:
 * cake git:commit - in master, commit locally and push to github
 * cake git:pages - checkout gh-pages branch, merge master, push to github, change back to master.
 
-The git:pages task should be run with no watch task running, otherwise unintential compiles will occur with changing to the gh-pages branch.  Similarly, be careful your editor isn't confused by the gh-pages change .. it completely changes your working directory.  The cake git:pages task will warn you to be careful, prompting for a go-ahead.
+The git:pages task should be run with no watch task running, otherwise unintentional compiles will occur when changing to the gh-pages branch.  Similarly, be careful your editor isn't confused by the gh-pages change .. it completely changes your working directory.  The cake git:pages task will warn you to be careful, prompting for a go-ahead.
 
 
 #### License
