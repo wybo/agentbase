@@ -48,12 +48,17 @@
         @updatePatches()
 
       setupPatches: ->
-        for p in @patches.create()
-          p.isNest = false ; p.isFood = false 
-          # REMIND: agentsOwn etc; NL defaults to 0
-          p.foodPheromone = 0; p.nestPheromone = 0
-        (p.isNest=true;p.color=@nestColor) for p in @patchRectangle @patches.maxX-6,0,3,3
-        (p.isFood=true;p.color=@foodColor) for p in @patchRectangle @patches.minX+6,0,3,3
+        for patch in @patches.create()
+          patch.isNest = false
+          patch.isFood = false
+          patch.foodPheromone = 0
+          patch.nestPheromone = 0
+        for patch in @patchRectangle @patches.maxX - 6, 0, 3, 3
+          patch.isNest = true
+          patch.color = @nestColor
+        for patch in @patchRectangle @patches.minX + 6, 0, 3, 3
+          patch.isFood = true
+          patch.color = @foodColor
         null
       setupAgents: -> # a is agent
         @agents.create @population, (a) => # fat arrow for @patches etc
@@ -77,13 +82,13 @@
             @dropPheromone a
         null # needed to avoid returning an absurd comprehension
       wiggleUphill: (a) ->
-        if a.p.isOnEdge()
+        if a.patch.isOnEdge()
           # a.rotate Math.PI 
           a.rotate u.degToRad(180)
         else
-          # nAhead = a.inCone a.p.n, Math.PI, 2
-          nAhead = a.inCone a.p.n, u.degToRad(180), 2
-          # nAhead = a.p.n.inCone a.p, a.heading, u.degToRad(180), 2
+          # nAhead = a.inCone a.patch.neighbors, Math.PI, 2
+          nAhead = a.inCone a.patch.neighbors, u.degToRad(180), 2
+          # nAhead = a.patch.neighbors.inCone a.p, a.heading, u.degToRad(180), 2
           # nAhead = ABM.patches.inCone a.p, a.heading, u.degToRad(180), 2
           [p, max] = nAhead.maxOneOf ((n) => @targetPheromone(a, n)), true # => for @
           a.face p if max > .001/@maxPheromone
@@ -92,27 +97,28 @@
           # a.face p if max > .001/@maxPheromone
         a.rotate u.randomCentered(@wiggleAngle)
         a.forward 1
-      targetPheromone: (a, p) -> 
-        if a.carryingFood then p.nestPheromone else p.foodPheromone
+      targetPheromone: (a, patch) -> 
+        if a.carryingFood then patch.nestPheromone else patch.foodPheromone
       dropPheromone: (a) ->
-        if (not a.carryingFood and a.p.isFood) or (a.carryingFood and a.p.isNest)
+        if (not a.carryingFood and a.patch.isFood) or (a.carryingFood and a.patch.isNest)
           @resetAgent a, not a.carryingFood
         if a.carryingFood
-        then a.p.foodPheromone += 0.1*a.pheromone
-        else a.p.nestPheromone += 0.1*a.pheromone
+        then a.patch.foodPheromone += 0.1 * a.pheromone
+        else a.patch.nestPheromone += 0.1 * a.pheromone
         a.pheromone *= 0.9
       
       updatePatches: ->
         @patches.diffuse "nestPheromone", @diffusionRate
         @patches.diffuse "foodPheromone", @diffusionRate
-        for p in @patches
-          p.foodPheromone *= (1 - @evaporationRate)
-          p.nestPheromone *= (1 - @evaporationRate)
-          p.foodPheromone = p.nestPheromone = 0 if p.isOnEdge()
-          unless (p.isNest or p.isFood) #  or p.isOnEdge()
-            if p.foodPheromone > p.nestPheromone
-            then p.scaleColor @foodColor, p.foodPheromone
-            else p.scaleColor @nestColor, p.nestPheromone
+        for patch in @patches
+          patch.foodPheromone *= (1 - @evaporationRate)
+          patch.nestPheromone *= (1 - @evaporationRate)
+          patch.foodPheromone = patch.nestPheromone = 0 if patch.isOnEdge()
+          unless (patch.isNest or patch.isFood) #  or patch.isOnEdge()
+            if patch.foodPheromone > patch.nestPheromone
+              patch.scaleColor @foodColor, patch.foodPheromone
+            else
+              patch.scaleColor @nestColor, patch.nestPheromone
         null
 
       # utilities

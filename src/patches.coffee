@@ -26,6 +26,7 @@ class ABM.Patches extends ABM.AgentSet
   # Note that this is done as separate method so like other agentsets,
   # patches are started up empty and filled by "create" calls.
   create: -> # TopLeft to BottomRight, exactly as canvas imagedata
+    console.log('creatpa')
     for y in [@maxY..@minY] by -1
       for x in [@minX..@maxX] by 1
         @add new @agentClass x, y
@@ -37,7 +38,7 @@ class ABM.Patches extends ABM.AgentSet
   # Optimizes p.agentsHere method.
   # Call before first agent is created.
   cacheAgentsHere: ->
-    p.agents = [] for p in @
+    patch.agents = [] for patch in @
     null
 
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
@@ -47,19 +48,24 @@ class ABM.Patches extends ABM.AgentSet
     u.setCtxSmoothing ctx, not @drawWithPixels
 
   # Optimization: Cache a single set by modeler for use by
-  # patchRectangle, inCone, inRect, inRadius.
+  # patchRectangle, inCone, inRectangle, inRadius.
   # Ex: flock demo model's vision rect.
-  cacheRect: (radius, meToo = false) ->
-    for p in @
-      p.pRect = @patchRectangle p, radius, radius, meToo
-      p.pRect.radius = radius #; p.pRect.meToo = meToo
+  cacheRectangle: (radius, meToo = false) ->
+    for patch in @
+      patch.pRectangle = @patchRectangle patch, radius, radius, meToo
+      patch.pRectangle.radius = radius #; patch.pRectangle.meToo = meToo
     radius
 
   # Install neighborhoods in patches
   setNeighbors: ->
-    for p in @
-      p.n =  @patchRectangle p, 1, 1
-      p.n4 = @asSet (n for n in p.n when n.x is p.x or n.y is p.y)
+    console.log('Neighbset')
+    for patch in @
+      patch.neighbors =  @patchRectangle patch, 1, 1
+      four = []
+      for neighbor in patch.neighbors
+        if neighbor.x is patch.x or neighbor.y is patch.y
+          four.push neighbor
+      patch.neighbors4 = @asSet four
 
   # Setup pixels used for `drawScaledPixels` and `importColors`
   # 
@@ -88,22 +94,22 @@ class ABM.Patches extends ABM.AgentSet
 
 # #### Patch grid coord system utilities:
   
-  # Return the patch id/index given integer x,y in patch coords
+  # Return the patch id/index given integer x, y in patch coords
   patchIndex: (x, y) -> x - @minX + @numX * (@maxY - y)
 
-  # Return the patch at matrix position x,y where 
+  # Return the patch at matrix position x, y where 
   # x & y are both valid integer patch coordinates.
   patchXY: (x, y) -> @[@patchIndex x, y]
   
-  # Return x,y float values to be between min/max patch coord values
+  # Return x, y float values to be between min/max patch coord values
   clamp: (x, y) ->
     [u.clamp(x, @minXcor, @maxXcor), u.clamp(y, @minYcor, @maxYcor)]
   
-  # Return x,y float values to be modulo min/max patch coord values.
+  # Return x, y float values to be modulo min/max patch coord values.
   wrap: (x, y) ->
     [u.wrap(x, @minXcor, @maxXcor), u.wrap(y, @minYcor, @maxYcor)]
   
-  # Return x,y float values to be between min/max patch values
+  # Return x, y float values to be between min/max patch values
   # using either clamp/wrap above according to isTorus topology.
   coord: (x, y) -> #returns a valid world coord (real, not int)
     if @isTorus then @wrap x, y else @clamp x, y
@@ -112,21 +118,21 @@ class ABM.Patches extends ABM.AgentSet
   isOnWorld: (x, y) ->
     @isTorus or (@minXcor <= x <= @maxXcor and @minYcor <= y <= @maxYcor)
 
-  # Return patch at x,y float values according to topology.
+  # Return patch at x, y float values according to topology.
   patch: (x, y) ->
-    [x, y]=@coord x, y
+    [x, y] = @coord x, y
     x = u.clamp Math.round(x), @minX, @maxX
     y = u.clamp Math.round(y), @minY, @maxY
     @patchXY x, y
   
-  # Return a random valid float x,y point in patch space
+  # Return a random valid float x, y point in patch space
   randomPt: ->
     [u.randomFloat2(@minXcor, @maxXcor), u.randomFloat2(@minYcor, @maxYcor)]
 
 # #### Patch metrics
   
   # Convert patch measure to pixels
-  toBits: (p) -> p * @size
+  toBits: (patch) -> patch * @size
 
   # Convert bit measure to patches
   fromBits: (b) -> b / @size
@@ -134,13 +140,14 @@ class ABM.Patches extends ABM.AgentSet
 # #### Patch utilities
   
   # Return an array of patches in a rectangle centered on the given 
-  # patch `p`, dx, dy units to the right/left and up/down. 
-  # Exclude `p` unless meToo is true, default false.
-  patchRectangle: (p, dx, dy, meToo = false) ->
-    return p.pRect if p.pRect? and p.pRect.radius is dx # and p.pRect.radius is dy
+  # patch `patch`, dx, dy units to the right/left and up/down. 
+  # Exclude `patch` unless meToo is true, default false.
+  patchRectangle: (patch, dx, dy, meToo = false) ->
+    return patch.pRectangle if patch.pRectangle? and patch.pRectangle.radius is dx 
+    # and patch.pRectangle.radius is dy
     rect = []; # REMIND: optimize if no wrapping, rect inside patch boundaries
-    for y in [(p.y - dy)..(p.y + dy)] by 1 # by 1: perf: avoid bidir JS for loop
-      for x in [(p.x - dx)..(p.x + dx)] by 1
+    for y in [(patch.y - dy)..(patch.y + dy)] by 1 # by 1: perf: avoid bidir JS for loop
+      for x in [(patch.x - dx)..(patch.x + dx)] by 1
         if @isTorus or (@minX <= x <= @maxX and @minY <= y <= @maxY)
           if @isTorus
             if x < @minX
@@ -151,11 +158,11 @@ class ABM.Patches extends ABM.AgentSet
               y += @numY
             if y > @maxY
               y -= @numY
-          pnext = @patchXY x, y # much faster than coord()
-          unless pnext?
-            u.error "patchRectangle: x,y out of bounds, see console.log"
-            console.log "x #{x} y #{y} p.x #{p.x} p.y #{p.y} dx #{dx} dy #{dy}"
-          rect.push pnext if (meToo or p isnt pnext)
+          nextPatch = @patchXY x, y # much faster than coord()
+          unless nextPatch?
+            u.error "patchRectangle: x, y out of bounds, see console.log"
+            console.log "x #{x} y #{y} patch.x #{patch.x} patch.y #{patch.y} dx #{dx} dy #{dy}"
+          rect.push nextPatch if (meToo or patch isnt nextPatch)
     @asSet rect
 
   # Draws, or "imports" an image URL into the drawing layer.
@@ -179,19 +186,18 @@ class ABM.Patches extends ABM.AgentSet
   # Utility function for pixel manipulation.  Given a patch, returns the 
   # native canvas index i into the pixel data.
   # The top-left order simplifies finding pixels in data sets
-  pixelByteIndex: (p) -> 4 * p.id # Uint8
+  pixelByteIndex: (patch) -> 4 * patch.id # Uint8
 
-  pixelWordIndex: (p) -> p.id   # Uint32
+  pixelWordIndex: (patch) -> patch.id   # Uint32
 
   # Convert pixel location (top/left offset i.e. mouse) to patch coords (float)
   pixelXYtoPatchXY: (x, y) -> [@minXcor + (x / @size), @maxYcor - (y / @size)]
 
   # Convert patch coords (float) to pixel location (top/left offset i.e. mouse)
   patchXYtoPixelXY: (x, y) -> [( x - @minXcor) * @size, (@maxYcor - y) * @size]
-  
     
   # Draws, or "imports" an image URL into the patches as their color property.
-  # The drawing is scaled to the number of x,y patches, thus one pixel
+  # The drawing is scaled to the number of x, y patches, thus one pixel
   # per patch.  The colors are then transferred to the patches.
   # Map is a color map, only for gray for now
   importColors: (imageSrc, f, map) ->
@@ -204,10 +210,10 @@ class ABM.Patches extends ABM.AgentSet
     u.setIdentity @pixelsCtx
     @pixelsCtx.drawImage img, 0, 0, @numX, @numY # scale if needed
     data = @pixelsCtx.getImageData(0, 0, @numX, @numY).data
-    for p in @
-      i = @pixelByteIndex p
+    for patch in @
+      i = @pixelByteIndex patch
       # promote initial default
-      p.color = if map? then map[i] else [data[i++], data[i++], data[i]]
+      patch.color = if map? then map[i] else [data[i++], data[i++], data[i]]
     @pixelsCtx.restore() # restore patch transform
 
   # Draw the patches via pixel manipulation rather than 2D drawRect.
@@ -223,9 +229,9 @@ class ABM.Patches extends ABM.AgentSet
   # The 8-bit version for drawScaledPixels.  Used for systems w/o typed arrays
   drawScaledPixels8: (ctx) ->
     data = @pixelsData
-    for p in @
-      i = @pixelByteIndex p
-      c = p.color
+    for patch in @
+      i = @pixelByteIndex patch
+      c = patch.color
       if c.length is 4
         a = c[3]
       else
@@ -241,7 +247,7 @@ class ABM.Patches extends ABM.AgentSet
     data = @pixelsData32
     for p in @
       i = @pixelWordIndex p
-      c = p.color
+      c = patch.color
       a = if c.length is 4 then c[3] else 255
       if @pixelsAreLittleEndian
       then data[i] = (a << 24) | (c[2] << 16) | (c[1] << 8) | c[0]
@@ -250,28 +256,29 @@ class ABM.Patches extends ABM.AgentSet
     return if @size is 1
     ctx.drawImage @pixelsCtx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height
 
-  floodFill: (aset, fCandidate, fJoin, fCallback, fNeighbors = ((p) -> p.n),
+  floodFill: (aset, fCandidate, fJoin, fCallback, fNeighbors = ((patch) -> patch.n),
       asetLast = []) ->
     super aset, fCandidate, fJoin, fCallback, fNeighbors, asetLast
 
-  # Diffuse the value of patch variable `p.v` by distributing `rate` percent
+  # Diffuse the value of patch variable `patch.v` by distributing `rate` percent
   # of each patch's value of `v` to its neighbors. If a color `c` is given,
-  # scale the patch's color to be `p.v` of `c`. If the patch has
+  # scale the patch's color to be `patch.v` of `c`. If the patch has
   # less than 8 neighbors, return the extra to the patch.
   diffuse: (v, rate, c) -> # variable name, diffusion rate, max color (optional)
     # zero temp variable if not yet set
     unless @[0]._diffuseNext?
-      p._diffuseNext = 0 for p in @
+      patch._diffuseNext = 0 for patch in @
     # pass 1: calculate contribution of all patches to themselves and neighbors
-    for p in @
-      dv = p[v] * rate
+    for patch in @
+      dv = patch[v] * rate
       dv8 = dv / 8
-      nn = p.n.length
-      p._diffuseNext += p[v] - dv + (8 - nn) * dv8
-      n._diffuseNext += dv8 for n in p.n
+      nn = patch.neighbors.length
+      patch._diffuseNext += patch[v] - dv + (8 - nn) * dv8
+      for neighbor in patch.neighbors
+        neighbor._diffuseNext += dv8
     # pass 2: set new value for all patches, zero temp, modify color if c given
-    for p in @
-      p[v] = p._diffuseNext
-      p._diffuseNext = 0
-      p.scaleColor c, p[v] if c
+    for patch in @
+      patch[v] = patch._diffuseNext
+      patch._diffuseNext = 0
+      patch.scaleColor c, patch[v] if c
     null # avoid returning copy of @

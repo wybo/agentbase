@@ -39,7 +39,7 @@
         for a in @agents
           a.rotate u.randomCentered(u.degToRad(40))
           a.forward @speed
-          a.p.heat = 1
+          a.patch.heat = 1
         @patches.diffuse "heat", @diffusionRate, [255,0,0]
         # @stop() # debug: one step
 

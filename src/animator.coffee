@@ -91,7 +91,9 @@ class ABM.Animator
       Math.round elapsed * 1000 / @ms()
 
   # Return a status string for debugging and logging performance
-  toString: -> "ticks: #{@ticks}, draws: #{@draws}, rate: #{@rate} tps/dps: #{@ticksPerSec()}/#{@drawsPerSec()}"
+  toString: -> 
+    "ticks: #{@ticks}, draws: #{@draws}, rate: #{@rate} " +
+      "tps/dps: #{@ticksPerSec()}/#{@drawsPerSec()}"
 
   # Animation via setTimeout and requestAnimFrame
   animateSteps: =>

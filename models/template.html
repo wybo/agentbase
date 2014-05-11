@@ -75,7 +75,7 @@
         # and layout the agents randomly or in a circle depending
         # on our modeel's `startCircle` variable.
         for a in @agents.create @population
-          a.shape = u.oneOf u.s.names() # random shapes
+          a.shape = u.sample u.s.names() # random shapes
           if @startCircle
             a.forward @patches.maxX/2 # start in circle
           else
@@ -102,7 +102,7 @@
           @reportInfo() 
           @refreshPatches = true
           # Add use of our first pull request:
-          @setSpotlight @agents.oneOf() if @anim.ticks is 300
+          @setSpotlight @agents.sample() if @anim.ticks is 300
           @setSpotlight null if @anim.ticks is 600
         else
           @refreshPatches = false

@@ -11,8 +11,8 @@ class ABM.Model
   # Can be added to by programmer to modify/create layers, **before** starting your own model.
   # Example:
   # 
-  #     v.z++ for k,v of ABM.Model::contextsInit # increase each z value by one
-  contextsInit: { # Experimental: image:   {z:15,  ctx:"img"} 
+  #     v.z++ for k, v of ABM.Model::contextsInit # increase each z value by one
+  contextsInit: { # Experimental: image:   {z: 15, ctx: "img"} 
     patches:   {z: 10, ctx: "2d"}
     drawing:   {z: 20, ctx: "2d"}
     links:     {z: 30, ctx: "2d"}
@@ -104,8 +104,8 @@ class ABM.Model
       hasNeighbors: true, isHeadless: false
     }
 
-    for own k, v of defaults
-      options[k] ?= v
+    for own key, value of defaults
+      options[key] ?= value
 
     {size, minX, maxX, minY, maxY, isTorus, hasNeighbors, isHeadless} = options
 
@@ -173,10 +173,10 @@ class ABM.Model
   # Optimizes Agent a.myLinks method
   setCacheMyLinks: -> @agents.cacheLinks()
   
-  # Have patches cache the given patchRect.
-  # Optimizes patchRect, inRadius and inCone
-  setCachePatchRect:(radius, meToo = false) ->
-    @patches.cacheRect radius, meToo
+  # Have patches cache the given patchRectangle.
+  # Optimizes patchRectangle, inRadius and inCone
+  setCachePatchRectangle:(radius, meToo = false) ->
+    @patches.cacheRectangle radius, meToo
   
 #### User Model Creation
 # A user's model is made by subclassing Model and over-riding these
@@ -245,7 +245,7 @@ class ABM.Model
 # throughout the model.
 # Use:
 #
-#     @setSpotliight breed.oneOf()
+#     @setSpotliight breed.sample()
 #
 # to draw one of a random breed. Remove spotlight by passing `null`
   setSpotlight: (@spotlightAgent) ->
@@ -276,7 +276,7 @@ class ABM.Model
 # Use of <breed>.setDefault methods work as for agents/links, creating default
 # values for the breed set:
 #
-#     @embers.setDefault "color", [255,0,0]
+#     @embers.setDefault "color", [255, 0, 0]
 #
 # ..will set the default color for just the embers. Note: patch breeds are currently
 # not usable due to the patches being prebuilt.  Stay tuned.

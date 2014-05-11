@@ -20,8 +20,8 @@
         @agents.setDefault "shape", "circle"
         @agents.setDefault "heading", 0 # override promotion to random angle
 
-        # window.foo = @patches.nOf(@population)
-        for p in @patches.create().nOf(@population)
+        # window.foo = @patches.sample(@population)
+        for p in @patches.create().sample(@population)
           p.sprout 1, @agents, (a) =>
             if @sun and a.id is 0
               a.mass = 10000; a.setXY 0,0; a.vx = a.vy = 0
@@ -38,7 +38,7 @@
       step: ->
         for a in @agents
           for a1 in @agents.other(a)
-            k = Math.pow(10, @gravExp)*a1.mass/Math.max(Math.pow(a.distance(a1),3), .000001)
+            k = Math.pow(10, @gravExp) * a1.mass / Math.max(Math.pow(a.distance(a1), 3), .000001)
             a.vx += (a1.x-a.x)*k; a.vy += (a1.y-a.y)*k
         for a in @agents when not (@sun and a.id is 0)
           # unless (@sun and a.id is 0)

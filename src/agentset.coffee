@@ -33,7 +33,7 @@ class ABM.AgentSet extends Array
   #
   #     evens = (a for a in ABM.agents when a.id % 2 is 0)
   #     ABM.AgentSet.asSet(evens)
-  #     randomEven = evens.oneOf()
+  #     randomEven = evens.random()
   @asSet: (a, setType = ABM.AgentSet) ->
     a.__proto__ = setType.prototype ? setType.constructor.prototype # setType.__proto__
     a
@@ -44,8 +44,8 @@ class ABM.AgentSet extends Array
   #     AS = for i in [1..5] # long form comprehension
   #       {id:i, x:u.randomInt(10), y:u.randomInt(10)}
   #     ABM.AgentSet.asSet AS # Convert AS to AgentSet in place
-  #        [{id:1,x:0,y:1}, {id:2,x:8,y:0}, {id:3,x:6,y:4},
-  #         {id:4,x:1,y:3}, {id:5,x:1,y:1}]
+  #        [{id: 1, x: 0, y: 1}, {id: 2, x: 8, y: 0}, {id: 3, x: 6, y: 4},
+  #         {id: 4, x: 1, y: 3}, {id: 5, x: 1, y: 1}]
 
 # ### Constructor and add/remove agents.
   
@@ -81,8 +81,8 @@ class ABM.AgentSet extends Array
   # sorted by `id`. If the set is one created by `asSet`, and the original
   # array is unsorted, simply call `sortById` first, see `sortById` below.
   #
-  #     AS.remove(AS[3]) # [{id:0,x:0,y:1}, {id:1,x:8,y:0},
-  #                         {id:2,x:6,y:4}, {id:4,x:1,y:1}] 
+  #     AS.remove(AS[3]) # [{id: 0, x: 0, y: 1}, {id: 1, x: 8, y: 0},
+  #                         {id: 2, x: 6, y: 4}, {id: 4, x: 1, y: 1}] 
   remove: (o) ->
     if @mainSet?
       u.removeItem @mainSet, o
@@ -145,11 +145,11 @@ class ABM.AgentSet extends Array
   # Remove adjacent duplicates, by reference, in a sorted agentset.
   # Use `sortById` first if agentset not sorted.
   #
-  #     as = (AS.oneOf() for i in [1..4]) # 4 random agents w/ dups
-  #     ABM.AgentSet.asSet as # [{id:1,x:8,y:0}, {id:0,x:0,y:1},
-  #                              {id:0,x:0,y:1}, {id:2,x:6,y:4}]
-  #     as.sortById().uniq() # [{id:0,x:0,y:1}, {id:1,x:8,y:0}, 
-  #                             {id:2,x:6,y:4}]
+  #     as = (AS.random() for i in [1..4]) # 4 random agents w/ dups
+  #     ABM.AgentSet.asSet as # [{id: 1, x: 8, y: 0}, {id: 0, x: 0, y: 1},
+  #                              {id: 0, x: 0, y: 1}, {id: 2, x: 6, y: 4}]
+  #     as.sortById().uniq() # [{id: 0, x: 0, y: 1}, {id: 1, x: 8, y: 0}, 
+  #                             {id: 2, x: 6, y: 4}]
   uniq: -> u.uniq(@)
 
   # The static `ABM.AgentSet.asSet` as a method.
@@ -173,7 +173,7 @@ class ABM.AgentSet extends Array
   # Return an array of agents with the property equal to the given value
   #
   #     AS.getPropWith "x", 1
-  #     [{id:4,x:1,y:3},{id:5,x:1,y:1}]
+  #     [{id: 4, x: 1, y: 3},{id: 5, x: 1, y: 1}]
   getPropWith: (prop, value) -> @asSet (o for o in @ when o[prop] is value)
 
   # Set the property of the agents to a given value.  If value
@@ -181,8 +181,8 @@ class ABM.AgentSet extends Array
   # This is generally used via: getProp, modify results, setProp
   #
   #     # increment x for agents with x=1
-  #     AS1 = ABM.AgentSet.asSet AS.getPropWith("x",1)
-  #     AS1.setProp "x", 2 # {id:4,x:2,y:3},{id:5,x:2,y:1}
+  #     AS1 = ABM.AgentSet.asSet AS.getPropWith("x", 1)
+  #     AS1.setProp "x", 2 # {id: 4, x: 2, y: 3}, {id: 5, x: 2, y: 1}
   #
   # Note this changes the last two objects in the original AS above
   setProp: (prop, value) ->
@@ -227,7 +227,7 @@ class ABM.AgentSet extends Array
   # Return the last agent in the agentset
   #
   #     AS.last().id             # l5
-  #     l=AS.last(); p=[l.x,l.y] # [1,1]
+  #     l = AS.last(); p = [l.x, l.y] # [1, 1]
   last: -> u.last @
 
   # Returns true if the agentset has any agents
@@ -242,23 +242,21 @@ class ABM.AgentSet extends Array
   #     as.getProp "id"  # [1, 2, 3, 4] 
   other: (a) -> @asSet (o for o in @ when o isnt a) # could clone & remove
 
-  # Return random agent in agentset
-  #
-  #     AS.oneOf()  # {id:2,x:6,y:4}
-  oneOf: -> u.oneOf @
-
-  # Return agentset made of n distinct agents
-  #
-  #     AS.nOf(3) # [{id:0,x:0,y:1}, {id:4,x:1,y:1}, {id:1,x:8,y:0}]
-  nOf: (n) -> @asSet u.nOf @, n
+  # Return random agent in agentset or an agentset made of n distinct agents.
+  sample: (number) ->
+    random = u.sample @, number
+    if random.isArray
+      @asSet random
+    else
+      random
 
   # Return agent when f(o) min/max in agentset. If multiple agents have
   # min/max value, return the first. Error if agentset empty.
   # If f is a string, return element with min/max value of that property.
   # If "valueToo" then return an array of the agent and the value.
   # 
-  #     AS.minOneOf("x") # {id:0,x:0,y:1}
-  #     AS.maxOneOf((a)->a.x+a.y, true) # {id:2,x:6,y:4},10 
+  #     AS.minOneOf("x") # {id: 0, x: 0, y: 1}
+  #     AS.maxOneOf((a) -> a.x + a.y, true) # {id: 2, x: 6, y: 4}, 10
   minOneOf: (f, valueToo = false) -> u.minOneOf @, f, valueToo
 
   maxOneOf: (f, valueToo = false) -> u.maxOneOf @, f, valueToo
@@ -285,12 +283,12 @@ class ABM.AgentSet extends Array
 
 # ### Topology
   
-  # For ABM.patches & ABM.agents which have x,y. See ABM.util doc.
+  # For ABM.patches & ABM.agents which have x, y. See ABM.util doc.
   #
   # Return all agents in agentset within d distance from given object.
   # By default excludes the given object. Uses linear/torus distance
   # depending on patches.isTorus, and patches width/height if needed.
-  inRadius: (o, d, meToo = false) -> # for any objects w/ x,y
+  inRadius: (o, d, meToo = false) -> # for any objects w/ x, y
     d2 = d * d
     x = o.x
     y= o.y
@@ -330,7 +328,7 @@ class ABM.AgentSet extends Array
   #     AS.with("o.x<5").ask("o.x=o.x+1")
   #     AS.getProp("x") # [2, 8, 6, 3, 3]
   #
-  #     ABM.agents.with("o.id<100").ask("o.color=[255,0,0]")
+  #     ABM.agents.with("o.id < 100").ask("o.color = [255, 0, 0]")
   ask: (f) ->
     eval("f=function(o){return " + f + ";}") if u.isString f
     f(o) for o in @; @
@@ -343,8 +341,8 @@ class ABM.AgentSet extends Array
 # slightly more useful than shown above due to the toString method.
 #
 #     class XY
-#       constructor: (@x,@y) ->
-#       toString: -> "{id:#{@id},x:#{@x},y:#{@y}}"
+#       constructor: (@x, @y) ->
+#       toString: -> "{id: #{@id}, x: #{@x}, y: #{@y}}"
 #     @AS = new ABM.AgentSet # @ => global name space
 #
 # The result of 
@@ -353,4 +351,4 @@ class ABM.AgentSet extends Array
 #
 # random run, captured so we can reuse.
 #
-#     AS.add new XY(pt...) for pt in [[0,1],[8,0],[6,4],[1,3],[1,1]]
+#     AS.add new XY(pt...) for pt in [[0, 1], [8, 0], [6, 4], [1, 3], [1, 1]]

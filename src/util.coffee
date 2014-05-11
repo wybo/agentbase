@@ -67,7 +67,7 @@ ABM.util = u =
   isNumber: (object) ->
     !!(typeof object is "number")
   
-# ### Numeric Operations
+  # ### Numeric Operations
 
   # Replace Math.random with a simple seedable generator.
   # See [StackOverflow](http://goo.gl/FafN3z)
@@ -76,7 +76,7 @@ ABM.util = u =
       x = Math.sin(seed++) * 10000
       x - Math.floor(x)
 
-  # Return random int in [0,max) or [min,max)
+  # Return random int in [0, max) or [min, max)
   randomInt: (max) -> Math.floor(Math.random() * max)
 
   randomInt2: (min, max) -> min + Math.floor(Math.random() * (max-min))
@@ -84,11 +84,11 @@ ABM.util = u =
   # Return float Gaussian normal with given mean, std deviation.
   randomNormal: (mean = 0.0, sigma = 1.0) -> # Box-Muller
     u1 = 1.0 - Math.random()
-    u2 = Math.random() # u1 in (0,1]
+    u2 = Math.random() # u1 in (0, 1]
     norm = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2)
     norm*sigma + mean
 
-  # Return float in [0,max) or [min,max) or [-r/2,r/2)
+  # Return float in [0, max) or [min, max) or [-r / 2, r / 2)
   randomFloat: (max) -> Math.random() * max
 
   randomFloat2: (min, max) -> min + Math.random() * (max-min)
@@ -128,18 +128,18 @@ ABM.util = u =
   # Return localized string for number, with commas etc
   tls: (n) -> n.toLocaleString()
 
-# ### Color and Angle Operations
-# Our colors are r,g,b,[a] arrays, with an optional color.str HTML
-# color string property. The str value is set on the first call to colorStr
+  # ### Color and Angle Operations
+  # Our colors are r, g, b, [a] arrays, with an optional color.str HTML
+  # color string property. The str value is set on the first call to colorStr
 
-  colorFromStr = (colorName) ->
+  colorFromString: (colorName) ->
     color = @Colors[colorName]
     @error "unless you're using basic colors, specify an rgb array [nr, nr, nr]" if !@isArray color
     color
 
-  lightenColor = (color, fraction) ->
+  lightenColor: (color, fraction) ->
     newColor = []
-    newColor[i] = @clamp(Math.round(value + fraction * 255),0,255) for value, i in color
+    newColor[i] = @clamp(Math.round(value + fraction * 255), 0, 255) for value, i in color
     newColor
 
   # Return a random RGB or gray color. Array passed to minimize garbage collection
@@ -156,10 +156,10 @@ ABM.util = u =
     c[i] = r for i in [0..2]
     c
 
-  # Random color from a colormap set of r,g,b values.
+  # Random color from a colormap set of r, g, b values.
   # Default is one of 125 (5^3) colors
   randomMapColor: (c = [], set = [0, 63, 127, 191, 255]) ->
-    @setColor c, @oneOf(set), @oneOf(set), @oneOf(set)
+    @setColor c, @sample(set), @sample(set), @sample(set)
 
   randomBrightColor: (c = []) -> @randomMapColor c, [0, 127, 255]
 
@@ -178,7 +178,8 @@ ABM.util = u =
   # Return new color, c, by scaling each value of the rgb color max.
   scaleColor: (max, s, c = []) ->
     c.str = null if c.str?
-    c[i] = @clamp(Math.round(val * s), 0, 255) for val, i in max # [r,g,b] must be ints
+    # [r, g, b] must be ints
+    c[i] = @clamp(Math.round(val * s), 0, 255) for val, i in max
     c
 
   # Return HTML color as used by canvas element.  Can include Alpha
@@ -190,9 +191,7 @@ ABM.util = u =
   # Compare two colors.  Alas, there is no array.Equal operator.
   colorsEqual: (c1, c2) -> c1.toString() is c2.toString()
 
-
-
-  # Convert r,g,b to a luminance float value (not color array).
+  # Convert r, g, b to a luminance float value (not color array).
   # Round for 0-255 int for gray color value.
   # [Good post on image filters](http://goo.gl/pE9cV8)
   rgbToGray: (c) -> 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
@@ -248,13 +247,13 @@ ABM.util = u =
     R = (Math.round(i * 255 / (R - 1)) for i in [0...R]) if R.isNumber()
     G = (Math.round(i * 255 / (G - 1)) for i in [0...G]) if G.isNumber()
     B = (Math.round(i * 255 / (B - 1)) for i in [0...B]) if B.isNumber()
-    map=[]
-    ((map.push [r,g,b] for b in B) for g in G) for r in R
+    map = []
+    ((map.push [r, g, b] for b in B) for g in G) for r in R
     map
 
   grayMap: -> ([i, i, i] for i in [0..255])
 
-  hsbMap: (n = 256, s = 255, b = 255)->
+  hsbMap: (n = 256, s = 255, b = 255) ->
     (@hsbToRgb [i * 255 / (n - 1), s, b] for i in [0...n])
 
   gradientMap: (nColors, stops, locs) ->
@@ -280,7 +279,7 @@ ABM.util = u =
 
   radToDeg: (radians) -> radians * 180 / Math.PI
 
-  # Return angle in (-pi,pi] that added to rad2 = rad1
+  # Return angle in (-pi, pi] that added to rad2 = rad1
   # See NetLogo's [subtract-headings](http://goo.gl/CjoHuV) for explanation
   subtractRads: (rad1, rad2) ->
     dr = rad1 - rad2
@@ -340,20 +339,21 @@ ABM.util = u =
     @error "last: empty array" if @empty array
     array[array.length - 1]
 
-  # Return random element of array.  Error if empty.
-  oneOf: (array) ->
-    @error "oneOf: empty array" if @empty array
-    array[@randomInt array.length]
-
-  # Return n random elements of array. Error if n > length
+  # Return random element of array or number random elements of array.
+  # Error if empty.
   # Note: array elements presumed unique, i.e. objects or distinct primitives
-  nOf: (array, n) -> # Note: clone, shuffle then first n: poor performance
-    n = Math.min(array.length, Math.floor(n)) # OK if n is float
-    r = []
-    while r.length < n
-      o = @oneOf(array)
-      r.push o unless o in r
-    r
+  # Note: clone, shuffle then first number has poor performance
+  sample: (array, number) ->
+    if number?
+      newLength = Math.min(array.length, Math.floor(number)) # OK if n is float
+      newArray = []
+      while newArray.length < newLength
+        object = @sample(array)
+        newArray.push object unless object in newArray
+      newArray
+    else
+      @error "random: empty array" if @empty array
+      array[@randomInt array.length]
 
   # True if item is in array. Binary search if f isnt null.
   contains: (array, item, f) -> @indexOf(array, item, f) >= 0
@@ -385,9 +385,9 @@ ABM.util = u =
   # If "valueToo" then return a 2-array of the element and the value;
   # used for cases where f is costly function.
   # 
-  #     array = [{x:1,y:2}, {x:3,y:4}]
+  #     array = [{x: 1, y: 2}, {x: 3, y: 4}]
   #     # returns {x: 1, y: 2} 5
-  #     [min, dist2] = minOneOf array, ((o)->o.x*o.x+o.y*o.y), true
+  #     [min, dist2] = minOneOf array, ((o) -> o.x * o.x + o.y * o.y), true
   #     # returns {x: 3, y: 4}
   #     max = maxOneOf array, "x"
   minOneOf: (array, f = @identity, valueToo = false) ->
@@ -439,9 +439,9 @@ ABM.util = u =
   # Returns array.
   # Clone first if you want to preserve the original array.
   #
-  #     array = [{i:1},{i:5},{i:-1},{i:2},{i:2}]
+  #     array = [{i: 1}, {i: 5}, {i: -1}, {i: 2}, {i: 2}]
   #     sortBy array, "i"
-  #     # array now is [{i:-1},{i:1},{i:2},{i:2},{i:5}]
+  #     # array now is [{i: -1}, {i: 1}, {i: 2}, {i: 2}, {i:5}]
   sortBy: (array, f) ->
    f = @propFcn f if @isString f # use item[f] if f is string
    array.sort (a, b) -> f(a) - f(b)
@@ -457,13 +457,13 @@ ABM.util = u =
   # Clone first if you want to preserve the original array.
   #
   #     ids = ({id:i} for i in [0..10])
-  #     a = (ids[i] for i in [1,3,4,1,1,10])
-  #     # a is [{id:1},{id:3},{id:4},{id:1},{id:1},{id:10}]
+  #     a = (ids[i] for i in [1, 3, 4, 1, 1, 10])
+  #     # a is [{id: 1}, {id: 3}, {id: 4}, {id: 1}, {id: 1}, {id: 10}]
   #     b = clone a
   #     sortBy b, "id"
-  #     # b is [{id:1},{id:1},{id:1},{id:3},{id:4},{id:10}]
+  #     # b is [{id:1}, {id: 1}, {id: 1}, {id: 3}, {id: 4}, {id: 10}]
   #     uniq b
-  #     # b now is [{id:1},{id:3},{id:4},{id:10}]
+  #     # b now is [{id:1}, {id: 3}, {id: 4}, {id: 10}]
   uniq: (array) ->
     return array if array.length < 2 # return if empty or singlton
     array.splice i, 1 for i in [(array.length - 1)..1] by -1 when array[i - 1] is array[i]
@@ -471,7 +471,7 @@ ABM.util = u =
   
   # Return a new array composed of the rows of a matrix. I.e. convert
   #
-  #     [[1,2,3],[4,5,6]] to [1,2,3,4,5,6]
+  #     [[1, 2, 3], [4, 5, 6]] to [1, 2, 3, 4, 5, 6]
   flatten: (matrix) -> matrix.reduce((a, b) -> a.concat b)
   
   # Return array of property values of given array of objects
@@ -480,8 +480,8 @@ ABM.util = u =
   # Return hybred array with object named properties. Good for returning multiple
   # values from a function, and destructured assignment.
   #
-  #     a = aToObj [1,2,3,4], ["one", "two", "three", "four"]
-  #     a = [1,2,3,4], a.one = 1, .. a.four = 4
+  #     a = aToObj [1, 2, 3, 4], ["one", "two", "three", "four"]
+  #     a = [1, 2, 3, 4], a.one = 1, .. a.four = 4
   aToObj: (array, names) -> array[n] = array[i] for n, i in names; array
 
   # Return scalar max/min/sum/avg of numeric array
@@ -525,22 +525,22 @@ ABM.util = u =
   typedToJS: (typedArray) -> (i for i in typedArray)
   
   # Return a linear interpolation between lo and hi.
-  # Scale is in [0-1], and the result is in [lo,hi]
+  # Scale is in [0 - 1], and the result is in [lo, hi]
   # [Why the name `lerp`?](http://goo.gl/QrzMc)
   lerp: (lo, hi, scale) -> lo + (hi - lo) * scale # @clamp(scale, 0, 1)
 
   # Return point interpolated between two points.
   lerp2: (x0, y0, x1, y1, scale) -> [@lerp(x0, x1, scale), @lerp(y0, y1, scale)]
 
-  # Return an array with values in [lo, hi], defaults to [0,1].
-  # Note: to have a half-open interval, [lo, hi), try hi=hi-.00009
+  # Return an array with values in [lo, hi], defaults to [0, 1].
+  # Note: to have a half-open interval, [lo, hi), try hi = hi-.00009
   normalize: (array, lo = 0, hi = 1) ->
     min = @aMin array
     max = @aMax array
     scale = 1 / (max - min)
     (@lerp(lo, hi, scale * (num - min)) for num in array)
 
-  # Return a Uint8ClampedArray, normalized to [.5,255.5] then round/clamp to [0,255]
+  # Return a Uint8ClampedArray, normalized to [.5, 255.5] then round/clamp to [0, 255]
   normalize8: (array) -> new Uint8ClampedArray @normalize(array, -.5, 255.5)
 
   normalizeInt: (array, lo, hi) -> (Math.round i for i in @normalize array, lo, hi) # clamp?
@@ -581,19 +581,19 @@ ABM.util = u =
 
 # ### Topology Operations
   
-  # Return angle in [-pi,pi] radians from x1,y1 to x2,y2
+  # Return angle in [-pi, pi] radians from x1, y1 to x2, y2
   # [See: Math.atan2](http://goo.gl/JS8DF)
   radsToward: (x1, y1, x2, y2) -> Math.atan2 y2 - y1, x2 - x1
 
-  # Return true if x2,y2 is in cone radians around heading radians from x1,x2
-  # and within distance radius from x1,x2.
+  # Return true if x2, y2 is in cone radians around heading radians from x1, x2
+  # and within distance radius from x1, x2.
   # I.e. is p2 in cone/heading/radius from p1?
   inCone: (heading, cone, radius, x1, y1, x2, y2) ->
     if radius < @distance x1, y1, x2, y2 then return false
     angle12 = @radsToward x1, y1, x2, y2 # angle from 1 to 2
     cone / 2 >= Math.abs @subtractRads(heading, angle12)
 
-  # Return the Euclidean distance and distance squared between x1,y1, x2,y2.
+  # Return the Euclidean distance and distance squared between x1, y1, x2, y2.
   # The squared distance is used for comparisons to avoid the Math.sqrt fcn.
   distance: (x1, y1, x2, y2) ->
     dx = x1 - x2
@@ -605,8 +605,8 @@ ABM.util = u =
     dy = y1 - y2
     dx * dx + dy * dy
   
-  # Convert polar r,theta to cartesian x,y.
-  # Default to 0,0 origin, optional x,y origin.
+  # Convert polar r, theta to cartesian x, y.
+  # Default to 0, 0 origin, optional x, y origin.
   polarToXY: (r, theta, x = 0, y = 0) ->
     [x + r * Math.cos(theta), y + r * Math.sin(theta)]
 
@@ -617,7 +617,7 @@ ABM.util = u =
   #     d=sqrt(min(dx, W - dx)^2 + min(dy, H - dy)^2)
   #
   # Torus note: ABMs often use a Torus topology where the right and left edges
-  # fold to meet,and similarly for the top/bottom.
+  # fold to meet, and similarly for the top/bottom.
   # For points, this is easily handled with the mod function .. insuring the
   # point is within the rectangle modulo W & H.
   #
@@ -644,13 +644,13 @@ ABM.util = u =
     dyMin = Math.min dy, h - dy
     dxMin*dxMin + dyMin * dyMin
 
-  # Return true if closest path between x1,y1 & x2,y2 wraps around the torus.
+  # Return true if closest path between x1, y1 & x2, y2 wraps around the torus.
   torusWraps: (x1, y1, x2, y2, w, h) ->
     dx = Math.abs x2 - x1
     dy = Math.abs y2 - y1
     dx > w - dx or dy > h - dy
 
-  # Return 4 torus point reflections of x2,y2 around x1,y1
+  # Return 4 torus point reflections of x2, y2 around x1, y1
   torus4Pts: (x1, y1, x2, y2, w, h) ->
     x2r = if x2 < x1 then x2 + w else x2 - w
     y2r = if y2 < y1 then y2 + h else y2 - h
@@ -664,12 +664,12 @@ ABM.util = u =
     y = if Math.abs(y2r - y1) < Math.abs(y2 - y1) then y2r else y2
     [x, y]
 
-  # Return the angle from x1,y1 to x2.y2 on torus using shortest reflection.
+  # Return the angle from x1, y1 to x2, y2 on torus using shortest reflection.
   torusRadsToward: (x1, y1, x2, y2, w, h) ->
     [x2, y2] = @torusPt x1, y1, x2, y2, w, h
     @radsToward x1, y1, x2, y2
 
-  # Return true if x2,y2 is in cone radians around heading radians from x1,x2
+  # Return true if x2, y2 is in cone radians around heading radians from x1, x2
   # and within distance radius from x1,x2 considering all torus reflections.
   inTorusCone: (heading, cone, radius, x1, y1, x2, y2, w, h) ->
     for p in @torus4Pts x1, y1, x2, y2, w, h

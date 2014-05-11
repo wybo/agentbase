@@ -49,8 +49,8 @@
         for a in @embers by -1 # -1: allow die() in loop
           a.scaleColor a.color, .8
           if 100 > Math.max a.color... # or (Math.max a.color...) < 100 , needs parens
-            a.p.color = a.color
-            a.p.draw @contexts.patches
+            a.patch.color = a.color
+            a.patch.draw @contexts.patches
             a.die()
       step: ->
         console.log @anim.toString() if @anim.ticks % 100 is 0
@@ -58,7 +58,7 @@
           console.log "..stopping, fire done at tick: #{@anim.ticks}"
           @stop()
         for a in @fires by -1 # -1: allow changeBreed() in loop
-          @ignite p for p in a.p.n4 when u.colorsEqual p.color, [0, 255, 0]
+          @ignite patch for patch in a.patch.neighbors4 when u.colorsEqual patch.color, [0, 255, 0]
           @embers.setBreed a
         @fadeEmbers()
 

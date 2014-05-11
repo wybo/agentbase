@@ -8,16 +8,16 @@ class ABM.Agent
   #
   # * id:         unique identifier, promoted by agentset create() factory method
   # * breed:      the agentset this agent belongs to
-  # * x,y:        position on the patch grid, in patch coordinates, default: 0,0
+  # * x,y:        position on the patch grid, in patch coordinates, default: 0, 0
   # * size:       size of agent, in patch coords, default: 1
   # * color:      the color of the agent, default: randomColor
   # * shape:      the shape name of the agent, default: "default"
   # * label:      a text label drawn on my instances
   # * labelColor: the color of my label text
-  # * labelOffset:the x,y offset of my label from my x,y location
+  # * labelOffset:the x, y offset of my label from my x, y location
   # * heading:    direction of the agent, in radians, from x-axis
   # * hidden:     whether or not to draw this agent
-  # * p:          patch at current x,y location
+  # * patch:      patch at current x, y location
   # * penDown:    true if agent pen is drawing
   # * penSize:    size in pixels of the pen, default: 1 pixel
   # * sprite:     an image of the agent if non null
@@ -31,14 +31,14 @@ class ABM.Agent
   breed: null           # my agentSet, set by the agentSet owning me
   x: 0                  # my location
   y: 0
-  p: null               # the patch I'm on
+  patch: null           # the patch I'm on
   size: 1               # my size in patch coords
   color: null           # default color, overrides random color if set
   shape: "default"      # my shape
   hidden: false         # draw me?
   label: null           # my text
   labelColor: [0, 0, 0] # its color
-  labelOffset: [0, 0]   # its offset from my x,y
+  labelOffset: [0, 0]   # its offset from my x, y
   penDown: false        # if my pen is down, I draw my path between changes in x, y
   penSize: 1            # the pen thickness in pixels
   heading: null         # the direction I'm pointed in, in radians
@@ -48,10 +48,10 @@ class ABM.Agent
 
   constructor: -> # called by agentSets create factory, not user
     @x = @y = 0
-    @p = ABM.patches.patch @x, @y
+    @patch = ABM.patches.patch @x, @y
     @color = u.randomColor() unless @color? # promote color if default not set
     @heading = u.randomFloat(Math.PI * 2) unless @heading?
-    @p.agents.push @ if @p.agents? # ABM.patches.cacheAgentsHere
+    @patch.agents.push @ if @patch.agents? # ABM.patches.cacheAgentsHere
     @links = [] if @cacheLinks
 
   # Set agent color to `c` scaled by `s`. Usage: see patch.scaleColor
@@ -62,17 +62,17 @@ class ABM.Agent
   # Return a string representation of the agent.
   toString: -> "{id:#{@id} xy:#{u.aToFixed [@x, @y]} c:#{@color} h: #{@heading.toFixed 2}}"
   
-  # Place the agent at the given x,y (floats) in patch coords
+  # Place the agent at the given x, y (floats) in patch coords
   # using patch topology (isTorus)
   setXY: (x, y) -> # REMIND GC problem, 2 arrays
     [x0, y0] = [@x, @y] if @penDown
     [@x, @y] = ABM.patches.coord x, y
-    p = @p
-    @p = ABM.patches.patch @x, @y
+    oldPatch = @patch
+    @patch = ABM.patches.patch @x, @y
 
-    if p.agents? and p isnt @p # ABM.patches.cacheAgentsHere 
-      u.removeItem p.agents, @
-      @p.agents.push @
+    if oldPatch.agents? and oldPatch isnt @patch
+      u.removeItem oldPatch.agents, @
+      @patch.agents.push @
     if @penDown
       drawing = ABM.drawing
       drawing.strokeStyle = u.colorStr @color
@@ -120,7 +120,7 @@ class ABM.Agent
   # Draw the agent on the drawing layer, leaving permanent image.
   stamp: -> @draw ABM.drawing
   
-  # Return distance in patch coords from me to x,y 
+  # Return distance in patch coords from me to x, y
   # using patch topology (isTorus)
   distanceXY: (x, y) ->
     if ABM.patches.isTorus
@@ -129,10 +129,10 @@ class ABM.Agent
       u.distance @x, @y, x, y
   
   # Return distance in patch coords from me to given agent/patch using patch topology.
-  distance: (o) -> # o any object w/ x,y, patch or agent
+  distance: (o) -> # o any object w/ x, y, patch or agent
     @distanceXY o.x, o.y
   
-  # Return the closest torus topology point of given x,y relative to myself.
+  # Return the closest torus topology point of given x, y relative to myself.
   # Used internally to determine how to draw links between two agents.
   # See util.torusPt.
   torusPtXY: (x, y) ->
@@ -158,8 +158,8 @@ class ABM.Agent
   
   # Return patch ahead of me by given distance and heading.
   # Returns null if non-torus and off patch world
-  patchAtHeadingAndDistance: (h,d) ->
-    [x, y] = u.polarToXY d, h, @x, @y; patchAt x,y
+  patchAtHeadingAndDistance: (h, d) ->
+    [x, y] = u.polarToXY d, h, @x, @y; patchAt x, y
 
   patchLeftAndAhead: (dh, d) -> @patchAtHeadingAndDistance @heading + dh, d
 
@@ -182,7 +182,7 @@ class ABM.Agent
   die: ->
     @breed.remove @
     l.die() for l in @myLinks()
-    u.removeItem @p.agents, @ if @p.agents?
+    u.removeItem @patch.agents, @ if @patch.agents?
     null
 
   # Factory: create num new agents at this agents location. The optional init
@@ -197,7 +197,7 @@ class ABM.Agent
   # Return the members of the given agentset that are within radius distance 
   # from me, and within cone radians of my heading using patch topology
   inCone: (aset, cone, radius, meToo = false) ->
-    aset.inCone @p, @heading, cone, radius, meToo # REMIND: @p vs @?
+    aset.inCone @patch, @heading, cone, radius, meToo # REMIND: @patch vs @?
   
   # Return other end of link from me
   otherEnd: (l) -> if l.end1 is @ then l.end2 else l.end1

@@ -11,7 +11,7 @@ class ABM.Link
   # * thickness:  thickness in pixels of the link, default 2
   # * label:      a text label drawn on my instances
   # * labelColor: the color of my label text
-  # * labelOffset:the x,y offset of my label from my x,y location
+  # * labelOffset:the x, y offset of my label from my x, y location
   # * hidden:     whether or not to draw this link
 
   id: null               # unique id, promoted by agentset create factory method

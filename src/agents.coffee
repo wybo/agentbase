@@ -33,12 +33,12 @@ class ABM.Agents extends ABM.AgentSet
   # Return an agentset of agents within the patch array
   inPatches: (patches) ->
     array = []
-    array.push p.agentsHere()... for p in patches # concat measured slower
+    array.push patch.agentsHere()... for patch in patches # concat measured slower
     if @mainSet? then @in array else @asSet array
   
   # Return an agentset of agents within the patchRectangle
-  inRect: (a, dx, dy, meToo = false) ->
-    rect = ABM.patches.patchRectangle a.p, dx, dy, true
+  inRectangle: (a, dx, dy, meToo = false) ->
+    rect = ABM.patches.patchRectangle a.patch, dx, dy, true
     rect = @inPatches rect
     u.removeItem rect, a unless meToo
     rect
@@ -46,11 +46,11 @@ class ABM.Agents extends ABM.AgentSet
   # Return the members of this agentset that are within radius distance
   # from me, and within cone radians of my heading using patch topology
   inCone: (a, heading, cone, radius, meToo = false) -> # heading? .. so p ok?
-    as = @inRect a, radius, radius, true
+    as = @inRectangle a, radius, radius, true # TODO really needed?
     super a, heading, cone, radius, meToo #as.inCone a, heading, cone, radius, meToo
   
   # Return the members of this agentset that are within radius distance
   # from me, using patch topology
   inRadius: (a, radius, meToo = false)->
-    as = @inRect a, radius, radius, true
+    as = @inRectangle a, radius, radius, true
     super a, radius, meToo # as.inRadius a, radius, meToo

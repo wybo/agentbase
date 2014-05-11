@@ -34,7 +34,7 @@
           @links.create a, toNode
           a.moveTo toNode; a.forward 8
       findPartner: ->
-        u.oneOf @links.oneOf().bothEnds() # or @links.allEnds().oneOf()
+        u.sample @links.sample().bothEnds() # or @links.allEnds().sample()
 
     # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors
     #   Defaults: 13, -16, 16, -16, 16, false, true

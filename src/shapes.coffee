@@ -89,12 +89,12 @@ ABM.shapes = ABM.util.s = do ->
       c.closePath()
       c.fill()
     rotate: false
-    draw: (c) -> circ c, 0, 0, 1 # c.arc 0,0,.5,0,2*Math.PI
+    draw: (c) -> circ c, 0, 0, 1 # c.arc 0, 0,.5, 0, 2 * Math.PI
 
   square:
     shortcut: (c, x, y, s) -> csq c, x, y, s
     rotate: false
-    draw: (c) -> csq c, 0, 0, 1 #c.fillRect -.5,-.5,1,1
+    draw: (c) -> csq c, 0, 0, 1 #c.fillRect -.5, -.5, 1 , 1
 
   pentagon:
     rotate: false
@@ -126,7 +126,7 @@ ABM.shapes = ABM.util.s = do ->
   # Add your own shape. Will be included in names list.  Usage:
   #
   #     ABM.shapes.add "test", true, (c) -> # bowtie/hourglass
-  #       ABM.shapes.poly c, [[-.5,-.5],[.5,.5],[-.5,.5],[.5,-.5]]
+  #       ABM.shapes.poly c, [[-.5, -.5], [.5, .5], [-.5, .5], [.5, -.5]]
   #
   # Note: an image that is not rotated automatically gets a shortcut. 
   add: (name, rotate, draw, shortcut) -> # draw can be an image, shortcut defaults to null

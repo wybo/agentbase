@@ -34,7 +34,7 @@
         @agents.setDefault "shape", "square"
         @agents.setDefault "size", .5
         @agents.setDefault "color", [100,100,150]
-        @patches.cacheRect @vision, false # cache inRadius @vision
+        @patches.cacheRectangle @vision, false # cache inRadius @vision
         
         # Install startup globals into patches/drawing
         # img = @elevation.toDrawing()
@@ -48,19 +48,22 @@
         @aspect.toPatchVar("aspect")
         
         p.sprout 1 for p in @patches.create()
-        console.log "patches: #{@patches.length}, agents: #{@agents.length}"      
+        console.log "patches: #{@patches.length}, agents: #{@agents.length}"
       
 
       step: ->
         moved = 0
         for a in @agents
-          n = if @useAspect then a.p.n else a.p.pRect
-          n = n.minOneOf "elevation"
-          if a.p.elevation > n.elevation #or a.p.slope < .0001
+          if @useAspect
+            neighbors = a.patch.neighbors
+          else
+            neighbors = a.patch.pRectangle
+          neighbors = neighbors.minOneOf "elevation"
+          if a.patch.elevation > neighbors.elevation #or a.patch.slope < .0001
             if @useAspect
-              a.heading = a.p.aspect
+              a.heading = a.patch.aspect
             else
-              a.face n            
+              a.face neighbors
             a.forward @speed
             moved += 1
         if moved is 0 or (@useAspect and @lastMoved is moved)
