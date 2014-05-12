@@ -65,7 +65,11 @@ class ABM.Patch
   # as they move from patch to patch.
   agentsHere: ->
     @agents ? (a for a in ABM.agents when a.p is @)
-  
+  # TODO refactor
+
+  empty: ->
+    u.empty @agentsHere() # TODO from array
+
   # Returns true if this patch is on the edge of the grid.
   isOnEdge: ->
     @x is @breed.minX or @x is @breed.maxX or \

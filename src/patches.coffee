@@ -13,14 +13,14 @@
 # * hasNeighbors: true if each patch caches its neighbors
 # * isHeadless:   true if not using canvas drawing
 
-class ABM.Patches extends ABM.AgentSet
-  # Constructor: super creates the empty AgentSet instance and installs
+class ABM.Patches extends ABM.BreedSet
+  # Constructor: super creates the empty BreedSet instance and installs
   # the agentClass (breed) variable shared by all the Patches in this set.
   # Patches are created from top-left to bottom-right to match data sets.
   constructor: -> # agentClass, name, mainSet
     super # call super with all the args I was called with
     @monochrome = false # set to true to optimize patches all default color
-    @[k] = v for own k, v of ABM.world # add world items to patches
+    @[key] = value for own key, value of ABM.world # add world items to patches
   
   # Setup patch world from world parameters.
   # Note that this is done as separate method so like other agentsets,
@@ -38,7 +38,8 @@ class ABM.Patches extends ABM.AgentSet
   # Optimizes p.agentsHere method.
   # Call before first agent is created.
   cacheAgentsHere: ->
-    patch.agents = [] for patch in @
+    for patch in @
+      patch.agents = []
     null
 
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
@@ -126,8 +127,8 @@ class ABM.Patches extends ABM.AgentSet
     @patchXY x, y
   
   # Return a random valid float x, y point in patch space
-  randomPt: ->
-    [u.randomFloat2(@minXcor, @maxXcor), u.randomFloat2(@minYcor, @maxYcor)]
+  randomPoint: ->
+    [u.randomFloat(@minXcor, @maxXcor), u.randomFloat(@minYcor, @maxYcor)]
 
 # #### Patch metrics
   

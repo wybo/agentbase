@@ -56,9 +56,9 @@
         ## a.color = [255,0,0]
         ## a.shape = "circle"
         # a.breed = "nodes"
-        a.setXY @patches.randomPt()...
-        # a.setXY @patches.randomPt()... while @nodes().inRadius(a, 2).any()
-        a.setXY @patches.randomPt()... while @nodes.inRadius(a, 2).any()
+        a.setXY @patches.randomPoint()...
+        # a.setXY @patches.randomPoint()... while @nodes().inRadius(a, 2).any()
+        a.setXY @patches.randomPoint()... while @nodes.inRadius(a, 2).any()
       setupTraveler: (a) =>
         # a.hidden = true
         # a.breed = "travelers"

@@ -77,23 +77,26 @@ ABM.util = u =
       x - Math.floor(x)
 
   # Return random int in [0, max) or [min, max)
-  randomInt: (max) -> Math.floor(Math.random() * max)
-
-  randomInt2: (min, max) -> min + Math.floor(Math.random() * (max-min))
+  randomInt: (minmax = 1, max = null) ->
+    Math.floor(@randomFloat(minmax, max))
 
   # Return float Gaussian normal with given mean, std deviation.
   randomNormal: (mean = 0.0, sigma = 1.0) -> # Box-Muller
     u1 = 1.0 - Math.random()
     u2 = Math.random() # u1 in (0, 1]
-    norm = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2)
-    norm*sigma + mean
+    normal = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2)
+    normal * sigma + mean
 
   # Return float in [0, max) or [min, max) or [-r / 2, r / 2)
-  randomFloat: (max) -> Math.random() * max
+  randomFloat: (minmax = 1, max = null) ->
+    if max is null
+      max = minmax
+      min = 0
+    else
+      min = minmax
+    min + Math.random() * (max - min)
 
-  randomFloat2: (min, max) -> min + Math.random() * (max-min)
-
-  randomCentered: (r) -> @randomFloat2 -r / 2, r / 2
+  randomCentered: (r) -> @randomFloat -r / 2, r / 2
 
   # Return log n where base is 10, base, e respectively.
   # Note ln: (n) -> Math.log n .. i.e. JS's log is log base e
@@ -152,7 +155,7 @@ ABM.util = u =
   randomGray: (c = [], min = 64, max = 192) ->
     if arguments.length is 2 then return @randomGray null, c, min
     c.str = null if c.str?
-    r = @randomInt2 min, max
+    r = @randomInt min, max
     c[i] = r for i in [0..2]
     c
 
@@ -340,20 +343,34 @@ ABM.util = u =
     array[array.length - 1]
 
   # Return random element of array or number random elements of array.
-  # Error if empty.
   # Note: array elements presumed unique, i.e. objects or distinct primitives
   # Note: clone, shuffle then first number has poor performance
-  sample: (array, number) ->
+  sample: (array, numberFunction = null, conditionFunction = null) ->
+    if @isFunction numberFunction
+      conditionFunction = numberFunction
+    else if number
+      number = Math.floor(numberFunction)
+
     if number?
-      newLength = Math.min(array.length, Math.floor(number)) # OK if n is float
       newArray = []
-      while newArray.length < newLength
+      object = true
+      while newArray.length < number and object?
+        object = @sample(array, conditionFunction)
+        if object and object not in newArray
+          newArray.push object
+      return newArray
+    else if conditionFunction?
+      checked = []
+      while checked.length < array.length
         object = @sample(array)
-        newArray.push object unless object in newArray
-      newArray
+        if object and object not in checked
+          checked.push object
+          if conditionFunction(object)
+            return object
     else
-      @error "random: empty array" if @empty array
-      array[@randomInt array.length]
+      if @empty array
+        return null
+      return array[@randomInt array.length]
 
   # True if item is in array. Binary search if f isnt null.
   contains: (array, item, f) -> @indexOf(array, item, f) >= 0
@@ -361,13 +378,16 @@ ABM.util = u =
   # Remove an item from an array. Binary search if f isnt null.
   # Error if item not in array.
   removeItem: (array, item, f) ->
-    unless (i = @indexOf array, item, f) < 0 then array.splice i, 1
-    else @error "removeItem: item not found" #; array
+    unless (i = @indexOf array, item, f) < 0 # TODO refactor
+      array.splice i, 1
+    else
+      @error "removeItem: item not found" #; array
 
   # Remove elements in items from an array. Binary search if f isnt null.
   # Error if an item not in array.
   removeItems: (array, items, f) ->
-    @removeItem(array, i, f) for i in items
+    for item in items
+      @removeItem(array, item, f)
     array
 
   # Insert an item in a sorted array

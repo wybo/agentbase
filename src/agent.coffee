@@ -81,9 +81,13 @@ class ABM.Agent
       drawing.moveTo x0, y0
       drawing.lineTo x, y # REMIND: euclidean
       drawing.stroke()
+
+  losePosition: ->
+    u.removeItem @patch.agents, @
+    @patch = null
   
   # Place the agent at the given patch/agent location
-  moveTo: (a) -> @setXY a.x, a.y
+  moveTo: (patch) -> @setXY patch.x, patch.y
   
   # Move forward (along heading) d units (patch coords),
   # using patch topology (isTorus)

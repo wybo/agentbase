@@ -29,7 +29,7 @@
       # for an example, not needed by simple models.
       startup: -> # called by constructor
         # Add new shapes; u.s. is ABM.shapes.
-        u.s.add "bowtie", true, (c) -> u.s.poly c, [[-.5,-.5],[.5,.5],[-.5,.5],[.5,-.5]]        
+        u.s.add "bowtie", true, (c) -> u.s.poly c, [[-.5, -.5], [.5, .5], [-.5, .5], [.5, -.5]]
         # The following two example lines don't work when opened locally
         # in Chrome (they work fine from a webserver). Uncomment if you'd
         # like to add custom images.
@@ -69,7 +69,7 @@
           # Set x,y axes different color, use [0,0,0,0] for transparent pixel test
           p.color = [255,0,0] if p.x is 0 or p.y is 0
 
-        # Our empty @agents AgentSet will have been created.  Here we
+        # Our empty @agents Agents will have been created.  Here we
         # add `population` Agents we use in our model.
         # We set the build-in Agent variables `size` and `shape` 
         # and layout the agents randomly or in a circle depending
@@ -79,7 +79,7 @@
           if @startCircle
             a.forward @patches.maxX/2 # start in circle
           else
-            a.setXY @patches.randomPt()... # set random location
+            a.setXY @patches.randomPoint()... # set random location
 
         # Print number of agents and patches to the console.
         # Note CoffeeScript

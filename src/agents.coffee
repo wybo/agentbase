@@ -1,9 +1,9 @@
 # ### Agents
 
-# Class Agents is a subclass of AgentSet which stores instances of Agent or 
+# Class Agents is a subclass of BreedSet which stores instances of Agent or 
 # Breeds, which are subclasses of Agent
-class ABM.Agents extends ABM.AgentSet
-  # Constructor creates the empty AgentSet instance and installs
+class ABM.Agents extends ABM.BreedSet
+  # Constructor creates the empty BreedSet instance and installs
   # the agentClass (breed) variable shared by all the Agents in this set.
   constructor: -> # agentClass, name, mainSet
     super # call super with all the args I was called with

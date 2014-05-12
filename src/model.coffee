@@ -1,4 +1,4 @@
-# Class Model is the control center for our AgentSets: Patches, Agents and Links.
+# Class Model is the control center for our BreedSets: Patches, Agents and Links.
 # Creating new models is done by subclassing class Model and overriding two 
 # virtual/abstract methods: `setup()` and `step()`
 
@@ -318,7 +318,7 @@ class ABM.Model
   #
   #     even = @asSet (a for a in @agents when a.id % 2 is 0)
   #     even.shuffle().getProp("id") # [6, 0, 4, 2, 8]
-  asSet: (a, setType = ABM.AgentSet) -> ABM.AgentSet.asSet a, setType
+  asSet: (a, setType = ABM.BreedSet) -> ABM.BreedSet.asSet a, setType
 
   # A simple debug aid which places short names in the global name space.
   # Note we avoid using the actual name, such as "patches" because this

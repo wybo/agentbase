@@ -1,4 +1,4 @@
-# Class Model is the control center for our AgentSets: Patches, Agents and Links.
+# Class Model is the control center for our BreedSets: Patches, Agents and Links.
 # Creating new models is done by subclassing class Model and overriding two 
 # virtual/abstract methods: `setup()` and `step()`
 

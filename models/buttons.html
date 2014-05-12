@@ -25,7 +25,7 @@
         @agents.create @buttons, (a) => # fat arrow for @patches etc
           # a.size = 1.5
           # a.shape = "circle"
-          a.setXY @patches.randomPt()...
+          a.setXY @patches.randomPoint()...
 
       step: ->
         b1 = @agents.sample()
