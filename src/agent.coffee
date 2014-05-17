@@ -54,10 +54,10 @@ class ABM.Agent
     @patch.agents.push @ if @patch.agents? # ABM.patches.cacheAgentsHere
     @links = [] if @cacheLinks
 
-  # Set agent color to `c` scaled by `s`. Usage: see patch.scaleColor
-  scaleColor: (color, s) ->
-    @color = u.clone @color unless @hasOwnProperty "color" # promote color to inst var
-    u.scaleColor color, s, @color
+  # Set agent color to `color` scaled by `fraction`. Usage: see patch.fractionOfColor
+  fractionOfColor: (color, fraction) ->
+    @color = u.clone @color unless @.hasOwnProperty("color")
+    u.fractionOfColor color, fraction
   
   # Return a string representation of the agent.
   toString: -> "{id:#{@id} xy:#{u.aToFixed [@x, @y]} c:#{@color} h: #{@heading.toFixed 2}}"
@@ -70,12 +70,15 @@ class ABM.Agent
     oldPatch = @patch
     @patch = ABM.patches.patch @x, @y
 
-    if oldPatch.agents? and oldPatch isnt @patch
-      u.removeItem oldPatch.agents, @
+    if oldPatch and oldPatch.agents?
+      u.remove oldPatch.agents, @
+
+    if @patch.agents?
       @patch.agents.push @
+
     if @penDown
       drawing = ABM.drawing
-      drawing.strokeStyle = u.colorStr @color
+      drawing.strokeStyle = u.colorString @color
       drawing.lineWidth = ABM.patches.fromBits @penSize
       drawing.beginPath()
       drawing.moveTo x0, y0
@@ -83,7 +86,7 @@ class ABM.Agent
       drawing.stroke()
 
   losePosition: ->
-    u.removeItem @patch.agents, @
+    u.remove @patch.agents, @
     @patch = null
   
   # Place the agent at the given patch/agent location
@@ -99,6 +102,8 @@ class ABM.Agent
   
   # Draw the agent, instanciating a sprite if required
   draw: (ctx) ->
+    if @patch is null
+      return
     shape = ABM.shapes[@shape]
     rad = if shape.rotate then @heading else 0 # radians
     if @sprite? or @breed.useSprites
@@ -180,13 +185,23 @@ class ABM.Agent
       ABM.patches.patch x, y
     else
       null
+
+  neighbors: (options...) ->
+    array = @breed.asSet []
+    if @patch
+      for patch in @patch.neighbors
+        for agent in patch.agents
+          array.push agent
+    array
   
   # Remove myself from the model.  Includes removing myself from the agents
   # agentset and removing any links I may have.
   die: ->
     @breed.remove @
-    l.die() for l in @myLinks()
-    u.removeItem @patch.agents, @ if @patch.agents?
+    for l in @myLinks()
+      l.die()
+    if @patch.agents?
+      u.remove @patch.agents, @
     null
 
   # Factory: create num new agents at this agents location. The optional init

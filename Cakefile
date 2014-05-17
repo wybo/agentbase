@@ -1,17 +1,17 @@
 # Our build process uses shelljs, docco, uglifyjs, and coffeescript,
 # all of which can be installed locally by running `npm install`.
 
-fs     = require 'fs'
-path   = require 'path'
+fs = require 'fs'
+path = require 'path'
 {exec} = require 'child_process'
-shell  = require 'shelljs'
-readline= require 'readline'
+shell = require 'shelljs'
+readline = require 'readline'
 # Note: try https://github.com/mgutz/execSync
 
 node_modules = path.join(path.dirname(fs.realpathSync(__filename)), '/node_modules/.bin')
 shell.env['PATH'] = node_modules + ":" + shell.env['PATH']
 
-editor= shell.exec("git config --get core.editor", {silent:true}).output
+editori = shell.exec("git config --get core.editor", {silent:true}).output
 prompt = (qstring, f) -> # prompt w/ question, respond with f(ans)
   rl = readline.createInterface {input:process.stdin, output:process.stdout}
   rl.question qstring, (ans) ->
@@ -23,11 +23,15 @@ extrasDir = "extras/"
 toolsDir = 'tools/'
 libDir = 'lib/'
 varDir = 'var/'
+
+TestCommand = "./node_modules/jasmine-node/bin/jasmine-node --coffee spec/"
+
 firstFileNames = ['util.coffee', 'breedset.coffee']
 FileNames = firstFileNames.concat(
   fs.readdirSync(srcDir).filter (file) -> file not in firstFileNames)
 FilePaths = ("#{srcDir}#{file}" for file in FileNames)
 MergedPath = "#{varDir}agentscript.coffee"
+
 XNames = "data mouse fbui".split(" ")
 XJSNames = "as.dat.gui data.tile".split(" ")
 XPaths = ("#{extrasDir}#{f}.coffee" for f in XNames)
@@ -159,11 +163,5 @@ prompt = (q,f) ->
   rl.question q, (ans) ->
     rl.close()
     f(ans)
-task 'test', 'Testing 1,2,3...', ->
-  shell.exec "git checkout master"
-  prompt "you sure!?! [y/n]", (ans) ->
-    console.log "answer:#{ans} #{ans.length}"
-    if ans.match(/[yY]|^$/) # default is yes, CR OK
-      shell.exec """
-        git status
-      """, ->
+task 'test', 'Testing code', ->
+  shell.exec TestCommand, async: true

@@ -25,8 +25,8 @@
         @initialTrees = 0
         
         # defaults
-        # @anim.setRate 10, true
-        @anim.setRate 60, false
+        # @animator.setRate 10, true
+        @animator.setRate 60, false
         
 
         for p in @patches.create() when u.randomInt(100) < @density
@@ -47,15 +47,15 @@
         @burnedTrees++
       fadeEmbers: ->
         for a in @embers by -1 # -1: allow die() in loop
-          a.scaleColor a.color, .8
+          a.fractionOfColor a.color, .8
           if 100 > Math.max a.color... # or (Math.max a.color...) < 100 , needs parens
             a.patch.color = a.color
             a.patch.draw @contexts.patches
             a.die()
       step: ->
-        console.log @anim.toString() if @anim.ticks % 100 is 0
+        console.log @animator.toString() if @animator.ticks % 100 is 0
         unless @agents.any()
-          console.log "..stopping, fire done at tick: #{@anim.ticks}"
+          console.log "..stopping, fire done at tick: #{@animator.ticks}"
           @stop()
         for a in @fires by -1 # -1: allow changeBreed() in loop
           @ignite patch for patch in a.patch.neighbors4 when u.colorsEqual patch.color, [0, 255, 0]

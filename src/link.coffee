@@ -33,7 +33,7 @@ class ABM.Link
   # is called with patch coordinate transform installed.
   draw: (ctx) ->
     ctx.save()
-    ctx.strokeStyle = u.colorStr @color
+    ctx.strokeStyle = u.colorString @color
     ctx.lineWidth = ABM.patches.fromBits @thickness
     ctx.beginPath()
     if !ABM.patches.isTorus
@@ -58,8 +58,8 @@ class ABM.Link
   # Remove this link from the agent set
   die: ->
     @breed.remove @
-    u.removeItem @end1.links, @ if @end1.links?
-    u.removeItem @end2.links, @ if @end2.links?
+    u.remove @end1.links, @ if @end1.links?
+    u.remove @end2.links, @ if @end2.links?
     null
   
   # Return the two endpoints of this link

@@ -40,19 +40,19 @@ class ABM.Patch
   # Return a string representation of the patch.
   toString: -> "{id:#{@id} xy:#{[@x, @y]} c:#{@color}}"
 
-  # Set patch color to `c` scaled by `s`. Usage:
+  # Set patch color to `c` scaled by `fraction`. Usage:
   #
-  #     patch.scaleColor patch.color, .8 # reduce patch color by .8
-  #     patch.scaleColor @foodColor, patch.foodPheromone # ants model
+  #     patch.fractionOfColor patch.color, .8 # reduce patch color by .8
+  #     patch.fractionOfColor @foodColor, patch.foodPheromone # ants model
   #
   # Promotes color if currently using the default.
-  scaleColor: (c, s) ->
+  fractionOfColor: (color, fraction) ->
     @color = u.clone @color unless @.hasOwnProperty("color")
-    u.scaleColor c, s, @color
+    u.fractionOfColor color, fraction, @color
   
   # Draw the patch and its text label if there is one.
   draw: (ctx) ->
-    ctx.fillStyle = u.colorStr @color
+    ctx.fillStyle = u.colorString @color
     ctx.fillRect @x - .5, @y - .5, 1, 1
     if @label? # REMIND: should be 2nd pass.
       [x, y] = @breed.patchXYtoPixelXY @x, @y
@@ -78,6 +78,8 @@ class ABM.Patch
   # Factory: Create num new agents on this patch. The optional init
   # proc is called on the new agent after inserting in its agentSet.
   sprout: (number = 1, breed = ABM.agents, init = ->) ->
+    console.log("sprouting")
+    console.log(number)
     breed.create number, (agent) => # fat arrow so that @ = this patch
       agent.setXY @x, @y
       init(agent)

@@ -88,8 +88,8 @@ class ABM.BreedSet extends Array
   #                         {id: 2, x: 6, y: 4}, {id: 4, x: 1, y: 1}] 
   remove: (object) ->
     if @mainSet?
-      u.removeItem @mainSet, object
-    u.removeItem @, object
+      u.remove @mainSet, object
+    u.remove @, object
     @
 
   # Set the default value of an agent class, return agentset
@@ -109,8 +109,8 @@ class ABM.BreedSet extends Array
   # Move an agent from its BreedSet/breed to be in this BreedSet/breed.
   # REMIND: match NetLogo sematics in terms of own variables.
   setBreed: (a) -> # change agent a to be in this breed
-    u.removeItem a.breed, a, "id" if a.breed.mainSet?
-    u.insertItem @, a, "id" if @mainSet?
+    u.remove a.breed, a, "id" if a.breed.mainSet?
+    u.insert @, a, "id" if @mainSet?
     proto = a.__proto__ = @agentClass.prototype
     delete a[k] for own k, v of a when proto[k]?
     a
@@ -266,7 +266,7 @@ class ABM.BreedSet extends Array
 
   # ### Drawing
   
-  # For agentsets who's agents have a `draw` method.
+  # For agentsets whose agents have a `draw` method.
   # Clears the graphics context (transparent), then
   # calls each agent's draw(ctx) method.
   draw: (ctx) ->

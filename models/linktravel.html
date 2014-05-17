@@ -22,8 +22,8 @@
         # w/ refreshs off and 1 optimization 59/max-fps
         # @agents.cacheLinks() # no improvement, but tests a.links
         
-        @anim.setRate 30, true # almost 3:1 steps/draws!
-        # @anim.setRate 60, false # for optimization studies & profiling
+        @animator.setRate 30, true # almost 3:1 steps/draws!
+        # @animator.setRate 60, false # for optimization studies & profiling
         
         # globals
         @numNodes = 30
@@ -56,7 +56,7 @@
         null # avoid returning "for" results above
             
       step: ->
-        console.log @anim.toString() if @anim.ticks % 100 is 0
+        console.log @animator.toString() if @animator.ticks % 100 is 0
         for d in @drivers #for d in @drivers()
           d.face d.toNode
           d.forward Math.min d.v, d.distance d.toNode

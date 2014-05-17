@@ -11,7 +11,7 @@
     class MyModel extends ABM.Model
       
       setVision: (@vision) ->
-      setMaxTurn: (@maxTurn) -> @maxTurn = u.degToRad(@maxTurn)
+      setMaxTurn: (@maxTurn) -> @maxTurn = u.degreesToRadians(@maxTurn)
       toggleConsole: () -> @useConsole = not @useConsole
       
       setup: ->
@@ -24,7 +24,7 @@
         # w/ refresh off and two optimizations, 22-23fps
         @agents.setUseSprites() # 24 -> 36
         
-        @anim.setRate 30, true # multistep
+        @animator.setRate 30, true # multistep
         
         @useConsole = true
         @population = 500     # agents
@@ -39,18 +39,19 @@
         @patches.create()
         patch.color = u.randomGray 0, 100 for patch in @patches
         patch.sprout 1 for patch in @patches.sample(@population)
-        a.color = u.randomMapColor() for a in @agents
+        for a in @agents
+          a.color = u.randomMapColor()
   
       step: ->
-        if @useConsole and @anim.ticks % 25 is 0
-          console.log @anim.toString(), "flock alignment: #{@reportFlockVectorSize()}"
+        if @useConsole and @animator.ticks % 25 is 0
+          console.log @animator.toString(), "flock alignment: #{@reportFlockVectorSize()}"
         @flock(a) for a in @agents
-        if @anim.draws is 2 # Show the sprite sheet if there is one after first draw
+        if @animator.draws is 2 # Show the sprite sheet if there is one after first draw
           sheet = u.last(u.s.spriteSheets) if u.s.spriteSheets.length isnt 0
           if sheet?
             console.log sheet if @useConsole
             document.getElementById("play").appendChild(sheet.canvas)
-        # @stop() if @anim.ticks is 400
+        # @stop() if @animator.ticks is 400
 
       flock: (a) -> # a is agent
         flockmates = @agents.inRadius a, @vision
@@ -75,19 +76,19 @@
         turn = u.clamp turn, -@maxTurn, @maxTurn # limit the turn
         a.rotate turn
       averageHeading: (flockmates) ->
-        dx = (Math.sin f.heading for f in flockmates).reduce (x,y) -> x+y
-        dy = (Math.cos f.heading for f in flockmates).reduce (x,y) -> x+y
+        dx = (Math.sin f.heading for f in flockmates).reduce (x, y) -> x + y
+        dy = (Math.cos f.heading for f in flockmates).reduce (x, y) -> x + y
         @safeAtan dy, dx
       averageHeadingTowards: (a, flockmates) ->
-        dx = (Math.sin f.towards a for f in flockmates).reduce (x,y) -> x+y
-        dy = (Math.cos f.towards a for f in flockmates).reduce (x,y) -> x+y
+        dx = (Math.sin f.towards a for f in flockmates).reduce (x, y) -> x + y
+        dy = (Math.cos f.towards a for f in flockmates).reduce (x, y) -> x + y
         @safeAtan dy, dx
-      safeAtan: (x,y) -> Math.atan2 y, x # if x is 0 and y is 0 then 0 else Math.atan2 y, x # atan ok if x 0
+      safeAtan: (x, y) -> Math.atan2 y, x # if x is 0 and y is 0 then 0 else Math.atan2 y, x # atan ok if x 0
       
       reportFlockVectorSize: ->
-        dx = (Math.sin a.heading for a in @agents).reduce (x,y) -> x+y
-        dy = (Math.cos a.heading for a in @agents).reduce (x,y) -> x+y
-        Math.sqrt(dx*dx + dy*dy)/@population
+        dx = (Math.sin a.heading for a in @agents).reduce (x, y) -> x + y
+        dy = (Math.cos a.heading for a in @agents).reduce (x, y) -> x + y
+        Math.sqrt(dx * dx + dy * dy) / @population
 
     # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors
     #   Defaults: 13, -16, 16, -16, 16, false, true

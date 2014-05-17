@@ -35,13 +35,13 @@ class ABM.Animator
 
   stop: ->
     @stopped = true
-    if @animHandle?
-      cancelAnimFrame @animHandle
+    if @animatorHandle?
+      cancelAnimFrame @animatorHandle
     if @timeoutHandle?
       clearTimeout @timeoutHandle
     if @intervalHandle?
       clearInterval @intervalHandle
-    @animHandle = @timerHandle = @intervalHandle = null
+    @animatorHandle = @timerHandle = @intervalHandle = null
 
   # Internal util: reset time instance variables
   resetTimes: ->
@@ -106,7 +106,7 @@ class ABM.Animator
     else if @drawsPerSec() < @rate # throttle drawing to @rate
       @step() unless @multiStep
       @draw()
-    @animHandle = requestAnimFrame @animateDraws unless @stopped
+    @animatorHandle = requestAnimFrame @animateDraws unless @stopped
 
   animate: ->
     @animateSteps() if @multiStep

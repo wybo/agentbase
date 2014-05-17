@@ -38,11 +38,11 @@
         c = u.minOneOf(g, "id").color
         node.color = c for node in g
         if g.length > @cluster
-          console.log "New largest cluster: size: #{g.length} tick: #{@anim.ticks}"
+          console.log "New largest cluster: size: #{g.length} tick: #{@animator.ticks}"
         @cluster = Math.max @cluster, g.length
         
         if @cluster is @buttons
-          console.log "Completed at tick #{@anim.ticks}:  Cluster size #{@cluster} Links: #{@links.length}"
+          console.log "Completed at tick #{@animator.ticks}:  Cluster size #{@cluster} Links: #{@links.length}"
           @stop()
         
       graphOf: (node) ->

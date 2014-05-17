@@ -5,7 +5,8 @@
 # Create the namespace **ABM** for our project.
 # Note here `this` or `@` == window due to coffeescript wrapper call.
 # Thus @ABM is placed in the global scope.
-@ABM = {}
+# Plain ABM is set for running tests on the command-line
+@ABM = ABM = {}
 
 root = @ # Keep a private copy of global object
 
@@ -23,9 +24,9 @@ do ->
 
 # Shim for `Array.indexOf` if not implemented.
 # Use [es5-shim](https://github.com/kriskowal/es5-shim) if additional shims needed.
-Array::indexOf or= (item) ->
+Array::indexOf or= (object) ->
   for x, i in @
-    return i if x is item
+    return i if x is object
   -1
 
 # **ABM.util** contains the general utilities for the project. Note that within
@@ -39,9 +40,10 @@ ABM.util = u =
   # Shortcut for throwing an error.  Good for debugging:
   #
   #     error("wtf? foo=#{foo}") if fooProblem
-  error: (s) -> throw new Error s
+  error: (string) ->
+    throw new Error string
   
-  # Two max/min int values. One for 2^53, largest int in float64, other for
+  # Two max/min int numbers. One for 2^53, largest int in float64, other for
   # bitwise ops which are 32 bit. See [discussion](http://goo.gl/WpAzT)
   MaxINT: Math.pow(2, 53)
   MinINT: -Math.pow(2, 53) # -@MaxINT fails, @ not defined yet
@@ -77,15 +79,8 @@ ABM.util = u =
       x - Math.floor(x)
 
   # Return random int in [0, max) or [min, max)
-  randomInt: (minmax = 1, max = null) ->
+  randomInt: (minmax = 2, max = null) ->
     Math.floor(@randomFloat(minmax, max))
-
-  # Return float Gaussian normal with given mean, std deviation.
-  randomNormal: (mean = 0.0, sigma = 1.0) -> # Box-Muller
-    u1 = 1.0 - Math.random()
-    u2 = Math.random() # u1 in (0, 1]
-    normal = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2)
-    normal * sigma + mean
 
   # Return float in [0, max) or [min, max) or [-r / 2, r / 2)
   randomFloat: (minmax = 1, max = null) ->
@@ -96,178 +91,117 @@ ABM.util = u =
       min = minmax
     min + Math.random() * (max - min)
 
-  randomCentered: (r) -> @randomFloat -r / 2, r / 2
+  # Return float Gaussian normal with given mean, std deviation.
+  randomNormal: (mean = 0.0, standardDeviation = 1.0) -> # Box-Muller
+    u1 = 1.0 - Math.random()
+    u2 = Math.random() # u1 in (0, 1]
+    normal = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2)
+    normal * standardDeviation + mean
 
-  # Return log n where base is 10, base, e respectively.
-  # Note ln: (n) -> Math.log n .. i.e. JS's log is log base e
-  log10: (n) -> Math.log(n) / Math.LN10
+  randomCentered: (r) ->
+    @randomFloat -r / 2, r / 2
 
-  log2: (n) -> @logN n, 2
+  onceEvery: (number = 100) ->
+    @randomInt(number) is 1
 
-  logN: (n, base) -> Math.log(n) / Math.log(base)
+  # Return log number where base is 10, base, e respectively.
+  # Note ln: (n) -> Math.log number .. i.e. JS's log is log base e
+  log10: (number) ->
+    Math.log(number) / Math.LN10
 
-  # Return true [mod functin](http://goo.gl/spr24), % is remainder, not mod.
-  mod: (v, n) -> ((v % n) + n) % n
+  log2: (number) ->
+    @logN number, 2
 
-  # Return v to be between min, max via mod fcn
-  wrap: (v, min, max) -> min + @mod(v - min, max - min)
+  logN: (number, base) ->
+    Math.log(number) / Math.log(base)
 
-  # Return v to be between min, max via clamping with min/max
-  clamp: (v, min, max) -> Math.max(Math.min(v, max), min)
+  # Return true [modulo](http://goo.gl/spr24), % is remainder, not mod.
+  mod: (number, moduloOf) ->
+    ((number % moduloOf) + moduloOf) % moduloOf
+
+  # Return number to be between min, max via modulo
+  wrap: (number, min, max) ->
+    min + @mod(number - min, max - min)
+
+  # Return number to be between min, max via clamping with min/max
+  clamp: (number, min, max) ->
+    Math.max(Math.min(number, max), min)
 
   # Return sign of a number as +/- 1
-  sign: (v) -> if v < 0 then -1 else 1
-
-  # Return n to given precision, default 2
-  # Considerably faster than equivalent: Number(n.toFixed(p))
-  fixed: (n, p = 2) ->
-    p = Math.pow(10, p)
-    Math.round(n * p) / p
+  sign: (number) ->
+    if number < 0
+      -1
+    else
+      1
 
   # Return an array of floating pt numbers as strings at given precision;
   # useful for printing
-  aToFixed: (a, p = 2) -> (i.toFixed p for i in a)
-
-  # Return localized string for number, with commas etc
-  tls: (n) -> n.toLocaleString()
+  aToFixed: (array, precision = 2) ->
+    newArray = []
+    for number in array
+      newArray.push number.toFixed precision
+    newArray
 
   # ### Color and Angle Operations
-  # Our colors are r, g, b, [a] arrays, with an optional color.str HTML
-  # color string property. The str value is set on the first call to colorStr
 
+  # Basic colors from string # TODO make better, so accepts arrays
   colorFromString: (colorName) ->
     color = @Colors[colorName]
-    @error "unless you're using basic colors, specify an rgb array [nr, nr, nr]" if !@isArray color
+    if !@isArray color
+      @error "unless you're using basic colors, specify an rgb array [nr, nr, nr]"
     color
 
-  lightenColor: (color, fraction) ->
-    newColor = []
-    newColor[i] = @clamp(Math.round(value + fraction * 255), 0, 255) for value, i in color
-    newColor
-
   # Return a random RGB or gray color. Array passed to minimize garbage collection
-  randomColor: (c = []) ->
-    c.str = null if c.str?
-    c[i] = @randomInt(256) for i in [0..2]
-    c
+  randomColor: () ->
+    color = []
+    for i in [0..2]
+      color[i] = @randomInt(256)
+    color
 
   # Note: if 2 args passed, assume they're min, max w/ default c
-  randomGray: (c = [], min = 64, max = 192) ->
-    if arguments.length is 2 then return @randomGray null, c, min
-    c.str = null if c.str?
-    r = @randomInt min, max
-    c[i] = r for i in [0..2]
-    c
+  randomGray: (min = 64, max = 192) ->
+    color = []
+    random = @randomInt min, max
+    for i in [0..2]
+      color[i] = random
+    color
 
   # Random color from a colormap set of r, g, b values.
   # Default is one of 125 (5^3) colors
-  randomMapColor: (c = [], set = [0, 63, 127, 191, 255]) ->
-    @setColor c, @sample(set), @sample(set), @sample(set)
+  randomMapColor: (set = [0, 63, 127, 191, 255]) ->
+    [@sample(set), @sample(set), @sample(set)]
 
-  randomBrightColor: (c = []) -> @randomMapColor c, [0, 127, 255]
-
-  # Modify an existing rgb or gray color.  Alpha optional, not set if not provided.
-  # Modifying an existing array minimizes GC overhead
-  setColor: (c, r, g, b, a) ->
-    c.str = null if c.str?
-    c[0] = r
-    c[1] = g
-    c[2] = b
-    c[3] = a if a?
-    c
-
-  setGray: (c, g, a) -> @setColor c, g, g, g, a
+  randomBrightColor: () ->
+    @randomMapColor [0, 127, 255]
 
   # Return new color, c, by scaling each value of the rgb color max.
-  scaleColor: (max, s, c = []) ->
-    c.str = null if c.str?
-    # [r, g, b] must be ints
-    c[i] = @clamp(Math.round(val * s), 0, 255) for val, i in max
-    c
+  fractionOfColor: (maxColor, fraction, color = []) ->
+    color.string = null
+    for value, i in maxColor
+      color[i] = @clamp(Math.round(value * fraction), 0, 255)
+    color
 
-  # Return HTML color as used by canvas element.  Can include Alpha
-  colorStr: (c) ->
-    return s if (s = c.str)?
-    @error "alpha > 1" if c.length is 4 and c[3] > 1
-    c.str = if c.length is 3 then "rgb(#{c})" else "rgba(#{c})"
+  # lightens color with fraction of 0..255
+  brightenColor: (color, fraction) ->
+    newColor = []
+    for value in color
+      newColor.push @clamp(Math.round(value + fraction * 255), 0, 255)
+    newColor
+
+  # Return HTML color as used by canvas element. Can include Alpha
+  colorString: (color) ->
+    if not color.string?
+      if color.length is 4 and color[3] > 1
+        @error "alpha > 1"
+      if color.length is 3
+        color.string = "rgb(#{color})"
+      else
+        color.string = "rgba(#{color})"
+    color.string
 
   # Compare two colors.  Alas, there is no array.Equal operator.
-  colorsEqual: (c1, c2) -> c1.toString() is c2.toString()
-
-  # Convert r, g, b to a luminance float value (not color array).
-  # Round for 0-255 int for gray color value.
-  # [Good post on image filters](http://goo.gl/pE9cV8)
-  rgbToGray: (c) -> 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
-
-  # RGB <> HSB (HSV) conversions.
-  # RGB in [0-255], HSB in [0-1]
-  # See [Wikipedia](http://en.wikipedia.org/wiki/HSV_color_space)
-  # and [Blog Post](http://goo.gl/7yP4cO)
-  rgbToHsb: (c) ->
-    r = c[0] / 255
-    g = c[1] / 255
-    b = c[2] / 255
-    max = Math.max(r, g, b)
-    min = Math.min(r, g, b)
-    v = max
-    h = 0
-    d = max - min
-    if max is 0
-      s = 0
-    else
-      s = d / max
-    if max isnt min then switch max
-      when r
-        h = (g - b) / d + (if g < b then 6 else 0)
-      when g
-        h = (b - r) / d + 2
-      when b
-        h = (r - g) / d + 4
-    [Math.round(255 * h / 6), Math.round(255 * s), Math.round(255 * v)]
-
-  hsbToRgb: (c) ->
-    h = c[0] / 255
-    s = c[1] / 255
-    v = c[2] / 255
-    i = Math.floor(h*6)
-    f = h * 6 - i
-    p = v * (1 - s)
-    q = v * (1 - f * s)
-    t = v * (1 - (1 - f) * s)
-    switch(i % 6)
-      when 0 then r = v; g = t; b = p
-      when 1 then r = q; g = v; b = p
-      when 2 then r = p; g = v; b = t
-      when 3 then r = p; g = q; b = v
-      when 4 then r = t; g = p; b = v
-      when 5 then r = v; g = p; b = q
-    [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)]
-    
-  # Colormap utilities.  Create an array of colors which are
-  # shared by a set of objects.
-  # Note: Experimental, will change.
-  rgbMap: (R, G = R, B = R) ->
-    R = (Math.round(i * 255 / (R - 1)) for i in [0...R]) if R.isNumber()
-    G = (Math.round(i * 255 / (G - 1)) for i in [0...G]) if G.isNumber()
-    B = (Math.round(i * 255 / (B - 1)) for i in [0...B]) if B.isNumber()
-    map = []
-    ((map.push [r, g, b] for b in B) for g in G) for r in R
-    map
-
-  grayMap: -> ([i, i, i] for i in [0..255])
-
-  hsbMap: (n = 256, s = 255, b = 255) ->
-    (@hsbToRgb [i * 255 / (n - 1), s, b] for i in [0...n])
-
-  gradientMap: (nColors, stops, locs) ->
-    locs = (i / (stops.length - 1) for i in [0...stops.length]) if not locs?
-    ctx = @createCtx nColors, 1
-    grad = ctx.createLinearGradient 0, 0, nColors, 0
-    grad.addColorStop locs[i], @colorStr stops[i] for i in [0...stops.length]
-    ctx.fillStyle = grad
-    ctx.fillRect 0, 0, nColors, 1
-    id = @ctxToImageData(ctx).data
-    ([id[i], id[i + 1], id[i + 2]] for i in [0...id.length] by 4)
+  colorsEqual: (color1, color2) ->
+    color1.toString() is color2.toString()
 
   # Return little/big endian-ness of hardware. 
   # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq)
@@ -278,66 +212,61 @@ ABM.util = u =
     (new Uint8ClampedArray d32.buffer)[0] is 4
 
   # Convert between degrees and radians.  We/Math package use radians.
-  degToRad: (degrees) -> degrees * Math.PI / 180
+  degreesToRadians: (degrees) ->
+    degrees * Math.PI / 180
 
-  radToDeg: (radians) -> radians * 180 / Math.PI
+  radiansToDegrees: (radians) ->
+    radians * 180 / Math.PI
 
   # Return angle in (-pi, pi] that added to rad2 = rad1
   # See NetLogo's [subtract-headings](http://goo.gl/CjoHuV) for explanation
-  subtractRads: (rad1, rad2) ->
-    dr = rad1 - rad2
+  substractRadians: (radians1, radians2) ->
+    angle = radians1 - radians2
     PI = Math.PI
-    if dr <= -PI
-      dr += 2 * PI
-    if dr > PI
-      dr -= 2 * PI
-    dr
+    if angle <= -PI
+      angle += 2 * PI
+    if angle > PI
+      angle -= 2 * PI
+    angle
   
-# ### Object Operations
+  # ### Object Operations
   
   # Return object's own key or variable values
-  ownKeys: (obj) -> (key for own key, value of obj)
+  ownKeys: (object) ->
+    (key for own key, value of object)
 
-  ownVarKeys: (obj) -> (key for own key, value of obj when not @isFunction value)
+  ownVariableKeys: (object) ->
+    (key for own key, value of object when not @isFunction value)
 
-  ownValues: (obj) -> (value for own key, value of obj)
+  ownValues: (object) ->
+    (value for own key, value of object)
 
-  # Parse a string to its JS value.
-  # If s isn't a JS expression, return decoded string
-  parseToPrimitive: (s) -> # http://goo.gl/jxb6Ae http://goo.gl/mQsQan
-    try
-      JSON.parse(s)
-    catch e
-      decodeURIComponent(s)
-  # Return URL queryString as object, defaulting to this page's.
-  # If query element has no "=", set value to true.
-  # Otherwise use parseToPrimitive. [StackOverflow](http://goo.gl/vIwdG6)
-  parseQueryString: (query = window.location.search.substring(1)) ->
-    res = {}
-    for s in query.split "&" when query.length isnt 0
-      t = s.split "="
-      if t.length is 1
-        res[t[0]] = true
-      else
-        res[t[0]] = @parseToPrimitive(t[1])
-    res
-
-# ### Array Operations
+  # ### Array Operations
   
   # Does the array have any elements? Is the array empty?
-  any: (array) -> array.length isnt 0
+  any: (array) ->
+    not u.empty(array)
 
-  empty: (array) -> array.length is 0
+  empty: (array) ->
+    array.length is 0
 
   # Make a copy of the array. Needed when you don't want to modify the given
   # array with mutator methods like sort, splice or your own functions.
   # By giving begin/arguments, retrieve a subset of the array.
   # Works with TypedArrays too.
-  clone: (array, begin, end) ->
-    op = if array.slice? then "slice" else "subarray"
-    if begin? then array[op] begin, end else array[op] 0
+  clone: (array, begin = null, end = null) ->
+    if array.slice?
+      method = "slice"
+    else
+      method = "subarray"
 
-  # Return last element of array.  Error if empty.
+    if begin?
+      array[method] begin, end
+    else
+      array[method] 0
+
+  # Return last element of array.
+  # Error if empty.
   last: (array) ->
     @error "last: empty array" if @empty array
     array[array.length - 1]
@@ -345,60 +274,96 @@ ABM.util = u =
   # Return random element of array or number random elements of array.
   # Note: array elements presumed unique, i.e. objects or distinct primitives
   # Note: clone, shuffle then first number has poor performance
-  sample: (array, numberFunction = null, conditionFunction = null) ->
-    if @isFunction numberFunction
-      conditionFunction = numberFunction
-    else if number
-      number = Math.floor(numberFunction)
+  sample: (array, numberOrCondition = null, condition = null) ->
+    if @isFunction numberOrCondition
+      condition = numberOrCondition
+    else if numberOrCondition?
+      number = Math.floor(numberOrCondition)
 
     if number?
       newArray = []
       object = true
       while newArray.length < number and object?
-        object = @sample(array, conditionFunction)
+        object = @sample(array, condition)
         if object and object not in newArray
           newArray.push object
       return newArray
-    else if conditionFunction?
+    else if condition?
       checked = []
       while checked.length < array.length
         object = @sample(array)
         if object and object not in checked
           checked.push object
-          if conditionFunction(object)
+          if condition(object)
             return object
     else
       if @empty array
         return null
       return array[@randomInt array.length]
 
-  # True if item is in array. Binary search if f isnt null.
-  contains: (array, item, f) -> @indexOf(array, item, f) >= 0
+  # True if object is in array.
+  # Binary search for/on property if propertyOrFunction isnt null.
+  contains: (array, object, propertyOrFunction) ->
+    @indexOf(array, object, propertyOrFunction) >= 0
 
-  # Remove an item from an array. Binary search if f isnt null.
-  # Error if item not in array.
-  removeItem: (array, item, f) ->
-    unless (i = @indexOf array, item, f) < 0 # TODO refactor
+  # Return index of value in array or -1 if not found.
+  # If no property given, use Array.indexOf.
+  # If property given, use binary search.
+  # Property can be string or function.
+  indexOf: (array, object, propertyOrFunction = null)->
+    if propertyOrFunction?
+      @sortedIndex array, object, propertyOrFunction
+    else
+      array.indexOf object
+
+  # Return array index of object, or index for object if array to remain sorted.
+  # f is used to return an integer for sorting, primarily for object properties.
+  # If propertyOrFunction is a string, it is the object property to sort by.
+  # Adapted from underscore's _.sortedIndex.
+  sortedIndex: (array, object, propertyOrFunction = (o) -> o) ->
+    if @isString propertyOrFunction
+      call = @propertyFunction propertyOrFunction
+    else
+      call = propertyOrFunction
+
+    # Why not array.length - 1? Because we can insert 1 after end of array.
+    value = call(object)
+    low = 0
+    high = array.length
+    while low < high
+      mid = (low + high) >>> 1 # floor (low + high) / 2
+      if call(array[mid]) < value
+        low = mid + 1
+      else
+        high = mid
+    low
+
+  # Remove an object from an array. Binary search if f isnt null.
+  # Error if object not in array.
+  remove: (array, object, propertyOrFunction) ->
+    index = @indexOf array, object, propertyOrFunction
+    if index isnt -1
       array.splice i, 1
     else
-      @error "removeItem: item not found" #; array
+      @error "remove: object not found" #; array
 
-  # Remove elements in items from an array. Binary search if f isnt null.
-  # Error if an item not in array.
-  removeItems: (array, items, f) ->
-    for item in items
-      @removeItem(array, item, f)
+  # Remove elements in objects from an array. Binary search if f isnt null.
+  # Error if an object not in array.
+  removeItems: (array, objects, propertyOrFunction) ->
+    for object in objects
+      @remove array, object, propertyOrFunction
     array
 
-  # Insert an item in a sorted array
-  insertItem: (array, item, f) ->
-    i = @sortedIndex array, item, f
-    error "insertItem: item already in array" if array[i] is item
-    array.splice i, 0, item
+  # Insert an object in a sorted array
+  insert: (array, object, propertyOrFunction) ->
+    index = @sortedIndex array, object, propertyOrFunction
+    if array[index] is object
+      @error "insert: object already in array"
+    array.splice index, 0, object
     
   # Randomize the elements of this array.
-  # Clever! See [cookbook](http://goo.gl/TT2SY)
-  shuffle: (array) -> array.sort -> 0.5 - Math.random()
+  shuffle: (array) ->
+    array.sort -> 0.5 - Math.random()
 
   # Return o when f(o) min/max in array. Error if array empty.
   # If f is a string, return element with max value of that property.
@@ -414,7 +379,7 @@ ABM.util = u =
     @error "minOneOf: empty array" if @empty array
     r = Infinity
     o = null
-    f = @propFcn f if @isString f
+    f = @propertyFunction f if @isString f
     for a in array
       (r = r1; o = a) if (r1 = f(a)) < r
     if valueToo then [o, r] else o
@@ -424,7 +389,7 @@ ABM.util = u =
     r = -Infinity
     o = null
     if @isString f
-      f = @propFcn f
+      f = @propertyFunction f
     for a in array
       (r = r1; o = a) if (r1 = f(a)) > r
     if valueToo then [o, r] else o
@@ -447,7 +412,7 @@ ABM.util = u =
   #     h = histOf b, 2, "id"
   histOf: (array, bin = 1, f = (i) -> i) ->
     r = []
-    f = @propFcn f if @isString f
+    f = @propertyFunction f if @isString f
     for a in array
       i = Math.floor f(a)/bin
       r[i] = if (ri = r[i])? then ri + 1 else 1
@@ -463,7 +428,7 @@ ABM.util = u =
   #     sortBy array, "i"
   #     # array now is [{i: -1}, {i: 1}, {i: 2}, {i: 2}, {i:5}]
   sortBy: (array, f) ->
-   f = @propFcn f if @isString f # use item[f] if f is string
+   f = @propertyFunction f if @isString f # use item[f] if f is string
    array.sort (a, b) -> f(a) - f(b)
 
   # Numeric sort, default to ascending. Mutator, see clone above.
@@ -565,39 +530,12 @@ ABM.util = u =
 
   normalizeInt: (array, lo, hi) -> (Math.round i for i in @normalize array, lo, hi) # clamp?
 
-  # Return array index of item, or index for item if array to remain sorted.
-  # f is used to return an integer for sorting, primarily for object properties.
-  # If f is a string, it is the object property to sort by.
-  # Adapted from underscore's _.sortedIndex.
-  sortedIndex: (array, item, f = (o) -> o) -> # update to _.sortedIndex someday
-    f = @propFcn f if @isString f # use item[f] if f is string
-    # Why not array.length - 1? Because we can insert 1 after end of array.
-    value = f(item)
-    low = 0
-    high = array.length
-    while low < high
-      mid = (low + high) >>> 1 # floor (low+high)/2
-      if f(array[mid]) < value
-        low = mid + 1
-      else
-        high = mid
-    low
-
   # Return argument unchanged; for primitive arrays or objs sorted by reference
   identity: (o) -> o
 
   # Return a function that returns an object's property.  Property in fcn closure.
-  propFcn: (prop) -> (o) -> o[prop]
-
-  # Return index of value in array or -1 if not found.
-  # If no property given, use Array.indexOf.
-  # If property given, use binary search.
-  # Property can be string or function. If property is "", use identity default.
-  indexOf: (array, item, property)->
-    if property?
-      i = @sortedIndex array, item, if property is "" then null else property
-      if array[i] is item then i else -1
-    else array.indexOf item
+  propertyFunction: (property) ->
+    (object) -> object[property]
 
 # ### Topology Operations
   
@@ -839,7 +777,7 @@ ABM.util = u =
   fillCtx: (ctx, color) ->
     if ctx.fillStyle? # test for 2D ctx
       @setIdentity ctx
-      ctx.fillStyle = @colorStr(color)
+      ctx.fillStyle = @colorString color
       ctx.fillRect 0, 0, ctx.canvas.width, ctx.canvas.height
       ctx.restore()
     else # 3D
@@ -850,8 +788,10 @@ ABM.util = u =
   # Use setIdentity .. reset if a transform is being used by caller.
   ctxDrawText: (ctx, string, x, y, color = [0, 0, 0], setIdentity = true) ->
     @setIdentity(ctx) if setIdentity
-    ctx.fillStyle = @colorStr color; ctx.fillText(string, x, y)
-    ctx.restore() if setIdentity
+    ctx.fillStyle = @colorString color
+    ctx.fillText(string, x, y)
+    if setIdentity
+      ctx.restore()
   # Set the element text align and baseline drawing parameters
   #
   # * font is a HTML/CSS string like: "9px sans-serif"

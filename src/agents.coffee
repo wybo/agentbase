@@ -40,7 +40,8 @@ class ABM.Agents extends ABM.BreedSet
   inRectangle: (a, dx, dy, meToo = false) ->
     rect = ABM.patches.patchRectangle a.patch, dx, dy, true
     rect = @inPatches rect
-    u.removeItem rect, a unless meToo
+    unless meToo
+      u.remove rect, a
     rect
   
   # Return the members of this agentset that are within radius distance

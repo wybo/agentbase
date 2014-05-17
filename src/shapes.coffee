@@ -9,7 +9,7 @@ ABM.shapes = ABM.util.s = do ->
   # and a transform such that the shape should be drawn in a -.5 to .5 square
   #
   #     ctx.save()
-  #     ctx.fillStyle = u.colorStr color
+  #     ctx.fillStyle = u.colorString color
   #     ctx.translate x, y; ctx.scale size, size;
   #     ctx.rotate heading if shape.rotate
   #     ctx.beginPath(); shape.draw(ctx); ctx.closePath()
@@ -151,7 +151,7 @@ ABM.shapes = ABM.util.s = do ->
   # Two draw procedures, one for shapes, the other for sprites made from shapes.
   draw: (ctx, shape, x, y, size, rad, color) ->
     if shape.shortcut?
-      ctx.fillStyle = u.colorStr color unless shape.img?
+      ctx.fillStyle = u.colorString color unless shape.img?
       shape.shortcut ctx, x, y, size
     else
       ctx.save()
@@ -161,7 +161,7 @@ ABM.shapes = ABM.util.s = do ->
       if shape.img? # is an image, not a path function
         shape.draw ctx
       else
-        ctx.fillStyle = u.colorStr color
+        ctx.fillStyle = u.colorString color
         ctx.beginPath()
         shape.draw ctx
         ctx.closePath()
@@ -187,7 +187,7 @@ ABM.shapes = ABM.util.s = do ->
   shapeToSprite: (name, color, size) ->
     bits = Math.ceil ABM.patches.toBits size
     shape = @[name]
-    index = if shape.img? then name else "#{name}-#{u.colorStr(color)}"
+    index = if shape.img? then name else "#{name}-#{u.colorString(color)}"
     ctx = spriteSheets[bits]
     # Create sheet for this bit size if it does not yet exist
     unless ctx?
@@ -215,7 +215,7 @@ ABM.shapes = ABM.util.s = do ->
       ctx.save()
       ctx.scale bits, bits
       ctx.translate ctx.nextX + .5, ctx.nextY + .5
-      ctx.fillStyle = u.colorStr color
+      ctx.fillStyle = u.colorString color
       ctx.beginPath()
       shape.draw ctx
       ctx.closePath()

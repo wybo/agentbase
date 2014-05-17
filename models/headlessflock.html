@@ -9,7 +9,7 @@
     class MyModel extends ABM.Model
       
       setVision: (@vision) -> @patches.cacheRectangle @vision, true
-      setMaxTurn: (@maxTurn) -> @maxTurn = u.degToRad(@maxTurn)
+      setMaxTurn: (@maxTurn) -> @maxTurn = u.degreesToRadians(@maxTurn)
       toggleConsole: () -> @useConsole = not @useConsole
       
       setup: ->
@@ -23,7 +23,7 @@
         @agents.setUseSprites() # 24 -> 36
         
         # Default is untimed, fastest for headless
-        @anim.setRate 5, false # multistep
+        @animator.setRate 5, false # multistep
         
         @useConsole = true
         @population = 300     # agents
@@ -52,15 +52,15 @@
 
   
       step: ->
-        if @useConsole and @anim.ticks % 25 is 0
-          console.log @anim.toString(), "flock alignment: #{@reportFlockVectorSize()}"
+        if @useConsole and @animator.ticks % 25 is 0
+          console.log @animator.toString(), "flock alignment: #{@reportFlockVectorSize()}"
         @flock(a) for a in @agents
-        if @anim.draws is 2 # Show the sprite sheet if there is one after first draw
+        if @animator.draws is 2 # Show the sprite sheet if there is one after first draw
           sheet = u.last(u.s.spriteSheets) if u.s.spriteSheets.length isnt 0
           if sheet?
             console.log sheet if @useConsole
             document.getElementById("play").appendChild(sheet.canvas)
-        @stop() if @anim.ticks is 400
+        @stop() if @animator.ticks is 400
 
         @renderInDOM(a) for a in @agents
 

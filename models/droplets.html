@@ -67,10 +67,10 @@
             a.forward @speed
             moved += 1
         if moved is 0 or (@useAspect and @lastMoved is moved)
-          console.log "done, ticks: #{@anim.ticks}"
+          console.log "done, ticks: #{@animator.ticks}"
           @stop()
-        if @anim.ticks % 100 is 0
-          console.log @anim.toString(), "moved: #{moved}"
+        if @animator.ticks % 100 is 0
+          console.log @animator.toString(), "moved: #{moved}"
           @lastMoved = moved
     
     # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors

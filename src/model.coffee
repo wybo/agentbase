@@ -72,10 +72,10 @@ class ABM.Model
 
     # if isHeadless
     # # Initialize animator to headless default: 30fps, async  
-    # then @anim = new ABM.Animator @, null, true
+    # then @animator = new ABM.Animator @, null, true
     # # Initialize animator to default: 30fps, not async
     # else 
-    @anim = new ABM.Animator @
+    @animator = new ABM.Animator @
     # Set drawing controls.  Default to drawing each agentset.
     # Optimization: If any of these is set to false, the associated
     # agentset is drawn only once, remaining static after that.
@@ -89,7 +89,8 @@ class ABM.Model
     # Initialize model global resources
     @debugging = false
     @modelReady = false
-    @globalNames = null; @globalNames = u.ownKeys @
+    @globalNames = null
+    @globalNames = u.ownKeys @
     @globalNames.set = false
     @startup()
     u.waitOnFiles =>
@@ -199,19 +200,33 @@ class ABM.Model
 
   # Start/stop the animation
   start: ->
-    u.waitOn (=> @modelReady), (=> @anim.start())
+    u.waitOn (=> @modelReady), (=> @animator.start())
+    @isRunning = true
     @
 
-  stop: -> @anim.stop()
+  stop: ->
+    @animator.stop()
+    @isRunning = false
+    @
+
+  toggle: ->
+    if @isRunning
+      @stop()
+    else
+      @start()
 
   # Animate once by `step(); draw()`. For UI and debugging from console.
   # Will advance the ticks/draws counters.
-  once: -> @stop() unless @anim.stopped; @anim.once()
+  once: ->
+    unless @animator.stopped
+      @stop()
+    @animator.once()
+    @
 
   # Stop and reset the model, restarting if restart is true
 #  reset: (restart = false) ->
-#    console.log "reset: anim"
-#    @anim.reset() # stop & reset ticks/steps counters
+#    console.log "reset: animator"
+#    @animator.reset() # stop & reset ticks/steps counters
 #    console.log "reset: contexts"
 #    # clear/resize b4 agentsets
 #    (v.restore(); @setCtxTransform v) for k, v of @contexts when v.canvas?
@@ -231,12 +246,12 @@ class ABM.Model
 # Call the agentset draw methods if either the first draw call or
 # their "refresh" flags are set.  The latter are simple optimizations
 # to avoid redrawing the same static scene. Called by animator.
-  draw: (force = @anim.stopped) ->
-    if force or @refreshPatches or @anim.draws is 1
+  draw: (force = @animator.stopped) ->
+    if force or @refreshPatches or @animator.draws is 1
       @patches.draw @contexts.patches
-    if force or @refreshLinks or @anim.draws is 1
+    if force or @refreshLinks or @animator.draws is 1
       @links.draw @contexts.links
-    if force or @refreshAgents  or @anim.draws is 1
+    if force or @refreshAgents  or @animator.draws is 1
       @agents.draw @contexts.agents
     if @spotlightAgent?
       @drawSpotlight @spotlightAgent, @contexts.spotlight
@@ -251,7 +266,7 @@ class ABM.Model
   setSpotlight: (@spotlightAgent) ->
     u.clearCtx @contexts.spotlight unless @spotlightAgent?
 
-  drawSpotlight: (agent, ctx) ->
+  drawSpotlight: (agent, ctx) -> # TODO refactor ctx
     u.clearCtx ctx
     u.fillCtx ctx, [0, 0, 0, 0.6]
     ctx.beginPath()
@@ -338,7 +353,7 @@ class ABM.Model
     root.dr  = @drawing
     root.u   = ABM.util
     root.cx  = @contexts
-    root.an  = @anim
+    root.an  = @animator
     root.gl  = @globals
     root.dv  = @div
     root.root= root

@@ -26,7 +26,6 @@ class ABM.Patches extends ABM.BreedSet
   # Note that this is done as separate method so like other agentsets,
   # patches are started up empty and filled by "create" calls.
   create: -> # TopLeft to BottomRight, exactly as canvas imagedata
-    console.log('creatpa')
     for y in [@maxY..@minY] by -1
       for x in [@minX..@maxX] by 1
         @add new @agentClass x, y
@@ -59,7 +58,6 @@ class ABM.Patches extends ABM.BreedSet
 
   # Install neighborhoods in patches
   setNeighbors: ->
-    console.log('Neighbset')
     for patch in @
       patch.neighbors =  @patchRectangle patch, 1, 1
       four = []
@@ -90,8 +88,12 @@ class ABM.Patches extends ABM.BreedSet
   # * Monochrome: just fill canvas w/ patch default
   # * Otherwise: just draw each patch individually
   draw: (ctx) ->
-    if @monochrome then u.fillCtx ctx, @agentClass::color
-    else if @drawWithPixels then @drawScaledPixels ctx else super ctx
+    if @monochrome
+      u.fillCtx ctx, @agentClass::color
+    else if @drawWithPixels
+      @drawScaledPixels ctx
+    else
+      super ctx
 
 # #### Patch grid coord system utilities:
   
@@ -281,5 +283,6 @@ class ABM.Patches extends ABM.BreedSet
     for patch in @
       patch[v] = patch._diffuseNext
       patch._diffuseNext = 0
-      patch.scaleColor c, patch[v] if c
+      if c
+        patch.fractionOfColor c, patch[v]
     null # avoid returning copy of @

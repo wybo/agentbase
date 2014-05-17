@@ -21,7 +21,7 @@
         @coolingRate = .10
         @speed = .5
         
-        @anim.setRate 30, true
+        @animator.setRate 30, true
         
         # defaults
         @agents.setDefault "size", 1.5
@@ -33,11 +33,11 @@
         # @agents.create @population, (a) => # fat arrow for @patches etc
         #   a.size = 1.5
       step: ->
-        console.log @anim.toString() if @anim.ticks % 100 is 0
+        console.log @animator.toString() if @animator.ticks % 100 is 0
         for p in @patches
           p.heat *= (1-@coolingRate)
         for a in @agents
-          a.rotate u.randomCentered(u.degToRad(40))
+          a.rotate u.randomCentered(u.degreesToRadians(40))
           a.forward @speed
           a.patch.heat = 1
         @patches.diffuse "heat", @diffusionRate, [255,0,0]
