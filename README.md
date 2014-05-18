@@ -48,7 +48,7 @@ The models/ directory contains tiny models used both as unit tests and as exampl
 
 [**fire.html**](models/fire.html) A CA (cellular automata) based model of fire spreading and burn behavior.
 
-[**flock.html**](models/flock.html) The classic "boids" model where agents each follow three simple rules resulting in realistic flocking. Uses the as.dat.gui.js extra.
+[**flock.html**](models/flock.html) The classic "boids" model where agents each follow three simple rules resulting in realistic flocking. This example uses the as.dat.gui.js extra.
 
 [**headlessflock.html**](models/headlessflock.html) The same classic "boids" model as above, only this time agents are rendered as DOM elements instead of being drawn to a canvas.
 
@@ -62,9 +62,9 @@ The models/ directory contains tiny models used both as unit tests and as exampl
 
 [**tspga.html**](models/tspga.html) A Traveling Sales Person solution via a Genetic Algorithm showing the rapid conversion of stochastic methods.
 
-[**droplets.html**](models/droplets.html) A simple GIS model based on an ESRI asc elevation file where droplet agents seek low-elevation patches. Note: This model uses the data.js extra.
+[**droplets.html**](models/droplets.html) A simple GIS model based on an ESRI asc elevation file where droplet agents seek low-elevation patches. This example uses the data.js extra.
 
-[**tiledroplets.html**](models/tiledroplets.html) A model similar to the above droplets.html, but here the droplets move on top of a Leaflet map, and elevation data is loaded from a tileserver as the map is panned. Note: this model uses data.js, data.tile.js, and as.dat.gui.js extras.
+[**tiledroplets.html**](models/tiledroplets.html) A model similar to the above droplets.html, but here the droplets move on top of a Leaflet map, and elevation data is loaded from a tileserver as the map is panned. This example uses the data.js, data.tile.js, and as.dat.gui.js extras.
 
 #### Sample Models Format
 
