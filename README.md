@@ -40,15 +40,15 @@ The extras/ directory contains libraries that are too specialized to be in the c
 
 The models/ directory contains tiny models used both as unit tests and as examples to get started with.  They usually print to the console.log, so opening the developer's JavaScript console will show model information.
 
-[**ants.html**](models/ants.html) Ant foraging with nest and food pheromone diffusion. 
+[**ants.html**](models/ants.html) A model of ant foraging behavior incorporating a nest location and food pheromone diffusion. 
 
 [**buttons.html**](models/buttons.html) Stuart Kauffman's example of randomly connecting pairs of buttons in a pile resulting in a tipping point.
 
 [**diffusion.html**](models/diffusion.html) Agents randomly flying on a patch grid dropping a color which is diffused over the grid.
 
-[**fire.html**](models/fire.html) A CA based spread of fire showing burn behavior.
+[**fire.html**](models/fire.html) A CA (cellular automata) based model of fire spreading and burn behavior.
 
-[**flock.html**](models/flock.html) The classic "boids" model where agents use three simple rules resulting in realistic flocking. Uses the as.dat.gui.js extra.
+[**flock.html**](models/flock.html) The classic "boids" model where agents each follow three simple rules resulting in realistic flocking. This example uses the as.dat.gui.js extra.
 
 [**headlessflock.html**](models/headlessflock.html) The same classic "boids" model as above, only this time agents are rendered as DOM elements instead of being drawn to a canvas.
 
@@ -56,15 +56,15 @@ The models/ directory contains tiny models used both as unit tests and as exampl
 
 [**linktravel.html**](models/linktravel.html) Agents traversing a graph of nodes and links.
 
-[**nbody.html**](models/nbody.html) Nonlinear gravitation of n bodies.
+[**nbody.html**](models/nbody.html) A simulation of the nonlinear gravitation of n bodies.
 
-[**prefattach.html**](models/prefattach.html) Example of a dynamic graph with new links preferentially attaching to nodes with most links.  This results in a power-law distribution.
+[**prefattach.html**](models/prefattach.html) An example of a dynamic graph where new links preferentially attach to the nodes that have the most links.  This results in a power-law distribution.
 
 [**tspga.html**](models/tspga.html) A Traveling Sales Person solution via a Genetic Algorithm showing the rapid conversion of stochastic methods.
 
-[**droplets.html**](models/droplets.html) A simple GIS model based on an ESRI asc elevation file, where droplet agents seek lowest elevation patches. Uses the data.js extra.
+[**droplets.html**](models/droplets.html) A simple GIS model based on an ESRI asc elevation file where droplet agents seek low-elevation patches. This example uses the data.js extra.
 
-[**tiledroplets.html**](models/tiledroplets.html) Like droplets.html, but here the droplets move on top of a Leaflet map, and elevation data is loaded from a tileserver as the map is panned. Uses data.js, data.tile.js, and as.dat.gui.js extras.
+[**tiledroplets.html**](models/tiledroplets.html) A model similar to the above droplets.html, but here the droplets move on top of a Leaflet map, and elevation data is loaded from a tileserver as the map is panned. This example uses the data.js, data.tile.js, and as.dat.gui.js extras.
 
 #### Sample Models Format
 
