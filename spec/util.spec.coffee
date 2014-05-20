@@ -4,7 +4,6 @@ ABM = code.ABM
 u = ABM.util
 
 describe "Util", ->
-
   describe "error", ->
     it "throws an error", ->
       expect(u.error, "Something").toThrow()
@@ -55,10 +54,10 @@ describe "Util", ->
   describe "randomSeed", ->
     it "replaces random", ->
       u.randomSeed(2)
-      expect(Math.random()).toBeCloseTo 0.974, 3
-      expect(Math.random()).toBeCloseTo 0.200, 3
+      expect(Math.random()).toBeCloseTo 0.97
+      expect(Math.random()).toBeCloseTo 0.20
       u.randomSeed(3)
-      expect(Math.random()).toBeCloseTo 0.200, 3
+      expect(Math.random()).toBeCloseTo 0.20
 
   describe "randomInt", ->
     it "returns a random int", ->
@@ -76,20 +75,20 @@ describe "Util", ->
   describe "randomFloat", ->
     it "returns a random float", ->
       u.randomSeed(2)
-      for outcome in [0.974, 0.200, 0.975]
-        expect(u.randomFloat()).toBeCloseTo outcome, 3
+      for outcome in [0.97, 0.20, 0.98]
+        expect(u.randomFloat()).toBeCloseTo outcome
 
   describe "randomNormal", ->
     it "returns numbers out of a normal distribution", ->
       u.randomSeed(2)
-      for outcome in [20.869, 3.094, 32.149, 13.150, 36.006, -9.532]
-        expect(u.randomNormal(0, 25)).toBeCloseTo outcome, 3
+      for outcome in [20.87, 3.09, 32.15, 13.15, 36.01, -9.53]
+        expect(u.randomNormal(0, 25)).toBeCloseTo outcome
 
   describe "randomCentered", ->
     it "returns numbers centered ahead in rads", ->
       u.randomSeed(2)
-      for outcome in [0.949, -0.600]
-        expect(u.randomCentered(2)).toBeCloseTo outcome, 3
+      for outcome in [0.95, -0.60]
+        expect(u.randomCentered(2)).toBeCloseTo outcome
 
   describe "onceEvery", ->
     it "returns true once every number", ->
@@ -99,7 +98,7 @@ describe "Util", ->
 
   describe "log10", ->
     it "returns log base 10", ->
-      expect(u.log10(30)).toBeCloseTo 1.477
+      expect(u.log10(30)).toBeCloseTo 1.48
 
   describe "log2", ->
     it "returns log base 2", ->
@@ -158,15 +157,15 @@ describe "Util", ->
 
   describe "degreesToRadians", ->
     it "returns the radians", ->
-      expect(u.degreesToRadians(90)).toBeCloseTo 1.571, 3
+      expect(u.degreesToRadians(90)).toBeCloseTo 1.57
 
   describe "radiansToDegrees", ->
     it "returns the degrees", ->
-      expect(u.radiansToDegrees(1)).toBeCloseTo 57.296, 3
+      expect(u.radiansToDegrees(1)).toBeCloseTo 57.30
 
   describe "substractRadians", ->
     it "returns the angle, between PI and minus PI", ->
-      expect(u.substractRadians(1, 8)).toBeCloseTo -0.717, 3
+      expect(u.substractRadians(1, 8)).toBeCloseTo -0.72
 
   describe "ownKeys", ->
     it "returns the attributes", ->
@@ -245,8 +244,140 @@ describe "Util", ->
     it "removes the items", ->
       expect(u.removeItems([1, 2, 3, 4, 5], [2, 4])).toEqual [1, 3, 5]
 
-  describe "insert", ->
-    it "inserts the item", ->
-      expect(u.insert([1, 2, 3], 2)).toEqual [1, 3]
-      expect(u.remove, [1, 2, 3], 5).toThrow()
+  describe "shuffle", ->
+    it "shuffles the array", ->
+      u.randomSeed(2)
+      expect(u.shuffle([1, 2, 3])).toEqual [1, 3, 2]
+
+  describe "min", ->
+    it "returns the smallest element", ->
+      expect(u.min([7, 3, 2, 3])).toEqual 2
+
+  describe "max", ->
+    it "returns the biggest element", ->
+      expect(u.max([7, 3, 2, 3])).toEqual 7
+
+  describe "sum", ->
+    it "returns the sum", ->
+      expect(u.sum([7, 3, 2, 3])).toEqual 15
+
+  describe "average", ->
+    it "returns the average", ->
+      expect(u.average([7, 3, 2, 3])).toEqual 3.75
+
+  describe "median", ->
+    it "returns the median", ->
+      expect(u.median([7, 3, 2])).toEqual 3
+      expect(u.median([7, 3, 2, 4])).toEqual 3.5
+
+  describe "histogram", ->
+    it "returns the histogram", ->
+      expect(u.histogram([0, 2, 6, 8, 2], 3)).toEqual [3, 0, 2]
+
+  describe "sort", ->
+    it "sorts the array", ->
+      array = [2.4, 8, 2]
+      u.sort(array, (objectA, objectB) ->
+        Math.floor(objectA) > Math.floor(objectB))
+      expect(array).toEqual [2.4, 2, 8]
+
+  describe "uniq", ->
+    it "returns the array with only unique items", ->
+      array = [0, 2, 0, 8, 2]
+      u.uniq(array) # changes array in place
+      expect(array).toEqual [0, 2, 8]
+
+  describe "flatten", ->
+    it "flattens the matrix to an array", ->
+      expect(u.flatten([[7], [3, 2], [3]])).toEqual [7, 3, 2, 3]
+
+  describe "normalize", ->
+    it "returns the array normalized", ->
+      expect(u.normalize([4, 9, 7], 5, 10)).toEqual [5, 10, 8]
+
+  describe "linearInterpolate", ->
+    it "returns a linear interpolation", ->
+      expect(u.linearInterpolate(1, 5, 0.5)).toEqual 3
+
+  describe "typedToJS", ->
+    it "returns a JS array", ->
+      array = Uint8Array([1,2])
+      array = u.typedToJS(array)
+      expect(array.sort?).toBe true
+
+  describe "radiansToward", ->
+    it "returns the radians toward the second point", ->
+      expect(u.radiansToward({x: 1, y: 1}, {x: 3, y: 3})).toBeCloseTo 0.79
+
+  describe "inCone", ->
+    it "returns true if in cone", ->
+      expect(u.inCone(3, 6, 3, {x: 1, y: 1}, {x: 2, y: 2})).toBe true
+      expect(u.inCone(3, 3, 1, {x: 1, y: 1}, {x: 2, y: 2})).toBe false
+
+  describe "distance", ->
+    it "returns distance between the points", ->
+      expect(u.distance({x: 1, y: 1}, {x: 4, y: 9})).toBeCloseTo 8.54
+
+  describe "distance", ->
+    it "returns distance between the points", ->
+      expect(u.distance({x: 1, y: 1}, {x: 4, y: 9})).toBeCloseTo 8.54
+
+  describe "torusDistance", ->
+    it "returns distance between the closest points on the torus", ->
+      expect(u.torusDistance({x: 1, y: 1}, {x: 4, y: 9}, 20, 20)).toBeCloseTo 8.54
+      expect(u.torusDistance({x: 1, y: 1}, {x: 4, y: 9}, 10, 10)).toBeCloseTo 3.61
+
+  describe "torus4Points", ->
+    it "returns the 4 reflected points", ->
+      expect(u.torus4Points({x: 1, y: 1}, {x: 4, y: 9}, 10, 10))
+        .toEqual [{x: 4, y: 9}, {x: -6, y: 9}, {x: 4, y: -1}, {x: -6, y: -1}]
+
+  describe "closestTorusPoint", ->
+    it "returns the closest of the 4 reflected points", ->
+      expect(u.closestTorusPoint({x: 1, y: 1}, {x: 4, y: 9}, 10, 10)).toEqual {x: 4, y: -1}
+
+  describe "torusRadiansToward", ->
+    it "returns the radians toward the second point on a torus", ->
+      expect(u.torusRadiansToward({x: 1, y: 1}, {x: 3, y: 3}, 10, 10)).toBeCloseTo 0.79
+      expect(u.torusRadiansToward({x: 1, y: 1}, {x: 3, y: 3}, 3, 3)).toBeCloseTo -2.36
+
+  describe "inTorusCone", ->
+    it "returns true if in cone", ->
+      expect(u.inTorusCone(3, 6, 3, {x: 1, y: 1}, {x: 2, y: 2}, 10, 10)).toBe true
+      expect(u.inTorusCone(3, 3, 3, {x: 1, y: 1}, {x: 2, y: 2}, 10, 10)).toBe false
+      expect(u.inTorusCone(3, 3, 3, {x: 1, y: 1}, {x: 2, y: 2}, 3, 3)).toBe true
+
+  describe "importImage", ->
+    it "returns an image object", ->
+      global.Image = class
+      source = "http://www.duck.com/wing.jpg"
+      call = (object) -> object * 23
+      image = u.importImage(source, call)
+      expect(image.src).toEqual source
+      expect(image.isDone).toBe false
+      expect(image.onload.toString()).toContain("isDone")
+
+  describe "xhrLoadFile", ->
+    it "returns an image object", ->
+      global.XMLHttpRequest = class
+        open: (a, b) ->
+        send: ->
+      source = "http://www.duck.com/quack.yml"
+      type = "unicorns"
+      call = (object) -> object * 23
+      request = u.xhrLoadFile(source, null, type, call)
+      expect(request.responseType).toEqual type
+      expect(request.isDone).toBe false
+      expect(request.onload.toString()).toContain("isDone")
+
+  describe "filesLoaded", ->
+    it "returns true if all files were loaded", ->
+      global.Image = class
+      u.fileIndex = {}
+      source = "http://www.duck.com/beek.jpg"
+      expect(u.filesLoaded()).toBe true
+      image = u.importImage(source)
+      expect(u.filesLoaded()).toBe false
+      u.fileIndex[source].isDone = true
+      expect(u.filesLoaded()).toBe true
 

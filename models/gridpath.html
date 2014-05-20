@@ -77,7 +77,7 @@
         while pset.length > 0
           p.ok = true for p in pset
           pnext = @asSet u.flatten (p.neighbors4 for p in pset)
-          pnext.sortById().uniq()
+          pnext.sort("id").uniq()
           pset = (n for n in pnext when not n.ok and not n.occupied)
         null
 

@@ -38,7 +38,7 @@ ABM.DataSet = class DataSet
     ds # async: ds will be empty until import finishes
 
   # 2D Dataset: width/height and an array with length = width*height
-  constructor: (width=0, height=0, data=[]) -> 
+  constructor: (width=0, height=0, data=[]) ->
     @setDefaults()
     @reset width, height, data
   # Reset a dataset to have new width, height and data.  Allows creating
@@ -158,16 +158,25 @@ ABM.DataSet = class DataSet
     array
   # Return a new dataset of same size convolved with the given kernel 3x3 matrix.
   # See [Convolution article](http://goo.gl/ubFiji)
-  convolve: (kernel,factor=1) -> # Factory: return new convolved dataset
-    array = []; n = []
+  convolve: (kernel, factor = 1) -> # Factory: return new convolved dataset
+    array = []
+    n = []
     if @crop
-    then x0=y0=1; h=@height-1; w=@width-1
-    else x0=y0=0; h=@height; w=@width
+      x0 = y0 = 1
+      h = @height - 1
+      w = @width - 1
+    else
+      x0 = y0=0
+      h = @height
+      w = @width
     for y in [y0...h] by 1
       for x in [x0...w] by 1
-        @neighborhood x,y,n
-        array.push u.aSum(u.aPairMul(kernel, n))*factor
-    new DataSet w-x0, h-y0, array
+        @neighborhood x, y, n
+        multiplied = []
+        for value, i in kernel
+          multiplied[i] = kernel[i] * n[i]
+        array.push u.sum(multiplied) * factor
+    new DataSet w - x0, h - y0, array
   # A few common convolutions.  dzdx/y are also called horiz/vert Sobel
   dzdx: (n=2,factor=1/8) -> @convolve([-1,0,1,-n,0,n,-1,0,1],factor)
   dzdy: (n=2,factor=1/8) -> @convolve([1,n,1,0,0,0,-1,-n,-1],factor)
@@ -201,7 +210,7 @@ ABM.DataSet = class DataSet
         aspect.push rad
     slope = new DataSet w, h, slope
     aspect = new DataSet w, h, aspect
-    u.aToObj [slope, aspect, dzdx, dzdy], ["slope", "aspect", "dzdx", "dzdy"]
+    {"slope": slope, "aspect": aspect, "dzdx": dzdx, "dzdy": dzdy}
   # Return a subset of the dataset. x,y,width,height integers
   subset: (x, y, width, height) ->
     u.error "subSet: params out of range" if x+width>@width or y+height>@height

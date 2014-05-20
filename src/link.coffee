@@ -40,18 +40,19 @@ class ABM.Link
       ctx.moveTo @end1.x, @end1.y
       ctx.lineTo @end2.x, @end2.y
     else
-      pt = @end1.torusPt @end2
+      pt = @end1.closestTorusPoint @end2
       ctx.moveTo @end1.x, @end1.y
       ctx.lineTo pt...
       if pt[0] isnt @end2.x or pt[1] isnt @end2.y
-        pt = @end2.torusPt @end1
+        pt = @end2.closestTorusPoint @end1
         ctx.moveTo @end2.x, @end2.y
         ctx.lineTo pt...
     ctx.closePath()
     ctx.stroke()
     ctx.restore()
     if @label?
-      [x0, y0]  = u.lerp2 @end1.x, @end1.y, @end2.x, @end2.y, .5
+      x0 = u.linearInterpolate @end1.x, @end2.x, .5
+      y0 = u.linearInterpolate @end1.y, @end2.y, .5
       [x, y] = ABM.patches.patchXYtoPixelXY x0, y0
       u.ctxDrawText ctx, @label, x + @labelOffset[0], y + @labelOffset[1], @labelColor
   

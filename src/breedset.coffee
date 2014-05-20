@@ -67,7 +67,7 @@ class ABM.BreedSet extends Array
     
   # Add an agent to the list.  Only used by agentset factory methods. Adds
   # the `id` property to all agents. Increment `ID`.
-  # Returns the object for chaining. The set will be sorted by `id`.
+  # Returns the object for chaining.
   #
   # By "agent" we mean an instance of `Patch`, `Agent` and `Link` and their breeds
   add: (object) ->
@@ -80,9 +80,7 @@ class ABM.BreedSet extends Array
 
   # Remove an agent from the agentset, returning the agentset.
   # Note this does not change ID, thus an
-  # agentset can have gaps in terms of their id's. Assumes set is
-  # sorted by `id`. If the set is one created by `asSet`, and the original
-  # array is unsorted, simply call `sortById` first, see `sortById` below.
+  # agentset can have gaps in terms of their id's. 
   #
   #     AS.remove(AS[3]) # [{id: 0, x: 0, y: 1}, {id: 1, x: 8, y: 0},
   #                         {id: 2, x: 6, y: 4}, {id: 4, x: 1, y: 1}] 
@@ -109,8 +107,8 @@ class ABM.BreedSet extends Array
   # Move an agent from its BreedSet/breed to be in this BreedSet/breed.
   # REMIND: match NetLogo sematics in terms of own variables.
   setBreed: (a) -> # change agent a to be in this breed
-    u.remove a.breed, a, "id" if a.breed.mainSet?
-    u.insert @, a, "id" if @mainSet?
+    u.remove a.breed, a
+    @.push a
     proto = a.__proto__ = @agentClass.prototype
     delete a[k] for own k, v of a when proto[k]?
     a
@@ -145,14 +143,13 @@ class ABM.BreedSet extends Array
     if asetNext.length > 0
       @floodFill asetNext, fCandidate, fJoin, fCallback, fNeighbors, aset
   
-  # Remove adjacent duplicates, by reference, in a sorted agentset.
-  # Use `sortById` first if agentset not sorted.
+  # Remove adjacent duplicates, by reference.
   #
   #     as = (AS.random() for i in [1..4]) # 4 random agents w/ dups
   #     ABM.BreedSet.asSet as # [{id: 1, x: 8, y: 0}, {id: 0, x: 0, y: 1},
   #                              {id: 0, x: 0, y: 1}, {id: 2, x: 6, y: 4}]
-  #     as.sortById().uniq() # [{id: 0, x: 0, y: 1}, {id: 1, x: 8, y: 0}, 
-  #                             {id: 2, x: 6, y: 4}]
+  #     as.uniq() # [{id: 0, x: 0, y: 1}, {id: 1, x: 8, y: 0}, 
+  #                  {id: 2, x: 6, y: 4}]
   uniq: -> u.uniq(@)
 
   # The static `ABM.BreedSet.asSet` as a method.
@@ -160,7 +157,7 @@ class ABM.BreedSet extends Array
   asSet: (a, setType = @) -> ABM.BreedSet.asSet a, setType # setType = ABM.BreedSet
 
   # Similar to above but sorted via `id`.
-  asOrderedSet: (a) -> @asSet(a).sortById()
+  asOrderedSet: (a) -> @asSet(a).sort("id")
 
   # Return string representative of agentset.
   toString: -> "[" + (a.toString() for a in @).join(", ") + "]"
@@ -194,28 +191,16 @@ class ABM.BreedSet extends Array
     else
       o[prop] = value for o in @; @
   
-  # Get the agent with the min/max prop value in the agentset
-  #
-  #     min = AS.minProp "y"  # 0
-  #     max = AS.maxProp "y"  # 4
-  maxProp: (prop) -> u.aMax @getProp(prop)
-
-  minProp: (prop) -> u.aMin @getProp(prop)
-
-  histOfProp: (prop, bin = 1) -> u.histOf @, bin, prop
-  
-# ### Array Utilities, often from ABM.util
+  # ### Array Utilities, often from ABM.util
 
   # Randomize the agentset
   #
   #     AS.shuffle(); AS.getProp "id" # [3, 2, 1, 4, 5] 
   shuffle: -> u.shuffle @
 
-  # Sort the agentset by the agent's `id`.
+  # Sort the agentset
   #
-  #     AS.shuffle();  AS.getProp "id"  # [3, 2, 1, 4, 5] 
-  #     AS.sortById(); AS.getProp "id"  # [1, 2, 3, 4, 5]
-  sortById: -> u.sortBy @, "id"
+  sort: (options...) -> u.sort @, options...
 
   # Make a copy of an agentset, return as new agentset.<br>
   # NOTE: does *not* duplicate the objects, simply creates a new agentset
@@ -258,11 +243,11 @@ class ABM.BreedSet extends Array
   # If f is a string, return element with min/max value of that property.
   # If "valueToo" then return an array of the agent and the value.
   # 
-  #     AS.minOneOf("x") # {id: 0, x: 0, y: 1}
-  #     AS.maxOneOf((a) -> a.x + a.y, true) # {id: 2, x: 6, y: 4}, 10
-  minOneOf: (f, valueToo = false) -> u.minOneOf @, f, valueToo
+  #     AS.min("x") # {id: 0, x: 0, y: 1}
+  #     AS.max((a) -> a.x + a.y, true) # {id: 2, x: 6, y: 4}, 10
+  min: (f, valueToo = false) -> u.min @, f, valueToo
 
-  maxOneOf: (f, valueToo = false) -> u.maxOneOf @, f, valueToo
+  max: (f, valueToo = false) -> u.max @, f, valueToo
 
   # ### Drawing
   
@@ -291,33 +276,28 @@ class ABM.BreedSet extends Array
   # Return all agents in agentset within d distance from given object.
   # By default excludes the given object. Uses linear/torus distance
   # depending on patches.isTorus, and patches width/height if needed.
-  inRadius: (o, d, meToo = false) -> # for any objects w/ x, y
-    d2 = d * d
-    x = o.x
-    y= o.y
+  inRadius: (point, distance, meToo = false) -> # for any objects w/ x, y
     if ABM.patches.isTorus
-      w = ABM.patches.numX
-      h = ABM.patches.numY
+      width = ABM.patches.numX
+      height = ABM.patches.numY
       @asSet (a for a in @ when \
-        u.torusSqDistance(x, y, a.x, a.y, w, h) <= d2 and (meToo or a isnt o))
+        u.torusDistance(point, a, width, height) <= distance and (meToo or a isnt point))
     else
       @asSet (a for a in @ when \
-        u.sqDistance(x, y, a.x, a.y) <= d2 and (meToo or a isnt o))
+        u.distance(point, a) <= distance and (meToo or a isnt point))
 
   # As above, but also limited to the angle `cone` around
   # a `heading` from object `o`.
-  inCone: (o, heading, cone, radius, meToo = false) ->
-    rSet = @inRadius o, radius, meToo
-    x = o.x
-    y = o.y
+  inCone: (point, heading, cone, radius, meToo = false) ->
+    rSet = @inRadius point, radius, meToo
     if ABM.patches.isTorus
-      w = ABM.patches.numX
-      h = ABM.patches.numY
+      width = ABM.patches.numX
+      height = ABM.patches.numY
       @asSet (a for a in rSet when \
-        (a is o and meToo) or u.inTorusCone(heading, cone, radius, x, y, a.x, a.y, w, h))
+        (a is point and meToo) or u.inTorusCone(heading, cone, radius, point, a, width, height))
     else
       @asSet (a for a in rSet when \
-        (a is o and meToo) or u.inCone(heading, cone, radius, x, y, a.x, a.y))
+        (a is point and meToo) or u.inCone(heading, cone, radius, point, a))
 
   # ### Debugging
   

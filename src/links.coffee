@@ -28,10 +28,9 @@ class ABM.Links extends ABM.BreedSet
     n.push l.end1, l.end2 for l in @
     n
 
-  # Returns all the nodes in this agentset sorted by ID and with
-  # duplicates removed.
+  # Returns all the nodes in this agentset with duplicates removed.
   nodes: -> # allEnds without dups
-    @allEnds().sortById().uniq()
+    @allEnds().uniq()
   
   # Circle Layout: position the agents in the list in an equally
   # spaced circle of the given radius, with the initial agent

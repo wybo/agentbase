@@ -90,9 +90,9 @@
           nAhead = a.inCone a.patch.neighbors, u.degreesToRadians(180), 2
           # nAhead = a.patch.neighbors.inCone a.p, a.heading, u.degreesToRadians(180), 2
           # nAhead = ABM.patches.inCone a.p, a.heading, u.degreesToRadians(180), 2
-          [p, max] = nAhead.maxOneOf ((n) => @targetPheromone(a, n)), true # => for @
+          [p, max] = nAhead.max ((n) => @targetPheromone(a, n)), true # => for @
           a.face p if max > .001/@maxPheromone
-          # p = nAhead.maxOneOf ((n) => @targetPheromone(a, n)) # => for @
+          # p = nAhead.max ((n) => @targetPheromone(a, n)) # => for @
           # max = @targetPheromone(a, p)
           # a.face p if max > .001/@maxPheromone
         a.rotate u.randomCentered(@wiggleAngle)

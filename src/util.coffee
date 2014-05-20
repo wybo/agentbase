@@ -29,6 +29,8 @@ Array::indexOf or= (object) ->
     return i if x is object
   -1
 
+Array::_sort = Array::sort
+
 # **ABM.util** contains the general utilities for the project. Note that within
 # **util** `@` referrs to ABM.util, *not* the global name space as above.
 # Alias: u is an alias for ABM.util within the agentscript module (not outside)
@@ -302,122 +304,129 @@ ABM.util = u =
       return array[@randomInt array.length]
 
   # True if object is in array.
-  # Binary search for/on property if propertyOrFunction isnt null.
-  contains: (array, object, propertyOrFunction) ->
-    @indexOf(array, object, propertyOrFunction) >= 0
-
-  # Return index of value in array or -1 if not found.
-  # If no property given, use Array.indexOf.
-  # If property given, use binary search.
-  # Property can be string or function.
-  indexOf: (array, object, propertyOrFunction = null)->
-    if propertyOrFunction?
-      @sortedIndex array, object, propertyOrFunction
-    else
-      array.indexOf object
-
-  # Return array index of object, or index for object if array to remain sorted.
-  # f is used to return an integer for sorting, primarily for object properties.
-  # If propertyOrFunction is a string, it is the object property to sort by.
-  # Adapted from underscore's _.sortedIndex.
-  sortedIndex: (array, object, propertyOrFunction = (o) -> o) ->
-    if @isString propertyOrFunction
-      call = @propertyFunction propertyOrFunction
-    else
-      call = propertyOrFunction
-
-    # Why not array.length - 1? Because we can insert 1 after end of array.
-    value = call(object)
-    low = 0
-    high = array.length
-    while low < high
-      mid = (low + high) >>> 1 # floor (low + high) / 2
-      if call(array[mid]) < value
-        low = mid + 1
-      else
-        high = mid
-    low
+  contains: (array, object) ->
+    array.indexOf(object) >= 0
 
   # Remove an object from an array. Binary search if f isnt null.
   # Error if object not in array.
-  remove: (array, object, propertyOrFunction) ->
-    index = @indexOf array, object, propertyOrFunction
+  remove: (array, object) ->
+    index = array.indexOf object
     if index isnt -1
-      array.splice i, 1
+      array.splice index, 1
     else
       @error "remove: object not found" #; array
+    array
 
   # Remove elements in objects from an array. Binary search if f isnt null.
   # Error if an object not in array.
-  removeItems: (array, objects, propertyOrFunction) ->
+  removeItems: (array, objects) ->
     for object in objects
-      @remove array, object, propertyOrFunction
+      @remove array, object
     array
 
-  # Insert an object in a sorted array
-  insert: (array, object, propertyOrFunction) ->
-    index = @sortedIndex array, object, propertyOrFunction
-    if array[index] is object
-      @error "insert: object already in array"
-    array.splice index, 0, object
-    
   # Randomize the elements of this array.
   shuffle: (array) ->
     array.sort -> 0.5 - Math.random()
 
-  # Return o when f(o) min/max in array. Error if array empty.
+  # TODO add array functions to Array extension, then allow it to be
+  # added to array in user models through an ABM.setup() function
+  #
+  # Return object when lambda(object) min/max in array. Error if array empty.
   # If f is a string, return element with max value of that property.
   # If "valueToo" then return a 2-array of the element and the value;
   # used for cases where f is costly function.
   # 
   #     array = [{x: 1, y: 2}, {x: 3, y: 4}]
+  #     array.min()
   #     # returns {x: 1, y: 2} 5
-  #     [min, dist2] = minOneOf array, ((o) -> o.x * o.x + o.y * o.y), true
+  #     [min, dist2] = array.min(((o) -> o.x * o.x + o.y * o.y), true)
   #     # returns {x: 3, y: 4}
-  #     max = maxOneOf array, "x"
-  minOneOf: (array, f = @identity, valueToo = false) ->
-    @error "minOneOf: empty array" if @empty array
-    r = Infinity
-    o = null
-    f = @propertyFunction f if @isString f
-    for a in array
-      (r = r1; o = a) if (r1 = f(a)) < r
-    if valueToo then [o, r] else o
+  min: (array, lambda = @identityFunction, valueToo = false) ->
+    @error "min: empty array" if @empty array
+    if @isString lambda
+      lambda = @propertyFunction lambda
+    minValue = Infinity
+    minObject = null
 
-  maxOneOf: (array, f = @identity, valueToo = false) ->
-    @error "maxOneOf: empty array" if @empty array
-    r = -Infinity
-    o = null
-    if @isString f
-      f = @propertyFunction f
-    for a in array
-      (r = r1; o = a) if (r1 = f(a)) > r
-    if valueToo then [o, r] else o
+    for object in array
+      value = lambda(object)
+      if value < minValue
+        minValue = value
+        minObject = object
 
-  firstOneOf: (array, f) ->
-    return i for a, i in array when f(a)
-    return -1
+    if valueToo
+      [minObject, minValue]
+    else
+      minObject
+
+  max: (array, lambda = @identityFunction, valueToo = false) ->
+    @error "max: empty array" if @empty array
+    if @isString lambda
+      lambda = @propertyFunction lambda
+    maxValue = -Infinity
+    maxObject = null
+
+    for object in array
+      value = lambda(object)
+      if value > maxValue
+        maxValue = value
+        maxObject = object
+
+    if valueToo
+      [maxObject, maxValue]
+    else
+      maxObject
+
+  sum: (array, lambda = @identityFunction) ->
+    if @isString lambda
+      lambda = @propertyFunction lambda
+
+    value = 0
+    for object in array
+      value += lambda(object)
+
+    value
+
+  average: (array, lambda = @identityFunction) ->
+    @sum(array, lambda) / array.length
+
+  median: (array) ->
+    if array.sort?
+      array = @clone array
+    else
+      array = @typedToJS array
+
+    middle = (array.length - 1) / 2
+
+    @sort array
+    (array[Math.floor(middle)] + array[Math.ceil(middle)]) / 2
 
   # Return histogram of o when f(o) is a numeric value in array.
   # Histogram interval is bin. Error if array empty.
   # If f is a string, return histogram of that property.
   #
-  # In examples below, histOf returns [3, 1, 1, 0, 0, 1]
+  # In examples below, histogram returns [3, 1, 1, 0, 0, 1]
   #
   #     a = [1, 3, 4, 1, 1, 10]
-  #     h = histOf a, 2, (i) -> i
+  #     h = histogram a, 2, (i) -> i
   #     
   #     b = ({id:i} for i in a)
-  #     h = histOf b, 2, (o) -> o.id
-  #     h = histOf b, 2, "id"
-  histOf: (array, bin = 1, f = (i) -> i) ->
-    r = []
-    f = @propertyFunction f if @isString f
-    for a in array
-      i = Math.floor f(a)/bin
-      r[i] = if (ri = r[i])? then ri + 1 else 1
-    r[i] = 0 for val, i in r when not val?
-    r
+  #     h = histogram b, 2, (o) -> o.id
+  #     h = histogram b, 2, "id"
+  histogram: (array, binSize = 1, lambda = @identityFunction) ->
+    if @isString lambda
+      lambda = @propertyFunction lambda
+    histogram = []
+
+    for object in array
+      integer = Math.floor lambda(object) / binSize
+      histogram[integer] or= 0
+      histogram[integer] += 1
+
+    for value, integer in histogram when not value?
+      histogram[integer] = 0 
+
+    histogram
 
   # Mutator. Sort array of objects in place by the function f.
   # If f is string, f returns property of object.
@@ -427,17 +436,13 @@ ABM.util = u =
   #     array = [{i: 1}, {i: 5}, {i: -1}, {i: 2}, {i: 2}]
   #     sortBy array, "i"
   #     # array now is [{i: -1}, {i: 1}, {i: 2}, {i: 2}, {i:5}]
-  sortBy: (array, f) ->
-   f = @propertyFunction f if @isString f # use item[f] if f is string
-   array.sort (a, b) -> f(a) - f(b)
+  sort: (array, lambda = null) ->
+    if @isString lambda # use item[f] if f is string
+      lambda = @propertySortFunction lambda
 
-  # Numeric sort, default to ascending. Mutator, see clone above.
-  # Works with TypedArrays too
-  sortNums: (array, ascending = true) ->
-    f = if ascending then (a, b) -> a - b else (a, b) -> b - a
-    if array.sort? then array.sort(f) else Array.prototype.sort.call(array, f)
+    array._sort lambda
 
-  # Mutator. Removes adjacent dups, by reference, in place from sorted array.
+  # Mutator. Removes adjacent dups, by reference, in place from array.
   # Note "by reference" means litteraly same object, not copy. Returns array.
   # Clone first if you want to preserve the original array.
   #
@@ -450,129 +455,103 @@ ABM.util = u =
   #     uniq b
   #     # b now is [{id:1}, {id: 3}, {id: 4}, {id: 10}]
   uniq: (array) ->
-    return array if array.length < 2 # return if empty or singlton
-    array.splice i, 1 for i in [(array.length - 1)..1] by -1 when array[i - 1] is array[i]
+    hash = {}
+
+    for index in [0...array.length]
+      if hash[array[index]] is true
+        array.splice index, 1
+      hash[array[index]] = true
+
     array
   
   # Return a new array composed of the rows of a matrix. I.e. convert
   #
   #     [[1, 2, 3], [4, 5, 6]] to [1, 2, 3, 4, 5, 6]
-  flatten: (matrix) -> matrix.reduce((a, b) -> a.concat b)
+  flatten: (array) ->
+    array.reduce((arrayA, arrayB) ->
+      if not u.isArray arrayA
+        arrayA = [arrayA]
+      arrayA.concat arrayB)
   
-  # Return array of property values of given array of objects
-  aProp: (array, prop) -> (a[prop] for a in array)
-
-  # Return hybred array with object named properties. Good for returning multiple
-  # values from a function, and destructured assignment.
-  #
-  #     a = aToObj [1, 2, 3, 4], ["one", "two", "three", "four"]
-  #     a = [1, 2, 3, 4], a.one = 1, .. a.four = 4
-  aToObj: (array, names) -> array[n] = array[i] for n, i in names; array
-
-  # Return scalar max/min/sum/avg of numeric array
-  # Iterate rather than reduce: work with typed arrays
-  aMax: (array) ->
-    v = array[0]
-    v = Math.max v, a for a in array
-    v
-
-  aMin: (array) ->
-    v = array[0]
-    v = Math.min v, a for a in array
-    v
-
-  aSum: (array) ->
-    v = 0
-    v += a for a in array
-    v
-
-  aAvg: (array) -> @aSum(array) / array.length
-
-  aMid: (array) ->
-    array = if array.sort? then @clone array else @typedToJS array
-    @sortNums array
-    array[Math.floor(array.length / 2)]
-
-  aNaNs: (array) -> (i for v, i in array when isNaN v)
-  
-  # Return array composed of f pairwise on both arrays
-  aPairwise: (a1, a2, f) ->
-    v = 0
-    f(v,a2[i]) for v, i in a1
-  aPairSum: (a1, a2) -> @aPairwise a1, a2, (a, b) -> a + b
-
-  aPairDif: (a1, a2) -> @aPairwise a1, a2, (a, b) -> a - b
-
-  aPairMul: (a1, a2) -> @aPairwise a1, a2, (a, b) -> a * b
-
-  # Return a JS array given a TypedArray.
-  # To create TypedArray from JS array: new Uint8Array(jsa) etc
-  typedToJS: (typedArray) -> (i for i in typedArray)
-  
-  # Return a linear interpolation between lo and hi.
-  # Scale is in [0 - 1], and the result is in [lo, hi]
-  # [Why the name `lerp`?](http://goo.gl/QrzMc)
-  lerp: (lo, hi, scale) -> lo + (hi - lo) * scale # @clamp(scale, 0, 1)
-
-  # Return point interpolated between two points.
-  lerp2: (x0, y0, x1, y1, scale) -> [@lerp(x0, x1, scale), @lerp(y0, y1, scale)]
-
-  # Return an array with values in [lo, hi], defaults to [0, 1].
-  # Note: to have a half-open interval, [lo, hi), try hi = hi-.00009
-  normalize: (array, lo = 0, hi = 1) ->
-    min = @aMin array
-    max = @aMax array
+  # Return an array with values in [low, high], defaults to [0, 1].
+  # Note: to have a half-open interval, [low, high), try high = high - .00009
+  normalize: (array, low = 0, high = 1) ->
+    min = @min array
+    max = @max array
     scale = 1 / (max - min)
-    (@lerp(lo, hi, scale * (num - min)) for num in array)
+    newArray = []
+    for number in array
+      newArray.push @linearInterpolate(low, high, scale * (number - min))
+    newArray
+
+  normalizeInt: (array, low, high) ->
+    (Math.round i for i in @normalize array, low, high)
 
   # Return a Uint8ClampedArray, normalized to [.5, 255.5] then round/clamp to [0, 255]
-  normalize8: (array) -> new Uint8ClampedArray @normalize(array, -.5, 255.5)
+  # TODO maybe data-specific?
+  normalize8: (array) ->
+    new Uint8ClampedArray @normalize(array, -.5, 255.5)
 
-  normalizeInt: (array, lo, hi) -> (Math.round i for i in @normalize array, lo, hi) # clamp?
+  # ### Misc / helpers TODO move around
+  
+  # Return a linear interpolation between low and high.
+  # Scale is in [0 - 1], and the result is in [low, high]
+  linearInterpolate: (low, high, scale) ->
+    low + (high - low) * scale
 
   # Return argument unchanged; for primitive arrays or objs sorted by reference
-  identity: (o) -> o
+  identityFunction: (object) ->
+    object
 
   # Return a function that returns an object's property.  Property in fcn closure.
   propertyFunction: (property) ->
     (object) -> object[property]
 
-# ### Topology Operations
+  # Return a function that returns an object's property.  Property in fcn closure.
+  propertySortFunction: (property) ->
+    (objectA, objectB) ->
+      if objectA[property] < objectB[property]
+        -1
+      else if objectA[property] > objectB[property]
+        1
+      else
+        0
+
+  # Return a JS array given a TypedArray.
+  # To create TypedArray from JS array: new Uint8Array(jsa) etc
+  typedToJS: (typedArray) ->
+    (i for i in typedArray)
+
+  # ### Topology Operations
   
-  # Return angle in [-pi, pi] radians from x1, y1 to x2, y2
+  # Return angle in [-pi, pi] radians from point1 to point2
   # [See: Math.atan2](http://goo.gl/JS8DF)
-  radsToward: (x1, y1, x2, y2) -> Math.atan2 y2 - y1, x2 - x1
+  radiansToward: (point1, point2) ->
+    Math.atan2 point2.y - point1.y, point2.x - point1.x
 
-  # Return true if x2, y2 is in cone radians around heading radians from x1, x2
-  # and within distance radius from x1, x2.
-  # I.e. is p2 in cone/heading/radius from p1?
-  inCone: (heading, cone, radius, x1, y1, x2, y2) ->
-    if radius < @distance x1, y1, x2, y2 then return false
-    angle12 = @radsToward x1, y1, x2, y2 # angle from 1 to 2
-    cone / 2 >= Math.abs @subtractRads(heading, angle12)
+  # Return true if point2 is in cone radians around heading radians from 
+  # point1.x, point2.x and within distance radius from point1.x,
+  # point2.x.
+  # I.e. is point2 in cone/heading/radius from point1?
+  inCone: (heading, cone, radius, point1, point2) ->
+    if radius < @distance point1, point2
+      return false
 
-  # Return the Euclidean distance and distance squared between x1, y1, x2, y2.
-  # The squared distance is used for comparisons to avoid the Math.sqrt fcn.
-  distance: (x1, y1, x2, y2) ->
-    dx = x1 - x2
-    dy = y1 - y2
-    Math.sqrt dx * dx + dy * dy
+    angle = @radiansToward point1, point2 # angle from 1 to 2
+    cone / 2 >= Math.abs @substractRadians(heading, angle)
 
-  sqDistance: (x1, y1, x2, y2) ->
-    dx = x1 - x2
-    dy = y1 - y2
-    dx * dx + dy * dy
+  # Return the Euclidean distance between point1 and 2
+  distance: (point1, point2) ->
+    distanceX = point1.x - point2.x
+    distanceY = point1.y - point2.y
+    Math.sqrt distanceX * distanceX + distanceY * distanceY
   
-  # Convert polar r, theta to cartesian x, y.
-  # Default to 0, 0 origin, optional x, y origin.
-  polarToXY: (r, theta, x = 0, y = 0) ->
-    [x + r * Math.cos(theta), y + r * Math.sin(theta)]
-
-  # Return the [torus distance](http://goo.gl/PgJ5N) and distance squared
-  # between two points A(x1, y1) and B(x2, y2):
+  # Return the [torus distance](http://goo.gl/PgJ5N) between two points 
+  # point1 (A) and point2 (B):
   #
-  #     dx = |x2 - x1|; dy = |y2 - y1|
-  #     d=sqrt(min(dx, W - dx)^2 + min(dy, H - dy)^2)
+  #     dx = |point2.x - point1.x|
+  #     dy = |point2.y - point1.y|
+  #     d = sqrt(min(dx, W - dx)^2 + min(dy, H - dy)^2)
   #
   # Torus note: ABMs often use a Torus topology where the right and left edges
   # fold to meet, and similarly for the top/bottom.
@@ -592,96 +571,123 @@ ABM.util = u =
   #     -----+---------------+-----
   #      B3  |           B2  |
   #          |               |
-  torusDistance: (x1, y1, x2, y2, w, h) ->
-    Math.sqrt @torusSqDistance x1, y1, x2, y2, w, h
+  torusDistance: (point1, point2, width, height) ->
+    xDistance = Math.abs point2.x - point1.x
+    yDistance = Math.abs point2.y - point1.y
+    minX = Math.min xDistance, width - xDistance
+    minY = Math.min yDistance, height - yDistance
+    Math.sqrt minX * minX + minY * minY
 
-  torusSqDistance: (x1, y1, x2, y2, w, h) ->
-    dx = Math.abs x2-x1
-    dy = Math.abs y2-y1
-    dxMin = Math.min dx, w - dx
-    dyMin = Math.min dy, h - dy
-    dxMin*dxMin + dyMin * dyMin
+  # Return 4 torus point reflections of point2 around point1
+  torus4Points: (point1, point2, width, height) ->
+    [xReflected, yReflected] = @torusReflect(point1, point2, width, height)
 
-  # Return true if closest path between x1, y1 & x2, y2 wraps around the torus.
-  torusWraps: (x1, y1, x2, y2, w, h) ->
-    dx = Math.abs x2 - x1
-    dy = Math.abs y2 - y1
-    dx > w - dx or dy > h - dy
+    [point2, {x: xReflected, y: point2.y},
+      {x: point2.x, y: yReflected}, {x: xReflected, y: yReflected}]
 
-  # Return 4 torus point reflections of x2, y2 around x1, y1
-  torus4Pts: (x1, y1, x2, y2, w, h) ->
-    x2r = if x2 < x1 then x2 + w else x2 - w
-    y2r = if y2 < y1 then y2 + h else y2 - h
-    [[x2, y2], [x2r, y2], [x2, y2r], [x2r, y2r]]
+  # Return closest of 4 torus points from point1 to 2
+  closestTorusPoint: (point1, point2, width, height) ->
+    [xReflected, yReflected] = @torusReflect(point1, point2, width, height)
 
-  # Return closest of 4 torus pts from A to B
-  torusPt: (x1, y1, x2, y2, w, h) ->
-    x2r = if x2 < x1 then x2 + w else x2 - w
-    y2r = if y2 < y1 then y2 + h else y2 - h
-    x = if Math.abs(x2r - x1) < Math.abs(x2 - x1) then x2r else x2
-    y = if Math.abs(y2r - y1) < Math.abs(y2 - y1) then y2r else y2
-    [x, y]
+    if Math.abs(xReflected - point1.x) < Math.abs(point2.x - point1.x)
+      x = xReflected
+    else
+      x = point2.x
+
+    if Math.abs(yReflected - point1.y) < Math.abs(point2.y - point1.y)
+      y = yReflected
+    else
+      y = point2.y
+
+    {x: x, y: y}
+
+  # Used in torus4Points
+  torusReflect: (point1, point2, width, height) ->
+    if point2.x < point1.x
+      xReflected = point2.x + width
+    else
+      xReflected = point2.x - width
+
+    if point2.y < point1.y
+      yReflected = point2.y + height
+    else
+      yReflected = point2.y - height
+
+    [xReflected, yReflected]
 
   # Return the angle from x1, y1 to x2, y2 on torus using shortest reflection.
-  torusRadsToward: (x1, y1, x2, y2, w, h) ->
-    [x2, y2] = @torusPt x1, y1, x2, y2, w, h
-    @radsToward x1, y1, x2, y2
+  torusRadiansToward: (point1, point2, width, height) ->
+    closest = @closestTorusPoint point1, point2, width, height
+    @radiansToward point1, closest
 
-  # Return true if x2, y2 is in cone radians around heading radians from x1, x2
-  # and within distance radius from x1,x2 considering all torus reflections.
-  inTorusCone: (heading, cone, radius, x1, y1, x2, y2, w, h) ->
-    for p in @torus4Pts x1, y1, x2, y2, w, h
-      return true if @inCone heading, cone, radius, x1, y1, p[0], p[1]
+  # Return true if point2 is in cone radians around heading radians from 
+  # point1.x, point2.x and within distance radius from point1.x, point2.x
+  # considering all torus reflections.
+  inTorusCone: (heading, cone, radius, point1, point2, width, height) ->
+    for point in @torus4Points point1, point2, width, height
+      return true if @inCone heading, cone, radius, point1, point
     false
 
-# ### File I/O
+  # ### File I/O
 
   # Cache of file names used by file imports below
   fileIndex: {}
 
-  # Import an image, executing (async) optional function f(img) on completion
-  importImage: (name, f = ->) ->
-    if (img=@fileIndex[name])? # wtf? or ((img=name).width and img.height)
-      f(img) #if img.isDone
+  # Import an image, executing (async) optional function call(img) on completion
+  importImage: (name, call = ->) ->
+    image = @fileIndex[name]
+    if image?
+      if image.isDone
+        call(image)
     else
-      @fileIndex[name] = img = new Image()
-      img.isDone = false
-      img.crossOrigin = "Anonymous"
-      img.onload = -> f(img)
-      img.isDone = true
-      img.src = name
-    img
+      image = new Image()
+      image.isDone = false
+      image.crossOrigin = "Anonymous"
+      image.onload = ->
+        call(image)
+        image.isDone = true
+      image.src = name
+      @fileIndex[name] = image
+    image
     
   # Use XMLHttpRequest to fetch data of several types. Data Types: text,
   # arraybuffer, blob, json, document, [See specification](http://goo.gl/y3r3h).
   # method is "GET" or "POST". f is function to call onload, default to no-op.
-  xhrLoadFile: (name, method = "GET", type = "text", f = ->) -> # AJAX async request
-    if (xhr = @fileIndex[name])?
-      f(xhr.response)
+  xhrLoadFile: (name, method = "GET", type = "text", call = ->) -> # AJAX async request
+    xhr = @fileIndex[name]
+    if xhr?
+      if xhr.isDone
+        call(xhr.response)
     else
-      @fileIndex[name] = xhr = new XMLHttpRequest()
+      xhr = new XMLHttpRequest()
       xhr.isDone = false
       xhr.open method, name # POST mainly for security and large files
       xhr.responseType = type
-      xhr.onload = -> 
-        f(xhr.response)
+      xhr.onload = ->
+        call(xhr.response)
         xhr.isDone = true
+      @fileIndex[name] = xhr
       xhr.send()
     xhr
   
   # Return true if all files are loaded.
   filesLoaded: (files = @fileIndex) ->
-    array = (v.isDone for v in (@ownValues files))
-    array.reduce ((a, b) -> a and b), true
+    array = (object.isDone for object in (@ownValues files))
+    array.reduce ((valueA, valueB) -> valueA and valueB), true
 
-  # Wait for files to be loaded before executing callback f
-  waitOnFiles: (f, files = @fileIndex) -> @waitOn (=> @filesLoaded files), f
+  # Wait for files to be loaded before executing callback call
+  waitOnFiles: (call, files = @fileIndex) ->
+    @waitOn (=> @filesLoaded files), call
 
   # Wait for function done() to return true before calling callback f
-  waitOn: (done, f) ->
-    if done() then f() else setTimeout (=> @waitOn(done, f)), 1000
+  waitOn: (done, call) ->
+    if done()
+      call()
+    else
+      setTimeout (=> @waitOn(done, call)), 1000
 
-# ### Image Data Operations
+  # ### Image Data Operations
+
   # Make a copy of an image.
   # Note: new image will have the naturalWidth/Height of input img.
   # Should be sync
@@ -716,7 +722,7 @@ ABM.util = u =
       val
   pixelByte: (n) -> (id, i)->id[i + n]
 
-# ### Canvas/Context Operations
+  # ### Canvas/Context Operations
 
   # Create a new canvas of given width/height
   createCanvas: (width, height) ->

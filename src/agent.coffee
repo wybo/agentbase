@@ -129,63 +129,32 @@ class ABM.Agent
   # Draw the agent on the drawing layer, leaving permanent image.
   stamp: -> @draw ABM.drawing
   
-  # Return distance in patch coords from me to x, y
+  # Return distance in patch coords from me to given agent/patch
   # using patch topology (isTorus)
-  distanceXY: (x, y) ->
+  distance: (point) -> # o any object w/ x, y, patch or agent
     if ABM.patches.isTorus
-      u.torusDistance @x, @y, x, y, ABM.patches.numX, ABM.patches.numY
+      u.torusDistance @, point, ABM.patches.numX, ABM.patches.numY
     else
-      u.distance @x, @y, x, y
+      u.distance @, point
   
-  # Return distance in patch coords from me to given agent/patch using patch topology.
-  distance: (o) -> # o any object w/ x, y, patch or agent
-    @distanceXY o.x, o.y
-  
-  # Return the closest torus topology point of given x, y relative to myself.
-  # Used internally to determine how to draw links between two agents.
-  # See util.torusPt.
-  torusPtXY: (x, y) ->
-    u.torusPt @x, @y, x, y, ABM.patches.numX, ABM.patches.numY
-
   # Return the closest torus topology point of given agent/patch 
-  # relative to myself. See util.torusPt.
-  torusPt: (o) ->
-    @torusPtXY o.x, o.y
+  # relative to myself. 
+  # Used internally to determine how to draw links between two agents.
+  # See util.torusPoint.
+  closestTorusPoint: (point) ->
+    u.closestTorusPoint @, point, ABM.patches.numX, ABM.patches.numY
 
   # Set my heading towards given agent/patch using patch topology.
   face: (o) -> @heading = @towards o
 
-  # Return heading towards x,y using patch topology.
-  towardsXY: (x, y) ->
-    if (ABM.patches).isTorus
-      u.torusRadsToward @x, @y, x, y, ABM.patches.numX, ABM.patches.numY
-    else
-      u.radsToward @x, @y, x, y
-
   # Return heading towards given agent/patch using patch topology.
-  towards: (o) -> @towardsXY o.x, o.y
-  
-  # Return patch ahead of me by given distance and heading.
-  # Returns null if non-torus and off patch world
-  patchAtHeadingAndDistance: (h, d) ->
-    [x, y] = u.polarToXY d, h, @x, @y; patchAt x, y
-
-  patchLeftAndAhead: (dh, d) -> @patchAtHeadingAndDistance @heading + dh, d
-
-  patchRightAndAhead: (dh, d) -> @patchAtHeadingAndDistance @heading - dh, d
-
-  patchAhead: (d) -> @patchAtHeadingAndDistance @heading, d
-
-  canMove: (d) -> @patchAhead(d)?
-
-  patchAt: (dx, dy) ->
-    x = @x + dx
-    y = @y + dy
-    if ABM.patches.isOnWorld x, y
-      ABM.patches.patch x, y
+  towards: (point) ->
+    if ABM.patches.isTorus
+      u.torusRadiansToward @, point, ABM.patches.numX, ABM.patches.numY
     else
-      null
-
+      u.radiansToward @, point
+  
+  # Returns the neighbours (agents) of this agent
   neighbors: (options...) ->
     array = @breed.asSet []
     if @patch
@@ -194,8 +163,8 @@ class ABM.Agent
           array.push agent
     array
   
-  # Remove myself from the model.  Includes removing myself from the agents
-  # agentset and removing any links I may have.
+  # Remove myself from the model. Includes removing myself from the
+  # agents agentset and removing any links I may have.
   die: ->
     @breed.remove @
     for l in @myLinks()
@@ -215,8 +184,8 @@ class ABM.Agent
 
   # Return the members of the given agentset that are within radius distance 
   # from me, and within cone radians of my heading using patch topology
-  inCone: (aset, cone, radius, meToo = false) ->
-    aset.inCone @patch, @heading, cone, radius, meToo # REMIND: @patch vs @?
+  inCone: (agentSet, cone, radius, meToo = false) ->
+    agentSet.inCone @patch, @heading, cone, radius, meToo # REMIND: @patch vs @?
   
   # Return other end of link from me
   otherEnd: (l) -> if l.end1 is @ then l.end2 else l.end1

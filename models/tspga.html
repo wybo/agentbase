@@ -84,10 +84,10 @@
         len += nodeList[i].distance(nodeList[i-1]) for i in [1...nodeList.length]
         len
       installBestTour: ->
-        # @travelers().maxOneOf("tourLength").die() while @travelers().length>@travelersCount
-        # a = @travelers().minOneOf("tourLength")
-        @travelers.maxOneOf("tourLength").die() while @travelers.length>@travelersCount
-        a = @travelers.minOneOf("tourLength")
+        # @travelers().max("tourLength").die() while @travelers().length>@travelersCount
+        # a = @travelers().min("tourLength")
+        @travelers.max("tourLength").die() while @travelers.length>@travelersCount
+        a = @travelers.min("tourLength")
         if a.tourLength < @bestTourLength
           @reportNewTour a
           @bestTourLength = a.tourLength

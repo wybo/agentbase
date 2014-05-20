@@ -12,7 +12,7 @@
         
         # globals
         @circleLayout = true
-        @hist = []
+        @histogram = []
         @stopTick = 400
         
         # defaults
@@ -25,8 +25,8 @@
         @makeNode @findPartner()
         a.size = Math.sqrt a.linkNeighbors().length for a in @agents
         @links.layoutCircle @agents, @patches.maxX * 0.9
-        @hist = u.histOf @agents, 1, (a) -> a.linkNeighbors().length
-        console.log "Tick: #{@animator.ticks} Histogram: [#{@hist}]" if @animator.ticks % 25 is 0
+        @histogram = u.histogram @agents, 1, (a) -> a.linkNeighbors().length
+        console.log "Tick: #{@animator.ticks} Histogram: [#{@histogram}]" if @animator.ticks % 25 is 0
         (console.log "Stopping at stopTick: #{@animator.ticks}"; @stop()) if @animator.ticks is @stopTick
 
       makeNode: (toNode) ->
