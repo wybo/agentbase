@@ -253,10 +253,10 @@ class ABM.BreedSet extends Array
   
   # For agentsets whose agents have a `draw` method.
   # Clears the graphics context (transparent), then
-  # calls each agent's draw(ctx) method.
-  draw: (ctx) ->
-    u.clearCtx(ctx)
-    o.draw(ctx) for o in @ when not o.hidden
+  # calls each agent's draw(context) method.
+  draw: (context) ->
+    u.clearContext(context)
+    o.draw(context) for o in @ when not o.hidden
     null
   
   # Show/Hide all of an agentset or breed.

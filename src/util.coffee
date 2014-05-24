@@ -35,10 +35,12 @@ Array::_sort = Array::sort
 # **util** `@` referrs to ABM.util, *not* the global name space as above.
 # Alias: u is an alias for ABM.util within the agentscript module (not outside)
 #
-#      u.clearCtx(ctx) is equivalent to
-#      ABM.util.clearCtx(ctx)
+#      u.clearContext(context) is equivalent to
+#      ABM.util.clearContext(context)
 
 ABM.util = u =
+  # ### Language extensions
+  
   # Shortcut for throwing an error.  Good for debugging:
   #
   #     error("wtf? foo=#{foo}") if fooProblem
@@ -71,7 +73,7 @@ ABM.util = u =
   isNumber: (object) ->
     !!(typeof object is "number")
   
-  # ### Numeric Operations
+  # ### Numeric operations
 
   # Replace Math.random with a simple seedable generator.
   # See [StackOverflow](http://goo.gl/FafN3z)
@@ -136,15 +138,7 @@ ABM.util = u =
     else
       1
 
-  # Return an array of floating pt numbers as strings at given precision;
-  # useful for printing
-  aToFixed: (array, precision = 2) ->
-    newArray = []
-    for number in array
-      newArray.push number.toFixed precision
-    newArray
-
-  # ### Color and Angle Operations
+  # ### Color and angle operations
 
   # Basic colors from string # TODO make better, so accepts arrays
   colorFromString: (colorName) ->
@@ -231,7 +225,7 @@ ABM.util = u =
       angle -= 2 * PI
     angle
   
-  # ### Object Operations
+  # ### Object operations
   
   # Return object's own key or variable values
   ownKeys: (object) ->
@@ -243,8 +237,18 @@ ABM.util = u =
   ownValues: (object) ->
     (value for own key, value of object)
 
-  # ### Array Operations
+  # ### Array operations
   
+  # TODO allow user to add these to the Array object
+
+  # Return an array of floating pt numbers as strings at given precision;
+  # useful for printing
+  toFixed: (array, precision = 2) ->
+    newArray = []
+    for number in array
+      newArray.push number.toFixed precision
+    newArray
+
   # Does the array have any elements? Is the array empty?
   any: (array) ->
     not u.empty(array)
@@ -492,37 +496,7 @@ ABM.util = u =
   normalize8: (array) ->
     new Uint8ClampedArray @normalize(array, -.5, 255.5)
 
-  # ### Misc / helpers TODO move around
-  
-  # Return a linear interpolation between low and high.
-  # Scale is in [0 - 1], and the result is in [low, high]
-  linearInterpolate: (low, high, scale) ->
-    low + (high - low) * scale
-
-  # Return argument unchanged; for primitive arrays or objs sorted by reference
-  identityFunction: (object) ->
-    object
-
-  # Return a function that returns an object's property.  Property in fcn closure.
-  propertyFunction: (property) ->
-    (object) -> object[property]
-
-  # Return a function that returns an object's property.  Property in fcn closure.
-  propertySortFunction: (property) ->
-    (objectA, objectB) ->
-      if objectA[property] < objectB[property]
-        -1
-      else if objectA[property] > objectB[property]
-        1
-      else
-        0
-
-  # Return a JS array given a TypedArray.
-  # To create TypedArray from JS array: new Uint8Array(jsa) etc
-  typedToJS: (typedArray) ->
-    (i for i in typedArray)
-
-  # ### Topology Operations
+  # ### Topology operations
   
   # Return angle in [-pi, pi] radians from point1 to point2
   # [See: Math.atan2](http://goo.gl/JS8DF)
@@ -633,7 +607,7 @@ ABM.util = u =
   # Cache of file names used by file imports below
   fileIndex: {}
 
-  # Import an image, executing (async) optional function call(img) on completion
+  # Import an image, executing (async) optional function call(image) on completion
   importImage: (name, call = ->) ->
     image = @fileIndex[name]
     if image?
@@ -684,120 +658,128 @@ ABM.util = u =
     if done()
       call()
     else
-      setTimeout (=> @waitOn(done, call)), 1000
+      setTimeout((=> @waitOn(done, call)), 1000)
 
-  # ### Image Data Operations
+  # ### Image data operations
 
   # Make a copy of an image.
-  # Note: new image will have the naturalWidth/Height of input img.
+  # Note: new image will have the naturalWidth/Height of input image.
   # Should be sync
-  cloneImage: (img) -> (i = new Image()).src = img.src; i
+  cloneImage: (image) ->
+    newImage = new Image()
+    newImage.src = image.src
+    newImage
 
   # Create a data array from an image's imageData
-  # img may be a canvas.
-  # The function f = f(imageData, rgbIndex) -> number
-  imageToData: (img, f = @pixelByte(0), arrayType = Uint8ClampedArray) ->
-    @imageRowsToData img, img.height, f, arrayType
+  # image may be a canvas.
+  # The function call = call(imageData, rgbIndex) -> number
+  imageToData: (image, call = @pixelByte(0), arrayType = Uint8ClampedArray) ->
+    @imageRowsToData image, image.height, call, arrayType
 
-  imageRowsToData: (img, rowsPerSlice, f = @pixelByte(0),
+  imageRowsToData: (image, rowsPerSlice, call = @pixelByte(0),
       arrayType = Uint8ClampedArray) ->
-    rowsDone = 0; data = new arrayType img.width * img.height
-    while rowsDone < img.height
-      rows = Math.min img.height - rowsDone, rowsPerSlice
-      ctx = @imageSliceToCtx img, 0, rowsDone, img.width, rows # REMIND: pass ctx
-      idata = @ctxToImageData(ctx).data
-      dataStart = rowsDone * img.width
-      data[dataStart+i] = f(idata, 4 * i) for i in [0...idata.length / 4] by 1
+    rowsDone = 0
+    data = new arrayType image.width * image.height
+
+    while rowsDone < image.height
+      rows = Math.min image.height - rowsDone, rowsPerSlice
+      context = @imageSliceToContext image, 0, rowsDone, image.width, rows # REMIND: pass context
+      idata = @contextToImageData(context).data
+      dataStart = rowsDone * image.width
+      data[dataStart + i] = call(idata, 4 * i) for i in [0...idata.length / 4] by 1
       rowsDone += rows
+
     data
 
-  # Two utilities for Image data extraction.
-  # They return a fcn in a closure which "sees" the args and variables
-  pixelBytesToInt: (a) ->
-    ImageByteFmts = [[2], [1, 2], [0, 1, 2], [3, 0, 1, 2]]
-    a = ImageByteFmts[a - 1] if a.isNumber()
-    (id,i) ->
-      val = 0
-      val = val * 256 + id[i + j] for j in a
-      val
-  pixelByte: (n) -> (id, i)->id[i + n]
+  imageSliceToContext: (image, sx, sy, sw, sh, context) ->
+    if context?
+      context.canvas.width = sw
+      context.canvas.height = sh
+    else
+      context = @createContext sw, sh
+    context.drawImage image, sx, sy, sw, sh, 0, 0, sw, sh
+    context
 
-  # ### Canvas/Context Operations
+  pixelByte: (n) ->
+    (byte, i) -> byte[i + n]
+
+  # ### Canvas/Context operations
 
   # Create a new canvas of given width/height
   createCanvas: (width, height) ->
-    can = document.createElement 'canvas'
-    can.width = width
-    can.height = height
-    can
+    canvas = document.createElement 'canvas'
+    canvas.width = width
+    canvas.height = height
+    canvas
 
   # As above, but returing the context object.
-  # Note ctx.canvas is the canvas for the ctx, and can be use as an image.
-  createCtx: (width, height, ctxType = "2d") ->
-    can = @createCanvas width, height
-    if ctxType is "2d"
-    then can.getContext "2d"
-    else can.getContext("webgl") ? can.getContext("experimental-webgl")
+  # Note context.canvas is the canvas for the context, and can be use as an image.
+  createContext: (width, height, contextType = "2d") ->
+    canvas = @createCanvas width, height
+    if contextType is "2d"
+      canvas.getContext "2d"
+    else
+      canvas.getContext("webgl") ? canvas.getContext("experimental-webgl")
 
   # Return a "layer" 2D/3D rendering context within the specified HTML `<div>`,
   # with the given width/height positioned absolutely at top/left within the div,
   # and with the z-index of z.
   #
   # The z level gives us the capability of buildng a "stack" of coordinated canvases.
-  createLayer: (div, width, height, z, ctx = "2d") -> # a canvas ctx object
-    if ctx is "img"
-      element = ctx = new Image()
-      ctx.width = width
-      ctx.height = height
+  createLayer: (div, width, height, z, context = "2d") -> # a canvas context object
+    if context is "img"
+      element = context = new Image()
+      context.width = width
+      context.height = height
     else
-      element = (ctx = @createCtx(width, height, ctx)).canvas
+      element = (context = @createContext(width, height, context)).canvas
     @insertLayer div, element, width, height, z
-    ctx
+    context
   insertLayer: (div, element, w, h, z) ->
     element.setAttribute 'style', # Note: this erases existing style, el.style.position doesnt
     "position:absolute;top:0;left:0;width:#{w};height:#{h};z-index:#{z}"
     div.appendChild(element)
 
-  setCtxSmoothing: (ctx, smoothing) ->
-    ctx.imageSmoothingEnabled = smoothing
-    ctx.mozImageSmoothingEnabled = smoothing
-    ctx.oImageSmoothingEnabled = smoothing
-    ctx.webkitImageSmoothingEnabled = smoothing
+  setContextSmoothing: (context, smoothing) ->
+    context.imageSmoothingEnabled = smoothing
+    context.mozImageSmoothingEnabled = smoothing
+    context.oImageSmoothingEnabled = smoothing
+    context.webkitImageSmoothingEnabled = smoothing
 
-  # Install identity transform.  Call ctx.restore() to revert to previous transform
-  setIdentity: (ctx) ->
-    ctx.save() # revert to native 2D transform
-    ctx.setTransform 1, 0, 0, 1, 0, 0
+  # Install identity transform.  Call context.restore() to revert to previous transform
+  setIdentity: (context) ->
+    context.save() # revert to native 2D transform
+    context.setTransform 1, 0, 0, 1, 0, 0
   
   # Clear the 2D/3D layer to be transparent. Note this [discussion](http://goo.gl/qekXS).
-  clearCtx: (ctx) ->
-    if ctx.save? # test for 2D ctx
-      @setIdentity ctx # ctx.canvas.width = ctx.canvas.width not used so as to preserve patch coords
-      ctx.clearRect 0, 0, ctx.canvas.width, ctx.canvas.height
-      ctx.restore()
+  clearContext: (context) ->
+    if context.save? # test for 2D context
+      @setIdentity context # context.canvas.width = context.canvas.width not used so as to preserve patch coords
+      context.clearRect 0, 0, context.canvas.width, context.canvas.height
+      context.restore()
     else # 3D
-      ctx.clearColor 0, 0, 0, 0 # transparent!
-      ctx.clear ctx.COLOR_BUFFER_BIT | ctx.DEPTH_BUFFER_BIT
+      context.clearColor 0, 0, 0, 0 # transparent!
+      context.clear context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT
 
   # Fill the 2D/3D layer with the given color
-  fillCtx: (ctx, color) ->
-    if ctx.fillStyle? # test for 2D ctx
-      @setIdentity ctx
-      ctx.fillStyle = @colorString color
-      ctx.fillRect 0, 0, ctx.canvas.width, ctx.canvas.height
-      ctx.restore()
+  fillContext: (context, color) ->
+    if context.fillStyle? # test for 2D context
+      @setIdentity context
+      context.fillStyle = @colorString color
+      context.fillRect 0, 0, context.canvas.width, context.canvas.height
+      context.restore()
     else # 3D
-      ctx.clearColor color..., 1 # alpha = 1 unless color is rgba
-      ctx.clear ctx.COLOR_BUFFER_BIT | ctx.DEPTH_BUFFER_BIT
+      context.clearColor color..., 1 # alpha = 1 unless color is rgba
+      context.clear context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT
 
-  # Draw string of the given color at the xy location, in ctx pixel coords.
+  # Draw string of the given color at the xy location, in context pixel coords.
   # Use setIdentity .. reset if a transform is being used by caller.
-  ctxDrawText: (ctx, string, x, y, color = [0, 0, 0], setIdentity = true) ->
-    @setIdentity(ctx) if setIdentity
-    ctx.fillStyle = @colorString color
-    ctx.fillText(string, x, y)
+  contextDrawText: (context, string, x, y, color = [0, 0, 0], setIdentity = true) ->
+    @setIdentity(context) if setIdentity
+    context.fillStyle = @colorString color
+    context.fillText(string, x, y)
     if setIdentity
-      ctx.restore()
+      context.restore()
   # Set the element text align and baseline drawing parameters
   #
   # * font is a HTML/CSS string like: "9px sans-serif"
@@ -805,97 +787,81 @@ ABM.util = u =
   # * baseline is top hanging middle alphabetic ideographic bottom
   #
   # See [reference](http://goo.gl/AvEAq) for details.
-  ctxTextParams: (ctx, font, align = "center", baseline = "middle") ->
-    ctx.font = font
-    ctx.textAlign = align
-    ctx.textBaseline = baseline
+  contextTextParams: (context, font, align = "center", baseline = "middle") ->
+    context.font = font
+    context.textAlign = align
+    context.textBaseline = baseline
 
-  elementTextParams: (e, font, align = "center", baseline = "middle") ->
-    e = e.canvas if e.canvas?
-    e.style.font = font
-    e.style.textAlign = align
-    e.style.textBaseline = baseline
-
-  # Convert an image to a context. ctx.canvas gives the created canvas.
-  # If w, h provided, scale to that size. img may be a canvas
-  # Note: to convert a ctx to an "image" (drawImage) use ctx.canvas
-  imageToCtx: (img, w, h) ->
-    if w? and h?
-      ctx = @createCtx w, h
-      ctx.drawImage img, 0, 0, w, h
-    else
-      ctx = @createCtx img.width, img.height
-      ctx.drawImage img, 0, 0
-    ctx
-
-  imageSliceToCtx: (img, sx, sy, sw, sh, ctx) ->
-    if ctx?
-      ctx.canvas.width = sw
-      ctx.canvas.height = sh
-    else
-      ctx = @createCtx sw, sh
-    ctx.drawImage img, sx, sy, sw, sh, 0, 0, sw, sh
-    ctx
-
-  imageToCtxDownStepped: (img, tw, th) -> # http://goo.gl/UnLJSZ
-    ctx1 = u.createCtx tw, th
-    w = img.width
-    h = img.height
-    ihalf = (n) -> Math.ceil n / 2
-    steps = Math.ceil(u.log2(if (w / tw) > (h / th) then (w / tw) else (h / th)))
-    console.log "steps", steps
-    if steps <= 1
-      ctx1.drawImage img, 0, 0, tw, th
-    else
-      console.log "img w/h", w, h, "->", ihalf(w), ihalf(h)
-      ctx = u.createCtx w = ihalf(w), h = ihalf(h)
-      can = ctx.canvas
-      ctx.drawImage img, 0, 0, w, h
-      for step in [steps...2] # 2 not 1 due to initial halving above
-        console.log "can w / h", w, h, "->", ihalf(w), ihalf(h)
-        ctx.drawImage can, 0, 0, w, h, 0, 0, w = ihalf(w), h = ihalf(h)
-      console.log "target w / h", w, h, "->", tw, th
-      ctx1.drawImage can, 0, 0, w, h, 0, 0, tw, th
-    ctx1
+  elementTextParams: (element, font, align = "center", baseline = "middle") ->
+    element = e.canvas if element.canvas?
+    element.style.font = font
+    element.style.textAlign = align
+    element.style.textBaseline = baseline
 
   # Convert a canvas to an image, executing fcn f on completion.
   # Generally can skip callback but see [stackoverflow](http://goo.gl/kIk2U)
   # Note: uses toDataURL thus possible cross origin problems.
-  # Fix: use ctx.canvas for programatic imaging.
-  ctxToDataUrl: (ctx) -> ctx.canvas.toDataURL "image/png"
+  # Fix: use context.canvas for programatic imaging.
+  contextToDataUrl: (context) -> context.canvas.toDataURL "image/png"
 
-  ctxToDataUrlImage: (ctx, f) ->
-    img = new Image()
-    (img.onload = -> f(img)) if f?
-    img.src = ctx.canvas.toDataURL "image/png"
-    img
+  contextToDataUrlImage: (context, call) ->
+    image = new Image()
+    if call?
+      image.onload = -> call(image)
+    image.src = context.canvas.toDataURL "image/png"
+    image
 
-  # Convert a ctx to an imageData object
-  ctxToImageData: (ctx) ->
-    ctx.getImageData 0, 0, ctx.canvas.width, ctx.canvas.height
+  # Convert a context to an imageData object
+  contextToImageData: (context) ->
+    context.getImageData 0, 0, context.canvas.width, context.canvas.height
 
-  # Canvas versions of above
-  # canvasToImage: (canvas) -> ctxToImage(canvas.getContext "2d")
-  # canvasToImageData: (canvas) -> ctxToImageData(canvas.getContext "2d")
-  # imageToCanvas: (image) -> imageToCtx(image).canvas
-  
   # Draw an image centered at x, y w/ image size dx, dy.
   # See [this tutorial](http://goo.gl/VUlhY).
-  drawCenteredImage: (ctx, img, rad, x, y, dx, dy) ->
+  drawCenteredImage: (context, image, radians, x, y, dx, dy) ->
     # presume save/restore surrounds this
-    ctx.translate x, y # translate to center
-    ctx.rotate rad
-    ctx.drawImage img, -dx / 2, -dy / 2
+    context.translate x, y # translate to center
+    context.rotate radians
+    context.drawImage image, -dx / 2, -dy / 2
   
-  # Duplicate a ctx's image.  Returns the new ctx, use ctx.canvas for canvas.
-  copyCtx: (ctx0) ->
-    ctx = @createCtx ctx0.canvas.width, ctx0.canvas.height
-    ctx.drawImage ctx0.canvas, 0, 0
-    ctx
+  # Duplicate a context's image.  Returns the new context, use context.canvas for canvas.
+  copyContext: (context) ->
+    newContext = @createContext context.canvas.width, context.canvas.height
+    newContext.drawImage context.canvas, 0, 0
+    newContext
 
-  # Resize a ctx/canvas and preserve data.
-  resizeCtx: (ctx, width, height, scale = false) -> # http://goo.gl/Tp90B
-    copy = @copyCtx ctx
-    ctx.canvas.width = width
-    ctx.canvas.height = height
-    ctx.drawImage copy.canvas, 0, 0
+  # Resize a context/canvas and preserve data.
+  resizeContext: (context, width, height, scale = false) -> # http://goo.gl/Tp90B
+    newContext = @copyContext context
+    context.canvas.width = width
+    context.canvas.height = height
+    context.drawImage newContext.canvas, 0, 0
+
+  # ### Misc / helpers
+  
+  # Return a linear interpolation between low and high.
+  # Scale is in [0 - 1], and the result is in [low, high]
+  linearInterpolate: (low, high, scale) ->
+    low + (high - low) * scale
+
+  # Return argument unchanged; for primitive arrays or objs sorted by reference
+  identityFunction: (object) ->
+    object
+
+  # Return a function that returns an object's property.  Property in fcn closure.
+  propertyFunction: (property) ->
+    (object) -> object[property]
+
+  # Return a function that returns an object's property.  Property in fcn closure.
+  propertySortFunction: (property) ->
+    (objectA, objectB) ->
+      if objectA[property] < objectB[property]
+        -1
+      else if objectA[property] > objectB[property]
+        1
+      else
+        0
+
+  # Return a JS array given a TypedArray.
+  # To create TypedArray from JS array: new Uint8Array(jsa) etc
+  typedToJS: (typedArray) ->
+    (i for i in typedArray)

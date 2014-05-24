@@ -44,8 +44,8 @@ class ABM.Patches extends ABM.BreedSet
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
   # if browser does not support smoothing flags.
   usePixels: (@drawWithPixels = true) ->
-    ctx = ABM.contexts.patches
-    u.setCtxSmoothing ctx, not @drawWithPixels
+    context = ABM.contexts.patches
+    u.setContextSmoothing context, not @drawWithPixels
 
   # Optimization: Cache a single set by modeler for use by
   # patchRectangle, inCone, inRectangle, inRadius.
@@ -71,11 +71,11 @@ class ABM.Patches extends ABM.BreedSet
   setPixels: ->
     if @size is 1
       @usePixels()
-      @pixelsCtx = ABM.contexts.patches
+      @pixelsContext = ABM.contexts.patches
     else
-      @pixelsCtx = u.createCtx @numX, @numY
+      @pixelsContext = u.createContext @numX, @numY
 
-    @pixelsImageData = @pixelsCtx.getImageData(0, 0, @numX, @numY)
+    @pixelsImageData = @pixelsContext.getImageData(0, 0, @numX, @numY)
     @pixelsData = @pixelsImageData.data
 
     if @pixelsData instanceof Uint8Array # Check for typed arrays
@@ -87,13 +87,13 @@ class ABM.Patches extends ABM.BreedSet
   # * Pixels: use pixel manipulation rather than canvas draws
   # * Monochrome: just fill canvas w/ patch default
   # * Otherwise: just draw each patch individually
-  draw: (ctx) ->
+  draw: (context) ->
     if @monochrome
-      u.fillCtx ctx, @agentClass::color
+      u.fillContext context, @agentClass::color
     else if @drawWithPixels
-      @drawScaledPixels ctx
+      @drawScaledPixels context
     else
-      super ctx
+      super context
 
 # #### Patch grid coord system utilities:
   
@@ -181,10 +181,10 @@ class ABM.Patches extends ABM.BreedSet
       f() if f?
 
   # Direct install image into the given context, not async.
-  installDrawing: (img, ctx = ABM.contexts.drawing) ->
-    u.setIdentity ctx
-    ctx.drawImage img, 0, 0, ctx.canvas.width, ctx.canvas.height
-    ctx.restore() # restore patch transform
+  installDrawing: (img, context = ABM.contexts.drawing) ->
+    u.setIdentity context
+    context.drawImage img, 0, 0, context.canvas.width, context.canvas.height
+    context.restore() # restore patch transform
   
   # Utility function for pixel manipulation.  Given a patch, returns the 
   # native canvas index i into the pixel data.
@@ -210,27 +210,27 @@ class ABM.Patches extends ABM.BreedSet
 
   # Direct install image into the patch colors, not async.
   installColors: (img, map) ->
-    u.setIdentity @pixelsCtx
-    @pixelsCtx.drawImage img, 0, 0, @numX, @numY # scale if needed
-    data = @pixelsCtx.getImageData(0, 0, @numX, @numY).data
+    u.setIdentity @pixelsContext
+    @pixelsContext.drawImage img, 0, 0, @numX, @numY # scale if needed
+    data = @pixelsContext.getImageData(0, 0, @numX, @numY).data
     for patch in @
       i = @pixelByteIndex patch
       # promote initial default
       patch.color = if map? then map[i] else [data[i++], data[i++], data[i]]
-    @pixelsCtx.restore() # restore patch transform
+    @pixelsContext.restore() # restore patch transform
 
   # Draw the patches via pixel manipulation rather than 2D drawRect.
   # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq)
-  drawScaledPixels: (ctx) ->
-    # u.setIdentity ctx & ctx.restore() only needed if patch size 
+  drawScaledPixels: (context) ->
+    # u.setIdentity context & context.restore() only needed if patch size 
     # not 1, pixel ops don't use transform but @size>1 uses
     # a drawimage
-    u.setIdentity ctx if @size isnt 1
-    if @pixelsData32? then @drawScaledPixels32 ctx else @drawScaledPixels8 ctx
-    ctx.restore() if @size isnt 1
+    u.setIdentity context if @size isnt 1
+    if @pixelsData32? then @drawScaledPixels32 context else @drawScaledPixels8 context
+    context.restore() if @size isnt 1
 
   # The 8-bit version for drawScaledPixels.  Used for systems w/o typed arrays
-  drawScaledPixels8: (ctx) ->
+  drawScaledPixels8: (context) ->
     data = @pixelsData
     for patch in @
       i = @pixelByteIndex patch
@@ -241,12 +241,12 @@ class ABM.Patches extends ABM.BreedSet
         a = 255
       data[i + j] = c[j] for j in [0..2]
       data[i + 3] = a
-    @pixelsCtx.putImageData @pixelsImageData, 0, 0
+    @pixelsContext.putImageData @pixelsImageData, 0, 0
     return if @size is 1
-    ctx.drawImage @pixelsCtx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height
+    context.drawImage @pixelsContext.canvas, 0, 0, context.canvas.width, context.canvas.height
 
   # The 32-bit version of drawScaledPixels, with both little and big endian hardware.
-  drawScaledPixels32: (ctx) ->
+  drawScaledPixels32: (context) ->
     data = @pixelsData32
     for p in @
       i = @pixelWordIndex p
@@ -255,9 +255,9 @@ class ABM.Patches extends ABM.BreedSet
       if @pixelsAreLittleEndian
       then data[i] = (a << 24) | (c[2] << 16) | (c[1] << 8) | c[0]
       else data[i] = (c[0] << 24) | (c[1] << 16) | (c[2] << 8) | a
-    @pixelsCtx.putImageData @pixelsImageData, 0, 0
+    @pixelsContext.putImageData @pixelsImageData, 0, 0
     return if @size is 1
-    ctx.drawImage @pixelsCtx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height
+    context.drawImage @pixelsContext.canvas, 0, 0, context.canvas.width, context.canvas.height
 
   floodFill: (aset, fCandidate, fJoin, fCallback, fNeighbors = ((patch) -> patch.n),
       asetLast = []) ->

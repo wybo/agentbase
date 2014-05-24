@@ -101,7 +101,7 @@ class ABM.Agent
   rotate: (rad) -> @heading = u.wrap @heading + rad, 0, Math.PI * 2 # returns new h
   
   # Draw the agent, instanciating a sprite if required
-  draw: (ctx) ->
+  draw: (context) ->
     if @patch is null
       return
     shape = ABM.shapes[@shape]

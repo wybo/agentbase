@@ -4,6 +4,8 @@ ABM = code.ABM
 u = ABM.util
 
 describe "Util", ->
+  # ### Language extensions
+
   describe "error", ->
     it "throws an error", ->
       expect(u.error, "Something").toThrow()
@@ -50,6 +52,8 @@ describe "Util", ->
 
     it "rejects non-numbers", ->
       expect(u.isString(-> 3)).toBe false
+
+  # ### Numeric operations
 
   describe "randomSeed", ->
     it "replaces random", ->
@@ -125,10 +129,7 @@ describe "Util", ->
     it "returns the sign of the number", ->
       expect(u.sign(-30)).toEqual -1
 
-  describe "aToFixed", ->
-    it "returns the array rounded, as strings", ->
-      expect(u.aToFixed([1.334, 5.445, 11.666], 1))
-        .toEqual ["1.3", "5.4", "11.7"]
+  # ### Color and angle operations
 
   describe "colorFromString", ->
     it "returns the color as an array", ->
@@ -167,6 +168,8 @@ describe "Util", ->
     it "returns the angle, between PI and minus PI", ->
       expect(u.substractRadians(1, 8)).toBeCloseTo -0.72
 
+  # ### Object operations
+
   describe "ownKeys", ->
     it "returns the attributes", ->
       object = new Object # an object
@@ -187,6 +190,13 @@ describe "Util", ->
       object.bull = "pen"
       object.fly = -> 1 + 1
       expect(u.ownValues(object)).toEqual ["pen", object.fly]
+
+  # ### Array operations
+
+  describe "toFixed", ->
+    it "returns the array rounded, as strings", ->
+      expect(u.toFixed([1.334, 5.445, 11.666], 1))
+        .toEqual ["1.3", "5.4", "11.7"]
 
   describe "any", ->
     it "returns false if empty", ->
@@ -295,15 +305,7 @@ describe "Util", ->
     it "returns the array normalized", ->
       expect(u.normalize([4, 9, 7], 5, 10)).toEqual [5, 10, 8]
 
-  describe "linearInterpolate", ->
-    it "returns a linear interpolation", ->
-      expect(u.linearInterpolate(1, 5, 0.5)).toEqual 3
-
-  describe "typedToJS", ->
-    it "returns a JS array", ->
-      array = Uint8Array([1,2])
-      array = u.typedToJS(array)
-      expect(array.sort?).toBe true
+  # ### Topology operations
 
   describe "radiansToward", ->
     it "returns the radians toward the second point", ->
@@ -347,6 +349,8 @@ describe "Util", ->
       expect(u.inTorusCone(3, 3, 3, {x: 1, y: 1}, {x: 2, y: 2}, 10, 10)).toBe false
       expect(u.inTorusCone(3, 3, 3, {x: 1, y: 1}, {x: 2, y: 2}, 3, 3)).toBe true
 
+  # ### File I/O
+
   describe "importImage", ->
     it "returns an image object", ->
       global.Image = class
@@ -380,4 +384,61 @@ describe "Util", ->
       expect(u.filesLoaded()).toBe false
       u.fileIndex[source].isDone = true
       expect(u.filesLoaded()).toBe true
+
+  describe "waitOnFiles", ->
+    it "waits on files that weren't loaded yet", ->
+      global.Image = class
+      global.setTimeout = (call, timeout) ->
+        u.fileIndex["tail.jpg"].isDone = true # cheating
+        call()
+      u.fileIndex = {}
+      call = -> 1 + 1
+      call = jasmine.createSpy()
+      image = u.importImage("tail.jpg")
+      expect(u.filesLoaded()).toBe false
+      u.waitOnFiles(call)
+      expect(u.filesLoaded()).toBe true
+      expect(call).toHaveBeenCalled()
+
+  # ### Image data operations
+
+  describe "cloneImage", ->
+    it "creates a new image object with the same source", ->
+      global.Image = class
+      source = "pond.jpg"
+      image = new Image
+      image.src = source
+      clone = u.cloneImage(image)
+      expect(clone).not.toBe image
+      expect(clone.src).toEqual source
+
+  describe "imageToData", ->
+    it "creates a new image object with the same source", ->
+      global.Image = class
+      source = "pond.jpg"
+      image = new Image
+      image.src = source
+      data = u.imageToData(image)
+      expect(data.length).toEqual 0 # Needs a real test
+
+  describe "pixelByte", ->
+    it "returns a pixel byte function", ->
+      expect(u.pixelByte(1)([1, 2, 3], 1)).toEqual 3
+
+  # ### Canvas/context operations
+
+  # TODO find a way to test these
+
+  # ### Misc / helpers
+
+  describe "linearInterpolate", ->
+    it "returns a linear interpolation", ->
+      expect(u.linearInterpolate(1, 5, 0.5)).toEqual 3
+
+  describe "typedToJS", ->
+    it "returns a JS array", ->
+      array = Uint8Array([1,2])
+      array = u.typedToJS(array)
+      expect(array.sort?).toBe true
+
 

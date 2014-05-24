@@ -12,12 +12,12 @@ class ABM.Model
   # Example:
   # 
   #     v.z++ for k, v of ABM.Model::contextsInit # increase each z value by one
-  contextsInit: { # Experimental: image:   {z: 15, ctx: "img"} 
-    patches:   {z: 10, ctx: "2d"}
-    drawing:   {z: 20, ctx: "2d"}
-    links:     {z: 30, ctx: "2d"}
-    agents:    {z: 40, ctx: "2d"}
-    spotlight: {z: 50, ctx: "2d"}
+  contextsInit: { # Experimental: image:   {z: 15, context: "img"} 
+    patches:   {z: 10, context: "2d"}
+    drawing:   {z: 20, context: "2d"}
+    links:     {z: 30, context: "2d"}
+    agents:    {z: 40, context: "2d"}
+    spotlight: {z: 50, context: "2d"}
   }
   # Constructor: 
   #
@@ -49,24 +49,24 @@ class ABM.Model
       # * Create 2D canvas contexts layered on top of each other.
       # * Initialize a patch coord transform for each layer.
       # 
-      # Note: this transform is permanent .. there isn't the usual ctx.restore().
+      # Note: this transform is permanent .. there isn't the usual context.restore().
       # To use the original canvas 2D transform temporarily:
       #
-      #     u.setIdentity ctx
+      #     u.setIdentity context
       #       <draw in native coord system>
-      #     ctx.restore() # restore patch coord system
+      #     context.restore() # restore patch coord system
       for own k, v of @contextsInit
         @contexts[k] = context = u.createLayer @div, @world.pxWidth,
-          @world.pxHeight, v.z, v.ctx
+          @world.pxHeight, v.z, v.context
         if context.canvas?
-          @setCtxTransform context
+          @setContextTransform context
         if context.canvas?
           context.canvas.style.pointerEvents = 'none'
         u.elementTextParams context, "10px sans-serif", "center", "middle"
 
       # One of the layers is used for drawing only, not an agentset:
       @drawing = ABM.drawing = @contexts.drawing
-      @drawing.clear = => u.clearCtx @drawing
+      @drawing.clear = => u.clearContext @drawing
       # Setup spotlight layer, also not an agentset:
       @contexts.spotlight.globalCompositeOperation = "xor"
 
@@ -138,12 +138,12 @@ class ABM.Model
       numY, pxWidth, pxHeight, isTorus, hasNeighbors, isHeadless
     }
 
-  setCtxTransform: (ctx) ->
-    ctx.canvas.width = @world.pxWidth
-    ctx.canvas.height = @world.pxHeight
-    ctx.save()
-    ctx.scale @world.size, -@world.size
-    ctx.translate -(@world.minXcor), -(@world.maxYcor)
+  setContextTransform: (context) ->
+    context.canvas.width = @world.pxWidth
+    context.canvas.height = @world.pxHeight
+    context.save()
+    context.scale @world.size, -@world.size
+    context.translate -(@world.minXcor), -(@world.maxYcor)
 
   globals: (globalNames) ->
     if globalNames?
@@ -229,7 +229,7 @@ class ABM.Model
 #    @animator.reset() # stop & reset ticks/steps counters
 #    console.log "reset: contexts"
 #    # clear/resize b4 agentsets
-#    (v.restore(); @setCtxTransform v) for k, v of @contexts when v.canvas?
+#    (v.restore(); @setContextTransform v) for k, v of @contexts when v.canvas?
 #    console.log "reset: patches"
 #    @patches = ABM.patches = new ABM.Patches ABM.Patch, "patches"
 #    console.log "reset: agents"
@@ -264,14 +264,14 @@ class ABM.Model
 #
 # to draw one of a random breed. Remove spotlight by passing `null`
   setSpotlight: (@spotlightAgent) ->
-    u.clearCtx @contexts.spotlight unless @spotlightAgent?
+    u.clearContext @contexts.spotlight unless @spotlightAgent?
 
-  drawSpotlight: (agent, ctx) -> # TODO refactor ctx
-    u.clearCtx ctx
-    u.fillCtx ctx, [0, 0, 0, 0.6]
-    ctx.beginPath()
-    ctx.arc agent.x, agent.y, 3, 0, 2 * Math.PI, false
-    ctx.fill()
+  drawSpotlight: (agent, context) ->
+    u.clearContext context
+    u.fillContext context, [0, 0, 0, 0.6]
+    context.beginPath()
+    context.arc agent.x, agent.y, 3, 0, 2 * Math.PI, false
+    context.fill()
 
 # ### Breeds
   

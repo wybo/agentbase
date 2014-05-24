@@ -31,30 +31,30 @@ class ABM.Link
   # Draw a line between the two endpoints.  Draws "around" the
   # torus if appropriate using two lines. As with Agent.draw,
   # is called with patch coordinate transform installed.
-  draw: (ctx) ->
-    ctx.save()
-    ctx.strokeStyle = u.colorString @color
-    ctx.lineWidth = ABM.patches.fromBits @thickness
-    ctx.beginPath()
+  draw: (context) ->
+    context.save()
+    context.strokeStyle = u.colorString @color
+    context.lineWidth = ABM.patches.fromBits @thickness
+    context.beginPath()
     if !ABM.patches.isTorus
-      ctx.moveTo @end1.x, @end1.y
-      ctx.lineTo @end2.x, @end2.y
+      context.moveTo @end1.x, @end1.y
+      context.lineTo @end2.x, @end2.y
     else
       pt = @end1.closestTorusPoint @end2
-      ctx.moveTo @end1.x, @end1.y
-      ctx.lineTo pt...
+      context.moveTo @end1.x, @end1.y
+      context.lineTo pt...
       if pt[0] isnt @end2.x or pt[1] isnt @end2.y
         pt = @end2.closestTorusPoint @end1
-        ctx.moveTo @end2.x, @end2.y
-        ctx.lineTo pt...
-    ctx.closePath()
-    ctx.stroke()
-    ctx.restore()
+        context.moveTo @end2.x, @end2.y
+        context.lineTo pt...
+    context.closePath()
+    context.stroke()
+    context.restore()
     if @label?
       x0 = u.linearInterpolate @end1.x, @end2.x, .5
       y0 = u.linearInterpolate @end1.y, @end2.y, .5
       [x, y] = ABM.patches.patchXYtoPixelXY x0, y0
-      u.ctxDrawText ctx, @label, x + @labelOffset[0], y + @labelOffset[1], @labelColor
+      u.contextDrawText context, @label, x + @labelOffset[0], y + @labelOffset[1], @labelColor
   
   # Remove this link from the agent set
   die: ->

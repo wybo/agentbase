@@ -8,13 +8,13 @@ ABM.shapes = ABM.util.s = do ->
   # The shape is used in the following context with a color set
   # and a transform such that the shape should be drawn in a -.5 to .5 square
   #
-  #     ctx.save()
-  #     ctx.fillStyle = u.colorString color
-  #     ctx.translate x, y; ctx.scale size, size;
-  #     ctx.rotate heading if shape.rotate
-  #     ctx.beginPath(); shape.draw(ctx); ctx.closePath()
-  #     ctx.fill()
-  #     ctx.restore()
+  #     context.save()
+  #     context.fillStyle = u.colorString color
+  #     context.translate x, y; context.scale size, size;
+  #     context.rotate heading if shape.rotate
+  #     context.beginPath(); shape.draw(context); context.closePath()
+  #     context.fill()
+  #     context.restore()
   #
   # The list of current shapes, via `ABM.shapes.names()` below, is:
   #
@@ -44,10 +44,10 @@ ABM.shapes = ABM.util.s = do ->
   
   # An async util for delayed drawing of images into sprite slots
   fillSlot = (slot, img) ->
-    slot.ctx.save()
-    slot.ctx.scale 1, -1
-    slot.ctx.drawImage img, slot.x, -(slot.y + slot.bits), slot.bits, slot.bits
-    slot.ctx.restore()
+    slot.context.save()
+    slot.context.scale 1, -1
+    slot.context.drawImage img, slot.x, -(slot.y + slot.bits), slot.bits, slot.bits
+    slot.context.restore()
 
   # The spritesheet data, indexed by bits
   spriteSheets = []
@@ -149,37 +149,37 @@ ABM.shapes = ABM.util.s = do ->
   spriteSheets:spriteSheets # export spriteSheets for debugging, showing in DOM
 
   # Two draw procedures, one for shapes, the other for sprites made from shapes.
-  draw: (ctx, shape, x, y, size, rad, color) ->
+  draw: (context, shape, x, y, size, rad, color) ->
     if shape.shortcut?
-      ctx.fillStyle = u.colorString color unless shape.img?
-      shape.shortcut ctx, x, y, size
+      context.fillStyle = u.colorString color unless shape.img?
+      shape.shortcut context, x, y, size
     else
-      ctx.save()
-      ctx.translate x, y
-      ctx.scale size, size if size isnt 1
-      ctx.rotate rad if rad isnt 0
+      context.save()
+      context.translate x, y
+      context.scale size, size if size isnt 1
+      context.rotate rad if rad isnt 0
       if shape.img? # is an image, not a path function
-        shape.draw ctx
+        shape.draw context
       else
-        ctx.fillStyle = u.colorString color
-        ctx.beginPath()
-        shape.draw ctx
-        ctx.closePath()
-        ctx.fill()
-      ctx.restore()
+        context.fillStyle = u.colorString color
+        context.beginPath()
+        shape.draw context
+        context.closePath()
+        context.fill()
+      context.restore()
     shape
 
-  drawSprite: (ctx, s, x, y, size, rad) ->
+  drawSprite: (context, s, x, y, size, rad) ->
     if rad is 0
-      ctx.drawImage s.ctx.canvas, s.x, s.y, s.bits, s.bits, x-size / 2,
+      context.drawImage s.context.canvas, s.x, s.y, s.bits, s.bits, x-size / 2,
         y-size / 2, size, size
     else
-      ctx.save()
-      ctx.translate x, y # see http://goo.gl/VUlhY for drawing centered rotated images
-      ctx.rotate rad
-      ctx.drawImage s.ctx.canvas, s.x, s.y, s.bits, s.bits, -size / 2,
+      context.save()
+      context.translate x, y # see http://goo.gl/VUlhY for drawing centered rotated images
+      context.rotate rad
+      context.drawImage s.context.canvas, s.x, s.y, s.bits, s.bits, -size / 2,
         -size / 2, size, size
-      ctx.restore()
+      context.restore()
     s
 
   # Convert a shape to a sprite by allocating a sprite sheet "slot" and drawing
@@ -188,38 +188,38 @@ ABM.shapes = ABM.util.s = do ->
     bits = Math.ceil ABM.patches.toBits size
     shape = @[name]
     index = if shape.img? then name else "#{name}-#{u.colorString(color)}"
-    ctx = spriteSheets[bits]
+    context = spriteSheets[bits]
     # Create sheet for this bit size if it does not yet exist
-    unless ctx?
-      spriteSheets[bits] = ctx = u.createCtx bits * 10, bits
-      ctx.nextX = 0
-      ctx.nextY = 0
-      ctx.index = {}
+    unless context?
+      spriteSheets[bits] = context = u.createContext bits * 10, bits
+      context.nextX = 0
+      context.nextY = 0
+      context.index = {}
     # Return matching sprite if index match found
-    return foundSlot if (foundSlot = ctx.index[index])?
+    return foundSlot if (foundSlot = context.index[index])?
     # Extend the sheet if we're out of space
-    if bits*ctx.nextX is ctx.canvas.width
-      u.resizeCtx ctx, ctx.canvas.width, ctx.canvas.height + bits
-      ctx.nextX = 0
-      ctx.nextY++
+    if bits*context.nextX is context.canvas.width
+      u.resizeContext context, context.canvas.width, context.canvas.height + bits
+      context.nextX = 0
+      context.nextY++
     # Create the sprite "slot" object and install in index object
-    x = bits * ctx.nextX
-    y = bits * ctx.nextY
-    slot = {ctx, x, y, size, bits, name, color, index}
-    ctx.index[index] = slot
+    x = bits * context.nextX
+    y = bits * context.nextY
+    slot = {context, x, y, size, bits, name, color, index}
+    context.index[index] = slot
     # Draw the shape into the sprite slot
     if (img = shape.img)? # is an image, not a path function
       if img.height isnt 0 then fillSlot(slot, img)
       else img.onload = -> fillSlot(slot, img)
     else
-      ctx.save()
-      ctx.scale bits, bits
-      ctx.translate ctx.nextX + .5, ctx.nextY + .5
-      ctx.fillStyle = u.colorString color
-      ctx.beginPath()
-      shape.draw ctx
-      ctx.closePath()
-      ctx.fill()
-      ctx.restore()
-    ctx.nextX++
+      context.save()
+      context.scale bits, bits
+      context.translate context.nextX + .5, context.nextY + .5
+      context.fillStyle = u.colorString color
+      context.beginPath()
+      shape.draw context
+      context.closePath()
+      context.fill()
+      context.restore()
+    context.nextX++
     slot

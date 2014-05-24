@@ -99,8 +99,8 @@ ABM.DataSet = class DataSet
   # Convert dataset into an image.
   toImage: -> @toContext().canvas
   toContext: ->
-    ctx = u.createCtx @width, @height
-    idata = ctx.getImageData(0, 0, @width, @height); ta = idata.data
+    context = u.createContext @width, @height
+    idata = context.getImageData(0, 0, @width, @height); ta = idata.data
     if @normalizeImage
       data = if @gray then u.normalize8 @data else u.normalizeInt @data, 0, Math.pow(2,24)-1
     else
@@ -110,8 +110,8 @@ ABM.DataSet = class DataSet
       if @gray
       then ta[j] = ta[j+1] = ta[j+2] = Math.floor num
       else ta[j]=num>>>16; ta[j+1]=(num>>8)&0xff; ta[j+2]=num&0xff
-    ctx.putImageData idata, 0, 0
-    ctx
+    context.putImageData idata, 0, 0
+    context
   # Show dataset as image in patch drawing layer or patch colors, return image
   toDrawing: -> ABM.patches.installDrawing(img=@toImage()); img
   toPatchColors: -> ABM.patches.installColors(img=@toImage()); img

@@ -51,12 +51,12 @@ class ABM.Patch
     u.fractionOfColor color, fraction, @color
   
   # Draw the patch and its text label if there is one.
-  draw: (ctx) ->
-    ctx.fillStyle = u.colorString @color
-    ctx.fillRect @x - .5, @y - .5, 1, 1
+  draw: (context) ->
+    context.fillStyle = u.colorString @color
+    context.fillRect @x - .5, @y - .5, 1, 1
     if @label? # REMIND: should be 2nd pass.
       [x, y] = @breed.patchXYtoPixelXY @x, @y
-      u.ctxDrawText ctx, @label, x + @labelOffset[0], y + @labelOffset[1],
+      u.contextDrawText context, @label, x + @labelOffset[0], y + @labelOffset[1],
         @labelColor
   
   # Return an array of the agents on this patch.
