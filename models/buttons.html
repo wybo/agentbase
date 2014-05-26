@@ -35,7 +35,7 @@
           l.draw ABM.contexts.links
         
         g = @graphOf b1
-        c = u.minOneOf(g, "id").color
+        c = u.min(g, "id").color
         node.color = c for node in g
         if g.length > @cluster
           console.log "New largest cluster: size: #{g.length} tick: #{@animator.ticks}"

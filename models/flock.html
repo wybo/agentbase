@@ -56,7 +56,7 @@
       flock: (a) -> # a is agent
         flockmates = @agents.inRadius a, @vision
         if flockmates.length isnt 0
-          [nearestNeighbor, d] = u.minOneOf flockmates, ((f) -> f.distance a), true
+          [nearestNeighbor, d] = u.min flockmates, ((f) -> f.distance a), true
           if d < @minSeparation
             @separate a, nearestNeighbor
           else
@@ -72,7 +72,7 @@
         @turnTowards a, @averageHeadingTowards(a, flockmates)
         
       turnTowards: (a, heading) ->
-        turn = u.subtractRads heading, a.heading # angle from h to a
+        turn = u.substractRadians heading, a.heading # angle from h to a
         turn = u.clamp turn, -@maxTurn, @maxTurn # limit the turn
         a.rotate turn
       averageHeading: (flockmates) ->

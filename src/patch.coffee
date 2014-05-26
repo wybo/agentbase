@@ -78,8 +78,6 @@ class ABM.Patch
   # Factory: Create num new agents on this patch. The optional init
   # proc is called on the new agent after inserting in its agentSet.
   sprout: (number = 1, breed = ABM.agents, init = ->) ->
-    console.log("sprouting")
-    console.log(number)
     breed.create number, (agent) => # fat arrow so that @ = this patch
       agent.setXY @x, @y
       init(agent)

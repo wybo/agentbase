@@ -93,6 +93,7 @@ ABM.util = u =
       min = 0
     else
       min = minmax
+
     min + Math.random() * (max - min)
 
   # Return float Gaussian normal with given mean, std deviation.
@@ -793,7 +794,7 @@ ABM.util = u =
     context.textBaseline = baseline
 
   elementTextParams: (element, font, align = "center", baseline = "middle") ->
-    element = e.canvas if element.canvas?
+    element = element.canvas if element.canvas?
     element.style.font = font
     element.style.textAlign = align
     element.style.textBaseline = baseline

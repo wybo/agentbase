@@ -57,7 +57,7 @@ class ABM.Agent
   # Set agent color to `color` scaled by `fraction`. Usage: see patch.fractionOfColor
   fractionOfColor: (color, fraction) ->
     @color = u.clone @color unless @.hasOwnProperty("color")
-    u.fractionOfColor color, fraction
+    u.fractionOfColor color, fraction, @color
   
   # Return a string representation of the agent.
   toString: -> "{id:#{@id} xy:#{u.aToFixed [@x, @y]} c:#{@color} h: #{@heading.toFixed 2}}"
@@ -97,23 +97,24 @@ class ABM.Agent
   forward: (d) ->
     @setXY @x + d * Math.cos(@heading), @y + d * Math.sin(@heading)
   
-  # Change current heading by rad radians which can be + (left) or - (right)
-  rotate: (rad) -> @heading = u.wrap @heading + rad, 0, Math.PI * 2 # returns new h
+  # Change current heading by radians which can be + (left) or - (right)
+  rotate: (radians) ->
+    @heading = u.wrap @heading + radians, 0, Math.PI * 2 # returns new h
   
   # Draw the agent, instanciating a sprite if required
   draw: (context) ->
     if @patch is null
       return
     shape = ABM.shapes[@shape]
-    rad = if shape.rotate then @heading else 0 # radians
+    radians = if shape.rotate then @heading else 0 # radians
     if @sprite? or @breed.useSprites
       @setSprite() unless @sprite? # lazy evaluation of useSprites
-      ABM.shapes.drawSprite ctx, @sprite, @x, @y, @size, rad
+      ABM.shapes.drawSprite context, @sprite, @x, @y, @size, radians
     else
-      ABM.shapes.draw ctx, shape, @x, @y, @size, rad, @color
+      ABM.shapes.draw context, shape, @x, @y, @size, radians, @color
     if @label?
       [x, y] = ABM.patches.patchXYtoPixelXY @x, @y
-      u.ctxDrawText ctx, @label, x + @labelOffset[0], y + @labelOffset[1], @labelColor
+      u.contextDrawText context, @label, x + @labelOffset[0], y + @labelOffset[1], @labelColor
   
   # Set an individual agent's sprite, synching its color, shape, size
   setSprite: (sprite)->

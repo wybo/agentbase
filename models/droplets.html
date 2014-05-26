@@ -58,7 +58,7 @@
             neighbors = a.patch.neighbors
           else
             neighbors = a.patch.pRectangle
-          neighbors = neighbors.minOneOf "elevation"
+          neighbors = neighbors.min "elevation"
           if a.patch.elevation > neighbors.elevation #or a.patch.slope < .0001
             if @useAspect
               a.heading = a.patch.aspect

@@ -158,7 +158,7 @@ We're currently using [coffeescript](http://jashkenas.github.io/coffee-script/ex
 
 All forked repos must be aware that we have a gh-pages branch.  This somewhat complicates the build workflow.  You should also make sure you are in the master at all times; our cake tasks should take care of all gh-pages branch usage.
 
-Before any commit, please make sure all the models work as expected, they are our "unit tests".  We'll be adding more, smaller tests, soon. Similarly make sure the docco files display correctly.  They can be built with "cake all" or "cake doc". Note that all single line comments are converted into docs, using Markdown.  Be careful not to mistakenly add a "code" comment to the docs!
+Before any commit, please make sure all the unit tests ("cake test") and models work as expected (they part of our test-suite for now).  We'll be adding more tests, soon. Similarly make sure the docco files display correctly.  They can be built with "cake all" or "cake doc". Note that all single line comments are converted into docs, using Markdown.  Be careful not to mistakenly add a "code" comment to the docs!
 
 Pull requests will be accepted without your building your own gh-pages as long as both the tests run and the README.md runs OK locally.  Generally the test models and docs will run locally with a file:// url but http://localhost is safer.  Sublime/Textmate markdown viewers should work for this.
 
