@@ -158,7 +158,7 @@ We're currently using [coffeescript](http://jashkenas.github.io/coffee-script/ex
 
 #### Contribute
 
-Before any commit, please make sure all the unit tests ("cake test") and models work as expected (they part of our test-suite for now).  We'll be adding more tests, soon. Generally the test models will run locally with a file:// url, but http://localhost is safer.
+Before any commit, please make sure all the unit tests ("cake test") and models work as expected (they are part of our test-suite for now).  We'll be adding more tests, soon.  Generally the test models will run locally with a file:// url, but http://localhost is safer.
 
 Similarly, make sure the docco files display correctly.  They can be built with `node build.js all` or `node build.js doc`.  Sublime/Textmate markdown viewers should work for this.  Note that all single line comments are converted into docs using Markdown.  Be careful not to mistakenly add a "code" comment to the docs!
 
