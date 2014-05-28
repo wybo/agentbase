@@ -259,7 +259,7 @@ class ABM.Patches extends ABM.BreedSet
     return if @size is 1
     context.drawImage @pixelsContext.canvas, 0, 0, context.canvas.width, context.canvas.height
 
-  floodFill: (aset, fCandidate, fJoin, fCallback, fNeighbors = ((patch) -> patch.n),
+  floodFillOnce: (aset, fCandidate, fJoin, fCallback, fNeighbors = ((patch) -> patch.n),
       asetLast = []) ->
     super aset, fCandidate, fJoin, fCallback, fNeighbors, asetLast
 
