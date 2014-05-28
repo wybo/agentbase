@@ -1,7 +1,7 @@
 {
   "version": 3,
   "file": "agentscript.js",
-  "sourceRoot": "../var",
+  "sourceRoot": "",
   "sources": [
     "agentscript.coffee"
   ],

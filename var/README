@@ -1,2 +1,0 @@
-Empty dir used for keeping merged .coffee files before they are
-compiled to JS. Helps keep commit diffs clean.

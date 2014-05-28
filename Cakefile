@@ -22,7 +22,6 @@ srcDir = "src/"
 extrasDir = "extras/"
 toolsDir = 'tools/'
 libDir = 'lib/'
-varDir = 'var/'
 
 TestCommand = "./node_modules/jasmine-node/bin/jasmine-node --coffee spec/"
 
@@ -30,7 +29,7 @@ firstFileNames = ['util.coffee', 'breedset.coffee']
 FileNames = firstFileNames.concat(
   fs.readdirSync(srcDir).filter (file) -> file not in firstFileNames)
 FilePaths = ("#{srcDir}#{file}" for file in FileNames)
-MergedPath = "#{varDir}agentscript.coffee"
+MergedPath = "#{libDir}agentscript.coffee"
 
 XNames = "data mouse fbui".split(" ")
 XJSNames = "as.dat.gui data.tile".split(" ")
