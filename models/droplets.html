@@ -55,7 +55,7 @@
         moved = 0
         for a in @agents
           if @useAspect
-            neighbors = a.patch.neighbors
+            neighbors = a.patch.neighbors()
           else
             neighbors = a.patch.pRectangle
           neighbors = neighbors.min "elevation"
@@ -73,7 +73,7 @@
           console.log @animator.toString(), "moved: #{moved}"
           @lastMoved = moved
     
-    # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors
+    # div, patchSize, minX, maxX, minY, maxY, isTorus
     #   Defaults: 13, -16, 16, -16, 16, false, true
     model = new MyModel({
       div: "layers",

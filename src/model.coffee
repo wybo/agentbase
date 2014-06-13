@@ -1,4 +1,4 @@
-# Class Model is the control center for our BreedSets: Patches, Agents and Links.
+# Class Model is the control center for our Sets: Patches, Agents and Links.
 # Creating new models is done by subclassing class Model and overriding two 
 # virtual/abstract methods: `setup()` and `step()`
 
@@ -108,20 +108,19 @@ class ABM.Model
     for own key, value of defaults
       options[key] ?= value
 
-    {size, minX, maxX, minY, maxY, isTorus, hasNeighbors, isHeadless} = options
+    ABM.world = @world = {}
 
-    numX = maxX - minX + 1
-    numY = maxY - minY + 1
-    pxWidth = numX * size
-    pxHeight = numY * size
-    minXcor = minX - .5
-    maxXcor = maxX + .5
-    minYcor = minY - .5
-    maxYcor = maxY + .5
-    ABM.world = @world = {
-      size, minX, maxX, minY, maxY, minXcor, maxXcor, minYcor, maxYcor, numX,
-      numY, pxWidth, pxHeight, isTorus, hasNeighbors, isHeadless
-    }
+    for own key, value of options
+      @world[key] = value
+
+    @world.numX = @world.maxX - @world.minX + 1
+    @world.numY = @world.maxY - @world.minY + 1
+    @world.pxWidth = @world.numX * @world.size
+    @world.pxHeight = @world.numY * @world.size
+    @world.minXcor = @world.minX - .5
+    @world.maxXcor = @world.maxX + .5
+    @world.minYcor = @world.minY - .5
+    @world.maxYcor = @world.maxY + .5
 
   setWorldDeprecated: (size, minX, maxX, minY, maxY, isTorus, hasNeighbors,
       isHeadless) ->
@@ -333,7 +332,7 @@ class ABM.Model
   #
   #     even = @asSet (a for a in @agents when a.id % 2 is 0)
   #     even.shuffle().getProp("id") # [6, 0, 4, 2, 8]
-  asSet: (a, setType = ABM.BreedSet) -> ABM.BreedSet.asSet a, setType
+  asSet: (a, setType = ABM.Set) -> ABM.Set.asSet a, setType
 
   # A simple debug aid which places short names in the global name space.
   # Note we avoid using the actual name, such as "patches" because this

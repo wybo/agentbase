@@ -13,28 +13,21 @@ class ABM.Patch
   # * label:       text for the patch
   # * labelColor:  the color of my label text
   # * labelOffset: the x, y offset of my label from my x, y location
-  # * neighbors:   adjacent neighbors: n: 8 patches, n4: N, E, S, W patches
-  # * neighbors4: 
   # * pRectangle:  cached rect for performance
-  #
-  # Patches may not need their neighbors, thus we use a default
-  # of none.  n and n4 are promoted by the Patches agent set 
-  # if world.neighbors is true, the default.
 
   id: null              # unique id, promoted by agentset create factory method
   breed: null           # set by the agentSet owning this patch
   x: null               # The patch position in the patch grid
   y: null
-  neighbors: null       # The neighbors, n: 8, n4: 4. null OK if model doesn't need them.
-  neighbors4: null
   color: [0, 0, 0]      # The patch color
   hidden: false         # draw me?
   label: null           # text for the patch
   labelColor: [0, 0, 0] # text color
   labelOffset: [0, 0]   # text offset from the patch center
   pRectangle: null      # Performance: cached rect of neighborhood larger than n.
+  neighborsCache: {}    # Access through neighbors()
   
-  # New Patch: Just set x, y. Neighbors set by Patches constructor if needed.
+  # New Patch: Just set x, y.
   constructor: (@x, @y) ->
 
   # Return a string representation of the patch.
@@ -82,3 +75,33 @@ class ABM.Patch
       agent.setXY @x, @y
       init(agent)
       agent
+
+  # Get neighbors for patch
+  neighbors: (rangeOptions) ->
+    rangeOptions ?= 1
+    neighbors = @neighborsCache[range]
+    if not neighbors?
+      if rangeOptions.diamond?
+        range = rangeOptions.diamond
+        neighbors = @breed.patchRectangleNullPadded @, range, range, true
+        diamond = []
+        counter = 0
+        row = 0
+        column = -1
+        span = range * 2 + 1
+        for neighbor in neighbors
+          row = counter % span
+          if row == 0
+            column += 1
+          distanceColumn = Math.abs(column - range)
+          distanceRow = Math.abs(row - range)
+          if distanceRow + distanceColumn <= range and distanceRow + distanceColumn != 0
+            diamond.push neighbor
+          counter += 1
+        u.remove(diamond, null)
+        neighbors = @breed.asSet diamond
+      else
+        neighbors = @breed.patchRectangle @, rangeOptions, rangeOptions
+
+      @neighborsCache[rangeOptions] = neighbors
+    return neighbors

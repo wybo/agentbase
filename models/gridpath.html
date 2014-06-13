@@ -48,7 +48,7 @@
         # @setLabelParams @patches, [255,255,255], [12,12]
       step: ->
         @floodFill()
-        p = @patches.asSet (neighbor for neighbor in @walker.patch.neighbors4 when neighbor.ok)
+        p = @patches.asSet (neighbor for neighbor in @walker.patch.neighbors(diamond: 1) when neighbor.ok)
         @drawNum p.length
         @walker.moveTo p.sample()
         @walker.stamp()
@@ -76,12 +76,12 @@
         pset = [@patches.last()]
         while pset.length > 0
           p.ok = true for p in pset
-          pnext = @asSet u.flatten (p.neighbors4 for p in pset)
+          pnext = @asSet u.flatten (p.neighbors(diamond: 1) for p in pset)
           pnext.sort("id").uniq()
           pset = (n for n in pnext when not n.ok and not n.occupied)
         null
 
-    # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors
+    # div, patchSize, minX, maxX, minY, maxY, isTorus
     #   Defaults: 13, -16, 16, -16, 16, false, true
     # model = new MyModel "layers", 30, 0,10, 0,10
     # model.setRootVars() # Debug: Put Model vars in global name space

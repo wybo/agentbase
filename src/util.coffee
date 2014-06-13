@@ -312,14 +312,13 @@ ABM.util = u =
   contains: (array, object) ->
     array.indexOf(object) >= 0
 
-  # Remove an object from an array. Binary search if f isnt null.
+  # Remove an object from an array.
   # Error if object not in array.
   remove: (array, object) ->
-    index = array.indexOf object
-    if index isnt -1
+    while true
+      index = array.indexOf object
+      break if index is -1
       array.splice index, 1
-    else
-      @error "remove: object not found" #; array
     array
 
   # Remove elements in objects from an array. Binary search if f isnt null.
@@ -429,7 +428,7 @@ ABM.util = u =
       histogram[integer] += 1
 
     for value, integer in histogram when not value?
-      histogram[integer] = 0 
+      histogram[integer] = 0
 
     histogram
 

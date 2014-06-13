@@ -10,11 +10,10 @@
 # * minY/maxY:    min/max y coord in patch coords
 # * numX/numY:    width/height of grid.
 # * isTorus:      true if coord system wraps around at edges
-# * hasNeighbors: true if each patch caches its neighbors
 # * isHeadless:   true if not using canvas drawing
 
-class ABM.Patches extends ABM.BreedSet
-  # Constructor: super creates the empty BreedSet instance and installs
+class ABM.Patches extends ABM.Set
+  # Constructor: super creates the empty Set instance and installs
   # the agentClass (breed) variable shared by all the Patches in this set.
   # Patches are created from top-left to bottom-right to match data sets.
   constructor: -> # agentClass, name, mainSet
@@ -29,7 +28,6 @@ class ABM.Patches extends ABM.BreedSet
     for y in [@maxY..@minY] by -1
       for x in [@minX..@maxX] by 1
         @add new @agentClass x, y
-    @setNeighbors() if @hasNeighbors
     @setPixels() unless @isHeadless # setup off-page canvas for pixel ops
     @
     
@@ -55,16 +53,6 @@ class ABM.Patches extends ABM.BreedSet
       patch.pRectangle = @patchRectangle patch, radius, radius, meToo
       patch.pRectangle.radius = radius #; patch.pRectangle.meToo = meToo
     radius
-
-  # Install neighborhoods in patches
-  setNeighbors: ->
-    for patch in @
-      patch.neighbors =  @patchRectangle patch, 1, 1
-      four = []
-      for neighbor in patch.neighbors
-        if neighbor.x is patch.x or neighbor.y is patch.y
-          four.push neighbor
-      patch.neighbors4 = @asSet four
 
   # Setup pixels used for `drawScaledPixels` and `importColors`
   # 
@@ -135,7 +123,8 @@ class ABM.Patches extends ABM.BreedSet
 # #### Patch metrics
   
   # Convert patch measure to pixels
-  toBits: (patch) -> patch * @size
+  toBits: (patch) ->
+    patch * @size
 
   # Convert bit measure to patches
   fromBits: (b) -> b / @size
@@ -146,27 +135,34 @@ class ABM.Patches extends ABM.BreedSet
   # patch `patch`, dx, dy units to the right/left and up/down. 
   # Exclude `patch` unless meToo is true, default false.
   patchRectangle: (patch, dx, dy, meToo = false) ->
-    return patch.pRectangle if patch.pRectangle? and patch.pRectangle.radius is dx 
+    rectangle = @patchRectangleNullPadded(patch, dx, dy, meToo)
+    u.remove(rectangle, null)
+
+  patchRectangleNullPadded: (patch, dx, dy, meToo = false) ->
+    return patch.pRectangle if patch.pRectangle? and patch.pRectangle.radius is dx
     # and patch.pRectangle.radius is dy
-    rect = []; # REMIND: optimize if no wrapping, rect inside patch boundaries
+    rectangle = []; # REMIND: optimize if no wrapping, rectangle inside patch boundaries
     for y in [(patch.y - dy)..(patch.y + dy)] by 1 # by 1: perf: avoid bidir JS for loop
       for x in [(patch.x - dx)..(patch.x + dx)] by 1
-        if @isTorus or (@minX <= x <= @maxX and @minY <= y <= @maxY)
-          if @isTorus
-            if x < @minX
-              x += @numX
-            if x > @maxX
-              x -= @numX
-            if y < @minY
-              y += @numY
-            if y > @maxY
-              y -= @numY
-          nextPatch = @patchXY x, y # much faster than coord()
-          unless nextPatch?
-            u.error "patchRectangle: x, y out of bounds, see console.log"
-            console.log "x #{x} y #{y} patch.x #{patch.x} patch.y #{patch.y} dx #{dx} dy #{dy}"
-          rect.push nextPatch if (meToo or patch isnt nextPatch)
-    @asSet rect
+        nextPatch = null
+        if @isTorus
+          if x < @minX
+            x += @numX
+          if x > @maxX
+            x -= @numX
+          if y < @minY
+            y += @numY
+          if y > @maxY
+            y -= @numY
+          nextPatch = @patchXY x, y
+        else if x >= @minX and x <= @maxX and
+            y >= @minY and y <= @maxY
+          nextPatch = @patchXY x, y
+
+        if (meToo or patch isnt nextPatch)
+          rectangle.push nextPatch
+
+    @asSet rectangle
 
   # Draws, or "imports" an image URL into the drawing layer.
   # The image is scaled to fit the drawing layer.
@@ -275,9 +271,9 @@ class ABM.Patches extends ABM.BreedSet
     for patch in @
       dv = patch[v] * rate
       dv8 = dv / 8
-      nn = patch.neighbors.length
+      nn = patch.neighbors().length
       patch._diffuseNext += patch[v] - dv + (8 - nn) * dv8
-      for neighbor in patch.neighbors
+      for neighbor in patch.neighbors()
         neighbor._diffuseNext += dv8
     # pass 2: set new value for all patches, zero temp, modify color if c given
     for patch in @

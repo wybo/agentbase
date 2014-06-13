@@ -159,7 +159,7 @@ class ABM.Agent
   neighbors: (options...) ->
     array = @breed.asSet []
     if @patch
-      for patch in @patch.neighbors
+      for patch in @patch.neighbors(options...)
         for agent in patch.agents
           array.push agent
     array

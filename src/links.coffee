@@ -1,10 +1,10 @@
 # ### Links
   
-# Class Links is a subclass of BreedSet which stores instances of Link
+# Class Links is a subclass of Set which stores instances of Link
 # or subclasses of Link
 
-class ABM.Links extends ABM.BreedSet
-  # Constructor: super creates the empty BreedSet instance and installs
+class ABM.Links extends ABM.Set
+  # Constructor: super creates the empty Set instance and installs
   # the agentClass (breed) variable shared by all the Links in this set.
   constructor: -> # agentClass, name, mainSet
     super # call super with all the args I was called with

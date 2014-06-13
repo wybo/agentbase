@@ -58,11 +58,11 @@
           console.log "..stopping, fire done at tick: #{@animator.ticks}"
           @stop()
         for a in @fires by -1 # -1: allow changeBreed() in loop
-          @ignite patch for patch in a.patch.neighbors4 when u.colorsEqual patch.color, [0, 255, 0]
+          @ignite patch for patch in a.patch.neighbors(diamond: 1) when u.colorsEqual patch.color, [0, 255, 0]
           @embers.setBreed a
         @fadeEmbers()
 
-    # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors
+    # div, patchSize, minX, maxX, minY, maxY, isTorus
     #   Defaults: 13, -16, 16, -16, 16, false, true
     model = new MyModel {
       div: "layers",

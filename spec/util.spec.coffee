@@ -1,4 +1,4 @@
-code = require "../var/agentscript.coffee"
+code = require "../lib/agentscript.coffee"
 
 ABM = code.ABM
 u = ABM.util

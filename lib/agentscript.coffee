@@ -312,14 +312,13 @@ ABM.util = u =
   contains: (array, object) ->
     array.indexOf(object) >= 0
 
-  # Remove an object from an array. Binary search if f isnt null.
+  # Remove an object from an array.
   # Error if object not in array.
   remove: (array, object) ->
-    index = array.indexOf object
-    if index isnt -1
+    while true
+      index = array.indexOf object
+      break if index is -1
       array.splice index, 1
-    else
-      @error "remove: object not found" #; array
     array
 
   # Remove elements in objects from an array. Binary search if f isnt null.
@@ -429,7 +428,7 @@ ABM.util = u =
       histogram[integer] += 1
 
     for value, integer in histogram when not value?
-      histogram[integer] = 0 
+      histogram[integer] = 0
 
     histogram
 
@@ -1370,7 +1369,7 @@ class ABM.Agent
   neighbors: (options...) ->
     array = @breed.asSet []
     if @patch
-      for patch in @patch.neighbors
+      for patch in @patch.neighbors(options...)
         for agent in patch.agents
           array.push agent
     array
@@ -1830,20 +1829,19 @@ class ABM.Model
     for own key, value of defaults
       options[key] ?= value
 
-    {size, minX, maxX, minY, maxY, isTorus, hasNeighbors, isHeadless} = options
+    ABM.world = @world = {}
 
-    numX = maxX - minX + 1
-    numY = maxY - minY + 1
-    pxWidth = numX * size
-    pxHeight = numY * size
-    minXcor = minX - .5
-    maxXcor = maxX + .5
-    minYcor = minY - .5
-    maxYcor = maxY + .5
-    ABM.world = @world = {
-      size, minX, maxX, minY, maxY, minXcor, maxXcor, minYcor, maxYcor, numX,
-      numY, pxWidth, pxHeight, isTorus, hasNeighbors, isHeadless
-    }
+    for own key, value of options
+      @world[key] = value
+
+    @world.numX = @world.maxX - @world.minX + 1
+    @world.numY = @world.maxY - @world.minY + 1
+    @world.pxWidth = @world.numX * @world.size
+    @world.pxHeight = @world.numY * @world.size
+    @world.minXcor = @world.minX - .5
+    @world.maxXcor = @world.maxX + .5
+    @world.minYcor = @world.minY - .5
+    @world.maxYcor = @world.maxY + .5
 
   setWorldDeprecated: (size, minX, maxX, minY, maxY, isTorus, hasNeighbors,
       isHeadless) ->
@@ -2096,28 +2094,21 @@ class ABM.Patch
   # * label:       text for the patch
   # * labelColor:  the color of my label text
   # * labelOffset: the x, y offset of my label from my x, y location
-  # * neighbors:   adjacent neighbors: n: 8 patches, n4: N, E, S, W patches
-  # * neighbors4: 
   # * pRectangle:  cached rect for performance
-  #
-  # Patches may not need their neighbors, thus we use a default
-  # of none.  n and n4 are promoted by the Patches agent set 
-  # if world.neighbors is true, the default.
 
   id: null              # unique id, promoted by agentset create factory method
   breed: null           # set by the agentSet owning this patch
   x: null               # The patch position in the patch grid
   y: null
-  neighbors: null       # The neighbors, n: 8, n4: 4. null OK if model doesn't need them.
-  neighbors4: null
   color: [0, 0, 0]      # The patch color
   hidden: false         # draw me?
   label: null           # text for the patch
   labelColor: [0, 0, 0] # text color
   labelOffset: [0, 0]   # text offset from the patch center
   pRectangle: null      # Performance: cached rect of neighborhood larger than n.
+  neighborsCache: {}    # Access through neighbors()
   
-  # New Patch: Just set x, y. Neighbors set by Patches constructor if needed.
+  # New Patch: Just set x, y.
   constructor: (@x, @y) ->
 
   # Return a string representation of the patch.
@@ -2166,6 +2157,36 @@ class ABM.Patch
       init(agent)
       agent
 
+  # Get neighbors for patch
+  neighbors: (rangeOptions) ->
+    rangeOptions ?= 1
+    neighbors = @neighborsCache[range]
+    if not neighbors?
+      if rangeOptions.diamond?
+        range = rangeOptions.diamond
+        neighbors = @breed.patchRectangleNullPadded @, range, range, true
+        diamond = []
+        counter = 0
+        row = 0
+        column = -1
+        span = range * 2 + 1
+        for neighbor in neighbors
+          row = counter % span
+          if row == 0
+            column += 1
+          distanceColumn = Math.abs(column - range)
+          distanceRow = Math.abs(row - range)
+          if distanceRow + distanceColumn <= range and distanceRow + distanceColumn != 0
+            diamond.push neighbor
+          counter += 1
+        u.remove(diamond, null)
+        neighbors = @breed.asSet diamond
+      else
+        neighbors = @breed.patchRectangle @, rangeOptions, rangeOptions
+
+      @neighborsCache[rangeOptions] = neighbors
+    return neighbors
+
 # ### Patches
   
 # Class Patches is a singleton 2D matrix of Patch instances, each patch 
@@ -2178,7 +2199,6 @@ class ABM.Patch
 # * minY/maxY:    min/max y coord in patch coords
 # * numX/numY:    width/height of grid.
 # * isTorus:      true if coord system wraps around at edges
-# * hasNeighbors: true if each patch caches its neighbors
 # * isHeadless:   true if not using canvas drawing
 
 class ABM.Patches extends ABM.BreedSet
@@ -2197,7 +2217,6 @@ class ABM.Patches extends ABM.BreedSet
     for y in [@maxY..@minY] by -1
       for x in [@minX..@maxX] by 1
         @add new @agentClass x, y
-    @setNeighbors() if @hasNeighbors
     @setPixels() unless @isHeadless # setup off-page canvas for pixel ops
     @
     
@@ -2223,16 +2242,6 @@ class ABM.Patches extends ABM.BreedSet
       patch.pRectangle = @patchRectangle patch, radius, radius, meToo
       patch.pRectangle.radius = radius #; patch.pRectangle.meToo = meToo
     radius
-
-  # Install neighborhoods in patches
-  setNeighbors: ->
-    for patch in @
-      patch.neighbors =  @patchRectangle patch, 1, 1
-      four = []
-      for neighbor in patch.neighbors
-        if neighbor.x is patch.x or neighbor.y is patch.y
-          four.push neighbor
-      patch.neighbors4 = @asSet four
 
   # Setup pixels used for `drawScaledPixels` and `importColors`
   # 
@@ -2303,7 +2312,8 @@ class ABM.Patches extends ABM.BreedSet
 # #### Patch metrics
   
   # Convert patch measure to pixels
-  toBits: (patch) -> patch * @size
+  toBits: (patch) ->
+    patch * @size
 
   # Convert bit measure to patches
   fromBits: (b) -> b / @size
@@ -2314,27 +2324,34 @@ class ABM.Patches extends ABM.BreedSet
   # patch `patch`, dx, dy units to the right/left and up/down. 
   # Exclude `patch` unless meToo is true, default false.
   patchRectangle: (patch, dx, dy, meToo = false) ->
-    return patch.pRectangle if patch.pRectangle? and patch.pRectangle.radius is dx 
+    rectangle = @patchRectangleNullPadded(patch, dx, dy, meToo)
+    u.remove(rectangle, null)
+
+  patchRectangleNullPadded: (patch, dx, dy, meToo = false) ->
+    return patch.pRectangle if patch.pRectangle? and patch.pRectangle.radius is dx
     # and patch.pRectangle.radius is dy
-    rect = []; # REMIND: optimize if no wrapping, rect inside patch boundaries
+    rectangle = []; # REMIND: optimize if no wrapping, rectangle inside patch boundaries
     for y in [(patch.y - dy)..(patch.y + dy)] by 1 # by 1: perf: avoid bidir JS for loop
       for x in [(patch.x - dx)..(patch.x + dx)] by 1
-        if @isTorus or (@minX <= x <= @maxX and @minY <= y <= @maxY)
-          if @isTorus
-            if x < @minX
-              x += @numX
-            if x > @maxX
-              x -= @numX
-            if y < @minY
-              y += @numY
-            if y > @maxY
-              y -= @numY
-          nextPatch = @patchXY x, y # much faster than coord()
-          unless nextPatch?
-            u.error "patchRectangle: x, y out of bounds, see console.log"
-            console.log "x #{x} y #{y} patch.x #{patch.x} patch.y #{patch.y} dx #{dx} dy #{dy}"
-          rect.push nextPatch if (meToo or patch isnt nextPatch)
-    @asSet rect
+        nextPatch = null
+        if @isTorus
+          if x < @minX
+            x += @numX
+          if x > @maxX
+            x -= @numX
+          if y < @minY
+            y += @numY
+          if y > @maxY
+            y -= @numY
+          nextPatch = @patchXY x, y
+        else if x >= @minX and x <= @maxX and
+            y >= @minY and y <= @maxY
+          nextPatch = @patchXY x, y
+
+        if (meToo or patch isnt nextPatch)
+          rectangle.push nextPatch
+
+    @asSet rectangle
 
   # Draws, or "imports" an image URL into the drawing layer.
   # The image is scaled to fit the drawing layer.
@@ -2443,9 +2460,9 @@ class ABM.Patches extends ABM.BreedSet
     for patch in @
       dv = patch[v] * rate
       dv8 = dv / 8
-      nn = patch.neighbors.length
+      nn = patch.neighbors().length
       patch._diffuseNext += patch[v] - dv + (8 - nn) * dv8
-      for neighbor in patch.neighbors
+      for neighbor in patch.neighbors()
         neighbor._diffuseNext += dv8
     # pass 2: set new value for all patches, zero temp, modify color if c given
     for patch in @
