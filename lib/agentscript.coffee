@@ -866,14 +866,14 @@ ABM.util = u =
   typedToJS: (typedArray) ->
     (i for i in typedArray)
 
-# An **BreedSet** is an array, along with a class, agentClass, whose instances
+# A **Set** is an array, along with a class, agentClass, whose instances
 # are the items of the array.  Instances of the class are created
-# by the `create` factory method of an BreedSet.
+# by the `create` factory method of a Set.
 #
 # It is a subclass of `Array` and is the base class for
-# `Patches`, `Agents`, and `Links`. An BreedSet keeps track of all
+# `Patches`, `Agents`, and `Links`. A Set keeps track of all
 # its created instances.  It also provides, much like the **ABM.util**
-# module, many methods shared by all subclasses of BreedSet.
+# module, many methods shared by all subclasses of Set.
 #
 # ABM contains three agentsets created by class Model:
 #
@@ -883,7 +883,7 @@ ABM.util = u =
 #
 # See NetLogo [documentation](http://ccl.northwestern.edu/netlogo/docs/)
 # for explanation of the overall semantics of Agent Based Modeling
-# used by BreedSets as well as Patches, Agents, and Links.
+# used by Sets as well as Patches, Agents, and Links.
 #
 # Note: subclassing `Array` can be dangerous and we may have to convert
 # to a different style. See Trevor Burnham's [comments](http://goo.gl/Lca8g)
@@ -891,18 +891,18 @@ ABM.util = u =
 #
 # Because we are an array subset, @[i] == this[i] == agentset[i]
 
-class ABM.BreedSet extends Array
+class ABM.Set extends Array
   # ### Static members
   
   # `asSet` is a static wrapper function converting an array of agents into
-  # an `BreedSet` .. except for the ID which only impacts the add method.
-  # It is primarily used to turn a comprehension into an BreedSet instance
+  # an `Set` .. except for the ID which only impacts the add method.
+  # It is primarily used to turn a comprehension into a Set instance
   # which then gains access to all the methods below.  Ex:
   #
   #     evens = (a for a in ABM.agents when a.id % 2 is 0)
-  #     ABM.BreedSet.asSet(evens)
+  #     ABM.Set.asSet(evens)
   #     randomEven = evens.random()
-  @asSet: (a, setType = ABM.BreedSet) ->
+  @asSet: (a, setType = ABM.Set) ->
     a.__proto__ = setType.prototype ? setType.constructor.prototype # setType.__proto__
     a
   
@@ -911,13 +911,13 @@ class ABM.BreedSet extends Array
   #
   #     AS = for i in [1..5] # long form comprehension
   #       {id:i, x:u.randomInt(10), y:u.randomInt(10)}
-  #     ABM.BreedSet.asSet AS # Convert AS to BreedSet in place
+  #     ABM.Set.asSet AS # Convert AS to Set in place
   #        [{id: 1, x: 0, y: 1}, {id: 2, x: 8, y: 0}, {id: 3, x: 6, y: 4},
   #         {id: 4, x: 1, y: 3}, {id: 5, x: 1, y: 1}]
 
   # ### Constructor and add/remove agents.
   
-  # Create an empty `BreedSet` and initialize the `ID` counter for add().
+  # Create an empty `Set` and initialize the `ID` counter for add().
   # If mainSet is supplied, the new agentset is a sub-array of mainSet.
   # This sub-array feature is how breeds are managed, see class `Model`
   constructor: (agentClass, name, mainSet) ->
@@ -972,7 +972,7 @@ class ABM.BreedSet extends Array
       @ownVariables.push name
     @
 
-  # Move an agent from its BreedSet/breed to be in this BreedSet/breed.
+  # Move an agent from its Set/breed to be in this Set/breed.
   # REMIND: match NetLogo sematics in terms of own variables.
   setBreed: (a) -> # change agent a to be in this breed
     u.remove a.breed, a
@@ -1018,15 +1018,15 @@ class ABM.BreedSet extends Array
   # Remove adjacent duplicates, by reference.
   #
   #     as = (AS.random() for i in [1..4]) # 4 random agents w/ dups
-  #     ABM.BreedSet.asSet as # [{id: 1, x: 8, y: 0}, {id: 0, x: 0, y: 1},
+  #     ABM.Set.asSet as # [{id: 1, x: 8, y: 0}, {id: 0, x: 0, y: 1},
   #                              {id: 0, x: 0, y: 1}, {id: 2, x: 6, y: 4}]
   #     as.uniq() # [{id: 0, x: 0, y: 1}, {id: 1, x: 8, y: 0}, 
   #                  {id: 2, x: 6, y: 4}]
   uniq: -> u.uniq(@)
 
-  # The static `ABM.BreedSet.asSet` as a method.
+  # The static `ABM.Set.asSet` as a method.
   # Used by agentset methods creating new agentsets.
-  asSet: (a, setType = @) -> ABM.BreedSet.asSet a, setType # setType = ABM.BreedSet
+  asSet: (a, setType = @) -> ABM.Set.asSet a, setType # setType = ABM.Set
 
   # Similar to above but sorted via `id`.
   asOrderedSet: (a) -> @asSet(a).sort("id")
@@ -1053,7 +1053,7 @@ class ABM.BreedSet extends Array
   # This is generally used via: getProp, modify results, setProp
   #
   #     # increment x for agents with x=1
-  #     AS1 = ABM.BreedSet.asSet AS.getPropWith("x", 1)
+  #     AS1 = ABM.Set.asSet AS.getPropWith("x", 1)
   #     AS1.setProp "x", 2 # {id: 4, x: 2, y: 3}, {id: 5, x: 2, y: 1}
   #
   # Note this changes the last two objects in the original AS above
@@ -1198,7 +1198,7 @@ class ABM.BreedSet extends Array
 #     class XY
 #       constructor: (@x, @y) ->
 #       toString: -> "{id: #{@id}, x: #{@x}, y: #{@y}}"
-#     @AS = new ABM.BreedSet # @ => global name space
+#     @AS = new ABM.Set # @ => global name space
 #
 # The result of 
 #
@@ -1427,10 +1427,10 @@ class ABM.Agent
 
 # ### Agents
 
-# Class Agents is a subclass of BreedSet which stores instances of Agent or 
+# Class Agents is a subclass of Set which stores instances of Agent or 
 # Breeds, which are subclasses of Agent
-class ABM.Agents extends ABM.BreedSet
-  # Constructor creates the empty BreedSet instance and installs
+class ABM.Agents extends ABM.Set
+  # Constructor creates the empty Set instance and installs
   # the agentClass (breed) variable shared by all the Agents in this set.
   constructor: -> # agentClass, name, mainSet
     super # call super with all the args I was called with
@@ -1483,7 +1483,7 @@ class ABM.Agents extends ABM.BreedSet
     as = @inRectangle a, radius, radius, true
     super a, radius, meToo # as.inRadius a, radius, meToo
 
-# Class Model is the control center for our BreedSets: Patches, Agents and Links.
+# Class Model is the control center for our Sets: Patches, Agents and Links.
 # Creating new models is done by subclassing class Model and overriding two 
 # virtual/abstract methods: `setup()` and `step()`
 
@@ -1674,11 +1674,11 @@ class ABM.Link
 
 # ### Links
   
-# Class Links is a subclass of BreedSet which stores instances of Link
+# Class Links is a subclass of Set which stores instances of Link
 # or subclasses of Link
 
-class ABM.Links extends ABM.BreedSet
-  # Constructor: super creates the empty BreedSet instance and installs
+class ABM.Links extends ABM.Set
+  # Constructor: super creates the empty Set instance and installs
   # the agentClass (breed) variable shared by all the Links in this set.
   constructor: -> # agentClass, name, mainSet
     super # call super with all the args I was called with
@@ -1719,7 +1719,7 @@ class ABM.Links extends ABM.BreedSet
       a.forward radius
     null
 
-# Class Model is the control center for our BreedSets: Patches, Agents and Links.
+# Class Model is the control center for our Sets: Patches, Agents and Links.
 # Creating new models is done by subclassing class Model and overriding two 
 # virtual/abstract methods: `setup()` and `step()`
 
@@ -2053,7 +2053,7 @@ class ABM.Model
   #
   #     even = @asSet (a for a in @agents when a.id % 2 is 0)
   #     even.shuffle().getProp("id") # [6, 0, 4, 2, 8]
-  asSet: (a, setType = ABM.BreedSet) -> ABM.BreedSet.asSet a, setType
+  asSet: (a, setType = ABM.Set) -> ABM.Set.asSet a, setType
 
   # A simple debug aid which places short names in the global name space.
   # Note we avoid using the actual name, such as "patches" because this
@@ -2201,8 +2201,8 @@ class ABM.Patch
 # * isTorus:      true if coord system wraps around at edges
 # * isHeadless:   true if not using canvas drawing
 
-class ABM.Patches extends ABM.BreedSet
-  # Constructor: super creates the empty BreedSet instance and installs
+class ABM.Patches extends ABM.Set
+  # Constructor: super creates the empty Set instance and installs
   # the agentClass (breed) variable shared by all the Patches in this set.
   # Patches are created from top-left to bottom-right to match data sets.
   constructor: -> # agentClass, name, mainSet

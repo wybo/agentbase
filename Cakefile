@@ -25,7 +25,7 @@ libDir = 'lib/'
 
 TestCommand = "./node_modules/jasmine-node/bin/jasmine-node --coffee spec/"
 
-firstFileNames = ['util.coffee', 'breedset.coffee']
+firstFileNames = ['util.coffee', 'set.coffee']
 FileNames = firstFileNames.concat(
   fs.readdirSync(srcDir).filter (file) -> file not in firstFileNames)
 FilePaths = ("#{srcDir}#{file}" for file in FileNames)
