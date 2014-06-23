@@ -76,25 +76,35 @@ class ABM.Patch
   # Get neighbors for patch
   neighbors: (options) ->
     options ?= 1
-    cacheKey = JSON.stringify(options)
-    neighbors = @neighborsCache[cacheKey]
+
+    if u.isNumber(options)
+      options = {range: options}
+
+    if not options.cache? or options.cache
+      cacheKey = JSON.stringify(options)
+      neighbors = @neighborsCache[cacheKey]
+
     if not neighbors?
       if options.radius
-        square = @neighbors(options.radius)
+        square = @neighbors(range: options.radius, meToo: options.meToo, cache: options.cache)
         if options.cone
           neighbors = square.inCone(@, options)
+          unless options.cache
+            cacheKey = null
+            # cone has variable heading, better not cache by default
         else
           neighbors = square.inRadius(@, options)
       else if options.diamond
-        neighbors = @diamondNeighbors(options.diamond, options)
+        neighbors = @diamondNeighbors(options.diamond, options.meToo)
       else
-        neighbors = @breed.patchRectangle(@, options, options)
-
-      @neighborsCache[cacheKey] = neighbors
+        neighbors = @breed.patchRectangle(@, options.range, options.range, options.meToo)
+  
+      if cacheKey?
+        @neighborsCache[cacheKey] = neighbors
     return neighbors
 
   # Not to be used directly, will not cache.
-  diamondNeighbors: (range) ->
+  diamondNeighbors: (range, meToo) ->
     neighbors = @breed.patchRectangleNullPadded @, range, range, true
     diamond = []
     counter = 0
@@ -107,7 +117,8 @@ class ABM.Patch
         column += 1
       distanceColumn = Math.abs(column - range)
       distanceRow = Math.abs(row - range)
-      if distanceRow + distanceColumn <= range and distanceRow + distanceColumn != 0
+      if distanceRow + distanceColumn <= range and
+          (meToo or distanceRow + distanceColumn != 0)
         diamond.push neighbor
       counter += 1
     u.remove(diamond, null)

@@ -125,3 +125,13 @@ describe "Patch", ->
       expect(neighbors[1].y).toBe 17
       expect(neighbors[54].x).toBe -20
       expect(neighbors[54].y).toBe -18
+
+    it "caches correcly", ->
+      model = t.setupModel()
+      patch = model.patches.patch(10, 10)
+
+      neighbors = patch.neighbors(range: 1, cache: false)
+      expect(patch.neighborsCache).toEqual {}
+
+      neighbors = patch.neighbors(range: 1)
+      expect(patch.neighborsCache['{"range":1}'].length).toBe 8
