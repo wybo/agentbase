@@ -13,7 +13,6 @@ class ABM.Patch
   # * label:       text for the patch
   # * labelColor:  the color of my label text
   # * labelOffset: the x, y offset of my label from my x, y location
-  # * pRectangle:  cached rect for performance
 
   id: null              # unique id, promoted by agentset create factory method
   breed: null           # set by the agentSet owning this patch
@@ -24,11 +23,12 @@ class ABM.Patch
   label: null           # text for the patch
   labelColor: [0, 0, 0] # text color
   labelOffset: [0, 0]   # text offset from the patch center
-  pRectangle: null      # Performance: cached rect of neighborhood larger than n.
-  neighborsCache: {}    # Access through neighbors()
+  agents: null          # agents on this patch
   
   # New Patch: Just set x, y.
   constructor: (@x, @y) ->
+    @neighborsCache = {}
+    @agents = []
 
   # Return a string representation of the patch.
   toString: -> "{id:#{@id} xy:#{[@x, @y]} c:#{@color}}"
@@ -52,16 +52,8 @@ class ABM.Patch
       u.contextDrawText context, @label, x + @labelOffset[0], y + @labelOffset[1],
         @labelColor
   
-  # Return an array of the agents on this patch.
-  # If patches.cacheAgentsHere has created an @agents instance
-  # variable for the patches, agents will add/remove themselves
-  # as they move from patch to patch.
-  agentsHere: ->
-    @agents ? (a for a in ABM.agents when a.p is @)
-  # TODO refactor
-
   empty: ->
-    u.empty @agentsHere() # TODO from array
+    u.empty @agents
 
   # Returns true if this patch is on the edge of the grid.
   isOnEdge: ->
@@ -76,32 +68,47 @@ class ABM.Patch
       init(agent)
       agent
 
-  # Get neighbors for patch
-  neighbors: (rangeOptions) ->
-    rangeOptions ?= 1
-    neighbors = @neighborsCache[range]
-    if not neighbors?
-      if rangeOptions.diamond?
-        range = rangeOptions.diamond
-        neighbors = @breed.patchRectangleNullPadded @, range, range, true
-        diamond = []
-        counter = 0
-        row = 0
-        column = -1
-        span = range * 2 + 1
-        for neighbor in neighbors
-          row = counter % span
-          if row == 0
-            column += 1
-          distanceColumn = Math.abs(column - range)
-          distanceRow = Math.abs(row - range)
-          if distanceRow + distanceColumn <= range and distanceRow + distanceColumn != 0
-            diamond.push neighbor
-          counter += 1
-        u.remove(diamond, null)
-        neighbors = @breed.asSet diamond
-      else
-        neighbors = @breed.patchRectangle @, rangeOptions, rangeOptions
+  # Return distance in patch coords from me to given agent/patch
+  # using patch topology (isTorus)
+  distance: (point) -> # o any object w/ x, y, patch or agent
+    u.distance @, point, ABM.patches
 
-      @neighborsCache[rangeOptions] = neighbors
+  # Get neighbors for patch
+  neighbors: (options) ->
+    options ?= 1
+    cacheKey = JSON.stringify(options)
+    neighbors = @neighborsCache[cacheKey]
+    if not neighbors?
+      if options.radius
+        square = @neighbors(options.radius)
+        if options.cone
+          neighbors = square.inCone(@, options)
+        else
+          neighbors = square.inRadius(@, options)
+      else if options.diamond
+        neighbors = @diamondNeighbors(options.diamond, options)
+      else
+        neighbors = @breed.patchRectangle(@, options, options)
+
+      @neighborsCache[cacheKey] = neighbors
     return neighbors
+
+  # Not to be used directly, will not cache.
+  diamondNeighbors: (range) ->
+    neighbors = @breed.patchRectangleNullPadded @, range, range, true
+    diamond = []
+    counter = 0
+    row = 0
+    column = -1
+    span = range * 2 + 1
+    for neighbor in neighbors
+      row = counter % span
+      if row == 0
+        column += 1
+      distanceColumn = Math.abs(column - range)
+      distanceRow = Math.abs(row - range)
+      if distanceRow + distanceColumn <= range and distanceRow + distanceColumn != 0
+        diamond.push neighbor
+      counter += 1
+    u.remove(diamond, null)
+    return @breed.asSet diamond

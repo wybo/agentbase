@@ -31,28 +31,11 @@ class ABM.Patches extends ABM.Set
     @setPixels() unless @isHeadless # setup off-page canvas for pixel ops
     @
     
-  # Have patches cache the agents currently on them.
-  # Optimizes p.agentsHere method.
-  # Call before first agent is created.
-  cacheAgentsHere: ->
-    for patch in @
-      patch.agents = []
-    null
-
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
   # if browser does not support smoothing flags.
   usePixels: (@drawWithPixels = true) ->
     context = ABM.contexts.patches
     u.setContextSmoothing context, not @drawWithPixels
-
-  # Optimization: Cache a single set by modeler for use by
-  # patchRectangle, inCone, inRectangle, inRadius.
-  # Ex: flock demo model's vision rect.
-  cacheRectangle: (radius, meToo = false) ->
-    for patch in @
-      patch.pRectangle = @patchRectangle patch, radius, radius, meToo
-      patch.pRectangle.radius = radius #; patch.pRectangle.meToo = meToo
-    radius
 
   # Setup pixels used for `drawScaledPixels` and `importColors`
   # 
@@ -139,8 +122,6 @@ class ABM.Patches extends ABM.Set
     u.remove(rectangle, null)
 
   patchRectangleNullPadded: (patch, dx, dy, meToo = false) ->
-    return patch.pRectangle if patch.pRectangle? and patch.pRectangle.radius is dx
-    # and patch.pRectangle.radius is dy
     rectangle = []; # REMIND: optimize if no wrapping, rectangle inside patch boundaries
     for y in [(patch.y - dy)..(patch.y + dy)] by 1 # by 1: perf: avoid bidir JS for loop
       for x in [(patch.x - dx)..(patch.x + dx)] by 1

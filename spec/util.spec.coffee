@@ -1,6 +1,6 @@
-code = require "../lib/agentscript.coffee"
+t = require "./test.coffee"
 
-ABM = code.ABM
+ABM = t.ABM
 u = ABM.util
 
 describe "Util", ->
@@ -309,25 +309,29 @@ describe "Util", ->
 
   describe "radiansToward", ->
     it "returns the radians toward the second point", ->
-      expect(u.radiansToward({x: 1, y: 1}, {x: 3, y: 3})).toBeCloseTo 0.79
+      expect(u.radiansToward({x: 1, y: 1}, {x: 3, y: 3}, {isTorus: false})).toBeCloseTo 0.79
+
+    it "returns the radians toward the second point on a torus", ->
+      expect(u.radiansToward({x: 1, y: 1}, {x: 3, y: 3}, {isTorus: true, numX: 10, numY: 10})).toBeCloseTo 0.79
+      expect(u.radiansToward({x: 1, y: 1}, {x: 3, y: 3}, {isTorus: true, numX: 3, numY: 3})).toBeCloseTo -2.36
 
   describe "inCone", ->
     it "returns true if in cone", ->
-      expect(u.inCone(3, 6, 3, {x: 1, y: 1}, {x: 2, y: 2})).toBe true
-      expect(u.inCone(3, 3, 1, {x: 1, y: 1}, {x: 2, y: 2})).toBe false
+      expect(u.inCone(3, 6, 3, {x: 1, y: 1}, {x: 2, y: 2}, {isTorus: false})).toBe true
+      expect(u.inCone(3, 3, 1, {x: 1, y: 1}, {x: 2, y: 2}, {isTorus: false})).toBe false
+
+    it "returns true if in cone for toruses too", ->
+      expect(u.inCone(3, 6, 3, {x: 1, y: 1}, {x: 2, y: 2}, {isTorus: true, numX: 10, numY: 10})).toBe true
+      expect(u.inCone(3, 3, 3, {x: 1, y: 1}, {x: 2, y: 2}, {isTorus: true, numX: 10, numY: 10})).toBe false
+      expect(u.inCone(3, 3, 3, {x: 1, y: 1}, {x: 2, y: 2}, {isTorus: true, numX: 3, numY: 3})).toBe true
 
   describe "distance", ->
     it "returns distance between the points", ->
-      expect(u.distance({x: 1, y: 1}, {x: 4, y: 9})).toBeCloseTo 8.54
+      expect(u.distance({x: 1, y: 1}, {x: 4, y: 9}, {isTorus: false})).toBeCloseTo 8.54
 
-  describe "distance", ->
-    it "returns distance between the points", ->
-      expect(u.distance({x: 1, y: 1}, {x: 4, y: 9})).toBeCloseTo 8.54
-
-  describe "torusDistance", ->
     it "returns distance between the closest points on the torus", ->
-      expect(u.torusDistance({x: 1, y: 1}, {x: 4, y: 9}, 20, 20)).toBeCloseTo 8.54
-      expect(u.torusDistance({x: 1, y: 1}, {x: 4, y: 9}, 10, 10)).toBeCloseTo 3.61
+      expect(u.distance({x: 1, y: 1}, {x: 4, y: 9}, {isTorus: true, numX: 20, numY: 20})).toBeCloseTo 8.54
+      expect(u.distance({x: 1, y: 1}, {x: 4, y: 9}, {isTorus: true, numX: 10, numY: 10})).toBeCloseTo 3.61
 
   describe "torus4Points", ->
     it "returns the 4 reflected points", ->
@@ -337,17 +341,6 @@ describe "Util", ->
   describe "closestTorusPoint", ->
     it "returns the closest of the 4 reflected points", ->
       expect(u.closestTorusPoint({x: 1, y: 1}, {x: 4, y: 9}, 10, 10)).toEqual {x: 4, y: -1}
-
-  describe "torusRadiansToward", ->
-    it "returns the radians toward the second point on a torus", ->
-      expect(u.torusRadiansToward({x: 1, y: 1}, {x: 3, y: 3}, 10, 10)).toBeCloseTo 0.79
-      expect(u.torusRadiansToward({x: 1, y: 1}, {x: 3, y: 3}, 3, 3)).toBeCloseTo -2.36
-
-  describe "inTorusCone", ->
-    it "returns true if in cone", ->
-      expect(u.inTorusCone(3, 6, 3, {x: 1, y: 1}, {x: 2, y: 2}, 10, 10)).toBe true
-      expect(u.inTorusCone(3, 3, 3, {x: 1, y: 1}, {x: 2, y: 2}, 10, 10)).toBe false
-      expect(u.inTorusCone(3, 3, 3, {x: 1, y: 1}, {x: 2, y: 2}, 3, 3)).toBe true
 
   # ### File I/O
 

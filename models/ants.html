@@ -11,7 +11,6 @@
         
         # No optimizations: 10fps
         @patches.usePixels() # 24fps
-        # @patches.cacheAgentsHere() # 9-10fps, not needed & modest overhead
         # two: 27fps, now static colors larger percent of faster patches.
         @agents.setUseSprites() # 24->46-48fps!
         
@@ -86,7 +85,7 @@
           # a.rotate Math.PI 
           a.rotate u.degreesToRadians(180)
         else
-          nAhead = a.inCone a.patch.neighbors(), u.degreesToRadians(180), 2
+          nAhead = a.patch.neighbors(heading: a.heading, cone: u.degreesToRadians(180), radius: 2)
           [p, max] = nAhead.max ((n) => @targetPheromone(a, n)), true # => for @
           a.face p if max > .001/@maxPheromone
           # p = nAhead.max ((n) => @targetPheromone(a, n)) # => for @

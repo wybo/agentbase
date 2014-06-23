@@ -249,9 +249,11 @@ class ABM.Set extends Array
   # 
   #     AS.min("x") # {id: 0, x: 0, y: 1}
   #     AS.max((a) -> a.x + a.y, true) # {id: 2, x: 6, y: 4}, 10
-  min: (f, valueToo = false) -> u.min @, f, valueToo
+  min: (f, valueToo = false) ->
+    u.min @, f, valueToo
 
-  max: (f, valueToo = false) -> u.max @, f, valueToo
+  max: (f, valueToo = false) ->
+    u.max @, f, valueToo
 
   # ### Drawing
   
@@ -272,36 +274,6 @@ class ABM.Set extends Array
   hide: ->
     o.hidden = true for o in @
     @draw(ABM.contexts[@name])
-
-  # ### Topology
-  
-  # For ABM.patches & ABM.agents which have x, y. See ABM.util doc.
-  #
-  # Return all agents in agentset within d distance from given object.
-  # By default excludes the given object. Uses linear/torus distance
-  # depending on patches.isTorus, and patches width/height if needed.
-  inRadius: (point, distance, meToo = false) -> # for any objects w/ x, y
-    if ABM.patches.isTorus
-      width = ABM.patches.numX
-      height = ABM.patches.numY
-      @asSet (a for a in @ when \
-        u.torusDistance(point, a, width, height) <= distance and (meToo or a isnt point))
-    else
-      @asSet (a for a in @ when \
-        u.distance(point, a) <= distance and (meToo or a isnt point))
-
-  # As above, but also limited to the angle `cone` around
-  # a `heading` from object `o`.
-  inCone: (point, heading, cone, radius, meToo = false) ->
-    rSet = @inRadius point, radius, meToo
-    if ABM.patches.isTorus
-      width = ABM.patches.numX
-      height = ABM.patches.numY
-      @asSet (a for a in rSet when \
-        (a is point and meToo) or u.inTorusCone(heading, cone, radius, point, a, width, height))
-    else
-      @asSet (a for a in rSet when \
-        (a is point and meToo) or u.inCone(heading, cone, radius, point, a))
 
   # ### Debugging
   
@@ -339,3 +311,23 @@ class ABM.Set extends Array
 # random run, captured so we can reuse.
 #
 #     AS.add new XY(pt...) for pt in [[0, 1], [8, 0], [6, 4], [1, 3], [1, 1]]
+
+  # Return all agents within d distance from given object.
+  inRadius: (entity1, options) -> # for any objects w/ x, y
+    inner = []
+    for entity2 in @
+      if entity1.distance(entity2) <= options.radius
+        inner.push entity2
+    @asSet inner
+      
+  # As above, but also limited to the angle `cone` around
+  # a `heading` from entity1
+  inCone: (entity1, options) ->
+    options.heading ?= entity1.heading
+    # if an agent, it will have heading
+    inner = []
+    for entity2 in @
+      if u.inCone(options.heading, options.cone, options.radius,
+          entity1, entity2, ABM.patches)
+        inner.push entity2
+    @asSet inner

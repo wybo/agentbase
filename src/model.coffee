@@ -165,18 +165,9 @@ class ABM.Model
   # Don't use if patch breeds have different colors.
   setMonochromePatches: -> @patches.monochrome = true
     
-  # Have patches cache the agents currently on them.
-  # Optimizes Patch p.agentsHere method
-  setCacheAgentsHere: -> @patches.cacheAgentsHere()
-  
   # Have agents cache the links with them as a node.
   # Optimizes Agent a.myLinks method
   setCacheMyLinks: -> @agents.cacheLinks()
-  
-  # Have patches cache the given patchRectangle.
-  # Optimizes patchRectangle, inRadius and inCone
-  setCachePatchRectangle:(radius, meToo = false) ->
-    @patches.cacheRectangle radius, meToo
   
 #### User Model Creation
 # A user's model is made by subclassing Model and over-riding these

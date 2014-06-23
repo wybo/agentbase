@@ -500,22 +500,55 @@ ABM.util = u =
   
   # Return angle in [-pi, pi] radians from point1 to point2
   # [See: Math.atan2](http://goo.gl/JS8DF)
-  radiansToward: (point1, point2) ->
+  radiansToward: (point1, point2, patches) ->
+    if patches.isTorus
+      @radiansTowardTorus point1, point2, patches
+    else
+      @radiansTowardEuclidian point1, point2
+
+  # Euclidian radians toward
+  radiansTowardEuclidian: (point1, point2) ->
     Math.atan2 point2.y - point1.y, point2.x - point1.x
+
+  # Return the angle from x1, y1 to x2, y2 on torus using shortest reflection.
+  radiansTowardTorus: (point1, point2, patches) ->
+    closest = @closestTorusPoint point1, point2, patches.numX, patches.numY
+    @radiansTowardEuclidian point1, closest
 
   # Return true if point2 is in cone radians around heading radians from 
   # point1.x, point2.x and within distance radius from point1.x,
-  # point2.x.
-  # I.e. is point2 in cone/heading/radius from point1?
-  inCone: (heading, cone, radius, point1, point2) ->
-    if radius < @distance point1, point2
+  # point2.x. I.e. is point2 in cone/heading/radius from point1?
+  inCone: (heading, cone, radius, point1, point2, patches) ->
+    if patches.isTorus
+      u.inConeTorus(heading, cone, radius, point1, point2, patches)
+    else
+      u.inConeEuclidian(heading, cone, radius, point1, point2)
+
+  # inCone for euclidian distance
+  inConeEuclidian: (heading, cone, radius, point1, point2) ->
+    if radius < @distanceEuclidian point1, point2
       return false
 
-    angle = @radiansToward point1, point2 # angle from 1 to 2
+    angle = @radiansTowardEuclidian point1, point2 # angle from 1 to 2
     cone / 2 >= Math.abs @substractRadians(heading, angle)
 
+  # Return true if point2 is in cone radians around heading radians from 
+  # point1.x, point2.x and within distance radius from point1.x, point2.x
+  # considering all torus reflections.
+  inConeTorus: (heading, cone, radius, point1, point2, patches) ->
+    for point in @torus4Points point1, point2, patches.numX, patches.numY
+      return true if @inConeEuclidian heading, cone, radius, point1, point
+    false
+
+  # Return the distance between point1 and 2
+  distance: (point1, point2, patches) ->
+    if patches.isTorus
+      @distanceTorus(point1, point2, patches)
+    else
+      @distanceEuclidian(point1, point2)
+
   # Return the Euclidean distance between point1 and 2
-  distance: (point1, point2) ->
+  distanceEuclidian: (point1, point2) ->
     distanceX = point1.x - point2.x
     distanceY = point1.y - point2.y
     Math.sqrt distanceX * distanceX + distanceY * distanceY
@@ -545,11 +578,11 @@ ABM.util = u =
   #     -----+---------------+-----
   #      B3  |           B2  |
   #          |               |
-  torusDistance: (point1, point2, width, height) ->
+  distanceTorus: (point1, point2, patches) ->
     xDistance = Math.abs point2.x - point1.x
     yDistance = Math.abs point2.y - point1.y
-    minX = Math.min xDistance, width - xDistance
-    minY = Math.min yDistance, height - yDistance
+    minX = Math.min xDistance, patches.numX - xDistance
+    minY = Math.min yDistance, patches.numY - yDistance
     Math.sqrt minX * minX + minY * minY
 
   # Return 4 torus point reflections of point2 around point1
@@ -588,19 +621,6 @@ ABM.util = u =
       yReflected = point2.y - height
 
     [xReflected, yReflected]
-
-  # Return the angle from x1, y1 to x2, y2 on torus using shortest reflection.
-  torusRadiansToward: (point1, point2, width, height) ->
-    closest = @closestTorusPoint point1, point2, width, height
-    @radiansToward point1, closest
-
-  # Return true if point2 is in cone radians around heading radians from 
-  # point1.x, point2.x and within distance radius from point1.x, point2.x
-  # considering all torus reflections.
-  inTorusCone: (heading, cone, radius, point1, point2, width, height) ->
-    for point in @torus4Points point1, point2, width, height
-      return true if @inCone heading, cone, radius, point1, point
-    false
 
   # ### File I/O
 

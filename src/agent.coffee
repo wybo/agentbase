@@ -48,11 +48,10 @@ class ABM.Agent
 
   constructor: -> # called by agentSets create factory, not user
     @x = @y = 0
-    @patch = ABM.patches.patch @x, @y
     @color = u.randomColor() unless @color? # promote color if default not set
     @heading = u.randomFloat(Math.PI * 2) unless @heading?
-    @patch.agents.push @ if @patch.agents? # ABM.patches.cacheAgentsHere
     @links = [] if @cacheLinks
+    @setXY @x, @y
 
   # Set agent color to `color` scaled by `fraction`. Usage: see patch.fractionOfColor
   fractionOfColor: (color, fraction) ->
@@ -70,11 +69,10 @@ class ABM.Agent
     oldPatch = @patch
     @patch = ABM.patches.patch @x, @y
 
-    if oldPatch and oldPatch.agents?
+    if oldPatch
       u.remove oldPatch.agents, @
 
-    if @patch.agents?
-      @patch.agents.push @
+    @patch.agents.push @
 
     if @penDown
       drawing = ABM.drawing
@@ -130,14 +128,6 @@ class ABM.Agent
   # Draw the agent on the drawing layer, leaving permanent image.
   stamp: -> @draw ABM.drawing
   
-  # Return distance in patch coords from me to given agent/patch
-  # using patch topology (isTorus)
-  distance: (point) -> # o any object w/ x, y, patch or agent
-    if ABM.patches.isTorus
-      u.torusDistance @, point, ABM.patches.numX, ABM.patches.numY
-    else
-      u.distance @, point
-  
   # Return the closest torus topology point of given agent/patch 
   # relative to myself. 
   # Used internally to determine how to draw links between two agents.
@@ -145,25 +135,37 @@ class ABM.Agent
   closestTorusPoint: (point) ->
     u.closestTorusPoint @, point, ABM.patches.numX, ABM.patches.numY
 
-  # Set my heading towards given agent/patch using patch topology.
-  face: (o) -> @heading = @towards o
+  # Return angle towards given agent/patch using patch topology.
+  angleTowards: (point) ->
+    u.radiansToward @, point, ABM.patches
 
-  # Return heading towards given agent/patch using patch topology.
-  towards: (point) ->
-    if ABM.patches.isTorus
-      u.torusRadiansToward @, point, ABM.patches.numX, ABM.patches.numY
+  # Set heading towards given agent/patch using patch topology.
+  face: (point) ->
+    @heading = @angleTowards point
+  
+  # Return distance in patch coords from me to given agent/patch
+  # using patch topology (isTorus)
+  distance: (point) -> # o any object w/ x, y, patch or agent
+    u.distance @, point, ABM.patches
+
+  # Returns the neighbors (agents) of this agent
+  neighbors: (options) ->
+    options ?= 1
+    if options.radius
+      square = @neighbors(options.radius)
+      if options.cone
+        neighbors = square.inCone(@, options)
+      else
+        neighbors = square.inRadius(@, options)
     else
-      u.radiansToward @, point
-  
-  # Returns the neighbours (agents) of this agent
-  neighbors: (options...) ->
-    array = @breed.asSet []
-    if @patch
-      for patch in @patch.neighbors(options...)
-        for agent in patch.agents
-          array.push agent
-    array
-  
+      neighbors = @breed.asSet []
+      if @patch
+        for patch in @patch.neighbors(options)
+          for agent in patch.agents
+            if agent isnt @
+              neighbors.push agent
+    neighbors
+
   # Remove myself from the model. Includes removing myself from the
   # agents agentset and removing any links I may have.
   die: ->
@@ -178,16 +180,11 @@ class ABM.Agent
   # proc is called on the new agent after inserting in its agentSet.
   hatch: (num = 1, breed = ABM.agents, init = ->) ->
     breed.create num, (a) => # fat arrow so that @ = this agent
-      a.setXY @x, @y # for side effects like patches.agentsHere
+      a.setXY @x, @y # for side effects like patches.agents
       a[k] = v for own k, v of @ when k isnt "id"
       init(a) # Important: init called after object inserted in agent set
       a
 
-  # Return the members of the given agentset that are within radius distance 
-  # from me, and within cone radians of my heading using patch topology
-  inCone: (agentSet, cone, radius, meToo = false) ->
-    agentSet.inCone @patch, @heading, cone, radius, meToo # REMIND: @patch vs @?
-  
   # Return other end of link from me
   otherEnd: (l) -> if l.end1 is @ then l.end2 else l.end1
 

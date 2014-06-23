@@ -26,7 +26,6 @@
         @patches.own "elevation slope aspect"
         # @globals "elevation slope aspect vision speed" # fix: problem with removeItem
         
-        @vision = 1 # try range in 1-5 or so
         @speed = .25
         @useAspect = true # model uses aspect/slope or elevation.
         @lastMoved = @patches.length
@@ -34,7 +33,6 @@
         @agents.setDefault "shape", "square"
         @agents.setDefault "size", .5
         @agents.setDefault "color", [100,100,150]
-        @patches.cacheRectangle @vision, false # cache inRadius @vision
         
         # Install startup globals into patches/drawing
         # img = @elevation.toDrawing()
@@ -42,7 +40,7 @@
         # p.elevation = p.color[0] for p in @patches # could also use toPatchVar below
         # @slope.toPatchVar("slope")
         # @aspect.toPatchVar("aspect")
-        @img=@elevation.toDrawing()
+        @img = @elevation.toDrawing()
         @elevation.toPatchVar("elevation")
         @slope.toPatchVar("slope")
         @aspect.toPatchVar("aspect")

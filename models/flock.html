@@ -20,7 +20,6 @@
         @refreshPatches = false # <3fps->4fps agents larger part of drawing 
         # No optimizations: 4fps
         # @patches.usePixels() # 4fps same as refresh off
-        @patches.cacheAgentsHere() # 17fps, big help for inRadius
         # w/ refresh off and two optimizations, 22-23fps
         @agents.setUseSprites() # 24 -> 36
         
@@ -54,7 +53,7 @@
         # @stop() if @animator.ticks is 400
 
       flock: (a) -> # a is agent
-        flockmates = @agents.inRadius a, @vision
+        flockmates = a.neighbors(@vision)
         if flockmates.length isnt 0
           [nearestNeighbor, d] = u.min flockmates, ((f) -> f.distance a), true
           if d < @minSeparation
@@ -65,7 +64,7 @@
         a.forward .5 # move partial patch for smooth animation.
 
       separate: (a, nearest) ->
-        h = nearest.towards a; @turnTowards a, h
+        h = nearest.angleTowards a; @turnTowards a, h
       align: (a, flockmates) ->
         @turnTowards a, @averageHeading(flockmates)
       cohere: (a, flockmates) ->
@@ -80,8 +79,8 @@
         dy = (Math.cos f.heading for f in flockmates).reduce (x, y) -> x + y
         @safeAtan dy, dx
       averageHeadingTowards: (a, flockmates) ->
-        dx = (Math.sin f.towards a for f in flockmates).reduce (x, y) -> x + y
-        dy = (Math.cos f.towards a for f in flockmates).reduce (x, y) -> x + y
+        dx = (Math.sin f.angleTowards a for f in flockmates).reduce (x, y) -> x + y
+        dy = (Math.cos f.angleTowards a for f in flockmates).reduce (x, y) -> x + y
         @safeAtan dy, dx
       safeAtan: (x, y) -> Math.atan2 y, x # if x is 0 and y is 0 then 0 else Math.atan2 y, x # atan ok if x 0
       
