@@ -320,8 +320,8 @@ Useful for shortcuts</p>
       <span class="hljs-keyword">if</span> shape.img? <span class="hljs-comment"># is an image, not a path function</span>
         shape.draw ctx
       <span class="hljs-keyword">else</span>
-        ctx.fillStyle = u.colorStr color
         ctx.beginPath(); shape.draw ctx; ctx.closePath()
+        ctx.fillStyle = u.colorStr color
         ctx.fill()
       ctx.restore()
     shape

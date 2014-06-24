@@ -492,7 +492,9 @@ Default is one of 125 (5^3) colors</p>
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">randomMapColor</span>: <span class="hljs-function"><span class="hljs-params">(c = [], set = [<span class="hljs-number">0</span>,<span class="hljs-number">63</span>,<span class="hljs-number">127</span>,<span class="hljs-number">191</span>,<span class="hljs-number">255</span>])</span> -&gt;</span> 
     <span class="hljs-property">@setColor</span> c, <span class="hljs-property">@oneOf</span>(set), <span class="hljs-property">@oneOf</span>(set), <span class="hljs-property">@oneOf</span>(set)
-  <span class="hljs-attribute">randomBrightColor</span>: <span class="hljs-function"><span class="hljs-params">(c=[])</span> -&gt;</span> <span class="hljs-property">@randomMapColor</span> c, [<span class="hljs-number">0</span>,<span class="hljs-number">127</span>,<span class="hljs-number">255</span>]</pre></div></div>
+  <span class="hljs-attribute">randomBrightColor</span>: <span class="hljs-function"><span class="hljs-params">(c=[])</span> -&gt;</span> <span class="hljs-property">@randomMapColor</span> c, [<span class="hljs-number">0</span>,<span class="hljs-number">127</span>,<span class="hljs-number">255</span>]
+  <span class="hljs-attribute">randomHSBColor</span>: <span class="hljs-function"><span class="hljs-params">(c=[])</span> -&gt;</span>
+    c = <span class="hljs-property">@hsbToRgb</span>([<span class="hljs-property">@randomInt</span>(<span class="hljs-number">51</span>)*<span class="hljs-number">5</span>,<span class="hljs-number">255</span>,<span class="hljs-number">255</span>])</pre></div></div>
             
         </li>
         
