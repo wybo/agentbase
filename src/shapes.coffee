@@ -117,8 +117,8 @@ ABM.shapes = ABM.util.s = do ->
       if shape.img? # is an image, not a path function
         shape.draw ctx
       else
-        ctx.fillStyle = u.colorStr color
         ctx.beginPath(); shape.draw ctx; ctx.closePath()
+        ctx.fillStyle = u.colorStr color
         ctx.fill()
       ctx.restore()
     shape
