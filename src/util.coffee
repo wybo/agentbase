@@ -117,6 +117,8 @@ ABM.util = u =
   randomMapColor: (c = [], set = [0,63,127,191,255]) -> 
     @setColor c, @oneOf(set), @oneOf(set), @oneOf(set)
   randomBrightColor: (c=[]) -> @randomMapColor c, [0,127,255]
+  randomHSBColor: (c=[]) ->
+    c = @hsbToRgb([@randomInt(51)*5,255,255])
   # Modify an existing rgb or gray color.  Alpha optional, not set if not provided.
   # Modifying an existing array minimizes GC overhead
   setColor: (c, r, g, b, a) ->
