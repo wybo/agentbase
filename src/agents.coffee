@@ -162,7 +162,7 @@ class ABM.Agent
   # agentset and removing any links I may have.
   die: ->
     @breed.remove @
-    l.die() for l in @myLinks()
+    l.die() for l in @myLinks() by -1
     u.removeItem @p.agents, @ if @p.agents?
     null
 
