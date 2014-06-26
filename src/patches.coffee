@@ -1,7 +1,7 @@
 # ### Patch & Patches
   
 # Class Patch instances represent a rectangle on a grid.  They hold variables
-# that are in the patches the agents live on.  The set of all patches (ABM.patches)
+# that are in the patches the agents live on.  The set of all patches (@model.patches)
 # is the world on which the agents live and the model runs.
 class ABM.Patch
   # Constructor & Class Variables:
@@ -60,7 +60,7 @@ class ABM.Patch
   # variable for the patches, agents will add/remove themselves
   # as they move from patch to patch.
   agentsHere: ->
-    @agents ? (a for a in ABM.agents when a.p is @)
+    @agents ? (a for a in @model.agents when a.p is @)
   
   # Returns true if this patch is on the edge of the grid.
   isOnEdge: ->
@@ -69,14 +69,14 @@ class ABM.Patch
   
   # Factory: Create num new agents on this patch. The optional init
   # proc is called on the new agent after inserting in its agentSet.
-  sprout: (num = 1, breed = ABM.agents, init = ->) ->
+  sprout: (num = 1, breed = @model.agents, init = ->) ->
     breed.create num, (a) => # fat arrow so that @ = this patch
       a.setXY @x, @y; init(a); a
 
 # Class Patches is a singleton 2D matrix of Patch instances, each patch 
 # representing a 1x1 square in patch coordinates (via 2D coord transforms).
 #
-# From ABM.world, set in Model:
+# From @model.world, set in Model:
 #
 # * size:         pixel h/w of each patch.
 # * minX/maxX:    min/max x coord in patch coords
@@ -94,7 +94,7 @@ class ABM.Patches extends ABM.AgentSet
   constructor: -> # agentClass, name, mainSet
     super # call super with all the args I was called with
     @monochrome = false # set to true to optimize patches all default color
-    @[k] = v for own k,v of ABM.world # add world items to patches
+    @[k] = v for own k,v of @model.world # add world items to patches
     @populate() unless @mainSet?
   
   # Setup patch world from world parameters.
@@ -115,7 +115,7 @@ class ABM.Patches extends ABM.AgentSet
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
   # if browser does not support smoothing flags.
   usePixels: (@drawWithPixels=true) ->
-    ctx = ABM.contexts.patches
+    ctx = @model.contexts.patches
     u.setCtxSmoothing ctx, not @drawWithPixels
 
   # Optimization: Cache a single set by modeler for use by patchRect,
@@ -136,7 +136,7 @@ class ABM.Patches extends ABM.AgentSet
   # 
   setPixels: ->
     if @size is 1
-    then @usePixels(); @pixelsCtx = ABM.contexts.patches
+    then @usePixels(); @pixelsCtx = @model.contexts.patches
     else @pixelsCtx = u.createCtx @numX, @numY
     @pixelsImageData = @pixelsCtx.getImageData(0, 0, @numX, @numY)
     @pixelsData = @pixelsImageData.data
@@ -224,7 +224,7 @@ class ABM.Patches extends ABM.AgentSet
       @installDrawing img
       f() if f?
   # Direct install image into the given context, not async.
-  installDrawing: (img, ctx=ABM.contexts.drawing) ->
+  installDrawing: (img, ctx=@model.contexts.drawing) ->
     u.setIdentity ctx
     ctx.drawImage img, 0, 0, ctx.canvas.width, ctx.canvas.height
     ctx.restore() # restore patch transform

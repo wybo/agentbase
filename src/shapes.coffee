@@ -134,8 +134,8 @@ ABM.shapes = ABM.util.s = do ->
     s
   # Convert a shape to a sprite by allocating a sprite sheet "slot" and drawing
   # the shape to fit it. Return existing sprite if duplicate.
-  shapeToSprite: (name, color, size) ->
-    bits = Math.ceil ABM.patches.toBits size
+  shapeToSprite: (name, color, size, model) ->
+    bits = Math.ceil model.patches.toBits size
     shape = @[name]
     index = if shape.img? then name else "#{name}-#{u.colorStr(color)}"
     ctx = spriteSheets[bits]

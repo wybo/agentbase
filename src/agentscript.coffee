@@ -878,8 +878,8 @@ ABM.shapes = ABM.util.s = do ->
     s
   # Convert a shape to a sprite by allocating a sprite sheet "slot" and drawing
   # the shape to fit it. Return existing sprite if duplicate.
-  shapeToSprite: (name, color, size) ->
-    bits = Math.ceil ABM.patches.toBits size
+  shapeToSprite: (name, color, size, model) ->
+    bits = Math.ceil model.patches.toBits size
     shape = @[name]
     index = if shape.img? then name else "#{name}-#{u.colorStr(color)}"
     ctx = spriteSheets[bits]
@@ -947,7 +947,7 @@ class ABM.AgentSet extends Array
   # It is primarily used to turn a comprehension into an AgentSet instance
   # which then gains access to all the methods below.  Ex:
   #
-  #     evens = (a for a in ABM.agents when a.id % 2 is 0)
+  #     evens = (a for a in @model.agents when a.id % 2 is 0)
   #     ABM.AgentSet.asSet(evens)
   #     randomEven = evens.oneOf()
   @asSet: (a, setType = ABM.AgentSet) ->
@@ -1181,8 +1181,8 @@ class ABM.AgentSet extends Array
   
   # Show/Hide all of an agentset or breed.
   # To show/hide an individual object, set its prototype: o.hidden = bool
-  show: -> o.hidden = false for o in @; @draw(ABM.contexts[@name])
-  hide: -> o.hidden = true for o in @; @draw(ABM.contexts[@name])
+  show: -> o.hidden = false for o in @; @draw(@model.contexts[@name])
+  hide: -> o.hidden = true for o in @; @draw(@model.contexts[@name])
 
 # ### Topology
   
@@ -1193,8 +1193,8 @@ class ABM.AgentSet extends Array
   # depending on patches.isTorus, and patches width/height if needed.
   inRadius: (o, d, meToo=false) -> # for any objects w/ x,y
     d2 = d*d; x=o.x; y=o.y
-    if ABM.patches.isTorus
-      w=ABM.patches.numX; h=ABM.patches.numY
+    if @model.patches.isTorus
+      w=@model.patches.numX; h=@model.patches.numY
       @asSet (a for a in @ when \
         u.torusSqDistance(x,y,a.x,a.y,w,h)<=d2 and (meToo or a isnt o))
     else
@@ -1205,8 +1205,8 @@ class ABM.AgentSet extends Array
   inCone: (o, heading, cone, radius, meToo=false) ->
     rSet = @inRadius o, radius, meToo
     x=o.x; y=o.y
-    if ABM.patches.isTorus
-      w=ABM.patches.numX; h=ABM.patches.numY
+    if @model.patches.isTorus
+      w=@model.patches.numX; h=@model.patches.numY
       @asSet (a for a in rSet when \
         (a is o and meToo) or u.inTorusCone(heading,cone,radius,x,y,a.x,a.y,w,h))
     else
@@ -1225,7 +1225,7 @@ class ABM.AgentSet extends Array
   #     AS.with("o.x<5").ask("o.x=o.x+1")
   #     AS.getProp("x") # [2, 8, 6, 3, 3]
   #
-  #     ABM.agents.with("o.id<100").ask("o.color=[255,0,0]")
+  #     @model.agents.with("o.id<100").ask("o.color=[255,0,0]")
   ask: (f) -> 
     eval("f=function(o){return "+f+";}") if u.isString f
     f(o) for o in @; @
@@ -1252,7 +1252,7 @@ class ABM.AgentSet extends Array
 # ### Patch & Patches
   
 # Class Patch instances represent a rectangle on a grid.  They hold variables
-# that are in the patches the agents live on.  The set of all patches (ABM.patches)
+# that are in the patches the agents live on.  The set of all patches (@model.patches)
 # is the world on which the agents live and the model runs.
 class ABM.Patch
   # Constructor & Class Variables:
@@ -1311,7 +1311,7 @@ class ABM.Patch
   # variable for the patches, agents will add/remove themselves
   # as they move from patch to patch.
   agentsHere: ->
-    @agents ? (a for a in ABM.agents when a.p is @)
+    @agents ? (a for a in @model.agents when a.p is @)
   
   # Returns true if this patch is on the edge of the grid.
   isOnEdge: ->
@@ -1320,14 +1320,14 @@ class ABM.Patch
   
   # Factory: Create num new agents on this patch. The optional init
   # proc is called on the new agent after inserting in its agentSet.
-  sprout: (num = 1, breed = ABM.agents, init = ->) ->
+  sprout: (num = 1, breed = @model.agents, init = ->) ->
     breed.create num, (a) => # fat arrow so that @ = this patch
       a.setXY @x, @y; init(a); a
 
 # Class Patches is a singleton 2D matrix of Patch instances, each patch 
 # representing a 1x1 square in patch coordinates (via 2D coord transforms).
 #
-# From ABM.world, set in Model:
+# From @model.world, set in Model:
 #
 # * size:         pixel h/w of each patch.
 # * minX/maxX:    min/max x coord in patch coords
@@ -1345,7 +1345,7 @@ class ABM.Patches extends ABM.AgentSet
   constructor: -> # agentClass, name, mainSet
     super # call super with all the args I was called with
     @monochrome = false # set to true to optimize patches all default color
-    @[k] = v for own k,v of ABM.world # add world items to patches
+    @[k] = v for own k,v of @model.world # add world items to patches
     @populate() unless @mainSet?
   
   # Setup patch world from world parameters.
@@ -1366,7 +1366,7 @@ class ABM.Patches extends ABM.AgentSet
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
   # if browser does not support smoothing flags.
   usePixels: (@drawWithPixels=true) ->
-    ctx = ABM.contexts.patches
+    ctx = @model.contexts.patches
     u.setCtxSmoothing ctx, not @drawWithPixels
 
   # Optimization: Cache a single set by modeler for use by patchRect,
@@ -1387,7 +1387,7 @@ class ABM.Patches extends ABM.AgentSet
   # 
   setPixels: ->
     if @size is 1
-    then @usePixels(); @pixelsCtx = ABM.contexts.patches
+    then @usePixels(); @pixelsCtx = @model.contexts.patches
     else @pixelsCtx = u.createCtx @numX, @numY
     @pixelsImageData = @pixelsCtx.getImageData(0, 0, @numX, @numY)
     @pixelsData = @pixelsImageData.data
@@ -1475,7 +1475,7 @@ class ABM.Patches extends ABM.AgentSet
       @installDrawing img
       f() if f?
   # Direct install image into the given context, not async.
-  installDrawing: (img, ctx=ABM.contexts.drawing) ->
+  installDrawing: (img, ctx=@model.contexts.drawing) ->
     u.setIdentity ctx
     ctx.drawImage img, 0, 0, ctx.canvas.width, ctx.canvas.height
     ctx.restore() # restore patch transform
@@ -1612,10 +1612,10 @@ class ABM.Agent
   links: null         # array of links to/from me as an endpoint; init by ctor
   constructor: -> # called by agentSets create factory, not user
     @x = @y = 0
-    @p = ABM.patches.patch @x, @y
+    @p = @model.patches.patch @x, @y
     @color = u.randomColor() unless @color? # promote color if default not set
     @heading = u.randomFloat(Math.PI*2) unless @heading? 
-    @p.agents.push @ if @p.agents? # ABM.patches.cacheAgentsHere
+    @p.agents.push @ if @p.agents? # @model.patches.cacheAgentsHere
     @links = [] if @cacheLinks
 
   # Set agent color to `c` scaled by `s`. Usage: see patch.scaleColor
@@ -1630,16 +1630,16 @@ class ABM.Agent
   # using patch topology (isTorus)
   setXY: (x, y) -> # REMIND GC problem, 2 arrays
     [x0, y0] = [@x, @y] if @penDown
-    [@x, @y] = ABM.patches.coord x, y
+    [@x, @y] = @model.patches.coord x, y
     p = @p
-    @p = ABM.patches.patch @x, @y
-    if p.agents? and p isnt @p # ABM.patches.cacheAgentsHere 
+    @p = @model.patches.patch @x, @y
+    if p.agents? and p isnt @p # @model.patches.cacheAgentsHere 
       u.removeItem p.agents, @
       @p.agents.push @
     if @penDown
-      drawing = ABM.drawing
+      drawing = @model.drawing
       drawing.strokeStyle = u.colorStr @color
-      drawing.lineWidth = ABM.patches.fromBits @penSize
+      drawing.lineWidth = @model.patches.fromBits @penSize
       drawing.beginPath()
       drawing.moveTo x0, y0; drawing.lineTo x, y # REMIND: euclidean
       drawing.stroke()
@@ -1665,7 +1665,7 @@ class ABM.Agent
     else
       ABM.shapes.draw ctx, shape, @x, @y, @size, rad, @color
     if @label?
-      [x,y] = ABM.patches.patchXYtoPixelXY @x, @y
+      [x,y] = @model.patches.patchXYtoPixelXY @x, @y
       u.ctxDrawText ctx, @label, x+@labelOffset[0], y+@labelOffset[1], @labelColor
   
   # Set an individual agent's sprite, synching its color, shape, size
@@ -1674,16 +1674,16 @@ class ABM.Agent
       @sprite = s; @color = s.color; @shape = s.shape; @size = s.size
     else
       @color = u.randomColor unless @color?
-      @sprite = ABM.shapes.shapeToSprite @shape, @color, @size
+      @sprite = ABM.shapes.shapeToSprite @shape, @color, @size, @model
     
   # Draw the agent on the drawing layer, leaving permanent image.
-  stamp: -> @draw ABM.drawing
+  stamp: -> @draw @model.drawing
   
   # Return distance in patch coords from me to x,y 
   # using patch topology (isTorus)
   distanceXY: (x,y) ->
-    if ABM.patches.isTorus
-    then u.torusDistance @x, @y, x, y, ABM.patches.numX, ABM.patches.numY
+    if @model.patches.isTorus
+    then u.torusDistance @x, @y, x, y, @model.patches.numX, @model.patches.numY
     else u.distance @x, @y, x, y
   
   # Return distance in patch coords from me to given agent/patch using patch topology.
@@ -1694,7 +1694,7 @@ class ABM.Agent
   # Used internally to determine how to draw links between two agents.
   # See util.torusPt.
   torusPtXY: (x, y) ->
-    u.torusPt @x, @y, x, y, ABM.patches.numX, ABM.patches.numY
+    u.torusPt @x, @y, x, y, @model.patches.numX, @model.patches.numY
 
   # Return the closest torus topology point of given agent/patch 
   # relative to myself. See util.torusPt.
@@ -1706,7 +1706,7 @@ class ABM.Agent
 
   # Return heading towards x,y using patch topology.
   towardsXY: (x, y) ->
-    if (ps=ABM.patches).isTorus
+    if (ps=@model.patches).isTorus
     then u.torusRadsToward @x, @y, x, y, ps.numX, ps.numY
     else u.radsToward @x, @y, x, y
 
@@ -1723,7 +1723,7 @@ class ABM.Agent
   canMove: (d) -> @patchAhead(d)?
   patchAt: (dx,dy) ->
     x=@x+dx; y=@y+dy
-    if (ps=ABM.patches).isOnWorld x,y then ps.patch x,y else null
+    if (ps=@model.patches).isOnWorld x,y then ps.patch x,y else null
   
   # Remove myself from the model.  Includes removing myself from the agents
   # agentset and removing any links I may have.
@@ -1735,7 +1735,7 @@ class ABM.Agent
 
   # Factory: create num new agents at this agents location. The optional init
   # proc is called on the new agent after inserting in its agentSet.
-  hatch: (num = 1, breed = ABM.agents, init = ->) ->
+  hatch: (num = 1, breed = @model.agents, init = ->) ->
     breed.create num, (a) => # fat arrow so that @ = this agent
       a.setXY @x, @y # for side effects like patches.agentsHere
       a[k] = v for own k, v of @ when k isnt "id"    
@@ -1751,7 +1751,7 @@ class ABM.Agent
 
   # Return all links linked to me
   myLinks: ->
-    @links ? (l for l in ABM.links when (l.end1 is @) or (l.end2 is @))
+    @links ? (l for l in @model.links when (l.end1 is @) or (l.end2 is @))
   
   # Return all agents linked to me.
   linkNeighbors: -> # return all agents linked to me
@@ -1810,7 +1810,7 @@ class ABM.Agents extends ABM.AgentSet
   
   # Return an agentset of agents within the patchRect
   inRect: (a, dx, dy, meToo=false) ->
-    rect = ABM.patches.patchRect a.p, dx, dy, true
+    rect = @model.patches.patchRect a.p, dx, dy, true
     rect = @inPatches rect
     u.removeItem rect, a unless meToo
     rect
@@ -1863,9 +1863,9 @@ class ABM.Link
   draw: (ctx) ->
     ctx.save()
     ctx.strokeStyle = u.colorStr @color
-    ctx.lineWidth = ABM.patches.fromBits @thickness
+    ctx.lineWidth = @model.patches.fromBits @thickness
     ctx.beginPath()
-    if !ABM.patches.isTorus
+    if !@model.patches.isTorus
       ctx.moveTo @end1.x, @end1.y
       ctx.lineTo @end2.x, @end2.y
     else
@@ -1881,7 +1881,7 @@ class ABM.Link
     ctx.restore()
     if @label?
       [x0, y0]  = u.lerp2 @end1.x, @end1.y, @end2.x, @end2.y, .5
-      [x,y] = ABM.patches.patchXYtoPixelXY x0, y0
+      [x,y] = @model.patches.patchXYtoPixelXY x0, y0
       u.ctxDrawText ctx, @label, x+@labelOffset[0], y+@labelOffset[1], @labelColor
   
   # Remove this link from the agent set
@@ -2049,7 +2049,7 @@ class ABM.Model
     divOrOpts, size=13, minX=-16, maxX=16, minY=-16, maxY=16,
     isTorus=false, hasNeighbors=true, isHeadless=false
   ) ->
-    ABM.model = @
+    # ABM.model = @
     if typeof divOrOpts is 'string'
       div = divOrOpts
       @setWorldDeprecated size, minX, maxX, minY, maxY, isTorus, hasNeighbors, isHeadless
@@ -2057,7 +2057,8 @@ class ABM.Model
       div = divOrOpts.div
       isHeadless = divOrOpts.isHeadless = divOrOpts.isHeadless? or not div?
       @setWorld divOrOpts
-    @contexts = ABM.contexts = {}
+    # @contexts = ABM.contexts = {}
+    @contexts = {}
     unless isHeadless
       (@div=document.getElementById(div)).setAttribute 'style',
         "position:relative; width:#{@world.pxWidth}px; height:#{@world.pxHeight}px"
@@ -2078,7 +2079,8 @@ class ABM.Model
         u.elementTextParams ctx, "10px sans-serif", "center", "middle"
 
       # One of the layers is used for drawing only, not an agentset:
-      @drawing = ABM.drawing = @contexts.drawing
+      # @drawing = ABM.drawing = @contexts.drawing
+      @drawing = @contexts.drawing
       @drawing.clear = => u.clearCtx @drawing
       # Setup spotlight layer, also not an agentset:
       @contexts.spotlight.globalCompositeOperation = "xor"
@@ -2095,14 +2097,17 @@ class ABM.Model
     @refreshLinks = @refreshAgents = @refreshPatches = true
 
     # Extend class prototypes
-    Patches = @extend(ABM.Patches); Patch = @extend(ABM.Patch)
-    Agents = @extend(ABM.Agents); Agent = @extend(ABM.Agent)
-    Links = @extend(ABM.Links); Link = @extend(ABM.Link)
+    Patches = @Patches = @extend(ABM.Patches); Patch = @extend(ABM.Patch)
+    Agents = @Agents = @extend(ABM.Agents); Agent = @extend(ABM.Agent)
+    Links = @Links = @extend(ABM.Links); Link = @extend(ABM.Link)
 
     # Initialize agentsets.
-    @patches = ABM.patches = new Patches Patch, "patches"
-    @agents = ABM.agents = new Agents Agent, "agents"
-    @links = ABM.links = new Links Link, "links"
+    # @patches = ABM.patches = new Patches Patch, "patches"
+    # @agents = ABM.agents = new Agents Agent, "agents"
+    # @links = ABM.links = new Links Link, "links"
+    @patches = new Patches Patch, "patches"
+    @agents = new Agents Agent, "agents"
+    @links = new Links Link, "links"
 
     # Initialize model global resources
     @debugging = false
@@ -2120,12 +2125,12 @@ class ABM.Model
     {size, minX, maxX, minY, maxY, isTorus, hasNeighbors, isHeadless} = w
     numX = maxX-minX+1; numY = maxY-minY+1; pxWidth = numX*size; pxHeight = numY*size
     minXcor=minX-.5; maxXcor=maxX+.5; minYcor=minY-.5; maxYcor=maxY+.5
-    ABM.world = @world = {size,minX,maxX,minY,maxY,minXcor,maxXcor,minYcor,maxYcor,
+    @world = {size,minX,maxX,minY,maxY,minXcor,maxXcor,minYcor,maxYcor,
       numX,numY,pxWidth,pxHeight,isTorus,hasNeighbors,isHeadless}
   setWorldDeprecated: (size, minX, maxX, minY, maxY, isTorus, hasNeighbors, isHeadless) ->
     numX = maxX-minX+1; numY = maxY-minY+1; pxWidth = numX*size; pxHeight = numY*size
     minXcor=minX-.5; maxXcor=maxX+.5; minYcor=minY-.5; maxYcor=maxY+.5
-    ABM.world = @world = {size,minX,maxX,minY,maxY,minXcor,maxXcor,minYcor,maxYcor,
+    @world = {size,minX,maxX,minY,maxY,minXcor,maxXcor,minYcor,maxYcor,
       numX,numY,pxWidth,pxHeight,isTorus,hasNeighbors,isHeadless}
   setCtxTransform: (ctx) ->
     ctx.canvas.width = @world.pxWidth; ctx.canvas.height = @world.pxHeight
@@ -2194,10 +2199,15 @@ class ABM.Model
     console.log "reset: contexts"
     (v.restore(); @setCtxTransform v) for k,v of @contexts when v.canvas? # clear/resize b4 agentsets
     console.log "reset: patches"
-    @patches = ABM.patches = new ABM.Patches ABM.Patch, "patches"
+    @patches = new Patches Patch, "patches"
     console.log "reset: agents"
-    @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
-    @links = ABM.links = new ABM.Links ABM.Link, "links"
+    @agents = new Agents Agent, "agents"
+    @links = new Links Link, "links"
+    # console.log "reset: patches"
+    # @patches = ABM.patches = new ABM.Patches ABM.Patch, "patches"
+    # console.log "reset: agents"
+    # @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
+    # @links = ABM.links = new ABM.Links ABM.Link, "links"
     u.s.spriteSheets.length = 0 # possibly null out entries?
     console.log "reset: setup"
     @setup()
@@ -2265,9 +2275,12 @@ class ABM.Model
       breeds.sets[b] = breed
       breeds.classes["#{b}Class"] = c
     breeds
-  patchBreeds: (s) -> @patches.breeds = @createBreeds s, ABM.Patch, ABM.Patches
-  agentBreeds: (s) -> @agents.breeds  = @createBreeds s, ABM.Agent, ABM.Agents
-  linkBreeds:  (s) -> @links.breeds   = @createBreeds s, ABM.Link,  ABM.Links
+  # patchBreeds: (s) -> @patches.breeds = @createBreeds s, ABM.Patch, ABM.Patches
+  # agentBreeds: (s) -> @agents.breeds  = @createBreeds s, ABM.Agent, ABM.Agents
+  # linkBreeds:  (s) -> @links.breeds   = @createBreeds s, ABM.Link,  ABM.Links
+  patchBreeds: (s) -> @patches.breeds = @createBreeds s, @Patch, @Patches
+  agentBreeds: (s) -> @agents.breeds  = @createBreeds s, @Agent, @Agents
+  linkBreeds:  (s) -> @links.breeds   = @createBreeds s, @Link,  @Links
   
   # Utility for models to create agentsets from arrays.  Ex:
   #

@@ -152,10 +152,10 @@ This can be a huge savings in memory.</p>
   <span class="hljs-attribute">links</span>: <span class="hljs-literal">null</span>         <span class="hljs-comment"># array of links to/from me as an endpoint; init by ctor</span>
   <span class="hljs-attribute">constructor</span>:<span class="hljs-function"> -&gt;</span> <span class="hljs-comment"># called by agentSets create factory, not user</span>
     <span class="hljs-property">@x</span> = <span class="hljs-property">@y</span> = <span class="hljs-number">0</span>
-    <span class="hljs-property">@p</span> = ABM.patches.patch <span class="hljs-property">@x</span>, <span class="hljs-property">@y</span>
+    <span class="hljs-property">@p</span> = <span class="hljs-property">@model</span>.patches.patch <span class="hljs-property">@x</span>, <span class="hljs-property">@y</span>
     <span class="hljs-property">@color</span> = u.randomColor() <span class="hljs-keyword">unless</span> <span class="hljs-property">@color</span>? <span class="hljs-comment"># promote color if default not set</span>
     <span class="hljs-property">@heading</span> = u.randomFloat(Math.PI*<span class="hljs-number">2</span>) <span class="hljs-keyword">unless</span> <span class="hljs-property">@heading</span>? 
-    <span class="hljs-property">@p</span>.agents.push @ <span class="hljs-keyword">if</span> <span class="hljs-property">@p</span>.agents? <span class="hljs-comment"># ABM.patches.cacheAgentsHere</span>
+    <span class="hljs-property">@p</span>.agents.push @ <span class="hljs-keyword">if</span> <span class="hljs-property">@p</span>.agents? <span class="hljs-comment"># @model.patches.cacheAgentsHere</span>
     <span class="hljs-property">@links</span> = [] <span class="hljs-keyword">if</span> <span class="hljs-property">@cacheLinks</span></pre></div></div>
             
         </li>
@@ -206,16 +206,16 @@ using patch topology (isTorus)</p>
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">setXY</span>: <span class="hljs-function"><span class="hljs-params">(x, y)</span> -&gt;</span> <span class="hljs-comment"># REMIND GC problem, 2 arrays</span>
     [x0, y0] = [<span class="hljs-property">@x</span>, <span class="hljs-property">@y</span>] <span class="hljs-keyword">if</span> <span class="hljs-property">@penDown</span>
-    [<span class="hljs-property">@x</span>, <span class="hljs-property">@y</span>] = ABM.patches.coord x, y
+    [<span class="hljs-property">@x</span>, <span class="hljs-property">@y</span>] = <span class="hljs-property">@model</span>.patches.coord x, y
     p = <span class="hljs-property">@p</span>
-    <span class="hljs-property">@p</span> = ABM.patches.patch <span class="hljs-property">@x</span>, <span class="hljs-property">@y</span>
-    <span class="hljs-keyword">if</span> p.agents? <span class="hljs-keyword">and</span> p <span class="hljs-keyword">isnt</span> <span class="hljs-property">@p</span> <span class="hljs-comment"># ABM.patches.cacheAgentsHere </span>
+    <span class="hljs-property">@p</span> = <span class="hljs-property">@model</span>.patches.patch <span class="hljs-property">@x</span>, <span class="hljs-property">@y</span>
+    <span class="hljs-keyword">if</span> p.agents? <span class="hljs-keyword">and</span> p <span class="hljs-keyword">isnt</span> <span class="hljs-property">@p</span> <span class="hljs-comment"># @model.patches.cacheAgentsHere </span>
       u.removeItem p.agents, @
       <span class="hljs-property">@p</span>.agents.push @
     <span class="hljs-keyword">if</span> <span class="hljs-property">@penDown</span>
-      drawing = ABM.drawing
+      drawing = <span class="hljs-property">@model</span>.drawing
       drawing.strokeStyle = u.colorStr <span class="hljs-property">@color</span>
-      drawing.lineWidth = ABM.patches.fromBits <span class="hljs-property">@penSize</span>
+      drawing.lineWidth = <span class="hljs-property">@model</span>.patches.fromBits <span class="hljs-property">@penSize</span>
       drawing.beginPath()
       drawing.moveTo x0, y0; drawing.lineTo x, y <span class="hljs-comment"># REMIND: euclidean</span>
       drawing.stroke()</pre></div></div>
@@ -289,7 +289,7 @@ using patch topology (isTorus)</p>
     <span class="hljs-keyword">else</span>
       ABM.shapes.draw ctx, shape, <span class="hljs-property">@x</span>, <span class="hljs-property">@y</span>, <span class="hljs-property">@size</span>, rad, <span class="hljs-property">@color</span>
     <span class="hljs-keyword">if</span> <span class="hljs-property">@label</span>?
-      [x,y] = ABM.patches.patchXYtoPixelXY <span class="hljs-property">@x</span>, <span class="hljs-property">@y</span>
+      [x,y] = <span class="hljs-property">@model</span>.patches.patchXYtoPixelXY <span class="hljs-property">@x</span>, <span class="hljs-property">@y</span>
       u.ctxDrawText ctx, <span class="hljs-property">@label</span>, x+<span class="hljs-property">@labelOffset</span>[<span class="hljs-number">0</span>], y+<span class="hljs-property">@labelOffset</span>[<span class="hljs-number">1</span>], <span class="hljs-property">@labelColor</span></pre></div></div>
             
         </li>
@@ -310,7 +310,7 @@ using patch topology (isTorus)</p>
       <span class="hljs-property">@sprite</span> = s; <span class="hljs-property">@color</span> = s.color; <span class="hljs-property">@shape</span> = s.shape; <span class="hljs-property">@size</span> = s.size
     <span class="hljs-keyword">else</span>
       <span class="hljs-property">@color</span> = u.randomColor <span class="hljs-keyword">unless</span> <span class="hljs-property">@color</span>?
-      <span class="hljs-property">@sprite</span> = ABM.shapes.shapeToSprite <span class="hljs-property">@shape</span>, <span class="hljs-property">@color</span>, <span class="hljs-property">@size</span></pre></div></div>
+      <span class="hljs-property">@sprite</span> = ABM.shapes.shapeToSprite <span class="hljs-property">@shape</span>, <span class="hljs-property">@color</span>, <span class="hljs-property">@size</span>, <span class="hljs-property">@model</span></pre></div></div>
             
         </li>
         
@@ -325,7 +325,7 @@ using patch topology (isTorus)</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">stamp</span>:<span class="hljs-function"> -&gt;</span> <span class="hljs-property">@draw</span> ABM.drawing</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">stamp</span>:<span class="hljs-function"> -&gt;</span> <span class="hljs-property">@draw</span> <span class="hljs-property">@model</span>.drawing</pre></div></div>
             
         </li>
         
@@ -342,8 +342,8 @@ using patch topology (isTorus)</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">distanceXY</span>: <span class="hljs-function"><span class="hljs-params">(x,y)</span> -&gt;</span>
-    <span class="hljs-keyword">if</span> ABM.patches.isTorus
-    <span class="hljs-keyword">then</span> u.torusDistance <span class="hljs-property">@x</span>, <span class="hljs-property">@y</span>, x, y, ABM.patches.numX, ABM.patches.numY
+    <span class="hljs-keyword">if</span> <span class="hljs-property">@model</span>.patches.isTorus
+    <span class="hljs-keyword">then</span> u.torusDistance <span class="hljs-property">@x</span>, <span class="hljs-property">@y</span>, x, y, <span class="hljs-property">@model</span>.patches.numX, <span class="hljs-property">@model</span>.patches.numY
     <span class="hljs-keyword">else</span> u.distance <span class="hljs-property">@x</span>, <span class="hljs-property">@y</span>, x, y</pre></div></div>
             
         </li>
@@ -378,7 +378,7 @@ See util.torusPt.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">torusPtXY</span>: <span class="hljs-function"><span class="hljs-params">(x, y)</span> -&gt;</span>
-    u.torusPt <span class="hljs-property">@x</span>, <span class="hljs-property">@y</span>, x, y, ABM.patches.numX, ABM.patches.numY</pre></div></div>
+    u.torusPt <span class="hljs-property">@x</span>, <span class="hljs-property">@y</span>, x, y, <span class="hljs-property">@model</span>.patches.numX, <span class="hljs-property">@model</span>.patches.numY</pre></div></div>
             
         </li>
         
@@ -426,7 +426,7 @@ relative to myself. See util.torusPt.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">towardsXY</span>: <span class="hljs-function"><span class="hljs-params">(x, y)</span> -&gt;</span>
-    <span class="hljs-keyword">if</span> (ps=ABM.patches).isTorus
+    <span class="hljs-keyword">if</span> (ps=<span class="hljs-property">@model</span>.patches).isTorus
     <span class="hljs-keyword">then</span> u.torusRadsToward <span class="hljs-property">@x</span>, <span class="hljs-property">@y</span>, x, y, ps.numX, ps.numY
     <span class="hljs-keyword">else</span> u.radsToward <span class="hljs-property">@x</span>, <span class="hljs-property">@y</span>, x, y</pre></div></div>
             
@@ -467,7 +467,7 @@ Returns null if non-torus and off patch world</p>
   <span class="hljs-attribute">canMove</span>: <span class="hljs-function"><span class="hljs-params">(d)</span> -&gt;</span> <span class="hljs-property">@patchAhead</span>(d)?
   <span class="hljs-attribute">patchAt</span>: <span class="hljs-function"><span class="hljs-params">(dx,dy)</span> -&gt;</span>
     x=<span class="hljs-property">@x</span>+dx; y=<span class="hljs-property">@y</span>+dy
-    <span class="hljs-keyword">if</span> (ps=ABM.patches).isOnWorld x,y <span class="hljs-keyword">then</span> ps.patch x,y <span class="hljs-keyword">else</span> <span class="hljs-literal">null</span></pre></div></div>
+    <span class="hljs-keyword">if</span> (ps=<span class="hljs-property">@model</span>.patches).isOnWorld x,y <span class="hljs-keyword">then</span> ps.patch x,y <span class="hljs-keyword">else</span> <span class="hljs-literal">null</span></pre></div></div>
             
         </li>
         
@@ -503,7 +503,7 @@ proc is called on the new agent after inserting in its agentSet.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">hatch</span>: <span class="hljs-function"><span class="hljs-params">(num = <span class="hljs-number">1</span>, breed = ABM.agents, init = -&gt;)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">hatch</span>: <span class="hljs-function"><span class="hljs-params">(num = <span class="hljs-number">1</span>, breed = <span class="hljs-property">@model</span>.agents, init = -&gt;)</span> -&gt;</span>
     breed.create num, <span class="hljs-function"><span class="hljs-params">(a)</span> =&gt;</span> <span class="hljs-comment"># fat arrow so that @ = this agent</span>
       a.setXY <span class="hljs-property">@x</span>, <span class="hljs-property">@y</span> <span class="hljs-comment"># for side effects like patches.agentsHere</span>
       a[k] = v <span class="hljs-keyword">for</span> own k, v <span class="hljs-keyword">of</span> @ <span class="hljs-keyword">when</span> k <span class="hljs-keyword">isnt</span> <span class="hljs-string">"id"</span>    
@@ -555,7 +555,7 @@ from me, and within cone radians of my heading using patch topology</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">myLinks</span>:<span class="hljs-function"> -&gt;</span>
-    <span class="hljs-property">@links</span> ? (l <span class="hljs-keyword">for</span> l <span class="hljs-keyword">in</span> ABM.links <span class="hljs-keyword">when</span> (l.end1 <span class="hljs-keyword">is</span> @) <span class="hljs-keyword">or</span> (l.end2 <span class="hljs-keyword">is</span> @))</pre></div></div>
+    <span class="hljs-property">@links</span> ? (l <span class="hljs-keyword">for</span> l <span class="hljs-keyword">in</span> <span class="hljs-property">@model</span>.links <span class="hljs-keyword">when</span> (l.end1 <span class="hljs-keyword">is</span> @) <span class="hljs-keyword">or</span> (l.end2 <span class="hljs-keyword">is</span> @))</pre></div></div>
             
         </li>
         
@@ -785,7 +785,7 @@ Note call in reverse order to optimize list restructuring.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">inRect</span>: <span class="hljs-function"><span class="hljs-params">(a, dx, dy, meToo=<span class="hljs-literal">false</span>)</span> -&gt;</span>
-    rect = ABM.patches.patchRect a.p, dx, dy, <span class="hljs-literal">true</span>
+    rect = <span class="hljs-property">@model</span>.patches.patchRect a.p, dx, dy, <span class="hljs-literal">true</span>
     rect = <span class="hljs-property">@inPatches</span> rect
     u.removeItem rect, a <span class="hljs-keyword">unless</span> meToo
     rect</pre></div></div>

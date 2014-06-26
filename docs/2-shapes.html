@@ -350,8 +350,8 @@ the shape to fit it. Return existing sprite if duplicate.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">shapeToSprite</span>: <span class="hljs-function"><span class="hljs-params">(name, color, size)</span> -&gt;</span>
-    bits = Math.ceil ABM.patches.toBits size
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">shapeToSprite</span>: <span class="hljs-function"><span class="hljs-params">(name, color, size, model)</span> -&gt;</span>
+    bits = Math.ceil model.patches.toBits size
     shape = @[name]
     index = <span class="hljs-keyword">if</span> shape.img? <span class="hljs-keyword">then</span> name <span class="hljs-keyword">else</span> <span class="hljs-string">"<span class="hljs-subst">#{name}</span>-<span class="hljs-subst">#{u.colorStr(color)}</span>"</span>
     ctx = spriteSheets[bits]</pre></div></div>

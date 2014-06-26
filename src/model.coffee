@@ -100,7 +100,7 @@ class ABM.Model
     divOrOpts, size=13, minX=-16, maxX=16, minY=-16, maxY=16,
     isTorus=false, hasNeighbors=true, isHeadless=false
   ) ->
-    ABM.model = @
+    # ABM.model = @
     if typeof divOrOpts is 'string'
       div = divOrOpts
       @setWorldDeprecated size, minX, maxX, minY, maxY, isTorus, hasNeighbors, isHeadless
@@ -108,7 +108,8 @@ class ABM.Model
       div = divOrOpts.div
       isHeadless = divOrOpts.isHeadless = divOrOpts.isHeadless? or not div?
       @setWorld divOrOpts
-    @contexts = ABM.contexts = {}
+    # @contexts = ABM.contexts = {}
+    @contexts = {}
     unless isHeadless
       (@div=document.getElementById(div)).setAttribute 'style',
         "position:relative; width:#{@world.pxWidth}px; height:#{@world.pxHeight}px"
@@ -129,7 +130,8 @@ class ABM.Model
         u.elementTextParams ctx, "10px sans-serif", "center", "middle"
 
       # One of the layers is used for drawing only, not an agentset:
-      @drawing = ABM.drawing = @contexts.drawing
+      # @drawing = ABM.drawing = @contexts.drawing
+      @drawing = @contexts.drawing
       @drawing.clear = => u.clearCtx @drawing
       # Setup spotlight layer, also not an agentset:
       @contexts.spotlight.globalCompositeOperation = "xor"
@@ -146,14 +148,17 @@ class ABM.Model
     @refreshLinks = @refreshAgents = @refreshPatches = true
 
     # Extend class prototypes
-    Patches = @extend(ABM.Patches); Patch = @extend(ABM.Patch)
-    Agents = @extend(ABM.Agents); Agent = @extend(ABM.Agent)
-    Links = @extend(ABM.Links); Link = @extend(ABM.Link)
+    Patches = @Patches = @extend(ABM.Patches); Patch = @extend(ABM.Patch)
+    Agents = @Agents = @extend(ABM.Agents); Agent = @extend(ABM.Agent)
+    Links = @Links = @extend(ABM.Links); Link = @extend(ABM.Link)
 
     # Initialize agentsets.
-    @patches = ABM.patches = new Patches Patch, "patches"
-    @agents = ABM.agents = new Agents Agent, "agents"
-    @links = ABM.links = new Links Link, "links"
+    # @patches = ABM.patches = new Patches Patch, "patches"
+    # @agents = ABM.agents = new Agents Agent, "agents"
+    # @links = ABM.links = new Links Link, "links"
+    @patches = new Patches Patch, "patches"
+    @agents = new Agents Agent, "agents"
+    @links = new Links Link, "links"
 
     # Initialize model global resources
     @debugging = false
@@ -171,12 +176,12 @@ class ABM.Model
     {size, minX, maxX, minY, maxY, isTorus, hasNeighbors, isHeadless} = w
     numX = maxX-minX+1; numY = maxY-minY+1; pxWidth = numX*size; pxHeight = numY*size
     minXcor=minX-.5; maxXcor=maxX+.5; minYcor=minY-.5; maxYcor=maxY+.5
-    ABM.world = @world = {size,minX,maxX,minY,maxY,minXcor,maxXcor,minYcor,maxYcor,
+    @world = {size,minX,maxX,minY,maxY,minXcor,maxXcor,minYcor,maxYcor,
       numX,numY,pxWidth,pxHeight,isTorus,hasNeighbors,isHeadless}
   setWorldDeprecated: (size, minX, maxX, minY, maxY, isTorus, hasNeighbors, isHeadless) ->
     numX = maxX-minX+1; numY = maxY-minY+1; pxWidth = numX*size; pxHeight = numY*size
     minXcor=minX-.5; maxXcor=maxX+.5; minYcor=minY-.5; maxYcor=maxY+.5
-    ABM.world = @world = {size,minX,maxX,minY,maxY,minXcor,maxXcor,minYcor,maxYcor,
+    @world = {size,minX,maxX,minY,maxY,minXcor,maxXcor,minYcor,maxYcor,
       numX,numY,pxWidth,pxHeight,isTorus,hasNeighbors,isHeadless}
   setCtxTransform: (ctx) ->
     ctx.canvas.width = @world.pxWidth; ctx.canvas.height = @world.pxHeight
@@ -245,10 +250,15 @@ class ABM.Model
     console.log "reset: contexts"
     (v.restore(); @setCtxTransform v) for k,v of @contexts when v.canvas? # clear/resize b4 agentsets
     console.log "reset: patches"
-    @patches = ABM.patches = new ABM.Patches ABM.Patch, "patches"
+    @patches = new Patches Patch, "patches"
     console.log "reset: agents"
-    @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
-    @links = ABM.links = new ABM.Links ABM.Link, "links"
+    @agents = new Agents Agent, "agents"
+    @links = new Links Link, "links"
+    # console.log "reset: patches"
+    # @patches = ABM.patches = new ABM.Patches ABM.Patch, "patches"
+    # console.log "reset: agents"
+    # @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
+    # @links = ABM.links = new ABM.Links ABM.Link, "links"
     u.s.spriteSheets.length = 0 # possibly null out entries?
     console.log "reset: setup"
     @setup()
@@ -316,9 +326,12 @@ class ABM.Model
       breeds.sets[b] = breed
       breeds.classes["#{b}Class"] = c
     breeds
-  patchBreeds: (s) -> @patches.breeds = @createBreeds s, ABM.Patch, ABM.Patches
-  agentBreeds: (s) -> @agents.breeds  = @createBreeds s, ABM.Agent, ABM.Agents
-  linkBreeds:  (s) -> @links.breeds   = @createBreeds s, ABM.Link,  ABM.Links
+  # patchBreeds: (s) -> @patches.breeds = @createBreeds s, ABM.Patch, ABM.Patches
+  # agentBreeds: (s) -> @agents.breeds  = @createBreeds s, ABM.Agent, ABM.Agents
+  # linkBreeds:  (s) -> @links.breeds   = @createBreeds s, ABM.Link,  ABM.Links
+  patchBreeds: (s) -> @patches.breeds = @createBreeds s, @Patch, @Patches
+  agentBreeds: (s) -> @agents.breeds  = @createBreeds s, @Agent, @Agents
+  linkBreeds:  (s) -> @links.breeds   = @createBreeds s, @Link,  @Links
   
   # Utility for models to create agentsets from arrays.  Ex:
   #

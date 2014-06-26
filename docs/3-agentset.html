@@ -130,7 +130,7 @@ but thus far we’ve resolved all related problems.</p>
 an <code>AgentSet</code> .. except for the ID which only impacts the add method.
 It is primarily used to turn a comprehension into an AgentSet instance
 which then gains access to all the methods below.  Ex:</p>
-<pre><code>evens = (a <span class="hljs-keyword">for</span> a <span class="hljs-keyword">in</span> ABM.agents <span class="hljs-keyword">when</span> a.id % <span class="hljs-number">2</span> <span class="hljs-keyword">is</span> <span class="hljs-number">0</span>)
+<pre><code>evens = (a <span class="hljs-keyword">for</span> a <span class="hljs-keyword">in</span> <span class="hljs-property">@model</span>.agents <span class="hljs-keyword">when</span> a.id % <span class="hljs-number">2</span> <span class="hljs-keyword">is</span> <span class="hljs-number">0</span>)
 ABM.AgentSet.asSet(evens)
 randomEven = evens.oneOf()
 </code></pre>
@@ -750,8 +750,8 @@ To show/hide an individual object, set its prototype: o.hidden = bool</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">show</span>:<span class="hljs-function"> -&gt;</span> o.hidden = <span class="hljs-literal">false</span> <span class="hljs-keyword">for</span> o <span class="hljs-keyword">in</span> @; <span class="hljs-property">@draw</span>(ABM.contexts[<span class="hljs-property">@name</span>])
-  <span class="hljs-attribute">hide</span>:<span class="hljs-function"> -&gt;</span> o.hidden = <span class="hljs-literal">true</span> <span class="hljs-keyword">for</span> o <span class="hljs-keyword">in</span> @; <span class="hljs-property">@draw</span>(ABM.contexts[<span class="hljs-property">@name</span>])</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">show</span>:<span class="hljs-function"> -&gt;</span> o.hidden = <span class="hljs-literal">false</span> <span class="hljs-keyword">for</span> o <span class="hljs-keyword">in</span> @; <span class="hljs-property">@draw</span>(<span class="hljs-property">@model</span>.contexts[<span class="hljs-property">@name</span>])
+  <span class="hljs-attribute">hide</span>:<span class="hljs-function"> -&gt;</span> o.hidden = <span class="hljs-literal">true</span> <span class="hljs-keyword">for</span> o <span class="hljs-keyword">in</span> @; <span class="hljs-property">@draw</span>(<span class="hljs-property">@model</span>.contexts[<span class="hljs-property">@name</span>])</pre></div></div>
             
         </li>
         
@@ -784,8 +784,8 @@ depending on patches.isTorus, and patches width/height if needed.</p>
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">inRadius</span>: <span class="hljs-function"><span class="hljs-params">(o, d, meToo=<span class="hljs-literal">false</span>)</span> -&gt;</span> <span class="hljs-comment"># for any objects w/ x,y</span>
     d2 = d*d; x=o.x; y=o.y
-    <span class="hljs-keyword">if</span> ABM.patches.isTorus
-      w=ABM.patches.numX; h=ABM.patches.numY
+    <span class="hljs-keyword">if</span> <span class="hljs-property">@model</span>.patches.isTorus
+      w=<span class="hljs-property">@model</span>.patches.numX; h=<span class="hljs-property">@model</span>.patches.numY
       <span class="hljs-property">@asSet</span> (a <span class="hljs-keyword">for</span> a <span class="hljs-keyword">in</span> @ <span class="hljs-keyword">when</span> \
         u.torusSqDistance(x,y,a.x,a.y,w,h)&lt;=d2 <span class="hljs-keyword">and</span> (meToo <span class="hljs-keyword">or</span> a <span class="hljs-keyword">isnt</span> o))
     <span class="hljs-keyword">else</span>
@@ -809,8 +809,8 @@ a <code>heading</code> from object <code>o</code>.</p>
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">inCone</span>: <span class="hljs-function"><span class="hljs-params">(o, heading, cone, radius, meToo=<span class="hljs-literal">false</span>)</span> -&gt;</span>
     rSet = <span class="hljs-property">@inRadius</span> o, radius, meToo
     x=o.x; y=o.y
-    <span class="hljs-keyword">if</span> ABM.patches.isTorus
-      w=ABM.patches.numX; h=ABM.patches.numY
+    <span class="hljs-keyword">if</span> <span class="hljs-property">@model</span>.patches.isTorus
+      w=<span class="hljs-property">@model</span>.patches.numX; h=<span class="hljs-property">@model</span>.patches.numY
       <span class="hljs-property">@asSet</span> (a <span class="hljs-keyword">for</span> a <span class="hljs-keyword">in</span> rSet <span class="hljs-keyword">when</span> \
         (a <span class="hljs-keyword">is</span> o <span class="hljs-keyword">and</span> meToo) <span class="hljs-keyword">or</span> u.inTorusCone(heading,cone,radius,x,y,a.x,a.y,w,h))
     <span class="hljs-keyword">else</span>
@@ -859,7 +859,7 @@ Allows functions as strings. Use:</p>
 AS.<span class="hljs-reserved">with</span>(<span class="hljs-string">"o.x&lt;5"</span>).ask(<span class="hljs-string">"o.x=o.x+1"</span>)
 AS.getProp(<span class="hljs-string">"x"</span>) <span class="hljs-comment"># [2, 8, 6, 3, 3]</span>
 
-ABM.agents.<span class="hljs-reserved">with</span>(<span class="hljs-string">"o.id&lt;100"</span>).ask(<span class="hljs-string">"o.color=[255,0,0]"</span>)
+<span class="hljs-property">@model</span>.agents.<span class="hljs-reserved">with</span>(<span class="hljs-string">"o.id&lt;100"</span>).ask(<span class="hljs-string">"o.color=[255,0,0]"</span>)
 </code></pre>
             </div>
             

@@ -31,7 +31,7 @@ class ABM.AgentSet extends Array
   # It is primarily used to turn a comprehension into an AgentSet instance
   # which then gains access to all the methods below.  Ex:
   #
-  #     evens = (a for a in ABM.agents when a.id % 2 is 0)
+  #     evens = (a for a in @model.agents when a.id % 2 is 0)
   #     ABM.AgentSet.asSet(evens)
   #     randomEven = evens.oneOf()
   @asSet: (a, setType = ABM.AgentSet) ->
@@ -265,8 +265,8 @@ class ABM.AgentSet extends Array
   
   # Show/Hide all of an agentset or breed.
   # To show/hide an individual object, set its prototype: o.hidden = bool
-  show: -> o.hidden = false for o in @; @draw(ABM.contexts[@name])
-  hide: -> o.hidden = true for o in @; @draw(ABM.contexts[@name])
+  show: -> o.hidden = false for o in @; @draw(@model.contexts[@name])
+  hide: -> o.hidden = true for o in @; @draw(@model.contexts[@name])
 
 # ### Topology
   
@@ -277,8 +277,8 @@ class ABM.AgentSet extends Array
   # depending on patches.isTorus, and patches width/height if needed.
   inRadius: (o, d, meToo=false) -> # for any objects w/ x,y
     d2 = d*d; x=o.x; y=o.y
-    if ABM.patches.isTorus
-      w=ABM.patches.numX; h=ABM.patches.numY
+    if @model.patches.isTorus
+      w=@model.patches.numX; h=@model.patches.numY
       @asSet (a for a in @ when \
         u.torusSqDistance(x,y,a.x,a.y,w,h)<=d2 and (meToo or a isnt o))
     else
@@ -289,8 +289,8 @@ class ABM.AgentSet extends Array
   inCone: (o, heading, cone, radius, meToo=false) ->
     rSet = @inRadius o, radius, meToo
     x=o.x; y=o.y
-    if ABM.patches.isTorus
-      w=ABM.patches.numX; h=ABM.patches.numY
+    if @model.patches.isTorus
+      w=@model.patches.numX; h=@model.patches.numY
       @asSet (a for a in rSet when \
         (a is o and meToo) or u.inTorusCone(heading,cone,radius,x,y,a.x,a.y,w,h))
     else
@@ -309,7 +309,7 @@ class ABM.AgentSet extends Array
   #     AS.with("o.x<5").ask("o.x=o.x+1")
   #     AS.getProp("x") # [2, 8, 6, 3, 3]
   #
-  #     ABM.agents.with("o.id<100").ask("o.color=[255,0,0]")
+  #     @model.agents.with("o.id<100").ask("o.color=[255,0,0]")
   ask: (f) -> 
     eval("f=function(o){return "+f+";}") if u.isString f
     f(o) for o in @; @

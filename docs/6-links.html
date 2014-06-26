@@ -154,9 +154,9 @@ is called with patch coordinate transform installed.</p>
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">draw</span>: <span class="hljs-function"><span class="hljs-params">(ctx)</span> -&gt;</span>
     ctx.save()
     ctx.strokeStyle = u.colorStr <span class="hljs-property">@color</span>
-    ctx.lineWidth = ABM.patches.fromBits <span class="hljs-property">@thickness</span>
+    ctx.lineWidth = <span class="hljs-property">@model</span>.patches.fromBits <span class="hljs-property">@thickness</span>
     ctx.beginPath()
-    <span class="hljs-keyword">if</span> !ABM.patches.isTorus
+    <span class="hljs-keyword">if</span> !<span class="hljs-property">@model</span>.patches.isTorus
       ctx.moveTo <span class="hljs-property">@end1</span>.x, <span class="hljs-property">@end1</span>.y
       ctx.lineTo <span class="hljs-property">@end2</span>.x, <span class="hljs-property">@end2</span>.y
     <span class="hljs-keyword">else</span>
@@ -172,7 +172,7 @@ is called with patch coordinate transform installed.</p>
     ctx.restore()
     <span class="hljs-keyword">if</span> <span class="hljs-property">@label</span>?
       [x0, y0]  = u.lerp2 <span class="hljs-property">@end1</span>.x, <span class="hljs-property">@end1</span>.y, <span class="hljs-property">@end2</span>.x, <span class="hljs-property">@end2</span>.y, <span class="hljs-number">.5</span>
-      [x,y] = ABM.patches.patchXYtoPixelXY x0, y0
+      [x,y] = <span class="hljs-property">@model</span>.patches.patchXYtoPixelXY x0, y0
       u.ctxDrawText ctx, <span class="hljs-property">@label</span>, x+<span class="hljs-property">@labelOffset</span>[<span class="hljs-number">0</span>], y+<span class="hljs-property">@labelOffset</span>[<span class="hljs-number">1</span>], <span class="hljs-property">@labelColor</span></pre></div></div>
             
         </li>
