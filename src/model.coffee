@@ -100,7 +100,6 @@ class ABM.Model
     divOrOpts, size=13, minX=-16, maxX=16, minY=-16, maxY=16,
     isTorus=false, hasNeighbors=true, isHeadless=false
   ) ->
-    # ABM.model = @
     if typeof divOrOpts is 'string'
       div = divOrOpts
       @setWorldDeprecated size, minX, maxX, minY, maxY, isTorus, hasNeighbors, isHeadless
@@ -108,7 +107,6 @@ class ABM.Model
       div = divOrOpts.div
       isHeadless = divOrOpts.isHeadless = divOrOpts.isHeadless? or not div?
       @setWorld divOrOpts
-    # @contexts = ABM.contexts = {}
     @contexts = {}
     unless isHeadless
       (@div=document.getElementById(div)).setAttribute 'style',
@@ -130,7 +128,6 @@ class ABM.Model
         u.elementTextParams ctx, "10px sans-serif", "center", "middle"
 
       # One of the layers is used for drawing only, not an agentset:
-      # @drawing = ABM.drawing = @contexts.drawing
       @drawing = @contexts.drawing
       @drawing.clear = => u.clearCtx @drawing
       # Setup spotlight layer, also not an agentset:
@@ -147,18 +144,15 @@ class ABM.Model
     # agentset is drawn only once, remaining static after that.
     @refreshLinks = @refreshAgents = @refreshPatches = true
 
-    # Extend class prototypes
-    Patches = @Patches = @extend(ABM.Patches); Patch = @extend(ABM.Patch)
-    Agents = @Agents = @extend(ABM.Agents); Agent = @extend(ABM.Agent)
-    Links = @Links = @extend(ABM.Links); Link = @extend(ABM.Link)
+    # Give class prototypes a 'model' attribute that references this model.
+    @Patches = @extend(ABM.Patches); @Patch = @extend(ABM.Patch)
+    @Agents = @extend(ABM.Agents); @Agent = @extend(ABM.Agent)
+    @Links = @extend(ABM.Links); @Link = @extend(ABM.Link)
 
     # Initialize agentsets.
-    # @patches = ABM.patches = new Patches Patch, "patches"
-    # @agents = ABM.agents = new Agents Agent, "agents"
-    # @links = ABM.links = new Links Link, "links"
-    @patches = new Patches Patch, "patches"
-    @agents = new Agents Agent, "agents"
-    @links = new Links Link, "links"
+    @patches = new @Patches @Patch, "patches"
+    @agents = new @Agents @Agent, "agents"
+    @links = new @Links @Link, "links"
 
     # Initialize model global resources
     @debugging = false
@@ -192,6 +186,17 @@ class ABM.Model
     if globalNames? 
     then @globalNames = globalNames; @globalNames.set = true
     else @globalNames = u.removeItems u.ownKeys(@), @globalNames
+
+  # Add this model to a class's prototype. This is used in
+  # the model constructor to create Patch/Patches, Agent/Agents,
+  # and Link/Links classes with a built-in reference to their model.
+  extend: (aClass) ->
+    model = @
+    class extendedClass extends aClass
+      model: model
+      constructor: ->
+        super
+    return extendedClass;
 
 #### Optimizations:
   
@@ -250,15 +255,10 @@ class ABM.Model
     console.log "reset: contexts"
     (v.restore(); @setCtxTransform v) for k,v of @contexts when v.canvas? # clear/resize b4 agentsets
     console.log "reset: patches"
-    @patches = new Patches Patch, "patches"
+    @patches = new @Patches @Patch, "patches"
     console.log "reset: agents"
-    @agents = new Agents Agent, "agents"
-    @links = new Links Link, "links"
-    # console.log "reset: patches"
-    # @patches = ABM.patches = new ABM.Patches ABM.Patch, "patches"
-    # console.log "reset: agents"
-    # @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
-    # @links = ABM.links = new ABM.Links ABM.Link, "links"
+    @agents = new @Agents @Agent, "agents"
+    @links = new @Links @Link, "links"
     u.s.spriteSheets.length = 0 # possibly null out entries?
     console.log "reset: setup"
     @setup()
@@ -326,9 +326,6 @@ class ABM.Model
       breeds.sets[b] = breed
       breeds.classes["#{b}Class"] = c
     breeds
-  # patchBreeds: (s) -> @patches.breeds = @createBreeds s, ABM.Patch, ABM.Patches
-  # agentBreeds: (s) -> @agents.breeds  = @createBreeds s, ABM.Agent, ABM.Agents
-  # linkBreeds:  (s) -> @links.breeds   = @createBreeds s, ABM.Link,  ABM.Links
   patchBreeds: (s) -> @patches.breeds = @createBreeds s, @Patch, @Patches
   agentBreeds: (s) -> @agents.breeds  = @createBreeds s, @Agent, @Agents
   linkBreeds:  (s) -> @links.breeds   = @createBreeds s, @Link,  @Links
@@ -338,15 +335,6 @@ class ABM.Model
   #     even = @asSet (a for a in @agents when a.id % 2 is 0)
   #     even.shuffle().getProp("id") # [6, 0, 4, 2, 8]
   asSet: (a, setType = ABM.AgentSet) -> ABM.AgentSet.asSet a, setType
-
-  # Add this model to a class's prototype
-  extend: (aClass) ->
-    model = @
-    class extendedClass extends aClass
-      model: model
-      constructor: ->
-        super
-    return extendedClass;
 
   # A simple debug aid which places short names in the global name space.
   # Note we avoid using the actual name, such as "patches" because this

@@ -878,8 +878,8 @@ ABM.shapes = ABM.util.s = do ->
     s
   # Convert a shape to a sprite by allocating a sprite sheet "slot" and drawing
   # the shape to fit it. Return existing sprite if duplicate.
-  shapeToSprite: (name, color, size, model) ->
-    bits = Math.ceil model.patches.toBits size
+  shapeToSprite: (name, color, bits) ->
+    bits = Math.ceil bits
     shape = @[name]
     index = if shape.img? then name else "#{name}-#{u.colorStr(color)}"
     ctx = spriteSheets[bits]
@@ -895,7 +895,7 @@ ABM.shapes = ABM.util.s = do ->
       ctx.nextX = 0; ctx.nextY++
     # Create the sprite "slot" object and install in index object
     x = bits*ctx.nextX; y = bits*ctx.nextY
-    slot = {ctx, x, y, size, bits, name, color, index}
+    slot = {ctx, x, y, bits, name, color, index}
     ctx.index[index] = slot
     # Draw the shape into the sprite slot
     if (img=shape.img)? # is an image, not a path function
@@ -923,11 +923,11 @@ ABM.shapes = ABM.util.s = do ->
 # its created instances.  It also provides, much like the **ABM.util**
 # module, many methods shared by all subclasses of AgentSet.
 #
-# ABM contains three agentsets created by class Model:
+# A model contains three agentsets:
 #
-# * `ABM.patches`: the model's "world" grid
-# * `ABM.agents`: the model's agents living on the patches
-# * `ABM.links`: the network links connecting agent pairs
+# * `patches`: the model's "world" grid
+# * `agents`: the model's agents living on the patches
+# * `links`: the network links connecting agent pairs
 #
 # See NetLogo [documentation](http://ccl.northwestern.edu/netlogo/docs/)
 # for explanation of the overall semantics of Agent Based Modeling
@@ -990,7 +990,7 @@ class ABM.AgentSet extends Array
 
   # Remove an agent from the agentset, returning the agentset.
   # Note this does not change ID, thus an
-  # agentset can have gaps in terms of their id's. Assumes set is
+  # agentset can have gaps in terms of their ids. Assumes set is
   # sorted by `id`. If the set is one created by `asSet`, and the original
   # array is unsorted, simply call `sortById` first, see `sortById` below.
   #
@@ -1186,7 +1186,7 @@ class ABM.AgentSet extends Array
 
 # ### Topology
   
-  # For ABM.patches & ABM.agents which have x,y. See ABM.util doc.
+  # For patches & agents, which have x,y. See ABM.util doc.
   #
   # Return all agents in agentset within d distance from given object.
   # By default excludes the given object. Uses linear/torus distance
@@ -1225,7 +1225,7 @@ class ABM.AgentSet extends Array
   #     AS.with("o.x<5").ask("o.x=o.x+1")
   #     AS.getProp("x") # [2, 8, 6, 3, 3]
   #
-  #     @model.agents.with("o.id<100").ask("o.color=[255,0,0]")
+  #     myModel.agents.with("o.id<100").ask("o.color=[255,0,0]")
   ask: (f) -> 
     eval("f=function(o){return "+f+";}") if u.isString f
     f(o) for o in @; @
@@ -1674,7 +1674,8 @@ class ABM.Agent
       @sprite = s; @color = s.color; @shape = s.shape; @size = s.size
     else
       @color = u.randomColor unless @color?
-      @sprite = ABM.shapes.shapeToSprite @shape, @color, @size, @model
+      bits = @model.patches.toBits @size
+      @sprite = ABM.shapes.shapeToSprite @shape, @color, bits
     
   # Draw the agent on the drawing layer, leaving permanent image.
   stamp: -> @draw @model.drawing
@@ -2049,7 +2050,6 @@ class ABM.Model
     divOrOpts, size=13, minX=-16, maxX=16, minY=-16, maxY=16,
     isTorus=false, hasNeighbors=true, isHeadless=false
   ) ->
-    # ABM.model = @
     if typeof divOrOpts is 'string'
       div = divOrOpts
       @setWorldDeprecated size, minX, maxX, minY, maxY, isTorus, hasNeighbors, isHeadless
@@ -2057,7 +2057,6 @@ class ABM.Model
       div = divOrOpts.div
       isHeadless = divOrOpts.isHeadless = divOrOpts.isHeadless? or not div?
       @setWorld divOrOpts
-    # @contexts = ABM.contexts = {}
     @contexts = {}
     unless isHeadless
       (@div=document.getElementById(div)).setAttribute 'style',
@@ -2079,7 +2078,6 @@ class ABM.Model
         u.elementTextParams ctx, "10px sans-serif", "center", "middle"
 
       # One of the layers is used for drawing only, not an agentset:
-      # @drawing = ABM.drawing = @contexts.drawing
       @drawing = @contexts.drawing
       @drawing.clear = => u.clearCtx @drawing
       # Setup spotlight layer, also not an agentset:
@@ -2096,18 +2094,15 @@ class ABM.Model
     # agentset is drawn only once, remaining static after that.
     @refreshLinks = @refreshAgents = @refreshPatches = true
 
-    # Extend class prototypes
-    Patches = @Patches = @extend(ABM.Patches); Patch = @extend(ABM.Patch)
-    Agents = @Agents = @extend(ABM.Agents); Agent = @extend(ABM.Agent)
-    Links = @Links = @extend(ABM.Links); Link = @extend(ABM.Link)
+    # Give class prototypes a 'model' attribute that references this model.
+    @Patches = @extend(ABM.Patches); @Patch = @extend(ABM.Patch)
+    @Agents = @extend(ABM.Agents); @Agent = @extend(ABM.Agent)
+    @Links = @extend(ABM.Links); @Link = @extend(ABM.Link)
 
     # Initialize agentsets.
-    # @patches = ABM.patches = new Patches Patch, "patches"
-    # @agents = ABM.agents = new Agents Agent, "agents"
-    # @links = ABM.links = new Links Link, "links"
-    @patches = new Patches Patch, "patches"
-    @agents = new Agents Agent, "agents"
-    @links = new Links Link, "links"
+    @patches = new @Patches @Patch, "patches"
+    @agents = new @Agents @Agent, "agents"
+    @links = new @Links @Link, "links"
 
     # Initialize model global resources
     @debugging = false
@@ -2141,6 +2136,17 @@ class ABM.Model
     if globalNames? 
     then @globalNames = globalNames; @globalNames.set = true
     else @globalNames = u.removeItems u.ownKeys(@), @globalNames
+
+  # Add this model to a class's prototype. This is used in
+  # the model constructor to create Patch/Patches, Agent/Agents,
+  # and Link/Links classes with a built-in reference to their model.
+  extend: (aClass) ->
+    model = @
+    class extendedClass extends aClass
+      model: model
+      constructor: ->
+        super
+    return extendedClass;
 
 #### Optimizations:
   
@@ -2199,15 +2205,10 @@ class ABM.Model
     console.log "reset: contexts"
     (v.restore(); @setCtxTransform v) for k,v of @contexts when v.canvas? # clear/resize b4 agentsets
     console.log "reset: patches"
-    @patches = new Patches Patch, "patches"
+    @patches = new @Patches @Patch, "patches"
     console.log "reset: agents"
-    @agents = new Agents Agent, "agents"
-    @links = new Links Link, "links"
-    # console.log "reset: patches"
-    # @patches = ABM.patches = new ABM.Patches ABM.Patch, "patches"
-    # console.log "reset: agents"
-    # @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
-    # @links = ABM.links = new ABM.Links ABM.Link, "links"
+    @agents = new @Agents @Agent, "agents"
+    @links = new @Links @Link, "links"
     u.s.spriteSheets.length = 0 # possibly null out entries?
     console.log "reset: setup"
     @setup()
@@ -2275,9 +2276,6 @@ class ABM.Model
       breeds.sets[b] = breed
       breeds.classes["#{b}Class"] = c
     breeds
-  # patchBreeds: (s) -> @patches.breeds = @createBreeds s, ABM.Patch, ABM.Patches
-  # agentBreeds: (s) -> @agents.breeds  = @createBreeds s, ABM.Agent, ABM.Agents
-  # linkBreeds:  (s) -> @links.breeds   = @createBreeds s, ABM.Link,  ABM.Links
   patchBreeds: (s) -> @patches.breeds = @createBreeds s, @Patch, @Patches
   agentBreeds: (s) -> @agents.breeds  = @createBreeds s, @Agent, @Agents
   linkBreeds:  (s) -> @links.breeds   = @createBreeds s, @Link,  @Links
@@ -2287,15 +2285,6 @@ class ABM.Model
   #     even = @asSet (a for a in @agents when a.id % 2 is 0)
   #     even.shuffle().getProp("id") # [6, 0, 4, 2, 8]
   asSet: (a, setType = ABM.AgentSet) -> ABM.AgentSet.asSet a, setType
-
-  # Add this model to a class's prototype
-  extend: (aClass) ->
-    model = @
-    class extendedClass extends aClass
-      model: model
-      constructor: ->
-        super
-    return extendedClass;
 
   # A simple debug aid which places short names in the global name space.
   # Note we avoid using the actual name, such as "patches" because this

@@ -7,11 +7,11 @@
 # its created instances.  It also provides, much like the **ABM.util**
 # module, many methods shared by all subclasses of AgentSet.
 #
-# ABM contains three agentsets created by class Model:
+# A model contains three agentsets:
 #
-# * `ABM.patches`: the model's "world" grid
-# * `ABM.agents`: the model's agents living on the patches
-# * `ABM.links`: the network links connecting agent pairs
+# * `patches`: the model's "world" grid
+# * `agents`: the model's agents living on the patches
+# * `links`: the network links connecting agent pairs
 #
 # See NetLogo [documentation](http://ccl.northwestern.edu/netlogo/docs/)
 # for explanation of the overall semantics of Agent Based Modeling
@@ -74,7 +74,7 @@ class ABM.AgentSet extends Array
 
   # Remove an agent from the agentset, returning the agentset.
   # Note this does not change ID, thus an
-  # agentset can have gaps in terms of their id's. Assumes set is
+  # agentset can have gaps in terms of their ids. Assumes set is
   # sorted by `id`. If the set is one created by `asSet`, and the original
   # array is unsorted, simply call `sortById` first, see `sortById` below.
   #
@@ -270,7 +270,7 @@ class ABM.AgentSet extends Array
 
 # ### Topology
   
-  # For ABM.patches & ABM.agents which have x,y. See ABM.util doc.
+  # For patches & agents, which have x,y. See ABM.util doc.
   #
   # Return all agents in agentset within d distance from given object.
   # By default excludes the given object. Uses linear/torus distance
@@ -309,7 +309,7 @@ class ABM.AgentSet extends Array
   #     AS.with("o.x<5").ask("o.x=o.x+1")
   #     AS.getProp("x") # [2, 8, 6, 3, 3]
   #
-  #     @model.agents.with("o.id<100").ask("o.color=[255,0,0]")
+  #     myModel.agents.with("o.id<100").ask("o.color=[255,0,0]")
   ask: (f) -> 
     eval("f=function(o){return "+f+";}") if u.isString f
     f(o) for o in @; @

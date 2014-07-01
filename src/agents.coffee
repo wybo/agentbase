@@ -107,7 +107,8 @@ class ABM.Agent
       @sprite = s; @color = s.color; @shape = s.shape; @size = s.size
     else
       @color = u.randomColor unless @color?
-      @sprite = ABM.shapes.shapeToSprite @shape, @color, @size, @model
+      bits = @model.patches.toBits @size
+      @sprite = ABM.shapes.shapeToSprite @shape, @color, bits
     
   # Draw the agent on the drawing layer, leaving permanent image.
   stamp: -> @draw @model.drawing
