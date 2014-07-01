@@ -85,11 +85,11 @@ by the <code>create</code> factory method of an AgentSet.</p>
 <code>Patches</code>, <code>Agents</code>, and <code>Links</code>. An AgentSet keeps track of all
 its created instances.  It also provides, much like the <strong>ABM.util</strong>
 module, many methods shared by all subclasses of AgentSet.</p>
-<p>ABM contains three agentsets created by class Model:</p>
+<p>A model contains three agentsets:</p>
 <ul>
-<li><code>ABM.patches</code>: the model’s “world” grid</li>
-<li><code>ABM.agents</code>: the model’s agents living on the patches</li>
-<li><code>ABM.links</code>: the network links connecting agent pairs</li>
+<li><code>patches</code>: the model’s “world” grid</li>
+<li><code>agents</code>: the model’s agents living on the patches</li>
+<li><code>links</code>: the network links connecting agent pairs</li>
 </ul>
 <p>See NetLogo <a href="http://ccl.northwestern.edu/netlogo/docs/">documentation</a>
 for explanation of the overall semantics of Agent Based Modeling
@@ -240,7 +240,7 @@ Returns the object for chaining. The set will be sorted by <code>id</code>.</p>
               </div>
               <p>Remove an agent from the agentset, returning the agentset.
 Note this does not change ID, thus an
-agentset can have gaps in terms of their id’s. Assumes set is
+agentset can have gaps in terms of their ids. Assumes set is
 sorted by <code>id</code>. If the set is one created by <code>asSet</code>, and the original
 array is unsorted, simply call <code>sortById</code> first, see <code>sortById</code> below.</p>
 <pre><code>AS.remove(AS[<span class="hljs-number">3</span>]) <span class="hljs-comment"># [{id:0,x:0,y:1}, {id:1,x:8,y:0},</span>
@@ -775,7 +775,7 @@ To show/hide an individual object, set its prototype: o.hidden = bool</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-39">&#182;</a>
               </div>
-              <p>For ABM.patches &amp; ABM.agents which have x,y. See ABM.util doc.</p>
+              <p>For patches &amp; agents, which have x,y. See ABM.util doc.</p>
 <p>Return all agents in agentset within d distance from given object.
 By default excludes the given object. Uses linear/torus distance
 depending on patches.isTorus, and patches width/height if needed.</p>
@@ -859,7 +859,7 @@ Allows functions as strings. Use:</p>
 AS.<span class="hljs-reserved">with</span>(<span class="hljs-string">"o.x&lt;5"</span>).ask(<span class="hljs-string">"o.x=o.x+1"</span>)
 AS.getProp(<span class="hljs-string">"x"</span>) <span class="hljs-comment"># [2, 8, 6, 3, 3]</span>
 
-<span class="hljs-property">@model</span>.agents.<span class="hljs-reserved">with</span>(<span class="hljs-string">"o.id&lt;100"</span>).ask(<span class="hljs-string">"o.color=[255,0,0]"</span>)
+myModel.agents.<span class="hljs-reserved">with</span>(<span class="hljs-string">"o.id&lt;100"</span>).ask(<span class="hljs-string">"o.color=[255,0,0]"</span>)
 </code></pre>
             </div>
             

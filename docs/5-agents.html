@@ -310,7 +310,8 @@ using patch topology (isTorus)</p>
       <span class="hljs-property">@sprite</span> = s; <span class="hljs-property">@color</span> = s.color; <span class="hljs-property">@shape</span> = s.shape; <span class="hljs-property">@size</span> = s.size
     <span class="hljs-keyword">else</span>
       <span class="hljs-property">@color</span> = u.randomColor <span class="hljs-keyword">unless</span> <span class="hljs-property">@color</span>?
-      <span class="hljs-property">@sprite</span> = ABM.shapes.shapeToSprite <span class="hljs-property">@shape</span>, <span class="hljs-property">@color</span>, <span class="hljs-property">@size</span>, <span class="hljs-property">@model</span></pre></div></div>
+      bits = <span class="hljs-property">@model</span>.patches.toBits <span class="hljs-property">@size</span>
+      <span class="hljs-property">@sprite</span> = ABM.shapes.shapeToSprite <span class="hljs-property">@shape</span>, <span class="hljs-property">@color</span>, bits</pre></div></div>
             
         </li>
         
