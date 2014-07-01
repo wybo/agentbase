@@ -1,9 +1,10 @@
 # A NetLogo-like mouse handler.
 # See: [addEventListener](http://goo.gl/dq0nN)
 class ABM.Mouse
-  # Create and start mouse obj, args: name of div, and a callback method.
-  constructor: (@div, @callback) ->
+  # Create and start mouse obj, args: a model, and a callback method.
+  constructor: (@model, @callback) ->
     @lastX=Infinity; @lastY=Infinity
+    @div = @model.div
     @start()
   # Start/stop the mouseListeners.  Note that NetLogo's model is to have
   # mouse move events always on, rather than starting/stopping them
@@ -26,6 +27,6 @@ class ABM.Mouse
   setXY: (e) ->
     @lastX = @x; @lastY = @y
     @pixX = e.offsetX; @pixY = e.offsetY
-    [@x, @y] = ABM.patches.pixelXYtoPatchXY(@pixX,@pixY)
+    [@x, @y] = @model.patches.pixelXYtoPatchXY(@pixX,@pixY)
     @moved = (@x isnt @lastX) or (@y isnt @lastY)
     @callback(e) if @callback?

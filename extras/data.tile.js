@@ -8,13 +8,15 @@
 (function() {
     ABM.TileDataSet = (function() {
 
-        function TileDataSet(width, height, tileSize) {
+        function TileDataSet(width, height, tileSize, model) {
         	this.tileSize = tileSize || 256;
 
         	this.tiles = {};
 
         	this.width = width;
         	this.height = height;
+            
+            this.model = model;
 
         	this.zoom = 0;
         	this.origin = { x: 0, y: 0 };
@@ -229,12 +231,12 @@
         }
 
         TileDataSet.prototype.embedLeaflet = function() {
-        	if (!ABM.model.div) {
+        	if (!this.model.div) {
         		console.log("ERR: Tried to embed leaflet map into a headless model, or before model div was initialized.");
         		return;
         	}
 
-        	ABM.util.insertLayer(ABM.model.div, this.leafletMap.getContainer(), ABM.world.pxWidth+"px", ABM.world.pxHeight+"px", 15);
+        	ABM.util.insertLayer(this.model.div, this.leafletMap.getContainer(), this.model.world.pxWidth+"px", this.model.world.pxHeight+"px", 15);
             // Alert Leaflet that its dimensions have changed
             this.leafletMap.invalidateSize();
         }
