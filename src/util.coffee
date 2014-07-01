@@ -363,7 +363,10 @@ ABM.util = u =
   flatten: (matrix) -> matrix.reduce( (a,b) -> a.concat b )
   
   # Return array of property values of given array of objects
-  aProp: (array, prop) -> (a[prop] for a in array)
+  aProp: (array, propOrFn) ->
+    if typeof propOrFn is 'function'
+    then propOrFn(a) for a in array
+    else a[propOrFn] for a in array
 
   # Return hybred array with object named properties. Good for returning multiple
   # values from a function, and destructured assignment.
