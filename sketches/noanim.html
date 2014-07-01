@@ -16,7 +16,7 @@
     class MyModel extends ABM.Model
       setup: -> # called by Model constructor
         @refreshPatches = @refreshAgents = false
-        @mouse = new ABM.Mouse @div, => @once()
+        @mouse = new ABM.Mouse @, => @once()
         
         @agents.setDefault "shape", "circle"; @agents.setDefault "size", .5
         p.sprout 1 for p in @patches.nOf 20
@@ -31,11 +31,11 @@
         d - l.length() < 1 / @patches.size
 
     # Note: do not call start()
-    model = new MyModel("layers", 25, -8, 8, -8, 8)
+    window.model = new MyModel("layers", 25, -8, 8, -8, 8)
       .debug() # Debug: Put Model vars in global name space
     </script>
   </head>
-  <body onload="ABM.model.once()">
+  <body onload="model.once()">
     <div id="layers"></div>
   </body>
 </html>

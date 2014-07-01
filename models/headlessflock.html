@@ -39,8 +39,8 @@
         p.sprout 1 for p in @patches.nOf(@population)
         a.color = u.randomMapColor() for a in @agents
 
-        newDomEl = (agent) ->
-          coords = ABM.model.patches.patchXYtoPixelXY(agent.x, agent.y)
+        newDomEl = (agent) =>
+          coords = @patches.patchXYtoPixelXY(agent.x, agent.y)
           el = document.body.appendChild(document.createElement("div"))
           el.innerHTML = 'bird'
           el.style.position = 'absolute'

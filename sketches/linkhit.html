@@ -12,7 +12,7 @@
     class MyModel extends ABM.Model
       setup: -> # called by Model constructor
         @refreshPatches = @refreshAgents = false
-        @mouse = new ABM.Mouse @div
+        @mouse = new ABM.Mouse @
         
         @agents.setDefault "shape", "circle"; @agents.setDefault "size", .5
         p.sprout 1 for p in @patches.nOf 20

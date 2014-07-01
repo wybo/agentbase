@@ -139,6 +139,9 @@
 				maxY: 192
 			});
 
+			// set the model to be used in `toPatchVar()` below
+			tileSet.setModel(model);
+
 		    // bind tile dataset to leaflet
 		    tileSet.bindToLeaflet(map, elevationLayer);
 
@@ -166,6 +169,7 @@
 	</script>
 
 	<style type="text/css">
+		/* keep the Dat.GUI above the map */
 		.dg.ac {
 			z-index: 100 !important;
 		}
