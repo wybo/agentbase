@@ -1,16 +1,28 @@
 # ### Patches
   
 # Class Patches is a singleton 2D matrix of Patch instances, each patch 
-# representing a 1x1 square in patch coordinates (via 2D coord transforms).
+# representing a 1x1 square in patch coordinates (via 2D coordinate transforms).
 #
 # From ABM.world, set in Model:
 #
-# * size:         pixel h/w of each patch.
-# * minX/maxX:    min/max x coord in patch coords
-# * minY/maxY:    min/max y coord in patch coords
-# * numX/numY:    width/height of grid.
-# * isTorus:      true if coord system wraps around at edges
-# * isHeadless:   true if not using canvas drawing
+# * patchSize:     pixel h/w of each patch
+# * min:           .x & .y, minimum patch coordinate, integer
+# * max:           .x & .y, maximum patch coordinate, integer
+# * width:         width of grid
+# * height:        height of grid
+# * isTorus:       true if coordinate system wraps around at edges
+# * isHeadless:    true if not using canvas drawing
+# * minCoordinate: .x & .y, maximum float coordinate (calculated)
+# * maxCoordinate: .x & .y, maximum float coordinate (calculated)
+
+# TODO
+# minX
+# maxX
+# minY
+# maxY
+# numX, width
+# numY, height
+# minXcor, etc
 
 class ABM.Patches extends ABM.Set
   # Constructor: super creates the empty Set instance and installs
@@ -25,94 +37,77 @@ class ABM.Patches extends ABM.Set
   # Note that this is done as separate method so like other agentsets,
   # patches are started up empty and filled by "create" calls.
   create: -> # TopLeft to BottomRight, exactly as canvas imagedata
-    for y in [@maxY..@minY] by -1
-      for x in [@minX..@maxX] by 1
-        @add new @agentClass x, y
+    for y in [@max.y..@min.y] by -1
+      for x in [@min.x..@max.x] by 1
+        @add new @agentClass x: x, y: y
     @setPixels() unless @isHeadless # setup off-page canvas for pixel ops
     @
     
-  # Draw patches using scaled image of colors. Note anti-aliasing may occur
-  # if browser does not support smoothing flags.
-  usePixels: (@drawWithPixels = true) ->
-    context = ABM.contexts.patches
-    u.setContextSmoothing context, not @drawWithPixels
-
-  # Setup pixels used for `drawScaledPixels` and `importColors`
-  # 
-  setPixels: ->
-    if @size is 1
-      @usePixels()
-      @pixelsContext = ABM.contexts.patches
+  # #### Patch grid coordinate system utilities:
+  
+  # Return patch at x, y float values according to topology.
+  patch: (point) ->
+    if @isCoordinate(point, @min, @max)
+      coordinate = point
     else
-      @pixelsContext = u.createContext @numX, @numY
+      coordinate = @coordinate(point, @min, @max)
 
-    @pixelsImageData = @pixelsContext.getImageData(0, 0, @numX, @numY)
-    @pixelsData = @pixelsImageData.data
+    rounded = x: Math.round(coordinate.x), y: Math.round(coordinate.y)
 
-    if @pixelsData instanceof Uint8Array # Check for typed arrays
-      @pixelsData32 = new Uint32Array @pixelsData.buffer
-      @pixelsAreLittleEndian = u.isLittleEndian()
-  
-  # Draw patches.  Three cases:
-  #
-  # * Pixels: use pixel manipulation rather than canvas draws
-  # * Monochrome: just fill canvas w/ patch default
-  # * Otherwise: just draw each patch individually
-  draw: (context) ->
-    if @monochrome
-      u.fillContext context, @agentClass::color
-    else if @drawWithPixels
-      @drawScaledPixels context
-    else
-      super context
+    @[@patchIndex rounded]
 
-# #### Patch grid coord system utilities:
-  
-  # Return the patch id/index given integer x, y in patch coords
-  patchIndex: (x, y) -> x - @minX + @numX * (@maxY - y)
-
-  # Return the patch at matrix position x, y where 
-  # x & y are both valid integer patch coordinates.
-  patchXY: (x, y) -> @[@patchIndex x, y]
-  
-  # Return x, y float values to be between min/max patch coord values
-  clamp: (x, y) ->
-    [u.clamp(x, @minXcor, @maxXcor), u.clamp(y, @minYcor, @maxYcor)]
-  
-  # Return x, y float values to be modulo min/max patch coord values.
-  wrap: (x, y) ->
-    [u.wrap(x, @minXcor, @maxXcor), u.wrap(y, @minYcor, @maxYcor)]
-  
   # Return x, y float values to be between min/max patch values
   # using either clamp/wrap above according to isTorus topology.
-  coord: (x, y) -> #returns a valid world coord (real, not int)
-    if @isTorus then @wrap x, y else @clamp x, y
+  # returns a valid world coordinate (real, not int)
+  coordinate: (point, minPoint = @minCoordinate, maxPoint = @maxCoordinate) ->
+    if @isTorus
+      @wrap point, minPoint, maxPoint
+    else
+      @clamp point, minPoint, maxPoint
 
-  # Return true if on world or torus, false if non-torus and off-world
-  isOnWorld: (x, y) ->
-    @isTorus or (@minXcor <= x <= @maxXcor and @minYcor <= y <= @maxYcor)
-
-  # Return patch at x, y float values according to topology.
-  patch: (x, y) ->
-    [x, y] = @coord x, y
-    x = u.clamp Math.round(x), @minX, @maxX
-    y = u.clamp Math.round(y), @minY, @maxY
-    @patchXY x, y
+  # Return x, y float values to be between min/max patch coordinate values
+  clamp: (point, minPoint = @minCoordinate, maxPoint = @maxCoordinate) ->
+    {
+      x: u.clamp(point.x, minPoint.x, maxPoint.x),
+      y: u.clamp(point.y, minPoint.y, maxPoint.y)
+    }
   
-  # Return a random valid float x, y point in patch space
-  randomPoint: ->
-    [u.randomFloat(@minXcor, @maxXcor), u.randomFloat(@minYcor, @maxYcor)]
+  # Return x, y float values to be modulo min/max patch coordinate values.
+  wrap: (point, minPoint = @minCoordinate, maxPoint = @maxCoordinate) ->
+    {
+      x: u.wrap(point.x, minPoint.x, maxPoint.x),
+      y: u.wrap(point.y, minPoint.y, maxPoint.y)
+    }
+  
+  # Returns true if the points x, y float values are between min/max
+  # patch values
+  isCoordinate: (point, minPoint = @minCoordinate, maxPoint = @maxCoordinate) ->
+    minPoint.x <= point.x <= maxPoint.x and minPoint.y <= point.y <= maxPoint.y
 
-# #### Patch metrics
+  # Return true if on world or torus, false if non-torus and
+  # off-world. Because toruses wrap.
+  isOnWorld: (point) ->
+    @isTorus or @isCoordinate(point)
+
+  # Return the patch id/index given integer x, y in patch coordinates
+  patchIndex: (point) ->
+    point.x - @min.x + @width * (@max.y - point.y)
+
+  # Return a random valid float {x, y} point in patch space
+  randomPoint: ->
+    {x: u.randomFloat(@minCoordinate.x, @maxCoordinate.x), y: u.randomFloat(@minCoordinate.y, @maxCoordinate.y)}
+
+  # #### Patch metrics
   
   # Convert patch measure to pixels
   toBits: (patch) ->
-    patch * @size
+    patch * @patchSize
 
   # Convert bit measure to patches
-  fromBits: (b) -> b / @size
+  fromBits: (bit) ->
+    bit / @patchSize
 
-# #### Patch utilities
+  # #### Patch utilities
   
   # Return an array of patches in a rectangle centered on the given 
   # patch `patch`, dx, dy units to the right/left and up/down. 
@@ -123,22 +118,22 @@ class ABM.Patches extends ABM.Set
 
   patchRectangleNullPadded: (patch, dx, dy, meToo = false) ->
     rectangle = []; # REMIND: optimize if no wrapping, rectangle inside patch boundaries
-    for y in [(patch.y - dy)..(patch.y + dy)] by 1 # by 1: perf: avoid bidir JS for loop
-      for x in [(patch.x - dx)..(patch.x + dx)] by 1
+    for y in [(patch.position.y - dy)..(patch.position.y + dy)] by 1 # by 1: perf: avoid bidir JS for loop
+      for x in [(patch.position.x - dx)..(patch.position.x + dx)] by 1
         nextPatch = null
         if @isTorus
-          if x < @minX
-            x += @numX
-          if x > @maxX
-            x -= @numX
-          if y < @minY
-            y += @numY
-          if y > @maxY
-            y -= @numY
-          nextPatch = @patchXY x, y
-        else if x >= @minX and x <= @maxX and
-            y >= @minY and y <= @maxY
-          nextPatch = @patchXY x, y
+          if x < @min.x
+            x += @width
+          if x > @max.x
+            x -= @width
+          if y < @min.y
+            y += @height
+          if y > @max.y
+            y -= @height
+          nextPatch = @patch x: x, y: y
+        else if x >= @min.x and x <= @max.x and
+            y >= @min.y and y <= @max.y
+          nextPatch = @patch x: x, y: y
 
         if (meToo or patch isnt nextPatch)
           rectangle.push nextPatch
@@ -166,15 +161,20 @@ class ABM.Patches extends ABM.Set
   # Utility function for pixel manipulation.  Given a patch, returns the 
   # native canvas index i into the pixel data.
   # The top-left order simplifies finding pixels in data sets
-  pixelByteIndex: (patch) -> 4 * patch.id # Uint8
+  pixelByteIndex: (patch) ->
+    4 * patch.id # Uint8
 
-  pixelWordIndex: (patch) -> patch.id   # Uint32
+  pixelWordIndex: (patch) ->
+    patch.id   # Uint32
 
-  # Convert pixel location (top/left offset i.e. mouse) to patch coords (float)
-  pixelXYtoPatchXY: (x, y) -> [@minXcor + (x / @size), @maxYcor - (y / @size)]
+  # Convert pixel location (top/left offset i.e. mouse) to patch coordinates (float)
+  pixelXYtoPatchXY: (x, y) ->
+    [@minCoordinate.x + (x / @patchSize), @maxCoordinate.y - (y / @patchSize)]
 
-  # Convert patch coords (float) to pixel location (top/left offset i.e. mouse)
-  patchXYtoPixelXY: (x, y) -> [( x - @minXcor) * @size, (@maxYcor - y) * @size]
+  # TODO refactor
+  # Convert patch coordinates (float) to pixel location (top/left offset i.e. mouse)
+  patchXYtoPixelXY: (x, y) ->
+    [(x - @minCoordinate.x) * @patchSize, (@maxCoordinate.y - y) * @patchSize]
     
   # Draws, or "imports" an image URL into the patches as their color property.
   # The drawing is scaled to the number of x, y patches, thus one pixel
@@ -188,8 +188,8 @@ class ABM.Patches extends ABM.Set
   # Direct install image into the patch colors, not async.
   installColors: (img, map) ->
     u.setIdentity @pixelsContext
-    @pixelsContext.drawImage img, 0, 0, @numX, @numY # scale if needed
-    data = @pixelsContext.getImageData(0, 0, @numX, @numY).data
+    @pixelsContext.drawImage img, 0, 0, @width, @height # scale if needed
+    data = @pixelsContext.getImageData(0, 0, @width, @height).data
     for patch in @
       i = @pixelByteIndex patch
       # promote initial default
@@ -199,12 +199,12 @@ class ABM.Patches extends ABM.Set
   # Draw the patches via pixel manipulation rather than 2D drawRect.
   # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq)
   drawScaledPixels: (context) ->
-    # u.setIdentity context & context.restore() only needed if patch size 
-    # not 1, pixel ops don't use transform but @size>1 uses
+    # u.setIdentity context & context.restore() only needed if patchSize 
+    # not 1, pixel ops don't use transform but @patchSize > 1 uses
     # a drawimage
-    u.setIdentity context if @size isnt 1
+    u.setIdentity context if @patchSize isnt 1
     if @pixelsData32? then @drawScaledPixels32 context else @drawScaledPixels8 context
-    context.restore() if @size isnt 1
+    context.restore() if @patchSize isnt 1
 
   # The 8-bit version for drawScaledPixels.  Used for systems w/o typed arrays
   drawScaledPixels8: (context) ->
@@ -219,7 +219,7 @@ class ABM.Patches extends ABM.Set
       data[i + j] = c[j] for j in [0..2]
       data[i + 3] = a
     @pixelsContext.putImageData @pixelsImageData, 0, 0
-    return if @size is 1
+    return if @patchSize is 1
     context.drawImage @pixelsContext.canvas, 0, 0, context.canvas.width, context.canvas.height
 
   # The 32-bit version of drawScaledPixels, with both little and big endian hardware.
@@ -233,7 +233,7 @@ class ABM.Patches extends ABM.Set
       then data[i] = (a << 24) | (c[2] << 16) | (c[1] << 8) | c[0]
       else data[i] = (c[0] << 24) | (c[1] << 16) | (c[2] << 8) | a
     @pixelsContext.putImageData @pixelsImageData, 0, 0
-    return if @size is 1
+    return if @patchSize is 1
     context.drawImage @pixelsContext.canvas, 0, 0, context.canvas.width, context.canvas.height
 
   floodFillOnce: (aset, fCandidate, fJoin, fCallback, fNeighbors = ((patch) -> patch.n),
@@ -263,3 +263,42 @@ class ABM.Patches extends ABM.Set
       if c
         patch.fractionOfColor c, patch[v]
     null # avoid returning copy of @
+
+  # ### Drawing
+
+  # Draw patches using scaled image of colors. Note anti-aliasing may occur
+  # if browser does not support smoothing flags.
+  usePixels: (@drawWithPixels = true) ->
+    context = ABM.contexts.patches
+    u.setContextSmoothing context, not @drawWithPixels
+
+  # Setup pixels used for `drawScaledPixels` and `importColors`
+  # 
+  setPixels: ->
+    if @patchSize is 1
+      @usePixels()
+      @pixelsContext = ABM.contexts.patches
+    else
+      @pixelsContext = u.createContext @width, @height
+
+    @pixelsImageData = @pixelsContext.getImageData(0, 0, @width, @height)
+    @pixelsData = @pixelsImageData.data
+
+    if @pixelsData instanceof Uint8Array # Check for typed arrays
+      @pixelsData32 = new Uint32Array @pixelsData.buffer
+      @pixelsAreLittleEndian = u.isLittleEndian()
+  
+  # Draw patches.  Three cases:
+  #
+  # * Pixels: use pixel manipulation rather than canvas draws
+  # * Monochrome: just fill canvas w/ patch default
+  # * Otherwise: just draw each patch individually
+  draw: (context) ->
+    if @monochrome
+      u.fillContext context, @agentClass::color
+    else if @drawWithPixels
+      @drawScaledPixels context
+    else
+      super context
+
+

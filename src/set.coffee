@@ -313,21 +313,19 @@ class ABM.Set extends Array
 #     AS.add new XY(pt...) for pt in [[0, 1], [8, 0], [6, 4], [1, 3], [1, 1]]
 
   # Return all agents within d distance from given object.
-  inRadius: (entity1, options) -> # for any objects w/ x, y
+  inRadius: (point, options) -> # for any objects w/ x, y
     inner = []
-    for entity2 in @
-      if entity1.distance(entity2) <= options.radius
-        inner.push entity2
+    for entity in @
+      if entity.distance(point) <= options.radius
+        inner.push entity
     @asSet inner
       
-  # As above, but also limited to the angle `cone` around
-  # a `heading` from entity1
-  inCone: (entity1, options) ->
-    options.heading ?= entity1.heading
-    # if an agent, it will have heading
+  # As above, but returns agents also limited to the angle `cone`
+  # around a `heading` from point.
+  inCone: (point, options) ->
     inner = []
-    for entity2 in @
+    for entity in @
       if u.inCone(options.heading, options.cone, options.radius,
-          entity1, entity2, ABM.patches)
-        inner.push entity2
+          point, entity.position, ABM.patches)
+        inner.push entity
     @asSet inner

@@ -7,7 +7,7 @@ class ABM.Patch
   # Constructor & Class Variables:
   # * id:          unique identifier, promoted by agentset create() factory method
   # * breed:       the agentset this agent belongs to
-  # * x, y:        position on the patch grid, in patch coordinates
+  # * position:    position on the patch grid, .x and .y in patch coordinates
   # * color:       the color of the patch as an RGBA array, A optional.
   # * hidden:      whether or not to draw this patch
   # * label:       text for the patch
@@ -16,8 +16,7 @@ class ABM.Patch
 
   id: null              # unique id, promoted by agentset create factory method
   breed: null           # set by the agentSet owning this patch
-  x: null               # The patch position in the patch grid
-  y: null
+  position: null        # The patch position in the patch grid, in .x and .y
   color: [0, 0, 0]      # The patch color
   hidden: false         # draw me?
   label: null           # text for the patch
@@ -26,12 +25,15 @@ class ABM.Patch
   agents: null          # agents on this patch
   
   # New Patch: Just set x, y.
-  constructor: (@x, @y) ->
+  #constructor: (@x, @y) ->
+  constructor: (@position) ->
     @neighborsCache = {}
     @agents = []
 
   # Return a string representation of the patch.
-  toString: -> "{id:#{@id} xy:#{[@x, @y]} c:#{@color}}"
+  toString: ->
+    "{id:#{@id} position: {x: #{@position.x}, y: #{@position.y}}," +
+    "c: #{@color}}"
 
   # Set patch color to `c` scaled by `fraction`. Usage:
   #
@@ -46,32 +48,32 @@ class ABM.Patch
   # Draw the patch and its text label if there is one.
   draw: (context) ->
     context.fillStyle = u.colorString @color
-    context.fillRect @x - .5, @y - .5, 1, 1
+    context.fillRect @position.x - .5, @position.y - .5, 1, 1
     if @label? # REMIND: should be 2nd pass.
-      [x, y] = @breed.patchXYtoPixelXY @x, @y
-      u.contextDrawText context, @label, x + @labelOffset[0], y + @labelOffset[1],
-        @labelColor
+      position = @breed.patchXYtoPixelXY @position
+      u.contextDrawText context, @label, position.x + @labelOffset[0],
+        position.y + @labelOffset[1], @labelColor
   
   empty: ->
     u.empty @agents
 
   # Returns true if this patch is on the edge of the grid.
   isOnEdge: ->
-    @x is @breed.minX or @x is @breed.maxX or \
-    @y is @breed.minY or @y is @breed.maxY
+    @position.x is @breed.min.x or @position.x is @breed.max.x or \
+    @position.y is @breed.min.y or @position.y is @breed.max.y
   
   # Factory: Create num new agents on this patch. The optional init
   # proc is called on the new agent after inserting in its agentSet.
   sprout: (number = 1, breed = ABM.agents, init = ->) ->
     breed.create number, (agent) => # fat arrow so that @ = this patch
-      agent.setXY @x, @y
+      agent.moveTo @position
       init(agent)
       agent
 
-  # Return distance in patch coords from me to given agent/patch
+  # Return distance in patch coordinates from me to given agent/patch
   # using patch topology (isTorus)
   distance: (point) -> # o any object w/ x, y, patch or agent
-    u.distance @, point, ABM.patches
+    u.distance @position, point, ABM.patches
 
   # Get neighbors for patch
   neighbors: (options) ->
@@ -86,14 +88,15 @@ class ABM.Patch
 
     if not neighbors?
       if options.radius
-        square = @neighbors(range: options.radius, meToo: options.meToo, cache: options.cache)
+        square = @neighbors(range: options.radius, meToo: options.meToo,
+          cache: options.cache)
         if options.cone
-          neighbors = square.inCone(@, options)
+          neighbors = square.inCone(@position, options)
           unless options.cache
             cacheKey = null
             # cone has variable heading, better not cache by default
         else
-          neighbors = square.inRadius(@, options)
+          neighbors = square.inRadius(@position, options)
       else if options.diamond
         neighbors = @diamondNeighbors(options.diamond, options.meToo)
       else

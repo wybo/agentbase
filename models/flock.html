@@ -26,7 +26,7 @@
         @animator.setRate 30, true # multistep
         
         @useConsole = true
-        @population = 500     # agents
+        @population = 75      # agents
         @setVision 3          # patches & set patch rect
         @minSeparation = 0.75 # patches
         @setMaxTurn(3.0)      # degrees -> radians
@@ -36,15 +36,23 @@
         # @agents.setDefault "color", [255,0,0] # slightly faster! ->38/39 ??
 
         @patches.create()
-        patch.color = u.randomGray 0, 100 for patch in @patches
-        patch.sprout 1 for patch in @patches.sample(@population)
-        for a in @agents
-          a.color = u.randomMapColor()
+
+        for patch in @patches
+          patch.color = u.randomGray 0, 100
+
+        for patch in @patches.sample(@population)
+          patch.sprout 1
+
+        for agent in @agents
+          agent.color = u.randomMapColor()
   
       step: ->
         if @useConsole and @animator.ticks % 25 is 0
           console.log @animator.toString(), "flock alignment: #{@reportFlockVectorSize()}"
-        @flock(a) for a in @agents
+
+        for agent in @agents
+          @flock agent
+
         if @animator.draws is 2 # Show the sprite sheet if there is one after first draw
           sheet = u.last(u.s.spriteSheets) if u.s.spriteSheets.length isnt 0
           if sheet?
@@ -52,52 +60,57 @@
             document.getElementById("play").appendChild(sheet.canvas)
         # @stop() if @animator.ticks is 400
 
-      flock: (a) -> # a is agent
-        flockmates = a.neighbors(@vision)
-        if flockmates.length isnt 0
-          [nearestNeighbor, d] = u.min flockmates, ((f) -> f.distance a), true
-          if d < @minSeparation
-            @separate a, nearestNeighbor
-          else
-            @align a, flockmates
-            @cohere a, flockmates
-        a.forward .5 # move partial patch for smooth animation.
+      flock: (agent) ->
+        flockmates = agent.neighbors(@vision)
 
-      separate: (a, nearest) ->
-        h = nearest.angleTowards a; @turnTowards a, h
-      align: (a, flockmates) ->
-        @turnTowards a, @averageHeading(flockmates)
-      cohere: (a, flockmates) ->
-        @turnTowards a, @averageHeadingTowards(a, flockmates)
+        if flockmates.length isnt 0
+          [nearestNeighbor, d] = u.min flockmates, ((f) ->
+            f.distance agent.position), true
+          if d < @minSeparation
+            @separate agent, nearestNeighbor
+          else
+            @align agent, flockmates
+            @cohere agent, flockmates
+
+        agent.forward .5 # move partial patch for smooth animation.
+
+      separate: (agent, nearest) ->
+        angle = nearest.angleTowards agent.position
+        @turnTowards agent, angle
+
+      align: (agent, flockmates) ->
+        @turnTowards agent, @averageHeading(flockmates)
+
+      cohere: (agent, flockmates) ->
+        @turnTowards agent, @averageHeadingTowards(agent, flockmates)
         
-      turnTowards: (a, heading) ->
-        turn = u.substractRadians heading, a.heading # angle from h to a
+      turnTowards: (agent, heading) ->
+        turn = u.substractRadians heading, agent.heading # angle from h to a
         turn = u.clamp turn, -@maxTurn, @maxTurn # limit the turn
-        a.rotate turn
+        agent.rotate turn
+
       averageHeading: (flockmates) ->
         dx = (Math.sin f.heading for f in flockmates).reduce (x, y) -> x + y
         dy = (Math.cos f.heading for f in flockmates).reduce (x, y) -> x + y
         @safeAtan dy, dx
-      averageHeadingTowards: (a, flockmates) ->
-        dx = (Math.sin f.angleTowards a for f in flockmates).reduce (x, y) -> x + y
-        dy = (Math.cos f.angleTowards a for f in flockmates).reduce (x, y) -> x + y
+
+      averageHeadingTowards: (agent, flockmates) ->
+        # TODO reformat
+        dx = (Math.sin f.angleTowards agent.position for f in flockmates).reduce (x, y) -> x + y
+        dy = (Math.cos f.angleTowards agent.position for f in flockmates).reduce (x, y) -> x + y
         @safeAtan dy, dx
-      safeAtan: (x, y) -> Math.atan2 y, x # if x is 0 and y is 0 then 0 else Math.atan2 y, x # atan ok if x 0
+
+      safeAtan: (x, y) ->
+        Math.atan2 y, x # if x is 0 and y is 0 then 0 else Math.atan2 y, x # atan ok if x 0
       
       reportFlockVectorSize: ->
         dx = (Math.sin a.heading for a in @agents).reduce (x, y) -> x + y
         dy = (Math.cos a.heading for a in @agents).reduce (x, y) -> x + y
         Math.sqrt(dx * dx + dy * dy) / @population
 
-    # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors
-    #   Defaults: 13, -16, 16, -16, 16, false, true
     model = new MyModel({
       div: "layers",
-      size: 15,
-      minX: -16,
-      maxX: 16,
-      minY: -16,
-      maxY: 16,
+      patchSize: 15,
       isTorus: true,
       hasNeighbors: false
     })

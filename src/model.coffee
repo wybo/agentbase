@@ -23,22 +23,15 @@ class ABM.Model
   #
   # * create agentsets, install them and ourselves in ABM global namespace
   # * create layers/contexts, install drawing layer in ABM global namespace
-  # * setup patch coord transforms for each layer context
+  # * setup patch coordinate transforms for each layer context
   # * intialize various instance variables
   # * call `setup` abstract method
-  constructor: (divOrOptions, size = 13, minX = -16, maxX = 16, minY = -16,
-      maxY = 16, isTorus = false, hasNeighbors = true, isHeadless = false) ->
-
+  constructor: (options) ->
     ABM.model = @
 
-    if typeof divOrOptions is 'string'
-      div = divOrOptions
-      @setWorldDeprecated size, minX, maxX, minY, maxY, isTorus, hasNeighbors,
-        isHeadless
-    else
-      div = divOrOptions.div
-      isHeadless = divOrOptions.isHeadless = divOrOptions.isHeadless? or not div?
-      @setWorld divOrOptions
+    div = options.div
+    isHeadless = options.isHeadless = options.isHeadless? or not div?
+    @setWorld options
 
     @contexts = ABM.contexts = {}
 
@@ -47,14 +40,14 @@ class ABM.Model
         "position:relative; width:#{@world.pxWidth}px; height:#{@world.pxHeight}px"
 
       # * Create 2D canvas contexts layered on top of each other.
-      # * Initialize a patch coord transform for each layer.
+      # * Initialize a patch coordinate transform for each layer.
       # 
       # Note: this transform is permanent .. there isn't the usual context.restore().
       # To use the original canvas 2D transform temporarily:
       #
       #     u.setIdentity context
-      #       <draw in native coord system>
-      #     context.restore() # restore patch coord system
+      #       <draw in native coordinate system>
+      #     context.restore() # restore patch coordinate system
       for own k, v of @contextsInit
         @contexts[k] = context = u.createLayer @div, @world.pxWidth,
           @world.pxHeight, v.z, v.context
@@ -101,48 +94,34 @@ class ABM.Model
   # Initialize/reset world parameters.
   setWorld: (options) ->
     defaults = {
-      size: 13, minX: -16, maxX: 16, minY: -16, maxY: 16, isTorus: false,
-      hasNeighbors: true, isHeadless: false
-    }
+      patchSize: 13, mapSize: 32, isTorus: false, hasNeighbors: true,
+      isHeadless: false}
 
     for own key, value of defaults
       options[key] ?= value
+
+    options.min ?= {x: -1 * options.mapSize / 2, y: -1 * options.mapSize / 2}
+    options.max ?= {x: options.mapSize / 2, y: options.mapSize / 2}
+    options.mapSize = null # not passed on, because optional
 
     ABM.world = @world = {}
 
     for own key, value of options
       @world[key] = value
 
-    @world.numX = @world.maxX - @world.minX + 1
-    @world.numY = @world.maxY - @world.minY + 1
-    @world.pxWidth = @world.numX * @world.size
-    @world.pxHeight = @world.numY * @world.size
-    @world.minXcor = @world.minX - .5
-    @world.maxXcor = @world.maxX + .5
-    @world.minYcor = @world.minY - .5
-    @world.maxYcor = @world.maxY + .5
-
-  setWorldDeprecated: (size, minX, maxX, minY, maxY, isTorus, hasNeighbors,
-      isHeadless) ->
-    numX = maxX - minX + 1
-    numY = maxY - minY + 1
-    pxWidth = numX * size
-    pxHeight = numY * size
-    minXcor = minX - .5
-    maxXcor = maxX + .5
-    minYcor = minY - .5
-    maxYcor = maxY + .5
-    ABM.world = @world = {
-      size, minX, maxX, minY, maxY, minXcor, maxXcor, minYcor, maxYcor, numX,
-      numY, pxWidth, pxHeight, isTorus, hasNeighbors, isHeadless
-    }
+    @world.width = @world.max.x - @world.min.x + 1
+    @world.height = @world.max.y - @world.min.y + 1
+    @world.pxWidth = @world.width * @world.patchSize
+    @world.pxHeight = @world.height * @world.patchSize
+    @world.minCoordinate = {x: @world.min.x - .5, y: @world.min.y - .5}
+    @world.maxCoordinate = {x: @world.max.x + .5, y: @world.max.y + .5}
 
   setContextTransform: (context) ->
     context.canvas.width = @world.pxWidth
     context.canvas.height = @world.pxHeight
     context.save()
-    context.scale @world.size, -@world.size
-    context.translate -(@world.minXcor), -(@world.maxYcor)
+    context.scale @world.patchSize, -@world.patchSize
+    context.translate -(@world.minCoordinate.x), -(@world.maxCoordinate.y)
 
   globals: (globalNames) ->
     if globalNames?

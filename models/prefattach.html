@@ -20,31 +20,39 @@
         @links.setDefault "thickness", .75 # Easier to see thiner link
         
         @patches.create()
-        @agents.create 1; @makeNode @agents[0]
+        @agents.create 1
+        @makeNode @agents[0]
+
       step: ->
         @makeNode @findPartner()
-        a.size = Math.sqrt a.linkNeighbors().length for a in @agents
-        @links.layoutCircle @agents, @patches.maxX * 0.9
-        @histogram = u.histogram @agents, 1, (a) -> a.linkNeighbors().length
-        console.log "Tick: #{@animator.ticks} Histogram: [#{@histogram}]" if @animator.ticks % 25 is 0
-        (console.log "Stopping at stopTick: #{@animator.ticks}"; @stop()) if @animator.ticks is @stopTick
+
+        for agent in @agents
+          agent.size = Math.sqrt agent.linkNeighbors().length
+
+        @links.layoutCircle @agents, @patches.max.x * 0.9
+
+        @histogram = u.histogram @agents, 1, (agent) ->
+          agent.linkNeighbors().length
+
+        if @animator.ticks % 25 is 0
+          console.log "Tick: #{@animator.ticks} Histogram: [#{@histogram}]"
+
+        if @animator.ticks is @stopTick
+          (console.log "Stopping at stopTick: #{@animator.ticks}"; @stop())
 
       makeNode: (toNode) ->
-        @agents.create 1, (a) =>
-          @links.create a, toNode
-          a.moveTo toNode; a.forward 8
+        @agents.create 1, (agent) =>
+          @links.create agent, toNode
+          agent.moveTo toNode.position
+          agent.forward 8
+
       findPartner: ->
         u.sample @links.sample().bothEnds() # or @links.allEnds().sample()
 
-    # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors
-    #   Defaults: 13, -16, 16, -16, 16, false, true
     model = new MyModel {
       div: "layers",
-      size: 5,
-      minX: -45,
-      maxX: 45,
-      minY: -45,
-      maxY: 45,
+      patchSize: 5,
+      mapSize: 90,
       hasNeighbors: false
     }
     model.debug() # Debug: Put Model vars in global name space

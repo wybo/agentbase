@@ -38,6 +38,7 @@ Array::_sort = Array::sort
 #      u.clearContext(context) is equivalent to
 #      ABM.util.clearContext(context)
 
+# TODO positions
 ABM.util = u =
   # ### Language extensions
   
@@ -512,7 +513,7 @@ ABM.util = u =
 
   # Return the angle from x1, y1 to x2, y2 on torus using shortest reflection.
   radiansTowardTorus: (point1, point2, patches) ->
-    closest = @closestTorusPoint point1, point2, patches.numX, patches.numY
+    closest = @closestTorusPoint point1, point2, patches.width, patches.height
     @radiansTowardEuclidian point1, closest
 
   # Return true if point2 is in cone radians around heading radians from 
@@ -536,7 +537,7 @@ ABM.util = u =
   # point1.x, point2.x and within distance radius from point1.x, point2.x
   # considering all torus reflections.
   inConeTorus: (heading, cone, radius, point1, point2, patches) ->
-    for point in @torus4Points point1, point2, patches.numX, patches.numY
+    for point in @torus4Points point1, point2, patches.width, patches.height
       return true if @inConeEuclidian heading, cone, radius, point1, point
     false
 
@@ -581,8 +582,8 @@ ABM.util = u =
   distanceTorus: (point1, point2, patches) ->
     xDistance = Math.abs point2.x - point1.x
     yDistance = Math.abs point2.y - point1.y
-    minX = Math.min xDistance, patches.numX - xDistance
-    minY = Math.min yDistance, patches.numY - yDistance
+    minX = Math.min xDistance, patches.width - xDistance
+    minY = Math.min yDistance, patches.height - yDistance
     Math.sqrt minX * minX + minY * minY
 
   # Return 4 torus point reflections of point2 around point1
@@ -774,7 +775,9 @@ ABM.util = u =
   # Clear the 2D/3D layer to be transparent. Note this [discussion](http://goo.gl/qekXS).
   clearContext: (context) ->
     if context.save? # test for 2D context
-      @setIdentity context # context.canvas.width = context.canvas.width not used so as to preserve patch coords
+      @setIdentity context
+      # context.canvas.width = context.canvas.width not used so as to preserve
+      # patch coordinates
       context.clearRect 0, 0, context.canvas.width, context.canvas.height
       context.restore()
     else # 3D
@@ -792,7 +795,7 @@ ABM.util = u =
       context.clearColor color..., 1 # alpha = 1 unless color is rgba
       context.clear context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT
 
-  # Draw string of the given color at the xy location, in context pixel coords.
+  # Draw string of the given color at the xy location, in context pixel coordinates.
   # Use setIdentity .. reset if a transform is being used by caller.
   contextDrawText: (context, string, x, y, color = [0, 0, 0], setIdentity = true) ->
     @setIdentity(context) if setIdentity
@@ -1201,23 +1204,21 @@ class ABM.Set extends Array
 #     AS.add new XY(pt...) for pt in [[0, 1], [8, 0], [6, 4], [1, 3], [1, 1]]
 
   # Return all agents within d distance from given object.
-  inRadius: (entity1, options) -> # for any objects w/ x, y
+  inRadius: (point, options) -> # for any objects w/ x, y
     inner = []
-    for entity2 in @
-      if entity1.distance(entity2) <= options.radius
-        inner.push entity2
+    for entity in @
+      if entity.distance(point) <= options.radius
+        inner.push entity
     @asSet inner
       
-  # As above, but also limited to the angle `cone` around
-  # a `heading` from entity1
-  inCone: (entity1, options) ->
-    options.heading ?= entity1.heading
-    # if an agent, it will have heading
+  # As above, but returns agents also limited to the angle `cone`
+  # around a `heading` from point.
+  inCone: (point, options) ->
     inner = []
-    for entity2 in @
+    for entity in @
       if u.inCone(options.heading, options.cone, options.radius,
-          entity1, entity2, ABM.patches)
-        inner.push entity2
+          point, entity.position, ABM.patches)
+        inner.push entity
     @asSet inner
 
 # ### Agent
@@ -1230,8 +1231,8 @@ class ABM.Agent
   #
   # * id:         unique identifier, promoted by agentset create() factory method
   # * breed:      the agentset this agent belongs to
-  # * x,y:        position on the patch grid, in patch coordinates, default: 0, 0
-  # * size:       size of agent, in patch coords, default: 1
+  # * x, y:       position on the patch grid, in patch coordinates, default: 0, 0
+  # * size:       size of agent, in patch coordinates, default: 1
   # * color:      the color of the agent, default: randomColor
   # * shape:      the shape name of the agent, default: "default"
   # * label:      a text label drawn on my instances
@@ -1251,10 +1252,9 @@ class ABM.Agent
   # This can be a huge savings in memory.
   id: null              # unique id, promoted by agentset create factory method
   breed: null           # my agentSet, set by the agentSet owning me
-  x: 0                  # my location
-  y: 0
+  position: null        # my location, has float .x & .y
   patch: null           # the patch I'm on
-  size: 1               # my size in patch coords
+  size: 1               # my size in patch coordinates
   color: null           # default color, overrides random color if set
   shape: "default"      # my shape
   hidden: false         # draw me?
@@ -1269,31 +1269,35 @@ class ABM.Agent
   links: null           # array of links to/from me as an endpoint; init by ctor
 
   constructor: -> # called by agentSets create factory, not user
-    @x = @y = 0
+    @position = {x: 0, y: 0}
     @color = u.randomColor() unless @color? # promote color if default not set
     @heading = u.randomFloat(Math.PI * 2) unless @heading?
     @links = [] if @cacheLinks
-    @setXY @x, @y
+    @moveTo @position
 
-  # Set agent color to `color` scaled by `fraction`. Usage: see patch.fractionOfColor
-  fractionOfColor: (color, fraction) ->
-    @color = u.clone @color unless @.hasOwnProperty("color")
-    u.fractionOfColor color, fraction, @color
-  
+  # ### Strings
+
   # Return a string representation of the agent.
-  toString: -> "{id:#{@id} xy:#{u.aToFixed [@x, @y]} c:#{@color} h: #{@heading.toFixed 2}}"
+  toString: ->
+    "{id: #{@id}, position: {x: #{@position.x.toFixed 2}," +
+      " y: #{@position.y.toFixed 2}}, c: #{@color}, h: #{@heading.toFixed 2}}"
+
+  # ### Movement and space
   
-  # Place the agent at the given x, y (floats) in patch coords
-  # using patch topology (isTorus)
-  setXY: (x, y) -> # REMIND GC problem, 2 arrays
-    [x0, y0] = [@x, @y] if @penDown
-    [@x, @y] = ABM.patches.coord x, y
+  # Place the agent at the given patch/agent location
+  #
+  # Place the agent at the given point (floats) in patch coordinates using
+  # patch topology (isTorus)
+  moveTo: (point) ->
+    if @penDown
+      [x0, y0] = [@position.x, @position.y]
+
+    @position = ABM.patches.coordinate point
     oldPatch = @patch
-    @patch = ABM.patches.patch @x, @y
+    @patch = ABM.patches.patch @position
 
-    if oldPatch
+    if oldPatch is not @patch
       u.remove oldPatch.agents, @
-
     @patch.agents.push @
 
     if @penDown
@@ -1302,73 +1306,39 @@ class ABM.Agent
       drawing.lineWidth = ABM.patches.fromBits @penSize
       drawing.beginPath()
       drawing.moveTo x0, y0
-      drawing.lineTo x, y # REMIND: euclidean
+      drawing.lineTo @position.x, @position.y # REMIND: euclidean
       drawing.stroke()
 
-  losePosition: ->
+  # Moves the agent off the grid, making him lose his patch
+  moveOff: ->
     u.remove @patch.agents, @
-    @patch = null
-  
-  # Place the agent at the given patch/agent location
-  moveTo: (patch) -> @setXY patch.x, patch.y
-  
-  # Move forward (along heading) d units (patch coords),
+    @patch = @position = null
+
+  # Move forward (along heading) by distance units (patch coordinates),
   # using patch topology (isTorus)
-  forward: (d) ->
-    @setXY @x + d * Math.cos(@heading), @y + d * Math.sin(@heading)
+  forward: (distance) ->
+    @moveTo(
+      x: @position.x + distance * Math.cos(@heading),
+      y: @position.y + distance * Math.sin(@heading))
   
   # Change current heading by radians which can be + (left) or - (right)
   rotate: (radians) ->
     @heading = u.wrap @heading + radians, 0, Math.PI * 2 # returns new h
   
-  # Draw the agent, instanciating a sprite if required
-  draw: (context) ->
-    if @patch is null
-      return
-    shape = ABM.shapes[@shape]
-    radians = if shape.rotate then @heading else 0 # radians
-    if @sprite? or @breed.useSprites
-      @setSprite() unless @sprite? # lazy evaluation of useSprites
-      ABM.shapes.drawSprite context, @sprite, @x, @y, @size, radians
-    else
-      ABM.shapes.draw context, shape, @x, @y, @size, radians, @color
-    if @label?
-      [x, y] = ABM.patches.patchXYtoPixelXY @x, @y
-      u.contextDrawText context, @label, x + @labelOffset[0], y + @labelOffset[1], @labelColor
-  
-  # Set an individual agent's sprite, synching its color, shape, size
-  setSprite: (sprite)->
-    if (sprite)?
-      @sprite = sprite
-      @color = sprite.color
-      @shape = sprite.shape
-      @size = sprite.size
-    else
-      @color = u.randomColor unless @color?
-      @sprite = ABM.shapes.shapeToSprite @shape, @color, @size
-    
-  # Draw the agent on the drawing layer, leaving permanent image.
-  stamp: -> @draw ABM.drawing
-  
-  # Return the closest torus topology point of given agent/patch 
-  # relative to myself. 
-  # Used internally to determine how to draw links between two agents.
-  # See util.torusPoint.
-  closestTorusPoint: (point) ->
-    u.closestTorusPoint @, point, ABM.patches.numX, ABM.patches.numY
-
-  # Return angle towards given agent/patch using patch topology.
-  angleTowards: (point) ->
-    u.radiansToward @, point, ABM.patches
-
   # Set heading towards given agent/patch using patch topology.
   face: (point) ->
     @heading = @angleTowards point
-  
-  # Return distance in patch coords from me to given agent/patch
+
+  # Return angle towards given agent/patch using patch topology.
+  #
+  # Does not change the orientation of the agent.
+  angleTowards: (point) ->
+    u.radiansToward @position, point, ABM.patches
+
+  # Return distance in patch coordinates from me to given agent/patch
   # using patch topology (isTorus)
   distance: (point) -> # o any object w/ x, y, patch or agent
-    u.distance @, point, ABM.patches
+    u.distance @position, point, ABM.patches
 
   # Returns the neighbors (agents) of this agent
   neighbors: (options) ->
@@ -1376,9 +1346,11 @@ class ABM.Agent
     if options.radius
       square = @neighbors(options.radius)
       if options.cone
-        neighbors = square.inCone(@, options)
+        options.heading ?= @heading
+        # adopt heading unless explicitly given
+        neighbors = square.inCone(@position, options)
       else
-        neighbors = square.inRadius(@, options)
+        neighbors = square.inRadius(@position, options)
     else
       neighbors = @breed.asSet []
       if @patch
@@ -1388,27 +1360,38 @@ class ABM.Agent
               neighbors.push agent
     neighbors
 
+  # Return the closest torus topology point of given agent/patch 
+  # relative to myself. 
+  # Used internally to determine how to draw links between two agents.
+  # See util.torusPoint.
+  closestTorusPoint: (point) ->
+    u.closestTorusPoint @position, point, ABM.patches.numX, ABM.patches.numY
+
+  # ### Life and death
+
   # Remove myself from the model. Includes removing myself from the
   # agents agentset and removing any links I may have.
   die: ->
     @breed.remove @
     for l in @myLinks()
       l.die()
-    if @patch.agents?
-      u.remove @patch.agents, @
+    @moveOff()
     null
 
   # Factory: create num new agents at this agents location. The optional init
   # proc is called on the new agent after inserting in its agentSet.
   hatch: (num = 1, breed = ABM.agents, init = ->) ->
     breed.create num, (a) => # fat arrow so that @ = this agent
-      a.setXY @x, @y # for side effects like patches.agents
+      a.moveTo @position # for side effects like patches.agents
       a[k] = v for own k, v of @ when k isnt "id"
       init(a) # Important: init called after object inserted in agent set
       a
 
+  # ### Links
+
   # Return other end of link from me
-  otherEnd: (l) -> if l.end1 is @ then l.end2 else l.end1
+  otherEnd: (l) ->
+    if l.end1 is @ then l.end2 else l.end1
 
   # Return all links linked to me
   myLinks: ->
@@ -1433,6 +1416,42 @@ class ABM.Agent
   # Return other end of myOutinks
   outLinkNeighbors: ->
     l.end2 for l in @myLinks() when l.end1 is @
+
+  # Set agent color to `color` scaled by `fraction`. Usage: see patch.fractionOfColor
+  fractionOfColor: (color, fraction) ->
+    @color = u.clone @color unless @.hasOwnProperty("color")
+    u.fractionOfColor color, fraction, @color
+  
+  # ### Drawing
+
+  # Draw the agent, instanciating a sprite if required
+  draw: (context) ->
+    if @patch is null
+      return
+    shape = ABM.shapes[@shape]
+    radians = if shape.rotate then @heading else 0 # radians
+    if @sprite? or @breed.useSprites
+      @setSprite() unless @sprite? # lazy evaluation of useSprites
+      ABM.shapes.drawSprite context, @sprite, @position.x, @position.y, @size, radians
+    else
+      ABM.shapes.draw context, shape, @position.x, @position.y, @size, radians, @color
+    if @label?
+      [x, y] = ABM.patches.patchXYtoPixelXY @x, @y
+      u.contextDrawText context, @label, x + @labelOffset[0], y + @labelOffset[1], @labelColor
+  
+  # Set an individual agent's sprite, synching its color, shape, size
+  setSprite: (sprite)->
+    if (sprite)?
+      @sprite = sprite
+      @color = sprite.color
+      @shape = sprite.shape
+      @size = sprite.size
+    else
+      @color = u.randomColor unless @color?
+      @sprite = ABM.shapes.shapeToSprite @shape, @color, @size
+    
+  # Draw the agent on the drawing layer, leaving permanent image.
+  stamp: -> @draw ABM.drawing
 
 # ### Agents
 
@@ -1598,7 +1617,8 @@ class ABM.Link
   #
   # * id:         unique identifier, promoted by agentset create() factory method
   # * breed:      the agentset this agent belongs to
-  # * end1, end2: two agents being connected
+  # * end1:       two agents being connected
+  # * end2:
   # * color:      defaults to light gray
   # * thickness:  thickness in pixels of the link, default 2
   # * label:      a text label drawn on my instances
@@ -1608,19 +1628,21 @@ class ABM.Link
 
   id: null               # unique id, promoted by agentset create factory method
   breed: null            # my agentSet, set by the agentSet owning me
-  end1:null; end2:null   # My two endpoints, using agents. Promoted by ctor
+  end1:null              # My two endpoints, using agents. Promoted by ctor
+  end2:null
   color: [130, 130, 130] # my color
   thickness: 2           # my thickness in pixels, default to 2
   hidden: false          # draw me?
   label: null            # my text
   labelColor: [0, 0, 0]  # its color
   labelOffset: [0, 0]    # its offset from my midpoint
+
   constructor: (@end1, @end2) ->
     if @end1.links?
       @end1.links.push @
       @end2.links.push @
       
-  # Draw a line between the two endpoints.  Draws "around" the
+  # Draw a line between the two endpoints. Draws "around" the
   # torus if appropriate using two lines. As with Agent.draw,
   # is called with patch coordinate transform installed.
   draw: (context) ->
@@ -1628,38 +1650,43 @@ class ABM.Link
     context.strokeStyle = u.colorString @color
     context.lineWidth = ABM.patches.fromBits @thickness
     context.beginPath()
+
     if !ABM.patches.isTorus
-      context.moveTo @end1.x, @end1.y
-      context.lineTo @end2.x, @end2.y
+      context.moveTo @end1.position.x, @end1.position.y
+      context.lineTo @end2.position.x, @end2.position.y
     else
-      pt = @end1.closestTorusPoint @end2
-      context.moveTo @end1.x, @end1.y
-      context.lineTo pt...
-      if pt[0] isnt @end2.x or pt[1] isnt @end2.y
-        pt = @end2.closestTorusPoint @end1
-        context.moveTo @end2.x, @end2.y
-        context.lineTo pt...
+      point = @end1.closestTorusPoint @end2.position
+      context.moveTo @end1.position.x, @end1.position.y
+      context.lineTo point.x, point.y
+      if point.x isnt @end2.position.x or point.y isnt @end2.position.y
+        point = @end2.closestTorusPoint @end1.position
+        context.moveTo @end2.position.x, @end2.position.y
+        context.lineTo point.x, point.y
+
     context.closePath()
     context.stroke()
     context.restore()
+
     if @label?
-      x0 = u.linearInterpolate @end1.x, @end2.x, .5
-      y0 = u.linearInterpolate @end1.y, @end2.y, .5
+      x0 = u.linearInterpolate @end1.position.x, @end2.position.x, .5
+      y0 = u.linearInterpolate @end1.position.y, @end2.position.y, .5
       [x, y] = ABM.patches.patchXYtoPixelXY x0, y0
       u.contextDrawText context, @label, x + @labelOffset[0], y + @labelOffset[1], @labelColor
   
   # Remove this link from the agent set
   die: ->
     @breed.remove @
-    u.remove @end1.links, @ if @end1.links?
-    u.remove @end2.links, @ if @end2.links?
+    if @end1.links?
+      u.remove @end1.links, @
+    if @end2.links?
+      u.remove @end2.links, @
     null
   
   # Return the two endpoints of this link
   bothEnds: -> [@end1, @end2]
   
   # Return the distance between the endpoints with the current topology.
-  length: -> @end1.distance @end2
+  length: -> @end1.distance @end2.position
   
   # Return the other end of the link, given an endpoint agent.
   # Assumes the given input *is* one of the link endpoint pairs!
@@ -1685,15 +1712,22 @@ class ABM.Links extends ABM.Set
   
   # Remove all links from set via link.die()
   # Note call in reverse order to optimize list restructuring.
-  clear: -> @last().die() while @any(); null # tricky, each die modifies list
+  clear: ->
+    while @any()
+      @last().die()
+
+    null # tricky, each die modifies list
 
   # Return all the nodes in this agentset, with duplicates
   # included.  If 4 links have the same endpoint, it will
   # appear 4 times.
   allEnds: -> # all link ends, w / dups
-    n = @asSet []
-    n.push l.end1, l.end2 for l in @
-    n
+    set = @asSet []
+
+    for link in @
+      set.push link.end1, link.end2
+
+    set
 
   # Returns all the nodes in this agentset with duplicates removed.
   nodes: -> # allEnds without dups
@@ -1706,10 +1740,12 @@ class ABM.Links extends ABM.Set
   # defaulting to -1 (clockwise).
   layoutCircle: (list, radius, startAngle = Math.PI / 2, direction = -1) ->
     dTheta = 2 * Math.PI / list.length
-    for a, i in list
-      a.setXY 0, 0
-      a.heading = startAngle + direction*dTheta*i
-      a.forward radius
+
+    for agent, i in list
+      agent.moveTo x: 0, y: 0
+      agent.heading = startAngle + direction * dTheta * i
+      agent.forward radius
+
     null
 
 # Class Model is the control center for our Sets: Patches, Agents and Links.
@@ -1737,22 +1773,15 @@ class ABM.Model
   #
   # * create agentsets, install them and ourselves in ABM global namespace
   # * create layers/contexts, install drawing layer in ABM global namespace
-  # * setup patch coord transforms for each layer context
+  # * setup patch coordinate transforms for each layer context
   # * intialize various instance variables
   # * call `setup` abstract method
-  constructor: (divOrOptions, size = 13, minX = -16, maxX = 16, minY = -16,
-      maxY = 16, isTorus = false, hasNeighbors = true, isHeadless = false) ->
-
+  constructor: (options) ->
     ABM.model = @
 
-    if typeof divOrOptions is 'string'
-      div = divOrOptions
-      @setWorldDeprecated size, minX, maxX, minY, maxY, isTorus, hasNeighbors,
-        isHeadless
-    else
-      div = divOrOptions.div
-      isHeadless = divOrOptions.isHeadless = divOrOptions.isHeadless? or not div?
-      @setWorld divOrOptions
+    div = options.div
+    isHeadless = options.isHeadless = options.isHeadless? or not div?
+    @setWorld options
 
     @contexts = ABM.contexts = {}
 
@@ -1761,14 +1790,14 @@ class ABM.Model
         "position:relative; width:#{@world.pxWidth}px; height:#{@world.pxHeight}px"
 
       # * Create 2D canvas contexts layered on top of each other.
-      # * Initialize a patch coord transform for each layer.
+      # * Initialize a patch coordinate transform for each layer.
       # 
       # Note: this transform is permanent .. there isn't the usual context.restore().
       # To use the original canvas 2D transform temporarily:
       #
       #     u.setIdentity context
-      #       <draw in native coord system>
-      #     context.restore() # restore patch coord system
+      #       <draw in native coordinate system>
+      #     context.restore() # restore patch coordinate system
       for own k, v of @contextsInit
         @contexts[k] = context = u.createLayer @div, @world.pxWidth,
           @world.pxHeight, v.z, v.context
@@ -1815,48 +1844,34 @@ class ABM.Model
   # Initialize/reset world parameters.
   setWorld: (options) ->
     defaults = {
-      size: 13, minX: -16, maxX: 16, minY: -16, maxY: 16, isTorus: false,
-      hasNeighbors: true, isHeadless: false
-    }
+      patchSize: 13, mapSize: 32, isTorus: false, hasNeighbors: true,
+      isHeadless: false}
 
     for own key, value of defaults
       options[key] ?= value
+
+    options.min ?= {x: -1 * options.mapSize / 2, y: -1 * options.mapSize / 2}
+    options.max ?= {x: options.mapSize / 2, y: options.mapSize / 2}
+    options.mapSize = null # not passed on, because optional
 
     ABM.world = @world = {}
 
     for own key, value of options
       @world[key] = value
 
-    @world.numX = @world.maxX - @world.minX + 1
-    @world.numY = @world.maxY - @world.minY + 1
-    @world.pxWidth = @world.numX * @world.size
-    @world.pxHeight = @world.numY * @world.size
-    @world.minXcor = @world.minX - .5
-    @world.maxXcor = @world.maxX + .5
-    @world.minYcor = @world.minY - .5
-    @world.maxYcor = @world.maxY + .5
-
-  setWorldDeprecated: (size, minX, maxX, minY, maxY, isTorus, hasNeighbors,
-      isHeadless) ->
-    numX = maxX - minX + 1
-    numY = maxY - minY + 1
-    pxWidth = numX * size
-    pxHeight = numY * size
-    minXcor = minX - .5
-    maxXcor = maxX + .5
-    minYcor = minY - .5
-    maxYcor = maxY + .5
-    ABM.world = @world = {
-      size, minX, maxX, minY, maxY, minXcor, maxXcor, minYcor, maxYcor, numX,
-      numY, pxWidth, pxHeight, isTorus, hasNeighbors, isHeadless
-    }
+    @world.width = @world.max.x - @world.min.x + 1
+    @world.height = @world.max.y - @world.min.y + 1
+    @world.pxWidth = @world.width * @world.patchSize
+    @world.pxHeight = @world.height * @world.patchSize
+    @world.minCoordinate = {x: @world.min.x - .5, y: @world.min.y - .5}
+    @world.maxCoordinate = {x: @world.max.x + .5, y: @world.max.y + .5}
 
   setContextTransform: (context) ->
     context.canvas.width = @world.pxWidth
     context.canvas.height = @world.pxHeight
     context.save()
-    context.scale @world.size, -@world.size
-    context.translate -(@world.minXcor), -(@world.maxYcor)
+    context.scale @world.patchSize, -@world.patchSize
+    context.translate -(@world.minCoordinate.x), -(@world.maxCoordinate.y)
 
   globals: (globalNames) ->
     if globalNames?
@@ -2072,7 +2087,7 @@ class ABM.Patch
   # Constructor & Class Variables:
   # * id:          unique identifier, promoted by agentset create() factory method
   # * breed:       the agentset this agent belongs to
-  # * x, y:        position on the patch grid, in patch coordinates
+  # * position:    position on the patch grid, .x and .y in patch coordinates
   # * color:       the color of the patch as an RGBA array, A optional.
   # * hidden:      whether or not to draw this patch
   # * label:       text for the patch
@@ -2081,8 +2096,7 @@ class ABM.Patch
 
   id: null              # unique id, promoted by agentset create factory method
   breed: null           # set by the agentSet owning this patch
-  x: null               # The patch position in the patch grid
-  y: null
+  position: null        # The patch position in the patch grid, in .x and .y
   color: [0, 0, 0]      # The patch color
   hidden: false         # draw me?
   label: null           # text for the patch
@@ -2091,12 +2105,15 @@ class ABM.Patch
   agents: null          # agents on this patch
   
   # New Patch: Just set x, y.
-  constructor: (@x, @y) ->
+  #constructor: (@x, @y) ->
+  constructor: (@position) ->
     @neighborsCache = {}
     @agents = []
 
   # Return a string representation of the patch.
-  toString: -> "{id:#{@id} xy:#{[@x, @y]} c:#{@color}}"
+  toString: ->
+    "{id:#{@id} position: {x: #{@position.x}, y: #{@position.y}}," +
+    "c: #{@color}}"
 
   # Set patch color to `c` scaled by `fraction`. Usage:
   #
@@ -2111,32 +2128,32 @@ class ABM.Patch
   # Draw the patch and its text label if there is one.
   draw: (context) ->
     context.fillStyle = u.colorString @color
-    context.fillRect @x - .5, @y - .5, 1, 1
+    context.fillRect @position.x - .5, @position.y - .5, 1, 1
     if @label? # REMIND: should be 2nd pass.
-      [x, y] = @breed.patchXYtoPixelXY @x, @y
-      u.contextDrawText context, @label, x + @labelOffset[0], y + @labelOffset[1],
-        @labelColor
+      position = @breed.patchXYtoPixelXY @position
+      u.contextDrawText context, @label, position.x + @labelOffset[0],
+        position.y + @labelOffset[1], @labelColor
   
   empty: ->
     u.empty @agents
 
   # Returns true if this patch is on the edge of the grid.
   isOnEdge: ->
-    @x is @breed.minX or @x is @breed.maxX or \
-    @y is @breed.minY or @y is @breed.maxY
+    @position.x is @breed.min.x or @position.x is @breed.max.x or \
+    @position.y is @breed.min.y or @position.y is @breed.max.y
   
   # Factory: Create num new agents on this patch. The optional init
   # proc is called on the new agent after inserting in its agentSet.
   sprout: (number = 1, breed = ABM.agents, init = ->) ->
     breed.create number, (agent) => # fat arrow so that @ = this patch
-      agent.setXY @x, @y
+      agent.moveTo @position
       init(agent)
       agent
 
-  # Return distance in patch coords from me to given agent/patch
+  # Return distance in patch coordinates from me to given agent/patch
   # using patch topology (isTorus)
   distance: (point) -> # o any object w/ x, y, patch or agent
-    u.distance @, point, ABM.patches
+    u.distance @position, point, ABM.patches
 
   # Get neighbors for patch
   neighbors: (options) ->
@@ -2151,14 +2168,15 @@ class ABM.Patch
 
     if not neighbors?
       if options.radius
-        square = @neighbors(range: options.radius, meToo: options.meToo, cache: options.cache)
+        square = @neighbors(range: options.radius, meToo: options.meToo,
+          cache: options.cache)
         if options.cone
-          neighbors = square.inCone(@, options)
+          neighbors = square.inCone(@position, options)
           unless options.cache
             cacheKey = null
             # cone has variable heading, better not cache by default
         else
-          neighbors = square.inRadius(@, options)
+          neighbors = square.inRadius(@position, options)
       else if options.diamond
         neighbors = @diamondNeighbors(options.diamond, options.meToo)
       else
@@ -2192,16 +2210,28 @@ class ABM.Patch
 # ### Patches
   
 # Class Patches is a singleton 2D matrix of Patch instances, each patch 
-# representing a 1x1 square in patch coordinates (via 2D coord transforms).
+# representing a 1x1 square in patch coordinates (via 2D coordinate transforms).
 #
 # From ABM.world, set in Model:
 #
-# * size:         pixel h/w of each patch.
-# * minX/maxX:    min/max x coord in patch coords
-# * minY/maxY:    min/max y coord in patch coords
-# * numX/numY:    width/height of grid.
-# * isTorus:      true if coord system wraps around at edges
-# * isHeadless:   true if not using canvas drawing
+# * patchSize:     pixel h/w of each patch
+# * min:           .x & .y, minimum patch coordinate, integer
+# * max:           .x & .y, maximum patch coordinate, integer
+# * width:         width of grid
+# * height:        height of grid
+# * isTorus:       true if coordinate system wraps around at edges
+# * isHeadless:    true if not using canvas drawing
+# * minCoordinate: .x & .y, maximum float coordinate (calculated)
+# * maxCoordinate: .x & .y, maximum float coordinate (calculated)
+
+# TODO
+# minX
+# maxX
+# minY
+# maxY
+# numX, width
+# numY, height
+# minXcor, etc
 
 class ABM.Patches extends ABM.Set
   # Constructor: super creates the empty Set instance and installs
@@ -2216,94 +2246,77 @@ class ABM.Patches extends ABM.Set
   # Note that this is done as separate method so like other agentsets,
   # patches are started up empty and filled by "create" calls.
   create: -> # TopLeft to BottomRight, exactly as canvas imagedata
-    for y in [@maxY..@minY] by -1
-      for x in [@minX..@maxX] by 1
-        @add new @agentClass x, y
+    for y in [@max.y..@min.y] by -1
+      for x in [@min.x..@max.x] by 1
+        @add new @agentClass x: x, y: y
     @setPixels() unless @isHeadless # setup off-page canvas for pixel ops
     @
     
-  # Draw patches using scaled image of colors. Note anti-aliasing may occur
-  # if browser does not support smoothing flags.
-  usePixels: (@drawWithPixels = true) ->
-    context = ABM.contexts.patches
-    u.setContextSmoothing context, not @drawWithPixels
-
-  # Setup pixels used for `drawScaledPixels` and `importColors`
-  # 
-  setPixels: ->
-    if @size is 1
-      @usePixels()
-      @pixelsContext = ABM.contexts.patches
+  # #### Patch grid coordinate system utilities:
+  
+  # Return patch at x, y float values according to topology.
+  patch: (point) ->
+    if @isCoordinate(point, @min, @max)
+      coordinate = point
     else
-      @pixelsContext = u.createContext @numX, @numY
+      coordinate = @coordinate(point, @min, @max)
 
-    @pixelsImageData = @pixelsContext.getImageData(0, 0, @numX, @numY)
-    @pixelsData = @pixelsImageData.data
+    rounded = x: Math.round(coordinate.x), y: Math.round(coordinate.y)
 
-    if @pixelsData instanceof Uint8Array # Check for typed arrays
-      @pixelsData32 = new Uint32Array @pixelsData.buffer
-      @pixelsAreLittleEndian = u.isLittleEndian()
-  
-  # Draw patches.  Three cases:
-  #
-  # * Pixels: use pixel manipulation rather than canvas draws
-  # * Monochrome: just fill canvas w/ patch default
-  # * Otherwise: just draw each patch individually
-  draw: (context) ->
-    if @monochrome
-      u.fillContext context, @agentClass::color
-    else if @drawWithPixels
-      @drawScaledPixels context
-    else
-      super context
+    @[@patchIndex rounded]
 
-# #### Patch grid coord system utilities:
-  
-  # Return the patch id/index given integer x, y in patch coords
-  patchIndex: (x, y) -> x - @minX + @numX * (@maxY - y)
-
-  # Return the patch at matrix position x, y where 
-  # x & y are both valid integer patch coordinates.
-  patchXY: (x, y) -> @[@patchIndex x, y]
-  
-  # Return x, y float values to be between min/max patch coord values
-  clamp: (x, y) ->
-    [u.clamp(x, @minXcor, @maxXcor), u.clamp(y, @minYcor, @maxYcor)]
-  
-  # Return x, y float values to be modulo min/max patch coord values.
-  wrap: (x, y) ->
-    [u.wrap(x, @minXcor, @maxXcor), u.wrap(y, @minYcor, @maxYcor)]
-  
   # Return x, y float values to be between min/max patch values
   # using either clamp/wrap above according to isTorus topology.
-  coord: (x, y) -> #returns a valid world coord (real, not int)
-    if @isTorus then @wrap x, y else @clamp x, y
+  # returns a valid world coordinate (real, not int)
+  coordinate: (point, minPoint = @minCoordinate, maxPoint = @maxCoordinate) ->
+    if @isTorus
+      @wrap point, minPoint, maxPoint
+    else
+      @clamp point, minPoint, maxPoint
 
-  # Return true if on world or torus, false if non-torus and off-world
-  isOnWorld: (x, y) ->
-    @isTorus or (@minXcor <= x <= @maxXcor and @minYcor <= y <= @maxYcor)
-
-  # Return patch at x, y float values according to topology.
-  patch: (x, y) ->
-    [x, y] = @coord x, y
-    x = u.clamp Math.round(x), @minX, @maxX
-    y = u.clamp Math.round(y), @minY, @maxY
-    @patchXY x, y
+  # Return x, y float values to be between min/max patch coordinate values
+  clamp: (point, minPoint = @minCoordinate, maxPoint = @maxCoordinate) ->
+    {
+      x: u.clamp(point.x, minPoint.x, maxPoint.x),
+      y: u.clamp(point.y, minPoint.y, maxPoint.y)
+    }
   
-  # Return a random valid float x, y point in patch space
-  randomPoint: ->
-    [u.randomFloat(@minXcor, @maxXcor), u.randomFloat(@minYcor, @maxYcor)]
+  # Return x, y float values to be modulo min/max patch coordinate values.
+  wrap: (point, minPoint = @minCoordinate, maxPoint = @maxCoordinate) ->
+    {
+      x: u.wrap(point.x, minPoint.x, maxPoint.x),
+      y: u.wrap(point.y, minPoint.y, maxPoint.y)
+    }
+  
+  # Returns true if the points x, y float values are between min/max
+  # patch values
+  isCoordinate: (point, minPoint = @minCoordinate, maxPoint = @maxCoordinate) ->
+    minPoint.x <= point.x <= maxPoint.x and minPoint.y <= point.y <= maxPoint.y
 
-# #### Patch metrics
+  # Return true if on world or torus, false if non-torus and
+  # off-world. Because toruses wrap.
+  isOnWorld: (point) ->
+    @isTorus or @isCoordinate(point)
+
+  # Return the patch id/index given integer x, y in patch coordinates
+  patchIndex: (point) ->
+    point.x - @min.x + @width * (@max.y - point.y)
+
+  # Return a random valid float {x, y} point in patch space
+  randomPoint: ->
+    {x: u.randomFloat(@minCoordinate.x, @maxCoordinate.x), y: u.randomFloat(@minCoordinate.y, @maxCoordinate.y)}
+
+  # #### Patch metrics
   
   # Convert patch measure to pixels
   toBits: (patch) ->
-    patch * @size
+    patch * @patchSize
 
   # Convert bit measure to patches
-  fromBits: (b) -> b / @size
+  fromBits: (bit) ->
+    bit / @patchSize
 
-# #### Patch utilities
+  # #### Patch utilities
   
   # Return an array of patches in a rectangle centered on the given 
   # patch `patch`, dx, dy units to the right/left and up/down. 
@@ -2314,22 +2327,22 @@ class ABM.Patches extends ABM.Set
 
   patchRectangleNullPadded: (patch, dx, dy, meToo = false) ->
     rectangle = []; # REMIND: optimize if no wrapping, rectangle inside patch boundaries
-    for y in [(patch.y - dy)..(patch.y + dy)] by 1 # by 1: perf: avoid bidir JS for loop
-      for x in [(patch.x - dx)..(patch.x + dx)] by 1
+    for y in [(patch.position.y - dy)..(patch.position.y + dy)] by 1 # by 1: perf: avoid bidir JS for loop
+      for x in [(patch.position.x - dx)..(patch.position.x + dx)] by 1
         nextPatch = null
         if @isTorus
-          if x < @minX
-            x += @numX
-          if x > @maxX
-            x -= @numX
-          if y < @minY
-            y += @numY
-          if y > @maxY
-            y -= @numY
-          nextPatch = @patchXY x, y
-        else if x >= @minX and x <= @maxX and
-            y >= @minY and y <= @maxY
-          nextPatch = @patchXY x, y
+          if x < @min.x
+            x += @width
+          if x > @max.x
+            x -= @width
+          if y < @min.y
+            y += @height
+          if y > @max.y
+            y -= @height
+          nextPatch = @patch x: x, y: y
+        else if x >= @min.x and x <= @max.x and
+            y >= @min.y and y <= @max.y
+          nextPatch = @patch x: x, y: y
 
         if (meToo or patch isnt nextPatch)
           rectangle.push nextPatch
@@ -2357,15 +2370,20 @@ class ABM.Patches extends ABM.Set
   # Utility function for pixel manipulation.  Given a patch, returns the 
   # native canvas index i into the pixel data.
   # The top-left order simplifies finding pixels in data sets
-  pixelByteIndex: (patch) -> 4 * patch.id # Uint8
+  pixelByteIndex: (patch) ->
+    4 * patch.id # Uint8
 
-  pixelWordIndex: (patch) -> patch.id   # Uint32
+  pixelWordIndex: (patch) ->
+    patch.id   # Uint32
 
-  # Convert pixel location (top/left offset i.e. mouse) to patch coords (float)
-  pixelXYtoPatchXY: (x, y) -> [@minXcor + (x / @size), @maxYcor - (y / @size)]
+  # Convert pixel location (top/left offset i.e. mouse) to patch coordinates (float)
+  pixelXYtoPatchXY: (x, y) ->
+    [@minCoordinate.x + (x / @patchSize), @maxCoordinate.y - (y / @patchSize)]
 
-  # Convert patch coords (float) to pixel location (top/left offset i.e. mouse)
-  patchXYtoPixelXY: (x, y) -> [( x - @minXcor) * @size, (@maxYcor - y) * @size]
+  # TODO refactor
+  # Convert patch coordinates (float) to pixel location (top/left offset i.e. mouse)
+  patchXYtoPixelXY: (x, y) ->
+    [(x - @minCoordinate.x) * @patchSize, (@maxCoordinate.y - y) * @patchSize]
     
   # Draws, or "imports" an image URL into the patches as their color property.
   # The drawing is scaled to the number of x, y patches, thus one pixel
@@ -2379,8 +2397,8 @@ class ABM.Patches extends ABM.Set
   # Direct install image into the patch colors, not async.
   installColors: (img, map) ->
     u.setIdentity @pixelsContext
-    @pixelsContext.drawImage img, 0, 0, @numX, @numY # scale if needed
-    data = @pixelsContext.getImageData(0, 0, @numX, @numY).data
+    @pixelsContext.drawImage img, 0, 0, @width, @height # scale if needed
+    data = @pixelsContext.getImageData(0, 0, @width, @height).data
     for patch in @
       i = @pixelByteIndex patch
       # promote initial default
@@ -2390,12 +2408,12 @@ class ABM.Patches extends ABM.Set
   # Draw the patches via pixel manipulation rather than 2D drawRect.
   # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq)
   drawScaledPixels: (context) ->
-    # u.setIdentity context & context.restore() only needed if patch size 
-    # not 1, pixel ops don't use transform but @size>1 uses
+    # u.setIdentity context & context.restore() only needed if patchSize 
+    # not 1, pixel ops don't use transform but @patchSize > 1 uses
     # a drawimage
-    u.setIdentity context if @size isnt 1
+    u.setIdentity context if @patchSize isnt 1
     if @pixelsData32? then @drawScaledPixels32 context else @drawScaledPixels8 context
-    context.restore() if @size isnt 1
+    context.restore() if @patchSize isnt 1
 
   # The 8-bit version for drawScaledPixels.  Used for systems w/o typed arrays
   drawScaledPixels8: (context) ->
@@ -2410,7 +2428,7 @@ class ABM.Patches extends ABM.Set
       data[i + j] = c[j] for j in [0..2]
       data[i + 3] = a
     @pixelsContext.putImageData @pixelsImageData, 0, 0
-    return if @size is 1
+    return if @patchSize is 1
     context.drawImage @pixelsContext.canvas, 0, 0, context.canvas.width, context.canvas.height
 
   # The 32-bit version of drawScaledPixels, with both little and big endian hardware.
@@ -2424,7 +2442,7 @@ class ABM.Patches extends ABM.Set
       then data[i] = (a << 24) | (c[2] << 16) | (c[1] << 8) | c[0]
       else data[i] = (c[0] << 24) | (c[1] << 16) | (c[2] << 8) | a
     @pixelsContext.putImageData @pixelsImageData, 0, 0
-    return if @size is 1
+    return if @patchSize is 1
     context.drawImage @pixelsContext.canvas, 0, 0, context.canvas.width, context.canvas.height
 
   floodFillOnce: (aset, fCandidate, fJoin, fCallback, fNeighbors = ((patch) -> patch.n),
@@ -2454,6 +2472,45 @@ class ABM.Patches extends ABM.Set
       if c
         patch.fractionOfColor c, patch[v]
     null # avoid returning copy of @
+
+  # ### Drawing
+
+  # Draw patches using scaled image of colors. Note anti-aliasing may occur
+  # if browser does not support smoothing flags.
+  usePixels: (@drawWithPixels = true) ->
+    context = ABM.contexts.patches
+    u.setContextSmoothing context, not @drawWithPixels
+
+  # Setup pixels used for `drawScaledPixels` and `importColors`
+  # 
+  setPixels: ->
+    if @patchSize is 1
+      @usePixels()
+      @pixelsContext = ABM.contexts.patches
+    else
+      @pixelsContext = u.createContext @width, @height
+
+    @pixelsImageData = @pixelsContext.getImageData(0, 0, @width, @height)
+    @pixelsData = @pixelsImageData.data
+
+    if @pixelsData instanceof Uint8Array # Check for typed arrays
+      @pixelsData32 = new Uint32Array @pixelsData.buffer
+      @pixelsAreLittleEndian = u.isLittleEndian()
+  
+  # Draw patches.  Three cases:
+  #
+  # * Pixels: use pixel manipulation rather than canvas draws
+  # * Monochrome: just fill canvas w/ patch default
+  # * Otherwise: just draw each patch individually
+  draw: (context) ->
+    if @monochrome
+      u.fillContext context, @agentClass::color
+    else if @drawWithPixels
+      @drawScaledPixels context
+    else
+      super context
+
+
 
 # A *very* simple shapes module for drawing
 # [NetLogo-like](http://ccl.northwestern.edu/netlogo/docs/) agents.
@@ -2628,8 +2685,8 @@ ABM.shapes = ABM.util.s = do ->
 
   drawSprite: (context, s, x, y, size, rad) ->
     if rad is 0
-      context.drawImage s.context.canvas, s.x, s.y, s.bits, s.bits, x-size / 2,
-        y-size / 2, size, size
+      context.drawImage s.context.canvas, s.x, s.y, s.bits, s.bits, x - size / 2,
+        y - size / 2, size, size
     else
       context.save()
       context.translate x, y # see http://goo.gl/VUlhY for drawing centered rotated images

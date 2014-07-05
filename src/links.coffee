@@ -18,15 +18,22 @@ class ABM.Links extends ABM.Set
   
   # Remove all links from set via link.die()
   # Note call in reverse order to optimize list restructuring.
-  clear: -> @last().die() while @any(); null # tricky, each die modifies list
+  clear: ->
+    while @any()
+      @last().die()
+
+    null # tricky, each die modifies list
 
   # Return all the nodes in this agentset, with duplicates
   # included.  If 4 links have the same endpoint, it will
   # appear 4 times.
   allEnds: -> # all link ends, w / dups
-    n = @asSet []
-    n.push l.end1, l.end2 for l in @
-    n
+    set = @asSet []
+
+    for link in @
+      set.push link.end1, link.end2
+
+    set
 
   # Returns all the nodes in this agentset with duplicates removed.
   nodes: -> # allEnds without dups
@@ -39,8 +46,10 @@ class ABM.Links extends ABM.Set
   # defaulting to -1 (clockwise).
   layoutCircle: (list, radius, startAngle = Math.PI / 2, direction = -1) ->
     dTheta = 2 * Math.PI / list.length
-    for a, i in list
-      a.setXY 0, 0
-      a.heading = startAngle + direction*dTheta*i
-      a.forward radius
+
+    for agent, i in list
+      agent.moveTo x: 0, y: 0
+      agent.heading = startAngle + direction * dTheta * i
+      agent.forward radius
+
     null

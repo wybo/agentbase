@@ -312,8 +312,8 @@ describe "Util", ->
       expect(u.radiansToward({x: 1, y: 1}, {x: 3, y: 3}, {isTorus: false})).toBeCloseTo 0.79
 
     it "returns the radians toward the second point on a torus", ->
-      expect(u.radiansToward({x: 1, y: 1}, {x: 3, y: 3}, {isTorus: true, numX: 10, numY: 10})).toBeCloseTo 0.79
-      expect(u.radiansToward({x: 1, y: 1}, {x: 3, y: 3}, {isTorus: true, numX: 3, numY: 3})).toBeCloseTo -2.36
+      expect(u.radiansToward({x: 1, y: 1}, {x: 3, y: 3}, {isTorus: true, width: 10, height: 10})).toBeCloseTo 0.79
+      expect(u.radiansToward({x: 1, y: 1}, {x: 3, y: 3}, {isTorus: true, width: 3, height: 3})).toBeCloseTo -2.36
 
   describe "inCone", ->
     it "returns true if in cone", ->
@@ -321,17 +321,17 @@ describe "Util", ->
       expect(u.inCone(3, 3, 1, {x: 1, y: 1}, {x: 2, y: 2}, {isTorus: false})).toBe false
 
     it "returns true if in cone for toruses too", ->
-      expect(u.inCone(3, 6, 3, {x: 1, y: 1}, {x: 2, y: 2}, {isTorus: true, numX: 10, numY: 10})).toBe true
-      expect(u.inCone(3, 3, 3, {x: 1, y: 1}, {x: 2, y: 2}, {isTorus: true, numX: 10, numY: 10})).toBe false
-      expect(u.inCone(3, 3, 3, {x: 1, y: 1}, {x: 2, y: 2}, {isTorus: true, numX: 3, numY: 3})).toBe true
+      expect(u.inCone(3, 6, 3, {x: 1, y: 1}, {x: 2, y: 2}, {isTorus: true, width: 10, height: 10})).toBe true
+      expect(u.inCone(3, 3, 3, {x: 1, y: 1}, {x: 2, y: 2}, {isTorus: true, width: 10, height: 10})).toBe false
+      expect(u.inCone(3, 3, 3, {x: 1, y: 1}, {x: 2, y: 2}, {isTorus: true, width: 3, height: 3})).toBe true
 
   describe "distance", ->
     it "returns distance between the points", ->
       expect(u.distance({x: 1, y: 1}, {x: 4, y: 9}, {isTorus: false})).toBeCloseTo 8.54
 
     it "returns distance between the closest points on the torus", ->
-      expect(u.distance({x: 1, y: 1}, {x: 4, y: 9}, {isTorus: true, numX: 20, numY: 20})).toBeCloseTo 8.54
-      expect(u.distance({x: 1, y: 1}, {x: 4, y: 9}, {isTorus: true, numX: 10, numY: 10})).toBeCloseTo 3.61
+      expect(u.distance({x: 1, y: 1}, {x: 4, y: 9}, {isTorus: true, width: 20, height: 20})).toBeCloseTo 8.54
+      expect(u.distance({x: 1, y: 1}, {x: 4, y: 9}, {isTorus: true, width: 10, height: 10})).toBeCloseTo 3.61
 
   describe "torus4Points", ->
     it "returns the 4 reflected points", ->

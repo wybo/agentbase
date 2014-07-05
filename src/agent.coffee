@@ -8,8 +8,8 @@ class ABM.Agent
   #
   # * id:         unique identifier, promoted by agentset create() factory method
   # * breed:      the agentset this agent belongs to
-  # * x,y:        position on the patch grid, in patch coordinates, default: 0, 0
-  # * size:       size of agent, in patch coords, default: 1
+  # * x, y:       position on the patch grid, in patch coordinates, default: 0, 0
+  # * size:       size of agent, in patch coordinates, default: 1
   # * color:      the color of the agent, default: randomColor
   # * shape:      the shape name of the agent, default: "default"
   # * label:      a text label drawn on my instances
@@ -29,10 +29,9 @@ class ABM.Agent
   # This can be a huge savings in memory.
   id: null              # unique id, promoted by agentset create factory method
   breed: null           # my agentSet, set by the agentSet owning me
-  x: 0                  # my location
-  y: 0
+  position: null        # my location, has float .x & .y
   patch: null           # the patch I'm on
-  size: 1               # my size in patch coords
+  size: 1               # my size in patch coordinates
   color: null           # default color, overrides random color if set
   shape: "default"      # my shape
   hidden: false         # draw me?
@@ -47,31 +46,35 @@ class ABM.Agent
   links: null           # array of links to/from me as an endpoint; init by ctor
 
   constructor: -> # called by agentSets create factory, not user
-    @x = @y = 0
+    @position = {x: 0, y: 0}
     @color = u.randomColor() unless @color? # promote color if default not set
     @heading = u.randomFloat(Math.PI * 2) unless @heading?
     @links = [] if @cacheLinks
-    @setXY @x, @y
+    @moveTo @position
 
-  # Set agent color to `color` scaled by `fraction`. Usage: see patch.fractionOfColor
-  fractionOfColor: (color, fraction) ->
-    @color = u.clone @color unless @.hasOwnProperty("color")
-    u.fractionOfColor color, fraction, @color
-  
+  # ### Strings
+
   # Return a string representation of the agent.
-  toString: -> "{id:#{@id} xy:#{u.aToFixed [@x, @y]} c:#{@color} h: #{@heading.toFixed 2}}"
+  toString: ->
+    "{id: #{@id}, position: {x: #{@position.x.toFixed 2}," +
+      " y: #{@position.y.toFixed 2}}, c: #{@color}, h: #{@heading.toFixed 2}}"
+
+  # ### Movement and space
   
-  # Place the agent at the given x, y (floats) in patch coords
-  # using patch topology (isTorus)
-  setXY: (x, y) -> # REMIND GC problem, 2 arrays
-    [x0, y0] = [@x, @y] if @penDown
-    [@x, @y] = ABM.patches.coord x, y
+  # Place the agent at the given patch/agent location
+  #
+  # Place the agent at the given point (floats) in patch coordinates using
+  # patch topology (isTorus)
+  moveTo: (point) ->
+    if @penDown
+      [x0, y0] = [@position.x, @position.y]
+
+    @position = ABM.patches.coordinate point
     oldPatch = @patch
-    @patch = ABM.patches.patch @x, @y
+    @patch = ABM.patches.patch @position
 
-    if oldPatch
+    if oldPatch is not @patch
       u.remove oldPatch.agents, @
-
     @patch.agents.push @
 
     if @penDown
@@ -80,73 +83,39 @@ class ABM.Agent
       drawing.lineWidth = ABM.patches.fromBits @penSize
       drawing.beginPath()
       drawing.moveTo x0, y0
-      drawing.lineTo x, y # REMIND: euclidean
+      drawing.lineTo @position.x, @position.y # REMIND: euclidean
       drawing.stroke()
 
-  losePosition: ->
+  # Moves the agent off the grid, making him lose his patch
+  moveOff: ->
     u.remove @patch.agents, @
-    @patch = null
-  
-  # Place the agent at the given patch/agent location
-  moveTo: (patch) -> @setXY patch.x, patch.y
-  
-  # Move forward (along heading) d units (patch coords),
+    @patch = @position = null
+
+  # Move forward (along heading) by distance units (patch coordinates),
   # using patch topology (isTorus)
-  forward: (d) ->
-    @setXY @x + d * Math.cos(@heading), @y + d * Math.sin(@heading)
+  forward: (distance) ->
+    @moveTo(
+      x: @position.x + distance * Math.cos(@heading),
+      y: @position.y + distance * Math.sin(@heading))
   
   # Change current heading by radians which can be + (left) or - (right)
   rotate: (radians) ->
     @heading = u.wrap @heading + radians, 0, Math.PI * 2 # returns new h
   
-  # Draw the agent, instanciating a sprite if required
-  draw: (context) ->
-    if @patch is null
-      return
-    shape = ABM.shapes[@shape]
-    radians = if shape.rotate then @heading else 0 # radians
-    if @sprite? or @breed.useSprites
-      @setSprite() unless @sprite? # lazy evaluation of useSprites
-      ABM.shapes.drawSprite context, @sprite, @x, @y, @size, radians
-    else
-      ABM.shapes.draw context, shape, @x, @y, @size, radians, @color
-    if @label?
-      [x, y] = ABM.patches.patchXYtoPixelXY @x, @y
-      u.contextDrawText context, @label, x + @labelOffset[0], y + @labelOffset[1], @labelColor
-  
-  # Set an individual agent's sprite, synching its color, shape, size
-  setSprite: (sprite)->
-    if (sprite)?
-      @sprite = sprite
-      @color = sprite.color
-      @shape = sprite.shape
-      @size = sprite.size
-    else
-      @color = u.randomColor unless @color?
-      @sprite = ABM.shapes.shapeToSprite @shape, @color, @size
-    
-  # Draw the agent on the drawing layer, leaving permanent image.
-  stamp: -> @draw ABM.drawing
-  
-  # Return the closest torus topology point of given agent/patch 
-  # relative to myself. 
-  # Used internally to determine how to draw links between two agents.
-  # See util.torusPoint.
-  closestTorusPoint: (point) ->
-    u.closestTorusPoint @, point, ABM.patches.numX, ABM.patches.numY
-
-  # Return angle towards given agent/patch using patch topology.
-  angleTowards: (point) ->
-    u.radiansToward @, point, ABM.patches
-
   # Set heading towards given agent/patch using patch topology.
   face: (point) ->
     @heading = @angleTowards point
-  
-  # Return distance in patch coords from me to given agent/patch
+
+  # Return angle towards given agent/patch using patch topology.
+  #
+  # Does not change the orientation of the agent.
+  angleTowards: (point) ->
+    u.radiansToward @position, point, ABM.patches
+
+  # Return distance in patch coordinates from me to given agent/patch
   # using patch topology (isTorus)
   distance: (point) -> # o any object w/ x, y, patch or agent
-    u.distance @, point, ABM.patches
+    u.distance @position, point, ABM.patches
 
   # Returns the neighbors (agents) of this agent
   neighbors: (options) ->
@@ -154,9 +123,11 @@ class ABM.Agent
     if options.radius
       square = @neighbors(options.radius)
       if options.cone
-        neighbors = square.inCone(@, options)
+        options.heading ?= @heading
+        # adopt heading unless explicitly given
+        neighbors = square.inCone(@position, options)
       else
-        neighbors = square.inRadius(@, options)
+        neighbors = square.inRadius(@position, options)
     else
       neighbors = @breed.asSet []
       if @patch
@@ -166,27 +137,38 @@ class ABM.Agent
               neighbors.push agent
     neighbors
 
+  # Return the closest torus topology point of given agent/patch 
+  # relative to myself. 
+  # Used internally to determine how to draw links between two agents.
+  # See util.torusPoint.
+  closestTorusPoint: (point) ->
+    u.closestTorusPoint @position, point, ABM.patches.numX, ABM.patches.numY
+
+  # ### Life and death
+
   # Remove myself from the model. Includes removing myself from the
   # agents agentset and removing any links I may have.
   die: ->
     @breed.remove @
     for l in @myLinks()
       l.die()
-    if @patch.agents?
-      u.remove @patch.agents, @
+    @moveOff()
     null
 
   # Factory: create num new agents at this agents location. The optional init
   # proc is called on the new agent after inserting in its agentSet.
   hatch: (num = 1, breed = ABM.agents, init = ->) ->
     breed.create num, (a) => # fat arrow so that @ = this agent
-      a.setXY @x, @y # for side effects like patches.agents
+      a.moveTo @position # for side effects like patches.agents
       a[k] = v for own k, v of @ when k isnt "id"
       init(a) # Important: init called after object inserted in agent set
       a
 
+  # ### Links
+
   # Return other end of link from me
-  otherEnd: (l) -> if l.end1 is @ then l.end2 else l.end1
+  otherEnd: (l) ->
+    if l.end1 is @ then l.end2 else l.end1
 
   # Return all links linked to me
   myLinks: ->
@@ -211,3 +193,39 @@ class ABM.Agent
   # Return other end of myOutinks
   outLinkNeighbors: ->
     l.end2 for l in @myLinks() when l.end1 is @
+
+  # Set agent color to `color` scaled by `fraction`. Usage: see patch.fractionOfColor
+  fractionOfColor: (color, fraction) ->
+    @color = u.clone @color unless @.hasOwnProperty("color")
+    u.fractionOfColor color, fraction, @color
+  
+  # ### Drawing
+
+  # Draw the agent, instanciating a sprite if required
+  draw: (context) ->
+    if @patch is null
+      return
+    shape = ABM.shapes[@shape]
+    radians = if shape.rotate then @heading else 0 # radians
+    if @sprite? or @breed.useSprites
+      @setSprite() unless @sprite? # lazy evaluation of useSprites
+      ABM.shapes.drawSprite context, @sprite, @position.x, @position.y, @size, radians
+    else
+      ABM.shapes.draw context, shape, @position.x, @position.y, @size, radians, @color
+    if @label?
+      [x, y] = ABM.patches.patchXYtoPixelXY @x, @y
+      u.contextDrawText context, @label, x + @labelOffset[0], y + @labelOffset[1], @labelColor
+  
+  # Set an individual agent's sprite, synching its color, shape, size
+  setSprite: (sprite)->
+    if (sprite)?
+      @sprite = sprite
+      @color = sprite.color
+      @shape = sprite.shape
+      @size = sprite.size
+    else
+      @color = u.randomColor unless @color?
+      @sprite = ABM.shapes.shapeToSprite @shape, @color, @size
+    
+  # Draw the agent on the drawing layer, leaving permanent image.
+  stamp: -> @draw ABM.drawing

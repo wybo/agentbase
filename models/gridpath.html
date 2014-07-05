@@ -14,66 +14,81 @@
         @prob = 1
         
         # defaults
-        @patches.setDefault "labelColor", [255,255,255]
-        offset=Math.floor @world.size*.45
+        @patches.setDefault "labelColor", [255, 255, 255]
+        offset = Math.floor @world.size * .45
         # @patches.setDefault "labelOffset", [12,14]
         @patches.setDefault "labelOffset", [offset, offset]
         u.contextTextParams ABM.contexts.patches, "10px sans-serif", "right", "bottom"
         # u.elementTextParams ABM.contexts.patches, "10px sans-serif", "right", "bottom"
         @agents.setDefault "shape", "circle"
-        @agents.setDefault "color", ([210,0,0])
+        @agents.setDefault "color", ([210, 0, 0])
         @agents.setDefault "size", .4
         @agents.setDefault "hidden", 2.5
         @agents.setDefault "heading",  0 # override promotion to random angle
 
         @animator.setRate 10
 
-        for p in @patches.create()
-          p.color = u.randomGray 160, 190
-          p.occupied = false
-        @drawGrid [0,0,0]
+        for patch in @patches.create()
+          patch.color = u.randomGray 160, 190
+          patch.occupied = false
+
+        @drawGrid [0, 0, 0]
         @walker = @agents.create(1)[0]
-        p0 = @patches[0]
-        @walker.setXY p0.x, p0.y
+        patch0 = @patches[0]
+        @walker.moveTo patch0.position
         @walker.penDown = true
         # @walker.color = [210,0,0]
         # @walker.shape = "circle"
         # @walker.size = .4
-        # @walker.setXY 0, 0 # needed? should start at 0,0
         @walker.stamp()
         @walker.patch.occupied = true
         # @walker.penDown = true
         # @walker.penSize *= 2.5
         # @setTextParams @patches, "9px sans-serif", "right", "bottom"
-        # @setLabelParams @patches, [255,255,255], [12,12]
+        # @setLabelParams @patches, [255, 255, 255], [12, 12]
+
       step: ->
         @floodFill()
-        p = @patches.asSet (neighbor for neighbor in @walker.patch.neighbors(diamond: 1) when neighbor.ok)
-        @drawNum p.length
-        @walker.moveTo p.sample()
+        patches = @patches.asSet (neighbor for neighbor in @walker.patch.neighbors(diamond: 1) when neighbor.ok)
+        @drawNum patches.length
+        @walker.moveTo patches.sample().position
         @walker.stamp()
         @walker.patch.occupied = true
         (@stop(); console.log "prob: #{@prob}") if @done()
       
-      # drawNum: (n) -> @walker.label = ""+n; @prob /= n
-      drawNum: (n) -> @walker.patch.label = ""+n; @prob /= n
-      done: -> @patches.last().occupied
+      drawNum: (number) ->
+        @walker.patch.label = "" + number
+        @prob /= number
+
+      done: ->
+        @patches.last().occupied
       
       drawGrid: (c) ->
         a = @agents.create(1)[0]
         a.color = c
         a.penSize *= .4
         a.heading = Math.PI / 2
-        for x in [0..@patches.maxX]
-          a.setXY(x, 0); a.penDown = true; a.forward @patches.maxY; a.penDown = false
+
+        for x in [0..@patches.max.x]
+          a.moveTo x: x, y: 0
+          a.penDown = true
+          a.forward @patches.max.y
+          a.penDown = false
         a.heading = 0
-        for y in [0..@patches.maxY]
-          a.setXY(0, y); a.penDown = true; a.forward @patches.maxX; a.penDown = false
+
+        for y in [0..@patches.max.y]
+          a.moveTo x: 0, y: y
+          a.penDown = true
+          a.forward @patches.max.x
+          a.penDown = false
         a.die()
       
       floodFill: ->
-        p.ok = false for p in @patches
+        for patch in @patches
+          patch.ok = false
+
         pset = [@patches.last()]
+
         while pset.length > 0
           p.ok = true for p in pset
           pnext = @asSet u.flatten (p.neighbors(diamond: 1) for p in pset)
@@ -81,18 +96,11 @@
           pset = (n for n in pnext when not n.ok and not n.occupied)
         null
 
-    # div, patchSize, minX, maxX, minY, maxY, isTorus
-    #   Defaults: 13, -16, 16, -16, 16, false, true
-    # model = new MyModel "layers", 30, 0,10, 0,10
-    # model.setRootVars() # Debug: Put Model vars in global name space
-    # model.start() # Run model immediately after startup initialization
     new MyModel({
       div: "layers",
-      size: 30,
-      minX: 0,
-      maxX: 10,
-      minY: 0,
-      maxY: 10
+      patchSize: 30,
+      min: {x: 0, y: 0},
+      max: {x: 10, y: 10}
     })
     .start()
     .debug()

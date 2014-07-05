@@ -92,7 +92,7 @@ ABM.DataSet = class DataSet
   # If p < 0, print data, otherwise use toFixed to truncate to p precision
   toString: (p=2, sep=", ")->
     s = "width: #{@width} height: #{@height} data:"
-    data = if p<0 then @data else u.aToFixed @data, p
+    data = if p < 0 then @data else u.aToFixed @data, p
     for i in [0...@height]
       s += "\n" + "#{i}: #{data.slice i*@width, (i+1)*@width}"
     s.replace /,/g, sep

@@ -40,15 +40,11 @@
         @patches.diffuse "heat", @diffusionRate, [255,0,0]
         # @stop() # debug: one step
 
-    # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors
-    #   Defaults: 13, -16, 16, -16, 16, false, true
     model = new MyModel {
       div: "layers",
-      size: 10,
-      minX: -25,
-      maxX: 25,
-      minY: -20,
-      maxY: 20,
+      patchSize: 10,
+      min: {x: -25, y: -20},
+      max: {x: 25, y: 20}
       isTorus: true
     }
     model.debug() # Debug: Put Model vars in global name space

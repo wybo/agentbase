@@ -38,6 +38,7 @@ Array::_sort = Array::sort
 #      u.clearContext(context) is equivalent to
 #      ABM.util.clearContext(context)
 
+# TODO positions
 ABM.util = u =
   # ### Language extensions
   
@@ -512,7 +513,7 @@ ABM.util = u =
 
   # Return the angle from x1, y1 to x2, y2 on torus using shortest reflection.
   radiansTowardTorus: (point1, point2, patches) ->
-    closest = @closestTorusPoint point1, point2, patches.numX, patches.numY
+    closest = @closestTorusPoint point1, point2, patches.width, patches.height
     @radiansTowardEuclidian point1, closest
 
   # Return true if point2 is in cone radians around heading radians from 
@@ -536,7 +537,7 @@ ABM.util = u =
   # point1.x, point2.x and within distance radius from point1.x, point2.x
   # considering all torus reflections.
   inConeTorus: (heading, cone, radius, point1, point2, patches) ->
-    for point in @torus4Points point1, point2, patches.numX, patches.numY
+    for point in @torus4Points point1, point2, patches.width, patches.height
       return true if @inConeEuclidian heading, cone, radius, point1, point
     false
 
@@ -581,8 +582,8 @@ ABM.util = u =
   distanceTorus: (point1, point2, patches) ->
     xDistance = Math.abs point2.x - point1.x
     yDistance = Math.abs point2.y - point1.y
-    minX = Math.min xDistance, patches.numX - xDistance
-    minY = Math.min yDistance, patches.numY - yDistance
+    minX = Math.min xDistance, patches.width - xDistance
+    minY = Math.min yDistance, patches.height - yDistance
     Math.sqrt minX * minX + minY * minY
 
   # Return 4 torus point reflections of point2 around point1
@@ -774,7 +775,9 @@ ABM.util = u =
   # Clear the 2D/3D layer to be transparent. Note this [discussion](http://goo.gl/qekXS).
   clearContext: (context) ->
     if context.save? # test for 2D context
-      @setIdentity context # context.canvas.width = context.canvas.width not used so as to preserve patch coords
+      @setIdentity context
+      # context.canvas.width = context.canvas.width not used so as to preserve
+      # patch coordinates
       context.clearRect 0, 0, context.canvas.width, context.canvas.height
       context.restore()
     else # 3D
@@ -792,7 +795,7 @@ ABM.util = u =
       context.clearColor color..., 1 # alpha = 1 unless color is rgba
       context.clear context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT
 
-  # Draw string of the given color at the xy location, in context pixel coords.
+  # Draw string of the given color at the xy location, in context pixel coordinates.
   # Use setIdentity .. reset if a transform is being used by caller.
   contextDrawText: (context, string, x, y, color = [0, 0, 0], setIdentity = true) ->
     @setIdentity(context) if setIdentity

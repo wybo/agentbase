@@ -25,7 +25,6 @@
         @stopTickDifference = 500
         
         @animator.setRate 10, true
-        # @animator.setRate 60, false
         
         # defaults
         @patches.setDefault "color", [250, 250, 0]
@@ -35,36 +34,34 @@
         @travelers.setDefault "hidden", true
         @links.setDefault "color", [255, 0, 0]
 
-        # p.color = [250, 250, 0] for p in @patches
-        
         @patches.create()
-        # @setupNode a for a in @agents.create @nodeCount
         @setupNode n for n in @nodes.create @nodeCount
         
         @createTourLinks @nodes #()
         @bestTourLength = @links.reduce ((sum,l) -> sum + l.length()), 0
         
-        # @agents.create @travelersCount, (a) => @setupTraveler(a)
         @travelers.create @travelersCount, (a) => @setupTraveler(a)
 
-      setupNode: (a) =>
-        ## a.color = [255,0,0]
-        ## a.shape = "circle"
-        # a.breed = "nodes"
-        a.setXY @patches.randomPoint()...
-        a.setXY @patches.randomPoint()... while @nodes.neighboring(a, radius: 2).any()
-      setupTraveler: (a) =>
-        # a.hidden = true
-        # a.breed = "travelers"
-        a.tourNodes = @nodes.clone().shuffle() # ()
-        a.tourLength = @lengthFromNodes a.tourNodes
+      setupNode: (agent) =>
+        agent.moveTo @patches.randomPoint()
+        while @nodes.neighboring(agent, radius: 2).any()
+          agent.moveTo @patches.randomPoint()
+
+      setupTraveler: (agent) =>
+        agent.tourNodes = @nodes.clone().shuffle() # ()
+        agent.tourLength = @lengthFromNodes agent.tourNodes
         
       step: ->
         console.log @animator.toString() if @animator.ticks % 100 is 0
-        @makeTour a for a in @travelers #()
+
+        for agent in @travelers #()
+          @makeTour agent
+
         @installBestTour()
+
         if (@animator.ticks - @bestTourTick) is @stopTickDifference
-          console.log "Stopping at tick #{@animator.ticks} after no change in #{@stopTickDifference} ticks"
+          console.log "Stopping at tick #{@animator.ticks} after no change in" +
+            " #{@stopTickDifference} ticks"
           console.log "Best tour: #{@bestTourLength} at tick #{@bestTourTick}"
           @stop()
       
@@ -73,10 +70,15 @@
         @links.create nodeList[0], nodeList.last()
         @links.create nodeList[i], nodeList[i - 1] for i in [1...nodeList.length]
         # @links.setProp "color", [255,0,0]
+        
       lengthFromNodes: (nodeList) ->
-        len = nodeList[0].distance(nodeList.last())
-        len += nodeList[i].distance(nodeList[i - 1]) for i in [1...nodeList.length]
+        len = nodeList[0].distance(nodeList.last().position)
+
+        for i in [1...nodeList.length]
+          len += nodeList[i].distance(nodeList[i - 1].position)
+
         len
+
       installBestTour: ->
         # @travelers().max("tourLength").die() while @travelers().length>@travelersCount
         # a = @travelers().min("tourLength")
@@ -95,8 +97,12 @@
         if @growPopulation
         then a.hatch 1, @travelers, (a) => a.tourNodes = nlist; a.tourLength = len
         else (a.tourNodes = nlist; a.tourLength = len) if len < a.tourLength
-      randomStrategy: (a) -> a.tourNodes.clone().shuffle()
-      inversionStrategy: (a) -> @asSet @newInversion a.tourNodes
+
+      randomStrategy: (a) ->
+        a.tourNodes.clone().shuffle()
+
+      inversionStrategy: (a) ->
+        @asSet @newInversion a.tourNodes
 
       newInversion: (nlist) ->
         len = nlist.length
@@ -113,11 +119,8 @@
     #   Defaults: 13, -16, 16, -16, 16, false, true
     model = new MyModel {
       div: "layers",
-      size: 16,
-      minX: -14,
-      maxX: 14,
-      minY: -14,
-      maxY: 14,
+      patchSize: 16,
+      mapSize: 28,
       hasNeighbors: false
     }
     model.debug() # Debug: Put Model vars in global name space

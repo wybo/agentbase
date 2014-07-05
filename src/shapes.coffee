@@ -171,8 +171,8 @@ ABM.shapes = ABM.util.s = do ->
 
   drawSprite: (context, s, x, y, size, rad) ->
     if rad is 0
-      context.drawImage s.context.canvas, s.x, s.y, s.bits, s.bits, x-size / 2,
-        y-size / 2, size, size
+      context.drawImage s.context.canvas, s.x, s.y, s.bits, s.bits, x - size / 2,
+        y - size / 2, size, size
     else
       context.save()
       context.translate x, y # see http://goo.gl/VUlhY for drawing centered rotated images

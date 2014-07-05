@@ -51,35 +51,37 @@
 
       step: ->
         moved = 0
-        for a in @agents
+        for agent in @agents
           if @useAspect
-            neighbors = a.patch.neighbors()
+            neighbors = agent.patch.neighbors()
           else
-            neighbors = a.patch.pRectangle
+            neighbors = agent.patch.pRectangle
+
           neighbors = neighbors.min "elevation"
-          if a.patch.elevation > neighbors.elevation #or a.patch.slope < .0001
+
+          if agent.patch.elevation > neighbors.elevation
             if @useAspect
-              a.heading = a.patch.aspect
+              agent.heading = agent.patch.aspect
             else
-              a.face neighbors
-            a.forward @speed
+              agent.face neighbors
+              # May not work?
+
+            agent.forward @speed
             moved += 1
+
         if moved is 0 or (@useAspect and @lastMoved is moved)
           console.log "done, ticks: #{@animator.ticks}"
           @stop()
+
         if @animator.ticks % 100 is 0
           console.log @animator.toString(), "moved: #{moved}"
           @lastMoved = moved
     
-    # div, patchSize, minX, maxX, minY, maxY, isTorus
-    #   Defaults: 13, -16, 16, -16, 16, false, true
     model = new MyModel({
       div: "layers",
-      size: 6,
-      minX: 0,
-      maxX: 80,
-      minY: 0,
-      maxY: 80
+      patchSize: 6,
+      min: {x: 0, y: 0},
+      max: {x: 80, y: 80}
     })
     .debug() # Debug: Put Model vars in global name space
     .start() # Run model immediately after startup initialization
