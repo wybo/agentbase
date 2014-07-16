@@ -160,7 +160,7 @@ We're currently using [gulp](http://gulpjs.com/), along with several plugins:
 
     ls node_modules/
 
-We rely on no globally installed npm modules.  We recommend you do *not* globally install gulp.
+We rely on no globally installed npm modules.  We recommend you do *not* globally install gulp ([local/global discussion]( http://goo.gl/OhdWvO)).
 
 There are two ways to run tasks:
 
@@ -203,7 +203,7 @@ The typical workflow looks like:
 * npm run watch - process files when they change.
 * npm run all - compile & minify all code, create docs. Done before git add to insure everything is ready for git.
 * npm run git-diff - diff all source and related files.  Good for creating complete commit comments. You may want to pipe this into your editor.
-* npm run git-prep - in master, invokes "cake all", git add ., git status.  Used prior to commiting, stages all files.  Remember to git rm any files that are removed so that remote correctly sync'ed.
+* npm run git-prep - in master, invokes "gulp all", git add ., git status.  Used prior to commiting, stages all files.  Remember to git rm any files that are removed so that remote correctly sync'ed.
 * npm run git-commit - in master, commit locally and push to github
 * npm run git-pages - checkout gh-pages branch, merge master, push to github, change back to master.
 
