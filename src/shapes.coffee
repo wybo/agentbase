@@ -39,9 +39,9 @@ ABM.shapes = ABM.util.s = do ->
   # An async util for delayed drawing of images into sprite slots
   fillSlot = (slot, img) ->
     slot.ctx.save(); slot.ctx.scale 1, -1
-    slot.ctx.drawImage img, slot.x, -(slot.y+slot.bits), slot.bits, slot.bits    
+    slot.ctx.drawImage img, slot.x, -(slot.y+slot.slotSize), slot.slotSize, slot.slotSize    
     slot.ctx.restore()
-  # The spritesheet data, indexed by bits
+  # The spritesheet data, indexed by slotSize
   spriteSheets = []
   
   # The module returns the following object:
@@ -105,9 +105,10 @@ ABM.shapes = ABM.util.s = do ->
   spriteSheets:spriteSheets # export spriteSheets for debugging, showing in DOM
 
   # Two draw procedures, one for shapes, the other for sprites made from shapes.
-  draw: (ctx, shape, x, y, size, rad, color) ->
+  draw: (ctx, shape, x, y, size, rad, color, strokeColor) ->
     if shape.shortcut?
-      ctx.fillStyle = u.colorStr color unless shape.img?
+      unless shape.img?
+        ctx.fillStyle = u.colorStr color
       shape.shortcut ctx,x,y,size
     else
       ctx.save()
@@ -117,41 +118,50 @@ ABM.shapes = ABM.util.s = do ->
       if shape.img? # is an image, not a path function
         shape.draw ctx
       else
-        ctx.beginPath(); shape.draw ctx; ctx.closePath()
         ctx.fillStyle = u.colorStr color
+        if strokeColor
+          ctx.strokeStyle = u.colorStr strokeColor
+          ctx.lineWidth = 0.05
+        ctx.save()
+        ctx.beginPath(); shape.draw ctx; ctx.closePath()
+        ctx.restore()
         ctx.fill()
+        ctx.stroke() if strokeColor
+        
       ctx.restore()
     shape
   drawSprite: (ctx, s, x, y, size, rad) ->
     if rad is 0
-      ctx.drawImage s.ctx.canvas, s.x, s.y, s.bits, s.bits, x-size/2, y-size/2, size, size
+      ctx.drawImage s.ctx.canvas, s.x, s.y, s.slotSize, s.slotSize, x-size/2, y-size/2, size, size
     else
       ctx.save()
       ctx.translate x, y # see http://goo.gl/VUlhY for drawing centered rotated images
       ctx.rotate rad
-      ctx.drawImage s.ctx.canvas, s.x, s.y, s.bits, s.bits, -size/2,-size/2, size, size
+      ctx.drawImage s.ctx.canvas, s.x, s.y, s.slotSize, s.slotSize, -size/2,-size/2, size, size
       ctx.restore()
     s
   # Convert a shape to a sprite by allocating a sprite sheet "slot" and drawing
   # the shape to fit it. Return existing sprite if duplicate.
-  shapeToSprite: (name, color, size) ->
-    bits = Math.ceil ABM.patches.toBits size
+  shapeToSprite: (name, color, size, strokeColor) ->
+    spriteSize = Math.ceil ABM.patches.toBits size
+    strokePadding = 4
+    slotSize = if strokeColor then spriteSize + strokePadding else spriteSize
     shape = @[name]
     index = if shape.img? then name else "#{name}-#{u.colorStr(color)}"
-    ctx = spriteSheets[bits]
+    ctx = spriteSheets[slotSize]
     # Create sheet for this bit size if it does not yet exist
     unless ctx?
-      spriteSheets[bits] = ctx = u.createCtx bits*10, bits
+      spriteSheets[slotSize] = ctx = u.createCtx slotSize*10, slotSize
       ctx.nextX = 0; ctx.nextY = 0; ctx.index = {}
     # Return matching sprite if index match found
     return foundSlot if (foundSlot = ctx.index[index])?
     # Extend the sheet if we're out of space
-    if bits*ctx.nextX is ctx.canvas.width
-      u.resizeCtx ctx, ctx.canvas.width, ctx.canvas.height+bits
+    if (slotSize)*ctx.nextX is ctx.canvas.width
+      u.resizeCtx ctx, ctx.canvas.width, ctx.canvas.height+slotSize
       ctx.nextX = 0; ctx.nextY++
     # Create the sprite "slot" object and install in index object
-    x = bits*ctx.nextX; y = bits*ctx.nextY
-    slot = {ctx, x, y, size, bits, name, color, index}
+    x = (slotSize)*ctx.nextX; y = (slotSize)*ctx.nextY
+    slot = {ctx, x, y, size, slotSize, name, color, strokeColor, index}
     ctx.index[index] = slot
     # Draw the shape into the sprite slot
     if (img=shape.img)? # is an image, not a path function
@@ -159,11 +169,17 @@ ABM.shapes = ABM.util.s = do ->
       else img.onload = -> fillSlot(slot, img)
     else
       ctx.save()
-      ctx.scale bits, bits
-      ctx.translate ctx.nextX+.5, ctx.nextY+.5
+      ctx.translate (ctx.nextX+0.5)*(slotSize), (ctx.nextY+0.5)*(slotSize)
+      ctx.scale spriteSize, spriteSize
       ctx.fillStyle = u.colorStr color
+      if strokeColor
+        ctx.strokeStyle = u.colorStr strokeColor
+        ctx.lineWidth = 0.05
+      ctx.save()
       ctx.beginPath(); shape.draw ctx; ctx.closePath()
+      ctx.restore()
       ctx.fill()
+      ctx.stroke() if strokeColor
       ctx.restore()
     ctx.nextX++; slot
 
