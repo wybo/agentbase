@@ -155,7 +155,7 @@ ABM.shapes = ABM.util.s = do ->
   shapeToSprite: (name, color, size, strokeColor) ->
     spriteSize = Math.ceil ABM.patches.toBits size
     strokePadding = 4
-    slotSize = if strokeColor then spriteSize + strokePadding else spriteSize
+    slotSize = spriteSize + strokePadding
     shape = @[name]
     index = if shape.img? then name else "#{name}-#{u.colorStr(color)}"
     ctx = spriteSheets[slotSize]
