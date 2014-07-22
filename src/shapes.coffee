@@ -77,6 +77,16 @@ ABM.shapes = ABM.util.s = do ->
   ring:
     rotate: false
     draw: (c) -> circ c,0,0,1; c.closePath(); ccirc c,0,0,.6
+  filledRing:
+    rotate: false
+    draw: (c) ->
+      circ(c,0,0,1)
+      tempStyle = c.fillStyle # save fill style
+      c.fillStyle = c.strokeStyle # use stroke style for larger circle
+      c.fill()
+      c.fillStyle = tempStyle
+      c.beginPath()
+      circ(c,0,0,.8)
   person:
     rotate: false
     draw: (c) ->
