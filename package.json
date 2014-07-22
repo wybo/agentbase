@@ -6,12 +6,6 @@
   "directories": {
     "doc": "docs"
   },
-  "devDependencies": {
-    "shelljs": "~0.2.6",
-    "docco": "~0.6.3",
-    "uglify-js": "~2.4.12",
-    "coffee-script": "~1.7.1"
-  },
   "repository": {
     "type": "git",
     "url": "git://github.com/backspaces/agentscript.git"
@@ -25,5 +19,27 @@
   "license": "GPLv3",
   "bugs": {
     "url": "https://github.com/backspaces/agentscript/issues"
+  },
+  "scripts": {
+    "all":   "gulp all",
+    "build": "gulp build",
+    "docs":  "gulp docs",
+    "watch": "gulp watch",
+    
+    "git-pull": "git checkout gh-pages && git pull && git checkout master && git pull",
+    "git-diff": "git status; git diff Gulpfile.js LICENSE README.md package.json src extras models sketches",
+    "git-prep": "git checkout master && gulp all && git add . && git status",
+    "git-commit": "git checkout master && git commit -v && git push origin master",
+    "git-pages": "git checkout gh-pages && git merge master && git push origin gh-pages && git checkout master"
+  },
+  "devDependencies": {
+    "gulp": "^3.8.5",
+    "gulp-coffee": "^2.0.1",
+    "gulp-concat": "^2.3.0",
+    "gulp-docco": "0.0.4",
+    "gulp-rename": "^1.2.0",
+    "gulp-task-listing": "^0.3.0",
+    "gulp-uglify": "^0.3.1",
+    "lazypipe": "^0.2.1"
   }
 }

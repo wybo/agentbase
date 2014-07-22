@@ -11,42 +11,6 @@
   <div id="container">
     <div id="background"></div>
     
-      <ul id="jump_to">
-        <li>
-          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
-          <a class="small" href="javascript:void(0);">+</a>
-          <div id="jump_wrapper">
-          <div id="jump_page">
-            
-              
-              <a class="source" href="as.dat.gui.html">
-                as.dat.gui.js
-              </a>
-            
-              
-              <a class="source" href="data.html">
-                data.coffee
-              </a>
-            
-              
-              <a class="source" href="data.tile.html">
-                data.tile.js
-              </a>
-            
-              
-              <a class="source" href="fbui.html">
-                fbui.coffee
-              </a>
-            
-              
-              <a class="source" href="mouse.html">
-                mouse.coffee
-              </a>
-            
-          </div>
-        </li>
-      </ul>
-    
     <ul class="sections">
         
           <li id="title">
@@ -70,8 +34,8 @@
             </div>
             
             <div class="content"><div class='highlight'><pre>
-(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
-  ABM.DatGUI = (<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span></pre></div></div>
+(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
+  ABM.DatGUI = (<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{</pre></div></div>
             
         </li>
         
@@ -143,7 +107,7 @@ the model interface in all browsers will be in sync.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>
-    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">DatGUI</span><span class="hljs-params">(fbuiOrModel, uiObject)</span> {</span>
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">DatGUI</span><span class="hljs-params">(fbuiOrModel, uiObject)</span> </span>{
 
       <span class="hljs-keyword">var</span> self = <span class="hljs-keyword">this</span>;
       <span class="hljs-keyword">this</span>.gui = <span class="hljs-keyword">new</span> dat.GUI();
@@ -165,7 +129,7 @@ the model interface in all browsers will be in sync.</p>
           <span class="hljs-keyword">if</span> (uiEl.type != <span class="hljs-string">'button'</span>) {
             <span class="hljs-keyword">this</span>.datGuiModel[name] = uiEl.val;
 
-            fbui &amp;&amp; fbui.refs[name].child(<span class="hljs-string">'val'</span>).on(<span class="hljs-string">'value'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(valSnap)</span> {</span>
+            fbui &amp;&amp; fbui.refs[name].child(<span class="hljs-string">'val'</span>).on(<span class="hljs-string">'value'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(valSnap)</span> </span>{
               self.datGuiModel[<span class="hljs-keyword">this</span>.name] = valSnap.val();
               self.updateGui();
             }.bind({ name: name }));
@@ -189,10 +153,10 @@ the model interface in all browsers will be in sync.</p>
             <div class="content"><div class='highlight'><pre>          <span class="hljs-keyword">switch</span>(uiEl.type) {
             <span class="hljs-keyword">case</span> <span class="hljs-string">'button'</span>:
               <span class="hljs-keyword">this</span>.datGuiModel[name] = self.fbui ?
-                <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span> 
+                <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{ 
                   self.fbui.setUIValue(<span class="hljs-keyword">this</span>.name, <span class="hljs-literal">true</span>); 
                 }.bind({ name: name }) :
-                <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+                <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
                   self.setModelValue(<span class="hljs-keyword">this</span>.name);
                 }.bind({ name: name });
               <span class="hljs-keyword">this</span>.gui.add(<span class="hljs-keyword">this</span>.datGuiModel, name);
@@ -210,12 +174,12 @@ the model interface in all browsers will be in sync.</p>
           <span class="hljs-keyword">if</span> (ctrl) {
             <span class="hljs-keyword">var</span> callback;
             <span class="hljs-keyword">if</span> (self.fbui) {
-              callback = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(value)</span> {</span>
+              callback = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(value)</span> </span>{
                 self.fbui.setUIValue(<span class="hljs-keyword">this</span>.name, value);
               }.bind({ name: name });
             }
             <span class="hljs-keyword">else</span> {
-              callback = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(value)</span> {</span>
+              callback = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(value)</span> </span>{
                 self.setModelValue(<span class="hljs-keyword">this</span>.name, value);
               }.bind({ name: name }); 
             }</pre></div></div>
@@ -260,7 +224,7 @@ of the drag</p>
       }
     }
 
-    DatGUI.prototype.setModelValue = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(name, value)</span> {</span>
+    DatGUI.prototype.setModelValue = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(name, value)</span> </span>{
       <span class="hljs-keyword">var</span> setter = <span class="hljs-keyword">this</span>.ui[name].setter;</pre></div></div>
             
         </li>
@@ -300,7 +264,7 @@ the name of a model variable</p>
       }
     }
 
-    DatGUI.prototype.updateGui = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+    DatGUI.prototype.updateGui = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
       <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i <span class="hljs-keyword">in</span> <span class="hljs-keyword">this</span>.gui.__controllers) {
         <span class="hljs-keyword">this</span>.gui.__controllers[i].updateDisplay();
       }
