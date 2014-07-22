@@ -257,9 +257,11 @@ Useful for shortcuts</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">draw</span>: <span class="hljs-function"><span class="hljs-params">(ctx, shape, x, y, size, rad, color)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">draw</span>: <span class="hljs-function"><span class="hljs-params">(ctx, shape, x, y, size, rad, color, strokeColor)</span> -&gt;</span>
     <span class="hljs-keyword">if</span> shape.shortcut?
-      ctx.fillStyle = u.colorStr color <span class="hljs-keyword">unless</span> shape.img?
+      <span class="hljs-keyword">unless</span> shape.img?
+        ctx.fillStyle = u.colorStr color
+        ctx.strokeStyle = u.colorStr strokeColor <span class="hljs-keyword">if</span> strokeColor
       shape.shortcut ctx,x,y,size
     <span class="hljs-keyword">else</span>
       ctx.save()
@@ -271,7 +273,10 @@ Useful for shortcuts</p>
       <span class="hljs-keyword">else</span>
         ctx.beginPath(); shape.draw ctx; ctx.closePath()
         ctx.fillStyle = u.colorStr color
+        ctx.strokeStyle = u.colorStr strokeColor <span class="hljs-keyword">if</span> strokeColor
         ctx.fill()
+        <span class="hljs-keyword">if</span> strokeColor
+          ctx.stroke()
       ctx.restore()
     shape
   <span class="hljs-attribute">drawSprite</span>: <span class="hljs-function"><span class="hljs-params">(ctx, s, x, y, size, rad)</span> -&gt;</span>
@@ -299,7 +304,7 @@ the shape to fit it. Return existing sprite if duplicate.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">shapeToSprite</span>: <span class="hljs-function"><span class="hljs-params">(name, color, size)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">shapeToSprite</span>: <span class="hljs-function"><span class="hljs-params">(name, color, size, strokeColor)</span> -&gt;</span>
     bits = Math.ceil ABM.patches.toBits size
     shape = @[name]
     index = <span class="hljs-keyword">if</span> shape.img? <span class="hljs-keyword">then</span> name <span class="hljs-keyword">else</span> <span class="hljs-string">"<span class="hljs-subst">#{name}</span>-<span class="hljs-subst">#{u.colorStr(color)}</span>"</span>
@@ -392,8 +397,11 @@ the shape to fit it. Return existing sprite if duplicate.</p>
       ctx.scale bits, bits
       ctx.translate ctx.nextX+<span class="hljs-number">.5</span>, ctx.nextY+<span class="hljs-number">.5</span>
       ctx.fillStyle = u.colorStr color
+      ctx.strokeStyle = u.colorStr strokeColor <span class="hljs-keyword">if</span> strokeColor
       ctx.beginPath(); shape.draw ctx; ctx.closePath()
       ctx.fill()
+      <span class="hljs-keyword">if</span> strokeColor
+        ctx.stroke()
       ctx.restore()
     ctx.nextX++; slot</pre></div></div>
             
