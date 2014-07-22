@@ -167,7 +167,7 @@ class ABM.AgentSet extends Array
   # Return an array of a property of the agentset
   #
   #      AS.getProp "x" # [0, 8, 6, 1, 1]
-  getProp: (prop) -> o[prop] for o in @
+  getProp: (prop) -> ABM.util.aProp(@, prop)
 
   # Return an array of agents with the property equal to the given value
   #
