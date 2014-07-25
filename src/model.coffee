@@ -105,7 +105,7 @@ class ABM.Model
       @setWorldDeprecated size, minX, maxX, minY, maxY, isTorus, hasNeighbors, isHeadless
     else
       div = divOrOpts.div
-      isHeadless = divOrOpts.isHeadless = divOrOpts.isHeadless? or not div?
+      isHeadless = divOrOpts.isHeadless = divOrOpts.isHeadless or not div?
       @setWorld divOrOpts
     @contexts = {}
     unless isHeadless

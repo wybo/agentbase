@@ -353,7 +353,7 @@ Example:</p>
       <span class="hljs-property">@setWorldDeprecated</span> size, minX, maxX, minY, maxY, isTorus, hasNeighbors, isHeadless
     <span class="hljs-keyword">else</span>
       div = divOrOpts.div
-      isHeadless = divOrOpts.isHeadless = divOrOpts.isHeadless? <span class="hljs-keyword">or</span> <span class="hljs-keyword">not</span> div?
+      isHeadless = divOrOpts.isHeadless = divOrOpts.isHeadless <span class="hljs-keyword">or</span> <span class="hljs-keyword">not</span> div?
       <span class="hljs-property">@setWorld</span> divOrOpts
     <span class="hljs-property">@contexts</span> = {}
     <span class="hljs-keyword">unless</span> isHeadless
