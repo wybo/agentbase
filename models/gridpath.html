@@ -18,8 +18,8 @@
         offset=Math.floor @world.size*.45
         # @patches.setDefault "labelOffset", [12,14]
         @patches.setDefault "labelOffset", [offset, offset]
-        u.ctxTextParams ABM.contexts.patches, "10px sans-serif", "right", "bottom"
-        # u.elementTextParams ABM.contexts.patches, "10px sans-serif", "right", "bottom"
+        u.ctxTextParams @contexts.patches, "10px sans-serif", "right", "bottom"
+        # u.elementTextParams @contexts.patches, "10px sans-serif", "right", "bottom"
         @agents.setDefault "shape", "circle"
         @agents.setDefault "color", ([210,0,0])
         @agents.setDefault "size", .4

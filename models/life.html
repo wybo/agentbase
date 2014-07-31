@@ -1,0 +1,109 @@
+<html>
+  <head>
+    <title>Life Model</title>
+    <script src="../lib/agentscript.js"></script>
+    <script src="../tools/dat.gui.min.js"></script>
+    <script src="../lib/as.dat.gui.js"></script>
+    <script src="../tools/coffee-script.js"></script>
+    <script type="text/coffeescript">
+
+      class LifeModel extends ABM.Model
+        startup: ->
+          @livingColor = [255, 255, 255]
+          @deadColor = [0, 0, 0]
+
+        setup: ->
+          for p in @patches
+            if Math.random() < 0.3
+              @birth(p)
+            else
+              @death(p)
+          
+        step: ->
+          # Alternate between updating each patch's living neighbor count,
+          # and changing the `living` state variable of each patch.
+          # Since both models are triggered by a requestAnimationFrame callback
+          # in an ABM.Animator, the models should be guaranteed to run in lock-step.
+          if @anim.ticks % 2 is 1
+            @countLivingNeighbors()
+          else
+            @enactBirthsAndDeaths()
+
+        countLivingNeighbors: () ->
+          for p in @patches
+            if @linkEnabled
+              # If the models are "linked", a patch's neighbors exist
+              # only in the model to which it is linked.
+              linkedPatch = @linkedModel.patches.patch(p.x, p.y)
+            else
+              linkedPatch = p
+            p.liveNeighbors = linkedPatch.n.with((p) -> p.living).length
+
+        enactBirthsAndDeaths: () ->
+          for p in @patches
+            # A patch will go from being dead to being alive
+            # if it has exactly three living neighbors
+            if p.liveNeighbors is 3
+              @birth(p)
+            else
+              # A living patch will stay living only if it
+              # has exactly two living neighbors
+              unless p.liveNeighbors is 2
+                @death(p)
+
+        birth: (p) ->
+          p.living = true
+          p.color = @livingColor
+
+        death: (p) ->
+          p.living = false
+          p.color = @deadColor
+
+        linkModel: (model) ->
+          @linkedModel = model
+          @linkEnabled = true
+
+        setupBothModels: () ->
+          @setup()
+          @linkedModel.setup()
+
+        toggleLink: () ->
+          @linkEnabled = @linkedModel.linkEnabled = not @linkEnabled
+
+      modelOpts = { size: 8, minX: 0, maxX: 50, minY: 0, maxY: 50 }
+
+      modelOpts.div = 'model2'
+      model1 = window.model1 = new LifeModel(modelOpts)
+
+      modelOpts.div = 'model1'
+      model2 = window.model2 = new LifeModel(modelOpts)
+
+      # make the model divs display side by side
+      model1.div.style.display = model2.div.style.display = 'inline-block'
+
+      model1.linkModel(model2)
+      model2.linkModel(model1)
+
+      window.gui1 = new ABM.DatGUI(model1, {
+        "setup": {
+          type: "button",
+          setter: "setupBothModels"
+        },
+        "link": {
+          type: "switch",
+          val: true,
+          setter: "toggleLink"
+        }
+      })
+
+      model1.start()
+      model2.start()
+
+    </script>
+
+  </head>
+  <body>
+    <div id="model1"></div>
+    <div id="model2"></div>
+  </body>
+</html>

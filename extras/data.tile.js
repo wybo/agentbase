@@ -8,44 +8,46 @@
 (function() {
     ABM.TileDataSet = (function() {
 
-        function TileDataSet(width, height, tileSize) {
-        	this.tileSize = tileSize || 256;
+        function TileDataSet(width, height, tileSize, model) {
+            this.tileSize = tileSize || 256;
 
-        	this.tiles = {};
+            this.tiles = {};
 
-        	this.width = width;
-        	this.height = height;
+            this.width = width;
+            this.height = height;
+            
+            this.model = model;
 
-        	this.zoom = 0;
-        	this.origin = { x: 0, y: 0 };
+            this.zoom = 0;
+            this.origin = { x: 0, y: 0 };
         }
 
         TileDataSet.prototype = new ABM.DataSet();
 
         TileDataSet.prototype.addTile = function(tilePoint, tile) {
-        	var tileId = [tilePoint.z, tilePoint.x, tilePoint.y].join("/");
-        	this.tiles[tileId] = tile;
+            var tileId = [tilePoint.z, tilePoint.x, tilePoint.y].join("/");
+            this.tiles[tileId] = tile;
         }
 
         // Get the tile containing a point (x,y) specified
         // in pixels relative to the dataset origin.
         TileDataSet.prototype.getTileContainingPoint = function(x, y) {
-        	var zoom = this.zoom,
-        		pixelCoord = {
-        			x: this.origin.x + x,
-        			y: this.origin.y + y
-        		};
+            var zoom = this.zoom,
+                pixelCoord = {
+                    x: this.origin.x + x,
+                    y: this.origin.y + y
+                };
 
-        	var tileX = Math.floor(pixelCoord.x / this.tileSize),
-        		tileY = Math.floor(pixelCoord.y / this.tileSize);
+            var tileX = Math.floor(pixelCoord.x / this.tileSize),
+                tileY = Math.floor(pixelCoord.y / this.tileSize);
 
-        	var tileCtx = this.tiles[zoom+"/"+tileX+"/"+tileY];
-        	
-        	if (!tileCtx) {
-        		console.log("ERR: tried to sample tile", zoom, tileX, tileY, "but it doesn't exist.");
-        	}
+            var tileCtx = this.tiles[zoom+"/"+tileX+"/"+tileY];
+            
+            if (!tileCtx) {
+                console.log("ERR: tried to sample tile", zoom, tileX, tileY, "but it doesn't exist.");
+            }
 
-        	return tileCtx;
+            return tileCtx;
         }
 
         // Copy data from all tiles into the data[] array.
@@ -135,7 +137,7 @@
 
         // The imageData paramater is of the form [r, g, b, a]
         TileDataSet.prototype.parseTileData = function(imageData) {
-        	return imageData;
+            return imageData;
         }
 
         // Use Leaflet to dynamically load tiles into your dataset;
@@ -143,32 +145,33 @@
         // the tile layer must be an instance of L.CrossOriginTileLayer
         // (defined below) in order to get access to the imagedata.
         TileDataSet.prototype.bindToLeaflet = function(leafletMap, leafletLayer, preventMapEmbed) {
-        	this.leafletMap = leafletMap;
-        	this.leafletLayer = leafletLayer;
+            this.leafletMap = leafletMap;
+            this.leafletLayer = leafletLayer;
 
-        	// by default, put the Leaflet div
-        	// inside of the Agentscript wrapper
-        	if (!preventMapEmbed) {
-        		this.embedLeaflet();
-        		var mapSize = this.leafletMap.getSize();
-        		this.width = mapSize.x;
-        		this.height = mapSize.y;
-        	}
+            // by default, put the Leaflet div
+            // inside of the Agentscript wrapper
+            if (!preventMapEmbed) {
+                this.embedLeaflet();
+                var mapSize = this.leafletMap.getSize();
+                this.width = mapSize.x;
+                this.height = mapSize.y;
+            }
 
-        	this.tileSize = leafletLayer._getTileSize();
-        	this.origin = this.leafletMap.getPixelBounds().min;
-        	this.zoom = leafletMap.getZoom();
+            this.tileSize = leafletLayer._getTileSize();
+            this.origin = this.leafletMap.getPixelBounds().min;
+            this.zoom = leafletMap.getZoom();
 
-        	// Keep track of tiles as they are loaded
-        	leafletLayer.on('tileload', function(e) {
-        		var tilePoint = urlToTileCoords(e.url);
+            // Keep track of tiles as they are loaded
+            leafletLayer.on('tileload', function(e) {
+                var tilePoint = urlToTileCoords(e.url);
 
                 if (!tilePoint) {
                     console.log("err: couldn't parse tile coordinates for", e.url);
                     return;
                 }
-        		
+                
                 var tile = ABM.util.imageToCtx(e.tile, this.tileSize, this.tileSize);
+
         		this.addTile(tilePoint, tile);
         	}.bind(this));
 
@@ -249,12 +252,12 @@
         }
 
         TileDataSet.prototype.embedLeaflet = function() {
-        	if (!ABM.model.div) {
-        		console.log("ERR: Tried to embed leaflet map into a headless model, or before model div was initialized.");
-        		return;
-        	}
+            if (!this.model.div) {
+                console.log("ERR: Tried to embed leaflet map into a headless model, or before model div was initialized.");
+                return;
+            }
 
-        	ABM.util.insertLayer(ABM.model.div, this.leafletMap.getContainer(), ABM.world.pxWidth+"px", ABM.world.pxHeight+"px", 15);
+            ABM.util.insertLayer(this.model.div, this.leafletMap.getContainer(), this.model.world.pxWidth+"px", this.model.world.pxHeight+"px", 15);
             // Alert Leaflet that its dimensions have changed
             this.leafletMap.invalidateSize();
         }
@@ -267,15 +270,15 @@
 
 // # L.CrossOriginTileLayer
 L.CrossOriginTileLayer = L.TileLayer.extend({
-	_createTile: function () {
-		var tile = L.TileLayer.prototype._createTile.apply(this);
+    _createTile: function () {
+        var tile = L.TileLayer.prototype._createTile.apply(this);
         // Setting the crossOrigin attribute of the tiles
         // lets us access their imagedata
-		tile.crossOrigin = '';
-		return tile;
-	}
+        tile.crossOrigin = '';
+        return tile;
+    }
 });
 
 L.crossOriginTileLayer = function (url, options) {
-	return new L.CrossOriginTileLayer(url, options);
+    return new L.CrossOriginTileLayer(url, options);
 }

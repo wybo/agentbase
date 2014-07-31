@@ -31,8 +31,8 @@
         b1 = @agents.oneOf()
         b2 = @agents.other(b1).oneOf()
         
-        @links.create b1, b2, (l) ->
-          l.draw ABM.contexts.links
+        @links.create b1, b2, (l) =>
+          l.draw @contexts.links
         
         g = @graphOf b1
         c = u.minOneOf(g, "id").color
