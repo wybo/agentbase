@@ -108,7 +108,7 @@ class MyModel extends ABM.Model
     log @anim.toString() if @anim.ticks % 100 is 0
     # Stop the animation at 1000. Restart by `ABM.model.start()` in console.
     if @anim.ticks is 1000
-      log "..stopping, restart by ABM.model.start()"
+      log "..stopping, restart by app.start()"
       @stop()
 
   # Three of our own methods to manage agents & patches
