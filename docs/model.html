@@ -2,7 +2,7 @@
 
 <html>
 <head>
-  <title>7-model.coffee</title>
+  <title>model.coffee</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
   <link rel="stylesheet" media="all" href="docco.css" />
@@ -11,62 +11,11 @@
   <div id="container">
     <div id="background"></div>
     
-      <ul id="jump_to">
-        <li>
-          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
-          <a class="small" href="javascript:void(0);">+</a>
-          <div id="jump_wrapper">
-          <div id="jump_page">
-            
-              
-              <a class="source" href="1-util.html">
-                1-util.coffee
-              </a>
-            
-              
-              <a class="source" href="2-shapes.html">
-                2-shapes.coffee
-              </a>
-            
-              
-              <a class="source" href="3-agentset.html">
-                3-agentset.coffee
-              </a>
-            
-              
-              <a class="source" href="4-patches.html">
-                4-patches.coffee
-              </a>
-            
-              
-              <a class="source" href="5-agents.html">
-                5-agents.coffee
-              </a>
-            
-              
-              <a class="source" href="6-links.html">
-                6-links.coffee
-              </a>
-            
-              
-              <a class="source" href="7-model.html">
-                7-model.coffee
-              </a>
-            
-              
-              <a class="source" href="8-template.html">
-                8-template.coffee
-              </a>
-            
-          </div>
-        </li>
-      </ul>
-    
     <ul class="sections">
         
           <li id="title">
               <div class="annotation">
-                  <h1>7-model.coffee</h1>
+                  <h1>model.coffee</h1>
               </div>
           </li>
         
@@ -399,15 +348,14 @@ Example:</p>
     divOrOpts, size=<span class="hljs-number">13</span>, minX=-<span class="hljs-number">16</span>, maxX=<span class="hljs-number">16</span>, minY=-<span class="hljs-number">16</span>, maxY=<span class="hljs-number">16</span>,
     isTorus=<span class="hljs-literal">false</span>, hasNeighbors=<span class="hljs-literal">true</span>, isHeadless=<span class="hljs-literal">false</span>
   )<span class="hljs-function"> -&gt;</span>
-    ABM.model = @
     <span class="hljs-keyword">if</span> <span class="hljs-keyword">typeof</span> divOrOpts <span class="hljs-keyword">is</span> <span class="hljs-string">'string'</span>
       div = divOrOpts
       <span class="hljs-property">@setWorldDeprecated</span> size, minX, maxX, minY, maxY, isTorus, hasNeighbors, isHeadless
     <span class="hljs-keyword">else</span>
       div = divOrOpts.div
-      isHeadless = divOrOpts.isHeadless = divOrOpts.isHeadless? <span class="hljs-keyword">or</span> <span class="hljs-keyword">not</span> div?
+      isHeadless = divOrOpts.isHeadless = divOrOpts.isHeadless <span class="hljs-keyword">or</span> <span class="hljs-keyword">not</span> div?
       <span class="hljs-property">@setWorld</span> divOrOpts
-    <span class="hljs-property">@contexts</span> = ABM.contexts = {}
+    <span class="hljs-property">@contexts</span> = {}
     <span class="hljs-keyword">unless</span> isHeadless
       (<span class="hljs-property">@div</span>=<span class="hljs-built_in">document</span>.getElementById(div)).setAttribute <span class="hljs-string">'style'</span>,
         <span class="hljs-string">"position:relative; width:<span class="hljs-subst">#{<span class="hljs-property">@world</span>.pxWidth}</span>px; height:<span class="hljs-subst">#{<span class="hljs-property">@world</span>.pxHeight}</span>px"</span></pre></div></div>
@@ -452,7 +400,7 @@ ctx.restore() <span class="hljs-comment"># restore patch coord system</span>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      <span class="hljs-property">@drawing</span> = ABM.drawing = <span class="hljs-property">@contexts</span>.drawing
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-property">@drawing</span> = <span class="hljs-property">@contexts</span>.drawing
       <span class="hljs-property">@drawing</span>.<span class="hljs-function"><span class="hljs-title">clear</span> = =&gt;</span> u.clearCtx <span class="hljs-property">@drawing</span></pre></div></div>
             
         </li>
@@ -515,13 +463,13 @@ agentset is drawn only once, remaining static after that.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
-              <p>Initialize agentsets.</p>
+              <p>Give class prototypes a ‘model’ attribute that references this model.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="hljs-property">@patches</span> = ABM.patches = <span class="hljs-keyword">new</span> ABM.Patches ABM.Patch, <span class="hljs-string">"patches"</span>
-    <span class="hljs-property">@agents</span> = ABM.agents = <span class="hljs-keyword">new</span> ABM.Agents ABM.Agent, <span class="hljs-string">"agents"</span>
-    <span class="hljs-property">@links</span> = ABM.links = <span class="hljs-keyword">new</span> ABM.Links ABM.Link, <span class="hljs-string">"links"</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-property">@Patches</span> = <span class="hljs-property">@extend</span>(ABM.Patches); <span class="hljs-property">@Patch</span> = <span class="hljs-property">@extend</span>(ABM.Patch)
+    <span class="hljs-property">@Agents</span> = <span class="hljs-property">@extend</span>(ABM.Agents); <span class="hljs-property">@Agent</span> = <span class="hljs-property">@extend</span>(ABM.Agent)
+    <span class="hljs-property">@Links</span> = <span class="hljs-property">@extend</span>(ABM.Links); <span class="hljs-property">@Link</span> = <span class="hljs-property">@extend</span>(ABM.Link)</pre></div></div>
             
         </li>
         
@@ -531,6 +479,23 @@ agentset is drawn only once, remaining static after that.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>
+              <p>Initialize agentsets.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-property">@patches</span> = <span class="hljs-keyword">new</span> <span class="hljs-property">@Patches</span> <span class="hljs-property">@Patch</span>, <span class="hljs-string">"patches"</span>
+    <span class="hljs-property">@agents</span> = <span class="hljs-keyword">new</span> <span class="hljs-property">@Agents</span> <span class="hljs-property">@Agent</span>, <span class="hljs-string">"agents"</span>
+    <span class="hljs-property">@links</span> = <span class="hljs-keyword">new</span> <span class="hljs-property">@Links</span> <span class="hljs-property">@Link</span>, <span class="hljs-string">"links"</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-26">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
               <p>Initialize model global resources</p>
 
@@ -546,11 +511,11 @@ agentset is drawn only once, remaining static after that.</p>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>Initialize/reset world parameters.</p>
 
@@ -563,12 +528,12 @@ agentset is drawn only once, remaining static after that.</p>
     {size, minX, maxX, minY, maxY, isTorus, hasNeighbors, isHeadless} = w
     numX = maxX-minX+<span class="hljs-number">1</span>; numY = maxY-minY+<span class="hljs-number">1</span>; pxWidth = numX*size; pxHeight = numY*size
     minXcor=minX-<span class="hljs-number">.5</span>; maxXcor=maxX+<span class="hljs-number">.5</span>; minYcor=minY-<span class="hljs-number">.5</span>; maxYcor=maxY+<span class="hljs-number">.5</span>
-    ABM.world = <span class="hljs-property">@world</span> = {size,minX,maxX,minY,maxY,minXcor,maxXcor,minYcor,maxYcor,
+    <span class="hljs-property">@world</span> = {size,minX,maxX,minY,maxY,minXcor,maxXcor,minYcor,maxYcor,
       numX,numY,pxWidth,pxHeight,isTorus,hasNeighbors,isHeadless}
   <span class="hljs-attribute">setWorldDeprecated</span>: <span class="hljs-function"><span class="hljs-params">(size, minX, maxX, minY, maxY, isTorus, hasNeighbors, isHeadless)</span> -&gt;</span>
     numX = maxX-minX+<span class="hljs-number">1</span>; numY = maxY-minY+<span class="hljs-number">1</span>; pxWidth = numX*size; pxHeight = numY*size
     minXcor=minX-<span class="hljs-number">.5</span>; maxXcor=maxX+<span class="hljs-number">.5</span>; minYcor=minY-<span class="hljs-number">.5</span>; maxYcor=maxY+<span class="hljs-number">.5</span>
-    ABM.world = <span class="hljs-property">@world</span> = {size,minX,maxX,minY,maxY,minXcor,maxXcor,minYcor,maxYcor,
+    <span class="hljs-property">@world</span> = {size,minX,maxX,minY,maxY,minXcor,maxXcor,minYcor,maxYcor,
       numX,numY,pxWidth,pxHeight,isTorus,hasNeighbors,isHeadless}
   <span class="hljs-attribute">setCtxTransform</span>: <span class="hljs-function"><span class="hljs-params">(ctx)</span> -&gt;</span>
     ctx.canvas.width = <span class="hljs-property">@world</span>.pxWidth; ctx.canvas.height = <span class="hljs-property">@world</span>.pxHeight
@@ -583,11 +548,34 @@ agentset is drawn only once, remaining static after that.</p>
         </li>
         
         
-        <li id="section-27">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>
+              <p>Add this model to a class’s prototype. This is used in
+the model constructor to create Patch/Patches, Agent/Agents,
+and Link/Links classes with a built-in reference to their model.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">extend</span>: <span class="hljs-function"><span class="hljs-params">(aClass)</span> -&gt;</span>
+    model = @
+    <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">extendedClass</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">aClass</span></span>
+      <span class="hljs-attribute">model</span>: model
+      <span class="hljs-attribute">constructor</span>:<span class="hljs-function"> -&gt;</span>
+        <span class="hljs-keyword">super</span>
+    <span class="hljs-keyword">return</span> extendedClass;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <h3 id="optimizations-">Optimizations:</h3>
 
@@ -596,11 +584,11 @@ agentset is drawn only once, remaining static after that.</p>
         </li>
         
         
-        <li id="section-28">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>Modelers “tune” their model by adjusting flags:<br>
 <code>@refreshLinks, @refreshAgents, @refreshPatches</code><br>
@@ -611,11 +599,11 @@ and by the following helper methods:</p>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <p>Draw patches using scaled image of colors. Note anti-aliasing may occur
 if browser does not support imageSmoothingEnabled or equivalent.</p>
@@ -627,11 +615,11 @@ if browser does not support imageSmoothingEnabled or equivalent.</p>
         </li>
         
         
-        <li id="section-30">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
               <p>Patches are all the same static default color, just “clear” entire canvas.
 Don’t use if patch breeds have different colors.</p>
@@ -643,11 +631,11 @@ Don’t use if patch breeds have different colors.</p>
         </li>
         
         
-        <li id="section-31">
+        <li id="section-33">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+                <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
               <p>Have patches cache the agents currently on them.
 Optimizes Patch p.agentsHere method</p>
@@ -659,11 +647,11 @@ Optimizes Patch p.agentsHere method</p>
         </li>
         
         
-        <li id="section-32">
+        <li id="section-34">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-32">&#182;</a>
+                <a class="pilcrow" href="#section-34">&#182;</a>
               </div>
               <p>Have agents cache the links with them as a node.
 Optimizes Agent a.myLinks method</p>
@@ -675,11 +663,11 @@ Optimizes Agent a.myLinks method</p>
         </li>
         
         
-        <li id="section-33">
+        <li id="section-35">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-33">&#182;</a>
+                <a class="pilcrow" href="#section-35">&#182;</a>
               </div>
               <p>Have patches cache the given patchRect.
 Optimizes patchRect, inRadius and inCone</p>
@@ -691,11 +679,11 @@ Optimizes patchRect, inRadius and inCone</p>
         </li>
         
         
-        <li id="section-34">
+        <li id="section-36">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-34">&#182;</a>
+                <a class="pilcrow" href="#section-36">&#182;</a>
               </div>
               <h3 id="user-model-creation">User Model Creation</h3>
 <p>A user’s model is made by subclassing Model and over-riding these
@@ -706,11 +694,11 @@ two abstract methods. <code>super</code> need not be called.</p>
         </li>
         
         
-        <li id="section-35">
+        <li id="section-37">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-35">&#182;</a>
+                <a class="pilcrow" href="#section-37">&#182;</a>
               </div>
               <p>Initialize model resources (images, files) here.<br>Uses util.waitOn so can be be async.</p>
 
@@ -721,11 +709,11 @@ two abstract methods. <code>super</code> need not be called.</p>
         </li>
         
         
-        <li id="section-36">
+        <li id="section-38">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-36">&#182;</a>
+                <a class="pilcrow" href="#section-38">&#182;</a>
               </div>
               <p>Initialize your model variables and defaults here.
 If async used, make sure step/draw are aware of possible missing data.</p>
@@ -737,11 +725,11 @@ If async used, make sure step/draw are aware of possible missing data.</p>
         </li>
         
         
-        <li id="section-37">
+        <li id="section-39">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-37">&#182;</a>
+                <a class="pilcrow" href="#section-39">&#182;</a>
               </div>
               <p>Update/step your model here</p>
 
@@ -752,11 +740,11 @@ If async used, make sure step/draw are aware of possible missing data.</p>
         </li>
         
         
-        <li id="section-38">
+        <li id="section-40">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-38">&#182;</a>
+                <a class="pilcrow" href="#section-40">&#182;</a>
               </div>
               <h3 id="animation-and-reset-methods">Animation and Reset methods</h3>
 
@@ -765,11 +753,11 @@ If async used, make sure step/draw are aware of possible missing data.</p>
         </li>
         
         
-        <li id="section-39">
+        <li id="section-41">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-39">&#182;</a>
+                <a class="pilcrow" href="#section-41">&#182;</a>
               </div>
               <p>Convenience access to animator:</p>
 
@@ -778,11 +766,11 @@ If async used, make sure step/draw are aware of possible missing data.</p>
         </li>
         
         
-        <li id="section-40">
+        <li id="section-42">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-40">&#182;</a>
+                <a class="pilcrow" href="#section-42">&#182;</a>
               </div>
               <p>Start/stop the animation</p>
 
@@ -794,11 +782,11 @@ If async used, make sure step/draw are aware of possible missing data.</p>
         </li>
         
         
-        <li id="section-41">
+        <li id="section-43">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-41">&#182;</a>
+                <a class="pilcrow" href="#section-43">&#182;</a>
               </div>
               <p>Animate once by <code>step(); draw()</code>. For UI and debugging from console.
 Will advance the ticks/draws counters.</p>
@@ -810,11 +798,11 @@ Will advance the ticks/draws counters.</p>
         </li>
         
         
-        <li id="section-42">
+        <li id="section-44">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-42">&#182;</a>
+                <a class="pilcrow" href="#section-44">&#182;</a>
               </div>
               <p>Stop and reset the model, restarting if restart is true</p>
 
@@ -826,10 +814,10 @@ Will advance the ticks/draws counters.</p>
     <span class="hljs-built_in">console</span>.log <span class="hljs-string">"reset: contexts"</span>
     (v.restore(); <span class="hljs-property">@setCtxTransform</span> v) <span class="hljs-keyword">for</span> k,v <span class="hljs-keyword">of</span> <span class="hljs-property">@contexts</span> <span class="hljs-keyword">when</span> v.canvas? <span class="hljs-comment"># clear/resize b4 agentsets</span>
     <span class="hljs-built_in">console</span>.log <span class="hljs-string">"reset: patches"</span>
-    <span class="hljs-property">@patches</span> = ABM.patches = <span class="hljs-keyword">new</span> ABM.Patches ABM.Patch, <span class="hljs-string">"patches"</span>
+    <span class="hljs-property">@patches</span> = <span class="hljs-keyword">new</span> <span class="hljs-property">@Patches</span> <span class="hljs-property">@Patch</span>, <span class="hljs-string">"patches"</span>
     <span class="hljs-built_in">console</span>.log <span class="hljs-string">"reset: agents"</span>
-    <span class="hljs-property">@agents</span> = ABM.agents = <span class="hljs-keyword">new</span> ABM.Agents ABM.Agent, <span class="hljs-string">"agents"</span>
-    <span class="hljs-property">@links</span> = ABM.links = <span class="hljs-keyword">new</span> ABM.Links ABM.Link, <span class="hljs-string">"links"</span>
+    <span class="hljs-property">@agents</span> = <span class="hljs-keyword">new</span> <span class="hljs-property">@Agents</span> <span class="hljs-property">@Agent</span>, <span class="hljs-string">"agents"</span>
+    <span class="hljs-property">@links</span> = <span class="hljs-keyword">new</span> <span class="hljs-property">@Links</span> <span class="hljs-property">@Link</span>, <span class="hljs-string">"links"</span>
     u.s.spriteSheets.length = <span class="hljs-number">0</span> <span class="hljs-comment"># possibly null out entries?</span>
     <span class="hljs-built_in">console</span>.log <span class="hljs-string">"reset: setup"</span>
     <span class="hljs-property">@setup</span>()
@@ -839,11 +827,11 @@ Will advance the ticks/draws counters.</p>
         </li>
         
         
-        <li id="section-43">
+        <li id="section-45">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-43">&#182;</a>
+                <a class="pilcrow" href="#section-45">&#182;</a>
               </div>
               <h3 id="animation-">Animation.</h3>
 
@@ -852,11 +840,11 @@ Will advance the ticks/draws counters.</p>
         </li>
         
         
-        <li id="section-44">
+        <li id="section-46">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-44">&#182;</a>
+                <a class="pilcrow" href="#section-46">&#182;</a>
               </div>
               <p>Call the agentset draw methods if either the first draw call or
 their “refresh” flags are set.  The latter are simple optimizations
@@ -873,11 +861,11 @@ to avoid redrawing the same static scene. Called by animator.</p>
         </li>
         
         
-        <li id="section-45">
+        <li id="section-47">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-45">&#182;</a>
+                <a class="pilcrow" href="#section-47">&#182;</a>
               </div>
               <p>Creates a spotlight effect on an agent, so we can follow it throughout the model.
 Use:</p>
@@ -899,11 +887,11 @@ Use:</p>
         </li>
         
         
-        <li id="section-46">
+        <li id="section-48">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-46">&#182;</a>
+                <a class="pilcrow" href="#section-48">&#182;</a>
               </div>
               <h3 id="breeds">Breeds</h3>
 
@@ -912,11 +900,11 @@ Use:</p>
         </li>
         
         
-        <li id="section-47">
+        <li id="section-49">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-47">&#182;</a>
+                <a class="pilcrow" href="#section-49">&#182;</a>
               </div>
               <p>Three versions of NL’s <code>breed</code> commands.</p>
 <pre><code><span class="hljs-property">@patchBreeds</span> <span class="hljs-string">"streets buildings"</span>
@@ -926,7 +914,7 @@ Use:</p>
 <pre><code><span class="hljs-property">@streets</span> <span class="hljs-keyword">and</span> <span class="hljs-property">@buildings</span>
 <span class="hljs-property">@embers</span> <span class="hljs-keyword">and</span> <span class="hljs-property">@fires</span>
 <span class="hljs-property">@spokes</span> <span class="hljs-keyword">and</span> <span class="hljs-property">@rims</span> 
-</code></pre><p>These agentset’s <code>create</code> method create subclasses of Agent/Link.
+</code></pre><p>These agentsets’ <code>create</code> methods create subclasses of Agent/Link.
 Use of <breed>.setDefault methods work as for agents/links, creating default
 values for the breed set:</p>
 <pre><code><span class="hljs-property">@embers</span>.setDefault <span class="hljs-string">"color"</span>, [<span class="hljs-number">255</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>]
@@ -946,18 +934,18 @@ not usable due to the patches being prebuilt.  Stay tuned.</p>
       breeds.sets[b] = breed
       breeds.classes[<span class="hljs-string">"<span class="hljs-subst">#{b}</span>Class"</span>] = c
     breeds
-  <span class="hljs-attribute">patchBreeds</span>: <span class="hljs-function"><span class="hljs-params">(s)</span> -&gt;</span> <span class="hljs-property">@patches</span>.breeds = <span class="hljs-property">@createBreeds</span> s, ABM.Patch, ABM.Patches
-  <span class="hljs-attribute">agentBreeds</span>: <span class="hljs-function"><span class="hljs-params">(s)</span> -&gt;</span> <span class="hljs-property">@agents</span>.breeds  = <span class="hljs-property">@createBreeds</span> s, ABM.Agent, ABM.Agents
-  <span class="hljs-attribute">linkBreeds</span>:  <span class="hljs-function"><span class="hljs-params">(s)</span> -&gt;</span> <span class="hljs-property">@links</span>.breeds   = <span class="hljs-property">@createBreeds</span> s, ABM.Link,  ABM.Links</pre></div></div>
+  <span class="hljs-attribute">patchBreeds</span>: <span class="hljs-function"><span class="hljs-params">(s)</span> -&gt;</span> <span class="hljs-property">@patches</span>.breeds = <span class="hljs-property">@createBreeds</span> s, <span class="hljs-property">@Patch</span>, <span class="hljs-property">@Patches</span>
+  <span class="hljs-attribute">agentBreeds</span>: <span class="hljs-function"><span class="hljs-params">(s)</span> -&gt;</span> <span class="hljs-property">@agents</span>.breeds  = <span class="hljs-property">@createBreeds</span> s, <span class="hljs-property">@Agent</span>, <span class="hljs-property">@Agents</span>
+  <span class="hljs-attribute">linkBreeds</span>:  <span class="hljs-function"><span class="hljs-params">(s)</span> -&gt;</span> <span class="hljs-property">@links</span>.breeds   = <span class="hljs-property">@createBreeds</span> s, <span class="hljs-property">@Link</span>,  <span class="hljs-property">@Links</span></pre></div></div>
             
         </li>
         
         
-        <li id="section-48">
+        <li id="section-50">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-48">&#182;</a>
+                <a class="pilcrow" href="#section-50">&#182;</a>
               </div>
               <p>Utility for models to create agentsets from arrays.  Ex:</p>
 <pre><code>even = <span class="hljs-property">@asSet</span> (a <span class="hljs-keyword">for</span> a <span class="hljs-keyword">in</span> <span class="hljs-property">@agents</span> <span class="hljs-keyword">when</span> a.id % <span class="hljs-number">2</span> <span class="hljs-keyword">is</span> <span class="hljs-number">0</span>)
@@ -970,11 +958,11 @@ even.shuffle().getProp(<span class="hljs-string">"id"</span>) <span class="hljs-
         </li>
         
         
-        <li id="section-49">
+        <li id="section-51">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-49">&#182;</a>
+                <a class="pilcrow" href="#section-51">&#182;</a>
               </div>
               <p>A simple debug aid which places short names in the global name space.
 Note we avoid using the actual name, such as “patches” because this

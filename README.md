@@ -6,21 +6,21 @@ AgentScript is a minimalist Agent Based Modeling (ABM) framework based on [NetLo
 
 Currently the documentation is hosted directly on our [GitHub Pages](http://backspaces.github.io/agentscript) or directly from [agentscript.org](http://agentscript.org/) from the docco generated html found in the doc/ directory.
 
-[**util.coffee**](docs/1-util.html): is the base module for all of the miscellaneous functions used by the rest of the project.
+[**util.coffee**](docs/util.html): is the base module for all of the miscellaneous functions used by the rest of the project.
 
-[**shapes.coffee**](docs/2-shapes.html): is a simple agent shapes module containing the default shapes and a few functions for getting the named shapes and adding your own shapes.
+[**shapes.coffee**](docs/shapes.html): is a simple agent shapes module containing the default shapes and a few functions for getting the named shapes and adding your own shapes.
 
-[**agentset.coffee**](docs/3-agentset.html) AgentSet is the core Array subclass used by patches, agents, and links.
+[**agentset.coffee**](docs/agentset.html) AgentSet is the core Array subclass used by patches, agents, and links.
 
-[**patches.coffee**](docs/4-patches.html) The Agentset subclass for class Patches and class Patch which it manages.
+[**patches.coffee**](docs/patches.html) The Agentset subclass for class Patches and class Patch which it manages.
 
-[**agents.coffee**](docs/5-agents.html) The Agentset subclass for class Agents and class Agent which it manages.
+[**agents.coffee**](docs/agents.html) The Agentset subclass for class Agents and class Agent which it manages.
 
-[**links.coffee**](docs/6-links.html) The Agentset subclass for class Links and class Link which it manages.
+[**links.coffee**](docs/links.html) The Agentset subclass for class Links and class Link which it manages.
 
-[**model.coffee**](docs/7-model.html) is the top level integration for all the agentsets and is subclassed by all user models. 
+[**model.coffee**](docs/model.html) is the top level integration for all the agentsets and is subclassed by all user models.
 
-[**template.html**](docs/8-template.html) is a trivial subclass of Model showing the basic structure how you build your own models.  In addition, the models/ directory contains 10 simple models used in teaching NetLogo. You can [run the model here.](models/template.html) 
+[**template.html**](docs/template.html) is a trivial subclass of Model showing the basic structure how you build your own models.  In addition, the models/ directory contains 10 simple models used in teaching NetLogo. You can [run the model here.](models/template.html)
 
 #### Add-ons
 
@@ -28,37 +28,45 @@ The extras/ directory contains libraries that are too specialized to be in the c
 
 [**data.coffee**](docs/data.html) A 2D DataSet library for data best expressed as an array of numbers.  It includes the ability to treat Images as data, to parse GIS elevation .asc files, to create datasets from patch variables etc.  It includes analytic abilities like nearest neighbor and bilinear sampling, convolution with 3x3 kernels, and resampling datasets to different resolutions.
 
+[**data.tile.js**](docs/data.tile.html) An addon to the DataSet library for creating datasets from data tiles. It includes methods for embedding a [Leaflet](http://leafletjs.com) map, and for binding a dataset to tiles loaded by a Leaflet layer. See the [tiledroplets model](models/tiledroplets.html) for an example.
+
 [**fbui.coffee**](docs/fbui.html) A simple start at a User Interface abstraction, with JSON representing buttons, sliders, switches and menus.  Each item in the JSON tree modifies the state of the model, either directly by setting Model variables or indirectly by calling a method in class Model.
 
-[**as.dat.gui**](docs/as.dat.gui.html) A [dat.GUI](https://code.google.com/p/dat-gui/) based UI using the JSON tree mentioned above to specify the UI. This gives AgentScript a sophisticated HTML/CSS/JavaScript as well as the distributed fbui above.
+[**as.dat.gui.js**](docs/as.dat.gui.html) A [dat.GUI](https://code.google.com/p/dat-gui/) based UI using the JSON tree mentioned above to specify the UI. This gives AgentScript a sophisticated HTML/CSS/JavaScript as well as the distributed fbui above. See the [flock model](models/flock.html) for an example.
 
-[**mouse.coffee**](docs/mouse.html) A trivial event based interface to the mouse, mainly for direct interaction with the model's graphic layers.  It converts the mouse raw coordinates into patch coordinates.
+[**mouse.coffee**](docs/mouse.html) A trivial event based interface to the mouse, mainly for direct interaction with the model's graphic layers.  It converts raw mouse coordinates into patch coordinates.
 
 #### Sample Models
 
-The models/ directory contains tiny models used to test the system and offer examples to get started with.  These also are our our GitHub pages.  They usually print to the console.log, so opening the developer's JavaScript console will show model information.
+The models/ directory contains tiny models used both as unit tests and as examples to get started with.  They usually print to the console.log, so opening the developer's JavaScript console will show model information.
 
-[**ants.html**](models/ants.html) Ant foraging with nest and food pheromone diffusion. 
+[**ants.html**](models/ants.html) A model of ant foraging behavior incorporating a nest location and food pheromone diffusion.
 
 [**buttons.html**](models/buttons.html) Stuart Kauffman's example of randomly connecting pairs of buttons in a pile resulting in a tipping point.
 
 [**diffusion.html**](models/diffusion.html) Agents randomly flying on a patch grid dropping a color which is diffused over the grid.
 
-[**fire.html**](models/fire.html) A CA based spread of fire showing burn behavior.
+[**fire.html**](models/fire.html) A CA (cellular automata) based model of fire spreading and burn behavior.
 
-[**flock.html**](models/flock.html) The classic "boids" model where agents use three simple rules resulting in realistic flocking.
+[**flock.html**](models/flock.html) The classic "boids" model where agents each follow three simple rules resulting in realistic flocking. This example uses the as.dat.gui.js extra.
 
-[**gridpath.html**](models/gridpath.html) One of Knuth's great puzzles on the probability of all Manhattan  traversals diagonally traversing a grid.
+[**headlessflock.html**](models/headlessflock.html) The same classic "boids" model as above, only this time agents are rendered as DOM elements instead of being drawn to a canvas.
+
+[**gridpath.html**](models/gridpath.html) One of Knuth's great puzzles on the probability of all Manhattan traversals diagonally traversing a grid.
 
 [**linktravel.html**](models/linktravel.html) Agents traversing a graph of nodes and links.
 
-[**nbody.html**](models/nbody.html) Nonlinear gravitation of n bodies.
+[**nbody.html**](models/nbody.html) A simulation of the nonlinear gravitation of n bodies.
 
-[**prefattach.html**](models/prefattach.html) Example of a dynamic graph with new links preferentially attaching to nodes with most links.  This results in a power-law distribution.
+[**prefattach.html**](models/prefattach.html) An example of a dynamic graph where new links preferentially attach to the nodes that have the most links.  This results in a power-law distribution.
 
 [**tspga.html**](models/tspga.html) A Traveling Sales Person solution via a Genetic Algorithm showing the rapid conversion of stochastic methods.
 
-[**droplets.html**](models/droplets.html) A simple GIS model based on ESRI asc elevation file with droplets agents which seek lowest elevation. Uses the data.js extension.
+[**droplets.html**](models/droplets.html) A simple GIS model based on an ESRI asc elevation file where droplet agents seek low-elevation patches. This example uses the data.js extra.
+
+[**tiledroplets.html**](models/tiledroplets.html) A model similar to the above droplets.html, but here the droplets move on top of a Leaflet map, and elevation data is loaded from a tileserver as the map is panned. This example uses the data.js, data.tile.js, and as.dat.gui.js extras.
+
+[**life.html**](models/life.html) An implementation of [Conway's Game of Life](http://en.wikipedia.org/wiki/Conway's_Game_of_Life) with a twist. This example demonstrates running multiple models on the same page and uses a small as.dat.gui.js interface.
 
 #### Sample Models Format
 
@@ -72,7 +80,14 @@ Our example models use CoffeeScript directly within the browser via `text/coffee
           <script type="text/coffeescript">
           class MyModel extends ABM.Model
                 ...
-          model = new MyModel "layers", 13, -16, 16, -16, 16
+          model = new MyModel {
+            div: "layers",
+            size: 6,
+            minX: -40,
+            maxX: 40,
+            minY: -40,
+            maxY: 40
+          }
                 ...
           </script>
         </head>
@@ -81,7 +96,7 @@ Our example models use CoffeeScript directly within the browser via `text/coffee
         </body>
       </html>
 
-You may see this by running a sample model, then use the browser's View Page Source.
+You can see this by running a sample model, then using the browser's View Page Source.
 
 Often the models will print to the "JavaScript console" while they run.
 
@@ -93,7 +108,7 @@ Class Model is an "abstract class" with three abscract methods:
     setup()   Called during startup and by Model.reset()
     step()    Called by animator to advance the model one step
 
-CoffeeScript modelers simply subclass ABM.Model, supplying the three abstract methods.  All the sample models do this, as does the docs/ template example.
+CoffeeScript modelers simply subclass ABM.Model, supplying the three abstract methods.  All the sample models do this, including the docs/ template example.
 
 JavaScript modelers can simply replace the empty ABM.Model abstract methods:
 
@@ -104,41 +119,36 @@ JavaScript modelers can simply replace the empty ABM.Model abstract methods:
       ABM.Model.prototype.step = function () {...};
 
       // Startup like CoffeeScript examples
-      var model = new ABM.Model("layers", 13, -16, 16, -16, 16, true)
-        .debug() // Debug: Put Model vars in global name space
-        .start();
+      var model = new MyModel({
+        div: "layers",
+        size: 6,
+        minX: -40,
+        maxX: 40,
+        minY: -40,
+        maxY: 40
+      })
+      .debug() // Debug: Put Model vars in global name space
+      .start();
     }
 
 See [sketches/jsmodel.html](sketches/jsmodel.html) for a random walker in JavaScript.  We'll also have more of our models/ converted to JavaScript in the future.
 
 
 #### Files
-    
-    Cakefile            cake file for build, docs etc.
+
+    Gulpfile.js         Gulp file for build, docs etc.
     LICENSE             GPLv3 License
     README.md           This file
     package.json        NPM Package file, see npm install below
     docs/               Docco documentation
     extras/             AgentScript extensions
-    lib/                All .js/min.js and .map files
+    lib/                All .js/min.js files
     models/             Sample models
     sketches/           Very simple models showing gist-like hints
     src/                Component .coffee files for agentscript.coffee
     tools/              coffee-script.js and others
-    
+
 #### Build
-
-Cake is used to build agentscript.coffee from individual source files, and to compile into lib/ as agentscript.js, agentscript.min.js, and agentscript.map.  The map file allows debugging in Chrome via CoffeeScript source.
-
-The "extras" are libraries that augment agentscript and are individually compiled into lib/ as .js, .min.js, and .map files by Cake.  Here are the primary cake tasks:
-
-    watch         # Watch for source file updates, invoke builds
-    all           # Compile coffee, minify js, create docs
-    git:diff      # git diff the core and extras .coffee files
-    git:prep      # cake all; git add/status
-    git:commit    # commit locally, push to github
-    git:pages     # checkout gh-pages, merge master, push to gh-pages, checkout master
-
 
 If you are forking/pulling agentscript, install the dev dependencies with
 
@@ -146,26 +156,60 @@ If you are forking/pulling agentscript, install the dev dependencies with
 
 and build with
 
-    node build.js all
+    npm run all
 
-We're currently using [coffeescript](http://jashkenas.github.io/coffee-script/extras/coffee-script.js), [shelljs](https://github.com/arturadib/shelljs), [uglifyjs](https://github.com/mishoo/UglifyJS), and optionally [docco](http://jashkenas.github.io/docco/).
+We're currently using [gulp](http://gulpjs.com/), along with several plugins:
 
-All forked repos must be aware that we have a gh-pages branch.  This somewhat complicates the build workflow.  You should also make sure you are in the master at all times; our cake tasks should take care of all gh-pages branch usage.
+    ls node_modules/
 
-Before any commit, please make sure all the models work as expected, they are our "unit tests".  We'll be adding more, smaller tests, soon. Similarly make sure the docco files display correctly.  They can be built with "cake all" or "cake doc". Note that all single line comments are converted into docs, using Markdown.  Be careful not to mistakenly add a "code" comment to the docs!
+We rely on no globally installed npm modules.  We recommend you do *not* globally install gulp ([local/global discussion]( http://goo.gl/OhdWvO)).
 
-Pull requests will be accepted without your building your own gh-pages as long as both the tests run and the README.md runs OK locally.  Generally the test models and docs will run locally with a file:// url but http://localhost is safer.  Sublime/Textmate markdown viewers should work for this.
+There are two ways to run tasks:
+
+* NPM: run build commands via the npm scripts installed in package.json.  For example,
+
+        npm run docs
+
+    will create the documentation from the source files.  This is equivalent to "gulp docs".  See the "scripts" section of package.json for all "npm run" commands.
+
+* Gulp: run gulp commands directly.  If gulp is not installed globally (our default) you can easily run gulp by including "./node_modules/.bin" in your PATH or by calling it directly with `./node_modules/.bin/gulp`.  To see the available gulp tasks, simply run "gulp" which will list them.
+
+Gulp is used to compile src/ and extras/ into lib/ as .js and .min.js source. We allow both .js and .coffee in our project.  We currently do not provide sourcemaps for the .coffee files.
+
+Our primary tasks are run via `npm run <task>` where tasks are:
+
+    watch         # Watch for source file updates, invoke build
+    build         # compile and minify src/ and extras/ to lib/
+    docs          # use docco on sources to create docs/
+    all           # Compile coffee, minify js, create docs
+
+We also have a few git tasks:
+
+    git-diff      # git diff the core files
+    git-prep      # build all, git add ., git status
+    git-commit    # git commit, push to github
+    git-pages     # checkout gh-pages, merge master, push to gh-pages, checkout master
+
+
+
+#### Contribute
+
+Before any commit, please make sure all the models work as expected; they are our "unit tests."  We'll be adding more, smaller tests, soon.  Generally the test models will run locally with a file:// url, but http://localhost is safer.
+
+Similarly, make sure the docco files display correctly.  They can be built with `npm run docs`.  Use your browser on docs/ to test.  Note that all single line comments are converted into docs using Markdown.  Be careful not to mistakenly add a "code" comment to the docs!
+
+Pull requests will be accepted without your building your own gh-pages as long as the tests run OK locally.  However, if you want to be awesome, once your pull request is accepted, merge your changes into the gh-pages branch, update the README.md, and send another pull request!
 
 The typical workflow looks like:
 
-* cake watch - compile coffee files when they change.
-* cake all - compile & minify all code, create docs. Done before git add to insure everything is ready for git.
-* cake git:diff - diff all source and related files.  Good for creating complete commit comments.
-* cake git:prep - in master, invokes "cake all", git add ., git status.  Used prior to commiting, stages all files.  Remember to git rm any files that are removed so that remote correctly sync'ed.
-* cake git:commit - in master, commit locally and push to github
-* cake git:pages - checkout gh-pages branch, merge master, push to github, change back to master.
+* npm run watch - process files when they change.
+* npm run all - compile & minify all code, create docs. Done before git add to insure everything is ready for git.
+* npm run git-diff - diff all source and related files.  Good for creating complete commit comments. You may want to pipe this into your editor.
+* npm run git-prep - in master, invokes "gulp all", git add ., git status.  Used prior to commiting, stages all files.  Remember to git rm any files that are removed so that remote correctly sync'ed.
+* npm run git-commit - in master, commit locally and push to github
+* npm run git-pages - checkout gh-pages branch, merge master, push to github, change back to master.
 
-The git:pages task should be run with no watch task running, otherwise unintential compiles will occur with changing to the gh-pages branch.  Similarly, be careful your editor isn't confused by the gh-pages change .. it completely changes your working directory.  The cake git:pages task will warn you to be careful, prompting for a go-ahead.
+The git:pages task should be run with no watch task running, otherwise unintentional compiles will occur when changing to the gh-pages branch, bummer!  Similarly, be careful your editor isn't confused by the gh-pages change .. it completely changes your working directory twice!
 
 
 #### License

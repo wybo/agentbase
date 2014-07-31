@@ -11,42 +11,6 @@
   <div id="container">
     <div id="background"></div>
     
-      <ul id="jump_to">
-        <li>
-          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
-          <a class="small" href="javascript:void(0);">+</a>
-          <div id="jump_wrapper">
-          <div id="jump_page">
-            
-              
-              <a class="source" href="as.dat.gui.html">
-                as.dat.gui.js
-              </a>
-            
-              
-              <a class="source" href="data.html">
-                data.coffee
-              </a>
-            
-              
-              <a class="source" href="data.tile.html">
-                data.tile.js
-              </a>
-            
-              
-              <a class="source" href="fbui.html">
-                fbui.coffee
-              </a>
-            
-              
-              <a class="source" href="mouse.html">
-                mouse.coffee
-              </a>
-            
-          </div>
-        </li>
-      </ul>
-    
     <ul class="sections">
         
           <li id="title">
@@ -79,12 +43,13 @@ See: <a href="http://goo.gl/dq0nN">addEventListener</a></p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-2">&#182;</a>
               </div>
-              <p>Create and start mouse obj, args: name of div, and a callback method.</p>
+              <p>Create and start mouse obj, args: a model, and a callback method.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@div</span>, <span class="hljs-property">@callback</span>)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@model</span>, <span class="hljs-property">@callback</span>)</span> -&gt;</span>
     <span class="hljs-property">@lastX</span>=Infinity; <span class="hljs-property">@lastY</span>=Infinity
+    <span class="hljs-property">@div</span> = <span class="hljs-property">@model</span>.div
     <span class="hljs-property">@start</span>()</pre></div></div>
             
         </li>
@@ -133,7 +98,7 @@ more standard down/up enabling move events.</p>
   <span class="hljs-attribute">setXY</span>: <span class="hljs-function"><span class="hljs-params">(e)</span> -&gt;</span>
     <span class="hljs-property">@lastX</span> = <span class="hljs-property">@x</span>; <span class="hljs-property">@lastY</span> = <span class="hljs-property">@y</span>
     <span class="hljs-property">@pixX</span> = e.offsetX; <span class="hljs-property">@pixY</span> = e.offsetY
-    [<span class="hljs-property">@x</span>, <span class="hljs-property">@y</span>] = ABM.patches.pixelXYtoPatchXY(<span class="hljs-property">@pixX</span>,<span class="hljs-property">@pixY</span>)
+    [<span class="hljs-property">@x</span>, <span class="hljs-property">@y</span>] = <span class="hljs-property">@model</span>.patches.pixelXYtoPatchXY(<span class="hljs-property">@pixX</span>,<span class="hljs-property">@pixY</span>)
     <span class="hljs-property">@moved</span> = (<span class="hljs-property">@x</span> <span class="hljs-keyword">isnt</span> <span class="hljs-property">@lastX</span>) <span class="hljs-keyword">or</span> (<span class="hljs-property">@y</span> <span class="hljs-keyword">isnt</span> <span class="hljs-property">@lastY</span>)
     <span class="hljs-property">@callback</span>(e) <span class="hljs-keyword">if</span> <span class="hljs-property">@callback</span>?</pre></div></div>
             

@@ -12,7 +12,7 @@
         @refreshPatches = @refreshAgents = @refreshLinks = false
         @hsbList = []
         @exponent = NaN
-        @mouse = new ABM.Mouse @div
+        @mouse = new ABM.Mouse @
     
       step: -> # Called by animator
         if @mouse.down and @patches.minX < @mouse.x < @patches.maxX
@@ -28,7 +28,7 @@
 
       setHSBlist: ->
         @hsbList = []
-        @exponent = u.ln(0.5) / u.ln(@mouse.x/@patches.maxX)
+        @exponent = Math.log(0.5) / Math.log(@mouse.x/@patches.maxX)
         len = 220 # use 220 instead of 255 to lop off red in the high hue values
         for i in [1..len] # Note: "unshift" is push to the front, rather than end of array.
           x = (len - @hsbList.length)/len

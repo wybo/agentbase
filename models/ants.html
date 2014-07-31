@@ -35,8 +35,6 @@
         @wiggleAngle = u.degToRad(30) # radians
 
         if @agents.useSprites
-          # @nestSprite = ABM.shapes.shapeToSprite "bug", @nestColor, 3*@patches.size
-          # @foodSprite = ABM.shapes.shapeToSprite "bug", @foodColor, 3*@patches.size
           @nestSprite = ABM.shapes.shapeToSprite "bug", @nestColor, @patches.toBits 3
           @foodSprite = ABM.shapes.shapeToSprite "bug", @foodColor, @patches.toBits 3
         
@@ -121,7 +119,7 @@
 
     # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors
     #   Defaults: 13, -16, 16, -16, 16, false, true
-    model = new MyModel {
+    window.model = new MyModel {
       div: "layers",
       size: 6,
       minX: -40,

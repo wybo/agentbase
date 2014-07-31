@@ -7,14 +7,14 @@
 # its created instances.  It also provides, much like the **ABM.util**
 # module, many methods shared by all subclasses of AgentSet.
 #
-# ABM contains three agentsets created by class Model:
+# A model contains three agentsets:
 #
-# * `ABM.patches`: the model's "world" grid
-# * `ABM.agents`: the model's agents living on the patchs
-# * `ABM.links`: the network links connecting agent pairs
+# * `patches`: the model's "world" grid
+# * `agents`: the model's agents living on the patches
+# * `links`: the network links connecting agent pairs
 #
 # See NetLogo [documentation](http://ccl.northwestern.edu/netlogo/docs/)
-# for explanation on the overall semantics of Agent Based Modeling
+# for explanation of the overall semantics of Agent Based Modeling
 # used by AgentSets as well as Patches, Agents, and Links.
 #
 # Note: subclassing `Array` can be dangerous and we may have to convert
@@ -31,7 +31,7 @@ class ABM.AgentSet extends Array
   # It is primarily used to turn a comprehension into an AgentSet instance
   # which then gains access to all the methods below.  Ex:
   #
-  #     evens = (a for a in ABM.agents when a.id % 2 is 0)
+  #     evens = (a for a in @model.agents when a.id % 2 is 0)
   #     ABM.AgentSet.asSet(evens)
   #     randomEven = evens.oneOf()
   @asSet: (a, setType = ABM.AgentSet) ->
@@ -74,7 +74,7 @@ class ABM.AgentSet extends Array
 
   # Remove an agent from the agentset, returning the agentset.
   # Note this does not change ID, thus an
-  # agentset can have gaps in terms of their id's. Assumes set is
+  # agentset can have gaps in terms of their ids. Assumes set is
   # sorted by `id`. If the set is one created by `asSet`, and the original
   # array is unsorted, simply call `sortById` first, see `sortById` below.
   #
@@ -85,7 +85,7 @@ class ABM.AgentSet extends Array
     u.removeItem @, o
     @
 
-  # Set the default value of a agent class, return agetnset
+  # Set the default value of an agent class, return agentset
   setDefault: (name, value) -> @agentClass::[name] = value; @
   # Declare variables of an agent class. 
   # Vars = a string of space separated names or an array of name strings
@@ -114,27 +114,32 @@ class ABM.AgentSet extends Array
     breeds = breeds.split(" ")
     @asSet (o for o in @ when o.breed.name not in breeds)
 
-  # Recursive floodfill:
-  # Arguments:
+  # Floodfill arguments:
   #
-  # * aset: Initial array of agents, often a single agent: [a]
-  # * fCandidate(a) -> true if a is elegible to be added to the set.
-  # * fJoin(a, lastSet) -> adds a to the agentset, usually by setting a variable
+  # * aset: initial array of agents, often a single agent: [a]
+  # * fCandidate(a, asetLast) -> true if a is elegible to be added to the set
+  # * fJoin(a, asetLast) -> adds a to the agentset, usually by setting a variable
+  # * fCallback(asetLast, asetNext) -> optional function to be called each iteration of floodfill;
+  # if fCallback returns true, the flood is aborted
   # * fNeighbors(a) -> returns the neighbors of this agent
-  # * asetLast: the array of the last set of agents to join the set.
-  #
-  # asetLast generally [] but can used if the join function uses the prior
-  # agents for a distance calculation, for example.
-  #
-  floodFill: (aset, fCandidate, fJoin, fNeighbors, asetLast=[]) ->
+  # * asetLast: the array of the last set of agents to join the flood;
+  # gets passed into fJoin, fCandidate, and fCallback
+  floodFill: (aset, fCandidate, fJoin, fCallback, fNeighbors, asetLast=[]) ->
+    floodFunc = @floodFillOnce(aset, fCandidate, fJoin, fCallback, fNeighbors, asetLast)
+    floodFunc = floodFunc() while floodFunc
+
+  # Move one step forward in a floodfill. floodFillOnce() returns a function that performs the next step of the flood.
+  # This is useful if you want to watch your flood progress as an animation.
+  floodFillOnce: (aset, fCandidate, fJoin, fCallback, fNeighbors, asetLast=[]) ->
     fJoin p, asetLast for p in aset
     asetNext = []
     for p in aset
-      for n in fNeighbors(p) when fCandidate n
+      for n in fNeighbors(p) when fCandidate n, aset
         asetNext.push n if asetNext.indexOf(n) < 0
-    @floodFill asetNext, fCandidate, fJoin, fNeighbors, aset if asetNext.length > 0
-
-    
+    stopEarly = fCallback and fCallback(aset, asetNext)
+    if stopEarly or asetNext.length is 0 then return null
+    else return () =>
+      @floodFillOnce asetNext, fCandidate, fJoin, fCallback, fNeighbors, aset
   
   # Remove adjacent duplicates, by reference, in a sorted agentset.
   # Use `sortById` first if agentset not sorted.
@@ -162,7 +167,7 @@ class ABM.AgentSet extends Array
   # Return an array of a property of the agentset
   #
   #      AS.getProp "x" # [0, 8, 6, 1, 1]
-  getProp: (prop) -> o[prop] for o in @
+  getProp: (prop) -> ABM.util.aProp(@, prop)
 
   # Return an array of agents with the property equal to the given value
   #
@@ -263,20 +268,20 @@ class ABM.AgentSet extends Array
   
   # Show/Hide all of an agentset or breed.
   # To show/hide an individual object, set its prototype: o.hidden = bool
-  show: -> o.hidden = false for o in @; @draw(ABM.contexts[@name])
-  hide: -> o.hidden = true for o in @; @draw(ABM.contexts[@name])
+  show: -> o.hidden = false for o in @; @draw(@model.contexts[@name])
+  hide: -> o.hidden = true for o in @; @draw(@model.contexts[@name])
 
 # ### Topology
   
-  # For ABM.patches & ABM.agents which have x,y. See ABM.util doc.
+  # For patches & agents, which have x,y. See ABM.util doc.
   #
   # Return all agents in agentset within d distance from given object.
   # By default excludes the given object. Uses linear/torus distance
   # depending on patches.isTorus, and patches width/height if needed.
   inRadius: (o, d, meToo=false) -> # for any objects w/ x,y
     d2 = d*d; x=o.x; y=o.y
-    if ABM.patches.isTorus
-      w=ABM.patches.numX; h=ABM.patches.numY
+    if @model.patches.isTorus
+      w=@model.patches.numX; h=@model.patches.numY
       @asSet (a for a in @ when \
         u.torusSqDistance(x,y,a.x,a.y,w,h)<=d2 and (meToo or a isnt o))
     else
@@ -287,8 +292,8 @@ class ABM.AgentSet extends Array
   inCone: (o, heading, cone, radius, meToo=false) ->
     rSet = @inRadius o, radius, meToo
     x=o.x; y=o.y
-    if ABM.patches.isTorus
-      w=ABM.patches.numX; h=ABM.patches.numY
+    if @model.patches.isTorus
+      w=@model.patches.numX; h=@model.patches.numY
       @asSet (a for a in rSet when \
         (a is o and meToo) or u.inTorusCone(heading,cone,radius,x,y,a.x,a.y,w,h))
     else
@@ -307,7 +312,7 @@ class ABM.AgentSet extends Array
   #     AS.with("o.x<5").ask("o.x=o.x+1")
   #     AS.getProp("x") # [2, 8, 6, 3, 3]
   #
-  #     ABM.agents.with("o.id<100").ask("o.color=[255,0,0]")
+  #     myModel.agents.with("o.id<100").ask("o.color=[255,0,0]")
   ask: (f) -> 
     eval("f=function(o){return "+f+";}") if u.isString f
     f(o) for o in @; @
