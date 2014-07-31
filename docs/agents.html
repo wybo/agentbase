@@ -88,6 +88,7 @@ This can be a huge savings in memory.</p>
   <span class="hljs-attribute">x</span>: <span class="hljs-number">0</span>; <span class="hljs-attribute">y</span>:<span class="hljs-number">0</span>; <span class="hljs-attribute">p</span>: <span class="hljs-literal">null</span>  <span class="hljs-comment"># my location and the patch I'm on</span>
   <span class="hljs-attribute">size</span>: <span class="hljs-number">1</span>             <span class="hljs-comment"># my size in patch coords</span>
   <span class="hljs-attribute">color</span>: <span class="hljs-literal">null</span>         <span class="hljs-comment"># default color, overrides random color if set</span>
+  <span class="hljs-attribute">strokeColor</span>: <span class="hljs-literal">null</span>   <span class="hljs-comment"># color of the border of an agent</span>
   <span class="hljs-attribute">shape</span>: <span class="hljs-string">"default"</span>    <span class="hljs-comment"># my shape</span>
   <span class="hljs-attribute">hidden</span>: <span class="hljs-literal">false</span>       <span class="hljs-comment"># draw me?</span>
   <span class="hljs-attribute">label</span>: <span class="hljs-literal">null</span>         <span class="hljs-comment"># my text</span>
@@ -236,7 +237,7 @@ using patch topology (isTorus)</p>
       <span class="hljs-property">@setSprite</span>() <span class="hljs-keyword">unless</span> <span class="hljs-property">@sprite</span>? <span class="hljs-comment"># lazy evaluation of useSprites</span>
       ABM.shapes.drawSprite ctx, <span class="hljs-property">@sprite</span>, <span class="hljs-property">@x</span>, <span class="hljs-property">@y</span>, <span class="hljs-property">@size</span>, rad
     <span class="hljs-keyword">else</span>
-      ABM.shapes.draw ctx, shape, <span class="hljs-property">@x</span>, <span class="hljs-property">@y</span>, <span class="hljs-property">@size</span>, rad, <span class="hljs-property">@color</span>
+      ABM.shapes.draw ctx, shape, <span class="hljs-property">@x</span>, <span class="hljs-property">@y</span>, <span class="hljs-property">@size</span>, rad, <span class="hljs-property">@color</span>, <span class="hljs-property">@strokeColor</span>
     <span class="hljs-keyword">if</span> <span class="hljs-property">@label</span>?
       [x,y] = <span class="hljs-property">@model</span>.patches.patchXYtoPixelXY <span class="hljs-property">@x</span>, <span class="hljs-property">@y</span>
       u.ctxDrawText ctx, <span class="hljs-property">@label</span>, x+<span class="hljs-property">@labelOffset</span>[<span class="hljs-number">0</span>], y+<span class="hljs-property">@labelOffset</span>[<span class="hljs-number">1</span>], <span class="hljs-property">@labelColor</span></pre></div></div>
@@ -256,11 +257,10 @@ using patch topology (isTorus)</p>
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">setSprite</span>: <span class="hljs-function"><span class="hljs-params">(sprite)</span>-&gt;</span>
     <span class="hljs-keyword">if</span> (s=sprite)?
-      <span class="hljs-property">@sprite</span> = s; <span class="hljs-property">@color</span> = s.color; <span class="hljs-property">@shape</span> = s.shape; <span class="hljs-property">@size</span> = s.size
+      <span class="hljs-property">@sprite</span> = s; <span class="hljs-property">@color</span> = s.color; <span class="hljs-property">@strokeColor</span> = s.strokeColor; <span class="hljs-property">@shape</span> = s.shape; <span class="hljs-property">@size</span> = s.size
     <span class="hljs-keyword">else</span>
       <span class="hljs-property">@color</span> = u.randomColor <span class="hljs-keyword">unless</span> <span class="hljs-property">@color</span>?
-      bits = <span class="hljs-property">@model</span>.patches.toBits <span class="hljs-property">@size</span>
-      <span class="hljs-property">@sprite</span> = ABM.shapes.shapeToSprite <span class="hljs-property">@shape</span>, <span class="hljs-property">@color</span>, bits</pre></div></div>
+      <span class="hljs-property">@sprite</span> = ABM.shapes.shapeToSprite <span class="hljs-property">@shape</span>, <span class="hljs-property">@color</span>, <span class="hljs-property">@model</span>.patches.toBits(<span class="hljs-property">@size</span>), <span class="hljs-property">@strokeColor</span></pre></div></div>
             
         </li>
         

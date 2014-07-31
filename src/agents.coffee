@@ -32,6 +32,7 @@ class ABM.Agent
   x: 0; y:0; p: null  # my location and the patch I'm on
   size: 1             # my size in patch coords
   color: null         # default color, overrides random color if set
+  strokeColor: null   # color of the border of an agent
   shape: "default"    # my shape
   hidden: false       # draw me?
   label: null         # my text
@@ -96,7 +97,7 @@ class ABM.Agent
       @setSprite() unless @sprite? # lazy evaluation of useSprites
       ABM.shapes.drawSprite ctx, @sprite, @x, @y, @size, rad
     else
-      ABM.shapes.draw ctx, shape, @x, @y, @size, rad, @color
+      ABM.shapes.draw ctx, shape, @x, @y, @size, rad, @color, @strokeColor
     if @label?
       [x,y] = @model.patches.patchXYtoPixelXY @x, @y
       u.ctxDrawText ctx, @label, x+@labelOffset[0], y+@labelOffset[1], @labelColor
@@ -104,12 +105,11 @@ class ABM.Agent
   # Set an individual agent's sprite, synching its color, shape, size
   setSprite: (sprite)->
     if (s=sprite)?
-      @sprite = s; @color = s.color; @shape = s.shape; @size = s.size
+      @sprite = s; @color = s.color; @strokeColor = s.strokeColor; @shape = s.shape; @size = s.size
     else
       @color = u.randomColor unless @color?
-      bits = @model.patches.toBits @size
-      @sprite = ABM.shapes.shapeToSprite @shape, @color, bits
-    
+      @sprite = ABM.shapes.shapeToSprite @shape, @color, @model.patches.toBits(@size), @strokeColor
+
   # Draw the agent on the drawing layer, leaving permanent image.
   stamp: -> @draw @model.drawing
   
