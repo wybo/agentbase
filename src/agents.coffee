@@ -46,10 +46,10 @@ class ABM.Agent
   links: null         # array of links to/from me as an endpoint; init by ctor
   constructor: -> # called by agentSets create factory, not user
     @x = @y = 0
-    @p = ABM.patches.patch @x, @y
+    @p = @model.patches.patch @x, @y
     @color = u.randomColor() unless @color? # promote color if default not set
     @heading = u.randomFloat(Math.PI*2) unless @heading? 
-    @p.agents.push @ if @p.agents? # ABM.patches.cacheAgentsHere
+    @p.agents.push @ if @p.agents? # @model.patches.cacheAgentsHere
     @links = [] if @cacheLinks
 
   # Set agent color to `c` scaled by `s`. Usage: see patch.scaleColor
@@ -64,16 +64,16 @@ class ABM.Agent
   # using patch topology (isTorus)
   setXY: (x, y) -> # REMIND GC problem, 2 arrays
     [x0, y0] = [@x, @y] if @penDown
-    [@x, @y] = ABM.patches.coord x, y
+    [@x, @y] = @model.patches.coord x, y
     p = @p
-    @p = ABM.patches.patch @x, @y
-    if p.agents? and p isnt @p # ABM.patches.cacheAgentsHere 
+    @p = @model.patches.patch @x, @y
+    if p.agents? and p isnt @p # @model.patches.cacheAgentsHere 
       u.removeItem p.agents, @
       @p.agents.push @
     if @penDown
-      drawing = ABM.drawing
+      drawing = @model.drawing
       drawing.strokeStyle = u.colorStr @color
-      drawing.lineWidth = ABM.patches.fromBits @penSize
+      drawing.lineWidth = @model.patches.fromBits @penSize
       drawing.beginPath()
       drawing.moveTo x0, y0; drawing.lineTo x, y # REMIND: euclidean
       drawing.stroke()
@@ -99,7 +99,7 @@ class ABM.Agent
     else
       ABM.shapes.draw ctx, shape, @x, @y, @size, rad, @color, @strokeColor
     if @label?
-      [x,y] = ABM.patches.patchXYtoPixelXY @x, @y
+      [x,y] = @model.patches.patchXYtoPixelXY @x, @y
       u.ctxDrawText ctx, @label, x+@labelOffset[0], y+@labelOffset[1], @labelColor
   
   # Set an individual agent's sprite, synching its color, shape, size
@@ -108,16 +108,16 @@ class ABM.Agent
       @sprite = s; @color = s.color; @strokeColor = s.strokeColor; @shape = s.shape; @size = s.size
     else
       @color = u.randomColor unless @color?
-      @sprite = ABM.shapes.shapeToSprite @shape, @color, @size, @strokeColor
-    
+      @sprite = ABM.shapes.shapeToSprite @shape, @color, @model.patches.toBits(@size), @strokeColor
+
   # Draw the agent on the drawing layer, leaving permanent image.
-  stamp: -> @draw ABM.drawing
+  stamp: -> @draw @model.drawing
   
   # Return distance in patch coords from me to x,y 
   # using patch topology (isTorus)
   distanceXY: (x,y) ->
-    if ABM.patches.isTorus
-    then u.torusDistance @x, @y, x, y, ABM.patches.numX, ABM.patches.numY
+    if @model.patches.isTorus
+    then u.torusDistance @x, @y, x, y, @model.patches.numX, @model.patches.numY
     else u.distance @x, @y, x, y
   
   # Return distance in patch coords from me to given agent/patch using patch topology.
@@ -128,7 +128,7 @@ class ABM.Agent
   # Used internally to determine how to draw links between two agents.
   # See util.torusPt.
   torusPtXY: (x, y) ->
-    u.torusPt @x, @y, x, y, ABM.patches.numX, ABM.patches.numY
+    u.torusPt @x, @y, x, y, @model.patches.numX, @model.patches.numY
 
   # Return the closest torus topology point of given agent/patch 
   # relative to myself. See util.torusPt.
@@ -140,7 +140,7 @@ class ABM.Agent
 
   # Return heading towards x,y using patch topology.
   towardsXY: (x, y) ->
-    if (ps=ABM.patches).isTorus
+    if (ps=@model.patches).isTorus
     then u.torusRadsToward @x, @y, x, y, ps.numX, ps.numY
     else u.radsToward @x, @y, x, y
 
@@ -157,7 +157,7 @@ class ABM.Agent
   canMove: (d) -> @patchAhead(d)?
   patchAt: (dx,dy) ->
     x=@x+dx; y=@y+dy
-    if (ps=ABM.patches).isOnWorld x,y then ps.patch x,y else null
+    if (ps=@model.patches).isOnWorld x,y then ps.patch x,y else null
   
   # Remove myself from the model.  Includes removing myself from the agents
   # agentset and removing any links I may have.
@@ -169,7 +169,7 @@ class ABM.Agent
 
   # Factory: create num new agents at this agents location. The optional init
   # proc is called on the new agent after inserting in its agentSet.
-  hatch: (num = 1, breed = ABM.agents, init = ->) ->
+  hatch: (num = 1, breed = @model.agents, init = ->) ->
     breed.create num, (a) => # fat arrow so that @ = this agent
       a.setXY @x, @y # for side effects like patches.agentsHere
       a[k] = v for own k, v of @ when k isnt "id"    
@@ -185,7 +185,7 @@ class ABM.Agent
 
   # Return all links linked to me
   myLinks: ->
-    @links ? (l for l in ABM.links when (l.end1 is @) or (l.end2 is @))
+    @links ? (l for l in @model.links when (l.end1 is @) or (l.end2 is @))
   
   # Return all agents linked to me.
   linkNeighbors: -> # return all agents linked to me
@@ -244,7 +244,7 @@ class ABM.Agents extends ABM.AgentSet
   
   # Return an agentset of agents within the patchRect
   inRect: (a, dx, dy, meToo=false) ->
-    rect = ABM.patches.patchRect a.p, dx, dy, true
+    rect = @model.patches.patchRect a.p, dx, dy, true
     rect = @inPatches rect
     u.removeItem rect, a unless meToo
     rect

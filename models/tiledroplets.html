@@ -1,178 +1,182 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Raindrops on a tile dataset</title>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raindrops on a tile dataset</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css" />
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css" />
 
-	<script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
-	<script src="../tools/dat.gui.min.js"></script>
-	
-	<script src="../lib/agentscript.js"></script>
-	<script src="../lib/data.js"></script>
-	<script src="../lib/data.tile.js"></script>
-	<script src="../lib/as.dat.gui.js"></script>
+    <script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
+    <script src="../tools/dat.gui.min.js"></script>
+    
+    <script src="../lib/agentscript.js"></script>
+    <script src="../lib/data.js"></script>
+    <script src="../lib/data.tile.js"></script>
+    <script src="../lib/as.dat.gui.js"></script>
 
-	<script>
-		var map, elevationLayer, terrainLayer, model, tileSet, slopeAndAspect;
+    <script>
+        var map, elevationLayer, terrainLayer, model, tileSet, slopeAndAspect;
 
-		var ui = {
-			"layer": {
-				type: "choice",
-				val: "terrain",
-				vals: ["terrain", "altitude", "slope", "aspect"],
-				setter: "setLayer"
-			}
-		};
+        var ui = {
+            "layer": {
+                type: "choice",
+                val: "terrain",
+                vals: ["terrain", "altitude", "slope", "aspect"],
+                setter: "setLayer"
+            }
+        };
 
-		function init() {
-			// map
-		    map = L.map('map', {
-		        maxZoom: 14,
-		        minZoom: 10
-		    }).setView([31.5,-110], 13);
+        function init() {
+            // map
+            map = L.map('map', {
+                maxZoom: 14,
+                minZoom: 10
+            }).setView([31.5,-110], 13);
 
-		    var mapUrl = 'http://{s}.tiles.mapbox.com/v3/bennlich.hmi0c6k3/{z}/{x}/{y}.png';
-			terrainLayer = L.tileLayer(mapUrl, {
-				attribution: '<a href="http://www.mapbox.com/about/maps/" target="_blank">Terms &amp; Feedback</a>'
-			}).addTo(map);
+            var mapUrl = 'http://{s}.tiles.mapbox.com/v3/bennlich.hmi0c6k3/{z}/{x}/{y}.png';
+            terrainLayer = L.tileLayer(mapUrl, {
+                attribution: '<a href="http://www.mapbox.com/about/maps/" target="_blank">Terms &amp; Feedback</a>'
+            }).addTo(map);
 
-			var elevUrl = 'http://node.redfish.com/Documents/elevationServer/tiles/{z}/{x}/{y}.png';
-			elevationLayer = L.crossOriginTileLayer(elevUrl, {
-		        opacity: 0.0,
-				attribution: 'Elevation Tiles'
-			}).addTo(map);
+            var elevUrl = 'http://node.redfish.com/Documents/elevationServer/tiles/{z}/{x}/{y}.png';
+            elevationLayer = L.crossOriginTileLayer(elevUrl, {
+                opacity: 0.0,
+                attribution: 'Elevation Tiles'
+            }).addTo(map);
 
 
-		    // tile dataset
-		    ABM.TileDataSet.prototype.parseTileData = function(data) {
-		        var r = data[0],
-		        g = data[1],
-		        b = data[2],
-		        elevation = (r * 255 * 255 + g * 255 + b) / 10;
-		        return elevation;
-		    }
+            // tile dataset
+            ABM.TileDataSet.prototype.parseTileData = function(data) {
+                var r = data[0],
+                g = data[1],
+                b = data[2],
+                elevation = (r * 255 * 255 + g * 255 + b) / 10;
+                return elevation;
+            }
 
-			tileSet = new ABM.TileDataSet();
+            tileSet = new ABM.TileDataSet();
 
-		    // model
-			ABM.Model.prototype.setup = function() {
-		        this.refreshPatches = this.refreshLinks = false;
-		        
-		        this.patches.own("elevation slope aspect");
-		        
-		        this.vision = 1; // try range in 1-5 or so
-		        this.speed = .25;
-		        
-		        this.agents.setDefault("shape", "square");
-		        this.agents.setDefault("size", .5);
-		        this.agents.setDefault("color", [60, 157, 255]);
-		        this.patches.cacheRect(this.vision, false);
-		    }
+            // model
+            ABM.Model.prototype.setup = function() {
+                this.refreshPatches = this.refreshLinks = false;
+                
+                this.patches.own("elevation slope aspect");
+                
+                this.vision = 1; // try range in 1-5 or so
+                this.speed = .25;
+                
+                this.agents.setDefault("shape", "square");
+                this.agents.setDefault("size", .5);
+                this.agents.setDefault("color", [60, 157, 255]);
+                this.patches.cacheRect(this.vision, false);
+            }
 
-		    ABM.Model.prototype.rain = function() {
-		        var density = 0.3;
-		        this.agents.clear();
-		        this.patches.forEach(function(p) {
-		            if (Math.random() < density) {
-		                p.sprout(1);
-		            }
-		        });
-		    }
+            ABM.Model.prototype.rain = function() {
+                var density = 0.3;
+                this.agents.clear();
+                this.patches.forEach(function(p) {
+                    if (Math.random() < density) {
+                        p.sprout(1);
+                    }
+                });
+            }
 
-		    ABM.Model.prototype.step = function() {
-		    	var moved = 0;
+            ABM.Model.prototype.step = function() {
+                var moved = 0;
 
-		        this.agents.forEach(function(a) {
-		        	var n = a.p.pRect;
-					n = n.minOneOf("elevation");
-					if (a.p.elevation > n.elevation) {
-						a.face(n);
-						a.forward(this.speed);
-						moved += 1;
-		            }
-		        }.bind(this));
+                this.agents.forEach(function(a) {
+                    var n = a.p.pRect;
+                    n = n.minOneOf("elevation");
+                    if (a.p.elevation > n.elevation) {
+                        a.face(n);
+                        a.forward(this.speed);
+                        moved += 1;
+                    }
+                }.bind(this));
 
-		        if (moved == 0) {
-		            console.log("done, ticks:", this.anim.ticks);
-		            this.stop()
-		        }
+                if (moved == 0) {
+                    console.log("done, ticks:", this.anim.ticks);
+                    this.stop()
+                }
 
-		        if (this.anim.ticks % 100 == 0) {
-		            console.log(this.anim.toString(), "moved:", moved);  
-		        }
-		    }
+                if (this.anim.ticks % 100 == 0) {
+                    console.log(this.anim.toString(), "moved:", moved);  
+                }
+            }
 
-		    ABM.Model.prototype.setLayer = function(name) {
-		    	var name = name || this.layerName;
-		    	this.layerName = name;
-		    	switch(name) {
-		    		case "terrain":
-		    			map.getContainer().style['z-index'] = 15;
-		    		break;
-		    		case "altitude":
-		    			map.getContainer().style['z-index'] = 0;
-		    			tileSet.toPatchColors();
-		    		break;
-		    		case "slope":
-		    			map.getContainer().style['z-index'] = 0;
-		        		slopeAndAspect.slope.toPatchColors();
-		    		break;
-		    		case "aspect":
-		    			map.getContainer().style['z-index'] = 0;
-		    			slopeAndAspect.aspect.toPatchColors();
-		    		break;
-		    	}
-		    	model.refreshPatches = true;
-		    	model.draw();
-        		model.refreshPatches = false;
-		    }
+            ABM.Model.prototype.setLayer = function(name) {
+                var name = name || this.layerName;
+                this.layerName = name;
+                switch(name) {
+                    case "terrain":
+                        map.getContainer().style['z-index'] = 15;
+                    break;
+                    case "altitude":
+                        map.getContainer().style['z-index'] = 0;
+                        tileSet.toPatchColors();
+                    break;
+                    case "slope":
+                        map.getContainer().style['z-index'] = 0;
+                        slopeAndAspect.slope.toPatchColors();
+                    break;
+                    case "aspect":
+                        map.getContainer().style['z-index'] = 0;
+                        slopeAndAspect.aspect.toPatchColors();
+                    break;
+                }
+                model.refreshPatches = true;
+                model.draw();
+                model.refreshPatches = false;
+            }
 
-			model = new ABM.Model({
-				div: "model",
-				size: 4,
-				minX: 1,
-				maxX: 256,
-				minY: 1,
-				maxY: 192
-			});
+            model = new ABM.Model({
+                div: "model",
+                size: 4,
+                minX: 1,
+                maxX: 256,
+                minY: 1,
+                maxY: 192
+            });
 
-		    // bind tile dataset to leaflet
-		    tileSet.bindToLeaflet(map, elevationLayer);
+            // set the model to be used in `toPatchVar()` below
+            tileSet.setModel(model);
 
-		    // when new tiles load, import data to patches,
-		    // and restart the model
-		    tileSet.on('tilesready', function() {
-		        model.stop();
-		        
-		        console.log('importing elevation data');
-		        tileSet.importTileData();
-		        tileSet.toPatchVar('elevation');
-		        console.log('done');
+            // bind tile dataset to leaflet
+            tileSet.bindToLeaflet(map, elevationLayer);
 
-		        console.log('calculating slope and aspect');
-		        slopeAndAspect = tileSet.slopeAndAspect();
-		        model.setLayer();
-		        console.log('done');
+            // when new tiles load, import data to patches,
+            // and restart the model
+            tileSet.on('tilesready', function() {
+                model.stop();
+                
+                console.log('importing elevation data');
+                tileSet.importTileData();
+                tileSet.toPatchVar('elevation');
+                console.log('done');
 
-		        model.rain();
-		        model.start();
-		    });
+                console.log('calculating slope and aspect');
+                slopeAndAspect = tileSet.slopeAndAspect();
+                model.setLayer();
+                console.log('done');
 
-		    new ABM.DatGUI(model, ui);
-		}
-	</script>
+                model.rain();
+                model.start();
+            });
 
-	<style type="text/css">
-		.dg.ac {
-			z-index: 100 !important;
-		}
-	</style>
+            new ABM.DatGUI(model, ui);
+        }
+    </script>
+
+    <style type="text/css">
+        /* keep the Dat.GUI above the map */
+        .dg.ac {
+            z-index: 100 !important;
+        }
+    </style>
 </head>
 <body onload="init();" style="margin: 0px;">
-	<div id="model"></div>
-	<div id="map"></div>
+    <div id="model"></div>
+    <div id="map"></div>
 </body>
 </html>

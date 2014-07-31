@@ -39,7 +39,7 @@ ABM.shapes = ABM.util.s = do ->
   # An async util for delayed drawing of images into sprite slots
   fillSlot = (slot, img) ->
     slot.ctx.save(); slot.ctx.scale 1, -1
-    slot.ctx.drawImage img, slot.x, -(slot.y+slot.slotSize), slot.slotSize, slot.slotSize    
+    slot.ctx.drawImage img, slot.x, -(slot.y+slot.spriteSize), slot.spriteSize, slot.spriteSize    
     slot.ctx.restore()
   # The spritesheet data, indexed by slotSize
   spriteSheets = []
@@ -142,18 +142,18 @@ ABM.shapes = ABM.util.s = do ->
     shape
   drawSprite: (ctx, s, x, y, size, rad) ->
     if rad is 0
-      ctx.drawImage s.ctx.canvas, s.x, s.y, s.slotSize, s.slotSize, x-size/2, y-size/2, size, size
+      ctx.drawImage s.ctx.canvas, s.x, s.y, s.spriteSize, s.spriteSize, x-size/2, y-size/2, size, size
     else
       ctx.save()
       ctx.translate x, y # see http://goo.gl/VUlhY for drawing centered rotated images
       ctx.rotate rad
-      ctx.drawImage s.ctx.canvas, s.x, s.y, s.slotSize, s.slotSize, -size/2,-size/2, size, size
+      ctx.drawImage s.ctx.canvas, s.x, s.y, s.spriteSize, s.spriteSize, -size/2,-size/2, size, size
       ctx.restore()
     s
   # Convert a shape to a sprite by allocating a sprite sheet "slot" and drawing
   # the shape to fit it. Return existing sprite if duplicate.
   shapeToSprite: (name, color, size, strokeColor) ->
-    spriteSize = Math.ceil ABM.patches.toBits size
+    spriteSize = Math.ceil size
     strokePadding = 4
     slotSize = spriteSize + strokePadding
     shape = @[name]
@@ -170,8 +170,8 @@ ABM.shapes = ABM.util.s = do ->
       u.resizeCtx ctx, ctx.canvas.width, ctx.canvas.height+slotSize
       ctx.nextX = 0; ctx.nextY++
     # Create the sprite "slot" object and install in index object
-    x = (slotSize)*ctx.nextX; y = (slotSize)*ctx.nextY
-    slot = {ctx, x, y, size, slotSize, name, color, strokeColor, index}
+    x = (slotSize)*ctx.nextX+strokePadding/2; y = (slotSize)*ctx.nextY+strokePadding/2
+    slot = {ctx, x, y, size, spriteSize, name, color, strokeColor, index}
     ctx.index[index] = slot
     # Draw the shape into the sprite slot
     if (img=shape.img)? # is an image, not a path function

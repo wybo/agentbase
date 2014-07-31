@@ -34,9 +34,9 @@ class ABM.Link
   draw: (ctx) ->
     ctx.save()
     ctx.strokeStyle = u.colorStr @color
-    ctx.lineWidth = ABM.patches.fromBits @thickness
+    ctx.lineWidth = @model.patches.fromBits @thickness
     ctx.beginPath()
-    if !ABM.patches.isTorus
+    if !@model.patches.isTorus
       ctx.moveTo @end1.x, @end1.y
       ctx.lineTo @end2.x, @end2.y
     else
@@ -52,7 +52,7 @@ class ABM.Link
     ctx.restore()
     if @label?
       [x0, y0]  = u.lerp2 @end1.x, @end1.y, @end2.x, @end2.y, .5
-      [x,y] = ABM.patches.patchXYtoPixelXY x0, y0
+      [x,y] = @model.patches.patchXYtoPixelXY x0, y0
       u.ctxDrawText ctx, @label, x+@labelOffset[0], y+@labelOffset[1], @labelColor
   
   # Remove this link from the agent set

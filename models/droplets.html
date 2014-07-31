@@ -13,6 +13,9 @@
         console.log "startup: elevation"
         @elevation = DataSet.importAscDataSet "data/nldroplets.asc", (ds)=>
           console.log "startup: creating slope/aspect data sets"
+          # Set the model to be used by the elevation (and derived)
+          # DataSets in `toDrawing()` and `toPatchVar()` below.
+          @elevation.setModel(@)
           # All work due to hybred array/object return
           # { slope: @slope, aspect: @aspect } = @elevation.slopeAndAspect()
           { @slope, @aspect } = @elevation.slopeAndAspect()

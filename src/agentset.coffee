@@ -7,11 +7,11 @@
 # its created instances.  It also provides, much like the **ABM.util**
 # module, many methods shared by all subclasses of AgentSet.
 #
-# ABM contains three agentsets created by class Model:
+# A model contains three agentsets:
 #
-# * `ABM.patches`: the model's "world" grid
-# * `ABM.agents`: the model's agents living on the patches
-# * `ABM.links`: the network links connecting agent pairs
+# * `patches`: the model's "world" grid
+# * `agents`: the model's agents living on the patches
+# * `links`: the network links connecting agent pairs
 #
 # See NetLogo [documentation](http://ccl.northwestern.edu/netlogo/docs/)
 # for explanation of the overall semantics of Agent Based Modeling
@@ -31,7 +31,7 @@ class ABM.AgentSet extends Array
   # It is primarily used to turn a comprehension into an AgentSet instance
   # which then gains access to all the methods below.  Ex:
   #
-  #     evens = (a for a in ABM.agents when a.id % 2 is 0)
+  #     evens = (a for a in @model.agents when a.id % 2 is 0)
   #     ABM.AgentSet.asSet(evens)
   #     randomEven = evens.oneOf()
   @asSet: (a, setType = ABM.AgentSet) ->
@@ -74,7 +74,7 @@ class ABM.AgentSet extends Array
 
   # Remove an agent from the agentset, returning the agentset.
   # Note this does not change ID, thus an
-  # agentset can have gaps in terms of their id's. Assumes set is
+  # agentset can have gaps in terms of their ids. Assumes set is
   # sorted by `id`. If the set is one created by `asSet`, and the original
   # array is unsorted, simply call `sortById` first, see `sortById` below.
   #
@@ -268,20 +268,20 @@ class ABM.AgentSet extends Array
   
   # Show/Hide all of an agentset or breed.
   # To show/hide an individual object, set its prototype: o.hidden = bool
-  show: -> o.hidden = false for o in @; @draw(ABM.contexts[@name])
-  hide: -> o.hidden = true for o in @; @draw(ABM.contexts[@name])
+  show: -> o.hidden = false for o in @; @draw(@model.contexts[@name])
+  hide: -> o.hidden = true for o in @; @draw(@model.contexts[@name])
 
 # ### Topology
   
-  # For ABM.patches & ABM.agents which have x,y. See ABM.util doc.
+  # For patches & agents, which have x,y. See ABM.util doc.
   #
   # Return all agents in agentset within d distance from given object.
   # By default excludes the given object. Uses linear/torus distance
   # depending on patches.isTorus, and patches width/height if needed.
   inRadius: (o, d, meToo=false) -> # for any objects w/ x,y
     d2 = d*d; x=o.x; y=o.y
-    if ABM.patches.isTorus
-      w=ABM.patches.numX; h=ABM.patches.numY
+    if @model.patches.isTorus
+      w=@model.patches.numX; h=@model.patches.numY
       @asSet (a for a in @ when \
         u.torusSqDistance(x,y,a.x,a.y,w,h)<=d2 and (meToo or a isnt o))
     else
@@ -292,8 +292,8 @@ class ABM.AgentSet extends Array
   inCone: (o, heading, cone, radius, meToo=false) ->
     rSet = @inRadius o, radius, meToo
     x=o.x; y=o.y
-    if ABM.patches.isTorus
-      w=ABM.patches.numX; h=ABM.patches.numY
+    if @model.patches.isTorus
+      w=@model.patches.numX; h=@model.patches.numY
       @asSet (a for a in rSet when \
         (a is o and meToo) or u.inTorusCone(heading,cone,radius,x,y,a.x,a.y,w,h))
     else
@@ -312,7 +312,7 @@ class ABM.AgentSet extends Array
   #     AS.with("o.x<5").ask("o.x=o.x+1")
   #     AS.getProp("x") # [2, 8, 6, 3, 3]
   #
-  #     ABM.agents.with("o.id<100").ask("o.color=[255,0,0]")
+  #     myModel.agents.with("o.id<100").ask("o.color=[255,0,0]")
   ask: (f) -> 
     eval("f=function(o){return "+f+";}") if u.isString f
     f(o) for o in @; @

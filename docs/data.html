@@ -140,7 +140,7 @@ The parse method converts a string into a dataset. Async</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(width=<span class="hljs-number">0</span>, height=<span class="hljs-number">0</span>, data=[])</span> -&gt;</span> 
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(width=<span class="hljs-number">0</span>, height=<span class="hljs-number">0</span>, data=[], <span class="hljs-property">@model</span>)</span> -&gt;</span> 
     <span class="hljs-property">@setDefaults</span>()
     <span class="hljs-property">@reset</span> width, height, data</pre></div></div>
             
@@ -215,11 +215,12 @@ an empty dataset and having it filled by another function.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
-              <p>Sample the dataset.</p>
+              <p>Set the model to use by default for things like <code>toPatchVar()</code>,
+<code>toDrawing()</code>, and <code>toPatchColors()</code>.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">sample</span>: <span class="hljs-function"><span class="hljs-params">(x,y)</span> -&gt;</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@useNearest</span> <span class="hljs-keyword">then</span> <span class="hljs-property">@nearest</span> x,y <span class="hljs-keyword">else</span> <span class="hljs-property">@bilinear</span> x,y</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">setModel</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@model</span>)</span> -&gt;</span></pre></div></div>
             
         </li>
         
@@ -230,11 +231,11 @@ an empty dataset and having it filled by another function.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
-              <p>Sample dataset using nearest neighbor. x,y floats in range</p>
+              <p>Sample the dataset.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">nearest</span>: <span class="hljs-function"><span class="hljs-params">(x,y)</span> -&gt;</span> <span class="hljs-property">@getXY</span> Math.round(x), Math.round(y)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">sample</span>: <span class="hljs-function"><span class="hljs-params">(x,y)</span> -&gt;</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@useNearest</span> <span class="hljs-keyword">then</span> <span class="hljs-property">@nearest</span> x,y <span class="hljs-keyword">else</span> <span class="hljs-property">@bilinear</span> x,y</pre></div></div>
             
         </li>
         
@@ -244,6 +245,21 @@ an empty dataset and having it filled by another function.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>Sample dataset using nearest neighbor. x,y floats in range</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">nearest</span>: <span class="hljs-function"><span class="hljs-params">(x,y)</span> -&gt;</span> <span class="hljs-property">@getXY</span> Math.round(x), Math.round(y)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
               <p>Sample dataset using bilinear (2D) interpolation. x,y floats in range</p>
 
@@ -256,11 +272,11 @@ an empty dataset and having it filled by another function.</p>
         </li>
         
         
-        <li id="section-14">
+        <li id="section-15">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-14">&#182;</a>
+                <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
               <p>Edge case: If x is width-1, x0 is width-1, x is 0, dx is 1</p>
 
@@ -271,11 +287,11 @@ an empty dataset and having it filled by another function.</p>
         </li>
         
         
-        <li id="section-15">
+        <li id="section-16">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
+                <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <p>Edge case: fij is 0 if beyond data array; undefined -&gt; 0
 if fij wrap on x, x is 0, dx is 1; return f00<em>dy+f01</em>y, linear on y</p>
@@ -288,11 +304,11 @@ if fij wrap on x, x is 0, dx is 1; return f00<em>dy+f01</em>y, linear on y</p>
         </li>
         
         
-        <li id="section-16">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <p>Convert x,y ints to index into data array</p>
 
@@ -303,11 +319,11 @@ if fij wrap on x, x is 0, dx is 1; return f00<em>dy+f01</em>y, linear on y</p>
         </li>
         
         
-        <li id="section-17">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>Convert int index into data array into x,y ints</p>
 
@@ -318,11 +334,11 @@ if fij wrap on x, x is 0, dx is 1; return f00<em>dy+f01</em>y, linear on y</p>
         </li>
         
         
-        <li id="section-18">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>Get data at x,y int offset into data array</p>
 
@@ -333,11 +349,11 @@ if fij wrap on x, x is 0, dx is 1; return f00<em>dy+f01</em>y, linear on y</p>
         </li>
         
         
-        <li id="section-19">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>Set the data and int x,y coord of data array</p>
 
@@ -348,11 +364,11 @@ if fij wrap on x, x is 0, dx is 1; return f00<em>dy+f01</em>y, linear on y</p>
         </li>
         
         
-        <li id="section-20">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>Return a printable string for dataset.
 If p &lt; 0, print data, otherwise use toFixed to truncate to p precision</p>
@@ -369,11 +385,11 @@ If p &lt; 0, print data, otherwise use toFixed to truncate to p precision</p>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>Convert dataset into an image.</p>
 
@@ -398,39 +414,18 @@ If p &lt; 0, print data, otherwise use toFixed to truncate to p precision</p>
         </li>
         
         
-        <li id="section-22">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
-              </div>
-              <p>Show dataset as image in patch drawing layer or patch colors, return image</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">toDrawing</span>:<span class="hljs-function"> -&gt;</span> ABM.patches.installDrawing(img=<span class="hljs-property">@toImage</span>()); img
-  <span class="hljs-attribute">toPatchColors</span>:<span class="hljs-function"> -&gt;</span> ABM.patches.installColors(img=<span class="hljs-property">@toImage</span>()); img</pre></div></div>
-            
-        </li>
-        
-        
         <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
-              <p>Resample dataset to patch width/height and set named patch variable.
-Note this “insets” the dataset so the variable is sampled the center of the patch.
-The dataset can be sampled directly to its edges .. i.e. in agent coords.</p>
+              <p>Show dataset as image in patch drawing layer or patch colors, return image</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">toPatchVar</span>: <span class="hljs-function"><span class="hljs-params">(name)</span> -&gt;</span>
-    <span class="hljs-keyword">if</span> (ps=ABM.patches).length <span class="hljs-keyword">is</span> <span class="hljs-property">@data</span>.length
-    <span class="hljs-keyword">then</span> p[name] = <span class="hljs-property">@data</span>[i] <span class="hljs-keyword">for</span> p,i <span class="hljs-keyword">in</span> ps
-    <span class="hljs-keyword">else</span> p[name] = <span class="hljs-property">@patchSample</span> p.x, p.y <span class="hljs-keyword">for</span> p <span class="hljs-keyword">in</span> ps
-    <span class="hljs-literal">null</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">toDrawing</span>: <span class="hljs-function"><span class="hljs-params">(model = <span class="hljs-property">@model</span>)</span> -&gt;</span> model.patches.installDrawing(img=<span class="hljs-property">@toImage</span>()); img
+  <span class="hljs-attribute">toPatchColors</span>: <span class="hljs-function"><span class="hljs-params">(model = <span class="hljs-property">@model</span>)</span> -&gt;</span> model.patches.installColors(img=<span class="hljs-property">@toImage</span>()); img</pre></div></div>
             
         </li>
         
@@ -441,17 +436,17 @@ The dataset can be sampled directly to its edges .. i.e. in agent coords.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
-              <p>Sample via transformed coords.
-x,y is in topleft-bottomright box: [tlx,tly,tlx+w,tly-h]</p>
+              <p>Resample dataset to patch width/height and set named patch variable.
+Note this “insets” the dataset so the variable is sampled the center of the patch.
+The dataset can be sampled directly to its edges .. i.e. in agent coords.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">coordSample</span>: <span class="hljs-function"><span class="hljs-params">(x, y, tlx, tly, w, h)</span> -&gt;</span> <span class="hljs-comment">#brx, bry) -&gt;</span>
-    xs=(x-tlx)*(<span class="hljs-property">@width</span>-<span class="hljs-number">1</span>)/w;  ys=(tly-y)*(<span class="hljs-property">@height</span>-<span class="hljs-number">1</span>)/h <span class="hljs-comment"># convert to sample space</span>
-    <span class="hljs-property">@sample</span> xs,ys
-  <span class="hljs-attribute">patchSample</span>: <span class="hljs-function"><span class="hljs-params">(px, py)</span> -&gt;</span>
-    w=ABM.world
-    <span class="hljs-property">@coordSample</span> px, py, w.minXcor, w.maxYcor, w.numX, w.numY</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">toPatchVar</span>: <span class="hljs-function"><span class="hljs-params">(name, model = <span class="hljs-property">@model</span>)</span> -&gt;</span>
+    <span class="hljs-keyword">if</span> (ps=model.patches).length <span class="hljs-keyword">is</span> <span class="hljs-property">@data</span>.length
+    <span class="hljs-keyword">then</span> p[name] = <span class="hljs-property">@data</span>[i] <span class="hljs-keyword">for</span> p,i <span class="hljs-keyword">in</span> ps
+    <span class="hljs-keyword">else</span> p[name] = <span class="hljs-property">@patchSample</span> p.x, p.y, model <span class="hljs-keyword">for</span> p <span class="hljs-keyword">in</span> ps
+    <span class="hljs-literal">null</span></pre></div></div>
             
         </li>
         
@@ -462,11 +457,17 @@ x,y is in topleft-bottomright box: [tlx,tly,tlx+w,tly-h]</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
-              <p>Normalize a dataset to linear interpolation: [min,max] -&gt; [lo, hi], float</p>
+              <p>Sample via transformed coords.
+x,y is in topleft-bottomright box: [tlx,tly,tlx+w,tly-h]</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">normalize</span>: <span class="hljs-function"><span class="hljs-params">(lo, hi)</span> -&gt;</span> <span class="hljs-keyword">new</span> DataSet <span class="hljs-property">@width</span>, <span class="hljs-property">@height</span>, u.normalize <span class="hljs-property">@data</span>, lo, hi</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">coordSample</span>: <span class="hljs-function"><span class="hljs-params">(x, y, tlx, tly, w, h)</span> -&gt;</span> <span class="hljs-comment">#brx, bry) -&gt;</span>
+    xs=(x-tlx)*(<span class="hljs-property">@width</span>-<span class="hljs-number">1</span>)/w;  ys=(tly-y)*(<span class="hljs-property">@height</span>-<span class="hljs-number">1</span>)/h <span class="hljs-comment"># convert to sample space</span>
+    <span class="hljs-property">@sample</span> xs,ys
+  <span class="hljs-attribute">patchSample</span>: <span class="hljs-function"><span class="hljs-params">(px, py, model = <span class="hljs-property">@model</span>)</span> -&gt;</span>
+    w=model.world
+    <span class="hljs-property">@coordSample</span> px, py, w.minXcor, w.maxYcor, w.numX, w.numY</pre></div></div>
             
         </li>
         
@@ -477,11 +478,11 @@ x,y is in topleft-bottomright box: [tlx,tly,tlx+w,tly-h]</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
-              <p>Normalize a dataset to clamped Uint8 bytes [0-255]</p>
+              <p>Normalize a dataset to linear interpolation: [min,max] -&gt; [lo, hi], float</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">normalize8</span>:<span class="hljs-function"> -&gt;</span> <span class="hljs-keyword">new</span> DataSet <span class="hljs-property">@width</span>, <span class="hljs-property">@height</span>, u.normalize8(<span class="hljs-property">@data</span>)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">normalize</span>: <span class="hljs-function"><span class="hljs-params">(lo, hi)</span> -&gt;</span> <span class="hljs-keyword">new</span> DataSet <span class="hljs-property">@width</span>, <span class="hljs-property">@height</span>, u.normalize(<span class="hljs-property">@data</span>, lo, hi), <span class="hljs-property">@model</span></pre></div></div>
             
         </li>
         
@@ -492,18 +493,11 @@ x,y is in topleft-bottomright box: [tlx,tly,tlx+w,tly-h]</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
-              <p>Resample dataset to new width, height</p>
+              <p>Normalize a dataset to clamped Uint8 bytes [0-255]</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">resample</span>: <span class="hljs-function"><span class="hljs-params">(width, height)</span> -&gt;</span>
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> DataSet width,height,<span class="hljs-property">@data</span> <span class="hljs-keyword">if</span> width <span class="hljs-keyword">is</span> <span class="hljs-property">@width</span> <span class="hljs-keyword">and</span> height <span class="hljs-keyword">is</span> <span class="hljs-property">@height</span>
-    data = []; xScale = (<span class="hljs-property">@width</span>-<span class="hljs-number">1</span>)<span class="hljs-regexp">/(width-1); yScale = (@height-1)/</span>(height-<span class="hljs-number">1</span>)
-    <span class="hljs-keyword">for</span> y <span class="hljs-keyword">in</span> [<span class="hljs-number">0.</span>..height] <span class="hljs-keyword">by</span> <span class="hljs-number">1</span>
-      <span class="hljs-keyword">for</span> x <span class="hljs-keyword">in</span> [<span class="hljs-number">0.</span>..width] <span class="hljs-keyword">by</span> <span class="hljs-number">1</span>
-        xs=x*xScale; ys=y*yScale
-        data.push <span class="hljs-property">@sample</span> xs,ys
-    <span class="hljs-keyword">new</span> DataSet width, height, data</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">normalize8</span>:<span class="hljs-function"> -&gt;</span> <span class="hljs-keyword">new</span> DataSet <span class="hljs-property">@width</span>, <span class="hljs-property">@height</span>, u.normalize8(<span class="hljs-property">@data</span>), <span class="hljs-property">@model</span></pre></div></div>
             
         </li>
         
@@ -513,6 +507,28 @@ x,y is in topleft-bottomright box: [tlx,tly,tlx+w,tly-h]</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>
+              <p>Resample dataset to new width, height</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">resample</span>: <span class="hljs-function"><span class="hljs-params">(width, height)</span> -&gt;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> DataSet width,height,<span class="hljs-property">@data</span>,<span class="hljs-property">@model</span> <span class="hljs-keyword">if</span> width <span class="hljs-keyword">is</span> <span class="hljs-property">@width</span> <span class="hljs-keyword">and</span> height <span class="hljs-keyword">is</span> <span class="hljs-property">@height</span>
+    data = []; xScale = (<span class="hljs-property">@width</span>-<span class="hljs-number">1</span>)<span class="hljs-regexp">/(width-1); yScale = (@height-1)/</span>(height-<span class="hljs-number">1</span>)
+    <span class="hljs-keyword">for</span> y <span class="hljs-keyword">in</span> [<span class="hljs-number">0.</span>..height] <span class="hljs-keyword">by</span> <span class="hljs-number">1</span>
+      <span class="hljs-keyword">for</span> x <span class="hljs-keyword">in</span> [<span class="hljs-number">0.</span>..width] <span class="hljs-keyword">by</span> <span class="hljs-number">1</span>
+        xs=x*xScale; ys=y*yScale
+        data.push <span class="hljs-property">@sample</span> xs,ys
+    <span class="hljs-keyword">new</span> DataSet width, height, data, <span class="hljs-property">@model</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>Return neighbor values of the given x,y of the dataset.
 Off-edge neighbors revert to nearest edge value.</p>
@@ -531,11 +547,11 @@ Off-edge neighbors revert to nearest edge value.</p>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>Return a new dataset of same size convolved with the given kernel 3x3 matrix.
 See <a href="http://goo.gl/ubFiji">Convolution article</a></p>
@@ -551,16 +567,16 @@ See <a href="http://goo.gl/ubFiji">Convolution article</a></p>
       <span class="hljs-keyword">for</span> x <span class="hljs-keyword">in</span> [x0...w] <span class="hljs-keyword">by</span> <span class="hljs-number">1</span>
         <span class="hljs-property">@neighborhood</span> x,y,n
         array.push u.aSum(u.aPairMul(kernel, n))*factor
-    <span class="hljs-keyword">new</span> DataSet w-x0, h-y0, array</pre></div></div>
+    <span class="hljs-keyword">new</span> DataSet w-x0, h-y0, array, <span class="hljs-property">@model</span></pre></div></div>
             
         </li>
         
         
-        <li id="section-30">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <p>A few common convolutions.  dzdx/y are also called horiz/vert Sobel</p>
 
@@ -576,26 +592,26 @@ See <a href="http://goo.gl/ubFiji">Convolution article</a></p>
         </li>
         
         
-        <li id="section-31">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
-              </div>
-              <p>Return filtered dataset by applying f to each dataset element</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">filter</span>: <span class="hljs-function"><span class="hljs-params">(f)</span> -&gt;</span> <span class="hljs-keyword">new</span> DataSet <span class="hljs-property">@width</span>, <span class="hljs-property">@height</span>, (f(d) <span class="hljs-keyword">for</span> d <span class="hljs-keyword">in</span> <span class="hljs-property">@data</span>)</pre></div></div>
-            
-        </li>
-        
-        
         <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-32">&#182;</a>
+              </div>
+              <p>Return filtered dataset by applying f to each dataset element</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">filter</span>: <span class="hljs-function"><span class="hljs-params">(f)</span> -&gt;</span> <span class="hljs-keyword">new</span> DataSet <span class="hljs-property">@width</span>, <span class="hljs-property">@height</span>, (f(d) <span class="hljs-keyword">for</span> d <span class="hljs-keyword">in</span> <span class="hljs-property">@data</span>), <span class="hljs-property">@model</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-33">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
               <p>Create two new convolved datasets, slope and aspect, common in
 the use of an elevation data set. See Esri tutorials for 
@@ -619,11 +635,11 @@ those wanting to use the results of the two convolutions.</p>
         </li>
         
         
-        <li id="section-33">
+        <li id="section-34">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-33">&#182;</a>
+                <a class="pilcrow" href="#section-34">&#182;</a>
               </div>
               <p>radians in [-PI,PI], downhill</p>
 
@@ -634,11 +650,11 @@ those wanting to use the results of the two convolutions.</p>
         </li>
         
         
-        <li id="section-34">
+        <li id="section-35">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-34">&#182;</a>
+                <a class="pilcrow" href="#section-35">&#182;</a>
               </div>
               <p>positive radians in [0,2PI] if desired</p>
 
@@ -646,18 +662,18 @@ those wanting to use the results of the two convolutions.</p>
             
             <div class="content"><div class='highlight'><pre>        rad += <span class="hljs-number">2</span>*Math.PI <span class="hljs-keyword">if</span> posAngle <span class="hljs-keyword">and</span> rad &lt; <span class="hljs-number">0</span>
         aspect.push rad
-    slope = <span class="hljs-keyword">new</span> DataSet w, h, slope
-    aspect = <span class="hljs-keyword">new</span> DataSet w, h, aspect
+    slope = <span class="hljs-keyword">new</span> DataSet w, h, slope, <span class="hljs-property">@model</span>
+    aspect = <span class="hljs-keyword">new</span> DataSet w, h, aspect, <span class="hljs-property">@model</span>
     u.aToObj [slope, aspect, dzdx, dzdy], [<span class="hljs-string">"slope"</span>, <span class="hljs-string">"aspect"</span>, <span class="hljs-string">"dzdx"</span>, <span class="hljs-string">"dzdy"</span>]</pre></div></div>
             
         </li>
         
         
-        <li id="section-35">
+        <li id="section-36">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-35">&#182;</a>
+                <a class="pilcrow" href="#section-36">&#182;</a>
               </div>
               <p>Return a subset of the dataset. x,y,width,height integers</p>
 
@@ -669,18 +685,18 @@ those wanting to use the results of the two convolutions.</p>
     <span class="hljs-keyword">for</span> j <span class="hljs-keyword">in</span> [y...y+height] <span class="hljs-keyword">by</span> <span class="hljs-number">1</span>
       <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [x...x+width] <span class="hljs-keyword">by</span> <span class="hljs-number">1</span>
         data.push <span class="hljs-property">@getXY</span> i,j
-    <span class="hljs-keyword">new</span> DataSet width, height, data
+    <span class="hljs-keyword">new</span> DataSet width, height, data, <span class="hljs-property">@model</span>
 
 ABM.AscDataSet = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AscDataSet</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">DataSet</span></span></pre></div></div>
             
         </li>
         
         
-        <li id="section-36">
+        <li id="section-37">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-36">&#182;</a>
+                <a class="pilcrow" href="#section-37">&#182;</a>
               </div>
               <p>An .asc GIS file a text file with a header:</p>
 <pre><code>ncols <span class="hljs-number">195</span>
@@ -696,11 +712,11 @@ NODATA_value -<span class="hljs-number">9999</span>
         </li>
         
         
-        <li id="section-37">
+        <li id="section-38">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-37">&#182;</a>
+                <a class="pilcrow" href="#section-38">&#182;</a>
               </div>
               <p>Constructor takes a string generally via an xhr request.
 It can be “empty” .. i.e. needing a second parse() call
@@ -708,7 +724,7 @@ so that it can be used in an async file operation.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@str</span>=<span class="hljs-string">""</span>)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@str</span>=<span class="hljs-string">""</span>, <span class="hljs-property">@model</span>)</span> -&gt;</span>
     <span class="hljs-keyword">super</span>() <span class="hljs-comment"># start out as an empty dataset</span>
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@str</span>.length <span class="hljs-keyword">is</span> <span class="hljs-number">0</span>
     <span class="hljs-property">@parse</span> <span class="hljs-property">@str</span></pre></div></div>
@@ -716,11 +732,11 @@ so that it can be used in an async file operation.</p>
         </li>
         
         
-        <li id="section-38">
+        <li id="section-39">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-38">&#182;</a>
+                <a class="pilcrow" href="#section-39">&#182;</a>
               </div>
               <p>Complete an initial, empty dataset object who’s string
 is read via an xhr request.</p>
@@ -743,11 +759,11 @@ ABM.ImageDataSet = <span class="hljs-class"><span class="hljs-keyword">class</sp
         </li>
         
         
-        <li id="section-39">
+        <li id="section-40">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-39">&#182;</a>
+                <a class="pilcrow" href="#section-40">&#182;</a>
               </div>
               <p>An image-as-data dataset.  The parser takes an image
 data Uint8Array, enumerates it in 4-byte segments converting
@@ -759,7 +775,7 @@ img may be a canvas</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(img, <span class="hljs-property">@f</span>=u.pixelByte(<span class="hljs-number">0</span>), <span class="hljs-property">@arrayType</span>=Uint8ClampedArray, <span class="hljs-property">@rowsPerSlice</span>)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(img, <span class="hljs-property">@f</span>=u.pixelByte(<span class="hljs-number">0</span>), <span class="hljs-property">@arrayType</span>=Uint8ClampedArray, <span class="hljs-property">@rowsPerSlice</span>, <span class="hljs-property">@model</span>)</span> -&gt;</span>
     <span class="hljs-keyword">super</span>() <span class="hljs-comment"># start out as an empty dataset</span>
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">unless</span> img?
     <span class="hljs-property">@parse</span> img
@@ -769,14 +785,14 @@ img may be a canvas</p>
     <span class="hljs-property">@reset</span> img.width, img.height, data
     
 ABM.PatchDataSet = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">PatchDataSet</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">DataSet</span></span>
-  <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(f, arrayType=Array)</span> -&gt;</span>
-    data = <span class="hljs-keyword">new</span> arrayType (ps=ABM.patches).length
+  <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(f, arrayType=Array, <span class="hljs-property">@model</span>)</span> -&gt;</span>
+    data = <span class="hljs-keyword">new</span> arrayType (ps=<span class="hljs-property">@model</span>.patches).length
     f = u.propFcn f <span class="hljs-keyword">if</span> u.isString f
     data[i] = f(p) <span class="hljs-keyword">for</span> p,i <span class="hljs-keyword">in</span> ps
     <span class="hljs-keyword">super</span> ps.numX, ps.numY, data
     <span class="hljs-property">@useNearest</span> = <span class="hljs-literal">true</span>
   <span class="hljs-attribute">toPatchVar</span>: <span class="hljs-function"><span class="hljs-params">(name)</span> -&gt;</span>
-    p[name] = <span class="hljs-property">@data</span>[i] <span class="hljs-keyword">for</span> p,i <span class="hljs-keyword">in</span> ABM.patches; <span class="hljs-literal">null</span></pre></div></div>
+    p[name] = <span class="hljs-property">@data</span>[i] <span class="hljs-keyword">for</span> p,i <span class="hljs-keyword">in</span> <span class="hljs-property">@model</span>.patches; <span class="hljs-literal">null</span></pre></div></div>
             
         </li>
         

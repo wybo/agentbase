@@ -38,7 +38,7 @@ ABM.DataSet = class DataSet
     ds # async: ds will be empty until import finishes
 
   # 2D Dataset: width/height and an array with length = width*height
-  constructor: (width=0, height=0, data=[]) -> 
+  constructor: (width=0, height=0, data=[], @model) -> 
     @setDefaults()
     @reset width, height, data
   # Reset a dataset to have new width, height and data.  Allows creating
@@ -65,6 +65,9 @@ ABM.DataSet = class DataSet
   setImageNormalize: (@normalizeImage) ->
   setImageAlpha: (@alpha) -> # pixel alpha: [0,255]
   setImageGray: (@gray) ->
+  # Set the model to use by default for things like `toPatchVar()`,
+  # `toDrawing()`, and `toPatchColors()`.
+  setModel: (@model) ->
 
   # Sample the dataset.
   sample: (x,y) -> if @useNearest then @nearest x,y else @bilinear x,y
@@ -113,15 +116,15 @@ ABM.DataSet = class DataSet
     ctx.putImageData idata, 0, 0
     ctx
   # Show dataset as image in patch drawing layer or patch colors, return image
-  toDrawing: -> ABM.patches.installDrawing(img=@toImage()); img
-  toPatchColors: -> ABM.patches.installColors(img=@toImage()); img
+  toDrawing: (model = @model) -> model.patches.installDrawing(img=@toImage()); img
+  toPatchColors: (model = @model) -> model.patches.installColors(img=@toImage()); img
   # Resample dataset to patch width/height and set named patch variable.
   # Note this "insets" the dataset so the variable is sampled the center of the patch.
   # The dataset can be sampled directly to its edges .. i.e. in agent coords.
-  toPatchVar: (name) ->
-    if (ps=ABM.patches).length is @data.length
+  toPatchVar: (name, model = @model) ->
+    if (ps=model.patches).length is @data.length
     then p[name] = @data[i] for p,i in ps
-    else p[name] = @patchSample p.x, p.y for p in ps
+    else p[name] = @patchSample p.x, p.y, model for p in ps
     null
   
   # Sample via transformed coords.
@@ -129,23 +132,23 @@ ABM.DataSet = class DataSet
   coordSample: (x, y, tlx, tly, w, h) -> #brx, bry) ->
     xs=(x-tlx)*(@width-1)/w;  ys=(tly-y)*(@height-1)/h # convert to sample space
     @sample xs,ys
-  patchSample: (px, py) ->
-    w=ABM.world
+  patchSample: (px, py, model = @model) ->
+    w=model.world
     @coordSample px, py, w.minXcor, w.maxYcor, w.numX, w.numY
   
   # Normalize a dataset to linear interpolation: [min,max] -> [lo, hi], float
-  normalize: (lo, hi) -> new DataSet @width, @height, u.normalize @data, lo, hi
+  normalize: (lo, hi) -> new DataSet @width, @height, u.normalize(@data, lo, hi), @model
   # Normalize a dataset to clamped Uint8 bytes [0-255]
-  normalize8: -> new DataSet @width, @height, u.normalize8(@data)
+  normalize8: -> new DataSet @width, @height, u.normalize8(@data), @model
   # Resample dataset to new width, height
   resample: (width, height) ->
-    return new DataSet width,height,@data if width is @width and height is @height
+    return new DataSet width,height,@data,@model if width is @width and height is @height
     data = []; xScale = (@width-1)/(width-1); yScale = (@height-1)/(height-1)
     for y in [0...height] by 1
       for x in [0...width] by 1
         xs=x*xScale; ys=y*yScale
         data.push @sample xs,ys
-    new DataSet width, height, data
+    new DataSet width, height, data, @model
   # Return neighbor values of the given x,y of the dataset.
   # Off-edge neighbors revert to nearest edge value.
   neighborhood: (x,y,array=[]) -> # return 3x3 neighborhood
@@ -167,7 +170,7 @@ ABM.DataSet = class DataSet
       for x in [x0...w] by 1
         @neighborhood x,y,n
         array.push u.aSum(u.aPairMul(kernel, n))*factor
-    new DataSet w-x0, h-y0, array
+    new DataSet w-x0, h-y0, array, @model
   # A few common convolutions.  dzdx/y are also called horiz/vert Sobel
   dzdx: (n=2,factor=1/8) -> @convolve([-1,0,1,-n,0,n,-1,0,1],factor)
   dzdy: (n=2,factor=1/8) -> @convolve([1,n,1,0,0,0,-1,-n,-1],factor)
@@ -177,7 +180,7 @@ ABM.DataSet = class DataSet
   edge: -> @convolve([1,1,1,1,-7,1,1,1,1])
 
   # Return filtered dataset by applying f to each dataset element
-  filter: (f) -> new DataSet @width, @height, (f(d) for d in @data)
+  filter: (f) -> new DataSet @width, @height, (f(d) for d in @data), @model
 
   # Create two new convolved datasets, slope and aspect, common in
   # the use of an elevation data set. See Esri tutorials for 
@@ -199,8 +202,8 @@ ABM.DataSet = class DataSet
         # positive radians in [0,2PI] if desired
         rad += 2*Math.PI if posAngle and rad < 0
         aspect.push rad
-    slope = new DataSet w, h, slope
-    aspect = new DataSet w, h, aspect
+    slope = new DataSet w, h, slope, @model
+    aspect = new DataSet w, h, aspect, @model
     u.aToObj [slope, aspect, dzdx, dzdy], ["slope", "aspect", "dzdx", "dzdy"]
   # Return a subset of the dataset. x,y,width,height integers
   subset: (x, y, width, height) ->
@@ -209,7 +212,7 @@ ABM.DataSet = class DataSet
     for j in [y...y+height] by 1
       for i in [x...x+width] by 1
         data.push @getXY i,j
-    new DataSet width, height, data
+    new DataSet width, height, data, @model
 
 ABM.AscDataSet = class AscDataSet extends DataSet
   # An .asc GIS file a text file with a header:
@@ -226,7 +229,7 @@ ABM.AscDataSet = class AscDataSet extends DataSet
   # Constructor takes a string generally via an xhr request.
   # It can be "empty" .. i.e. needing a second parse() call
   # so that it can be used in an async file operation.
-  constructor: (@str="") ->
+  constructor: (@str="", @model) ->
     super() # start out as an empty dataset
     return if @str.length is 0
     @parse @str
@@ -251,7 +254,7 @@ ABM.ImageDataSet = class ImageDataSet extends DataSet
   # slice of that height; used for huge images.
   # Defaults to gray scale and Uint8ClampedArray
   # img may be a canvas
-  constructor: (img, @f=u.pixelByte(0), @arrayType=Uint8ClampedArray, @rowsPerSlice) ->
+  constructor: (img, @f=u.pixelByte(0), @arrayType=Uint8ClampedArray, @rowsPerSlice, @model) ->
     super() # start out as an empty dataset
     return unless img?
     @parse img
@@ -261,12 +264,12 @@ ABM.ImageDataSet = class ImageDataSet extends DataSet
     @reset img.width, img.height, data
     
 ABM.PatchDataSet = class PatchDataSet extends DataSet
-  constructor: (f, arrayType=Array) ->
-    data = new arrayType (ps=ABM.patches).length
+  constructor: (f, arrayType=Array, @model) ->
+    data = new arrayType (ps=@model.patches).length
     f = u.propFcn f if u.isString f
     data[i] = f(p) for p,i in ps
     super ps.numX, ps.numY, data
     @useNearest = true
   toPatchVar: (name) ->
-    p[name] = @data[i] for p,i in ABM.patches; null
+    p[name] = @data[i] for p,i in @model.patches; null
 
