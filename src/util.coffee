@@ -447,11 +447,11 @@ ABM.util = u =
 
     array._sort lambda
 
-  # Mutator. Removes adjacent dups, by reference, in place from array.
+  # Mutator. Removes dups, by reference, in place from array.
   # Note "by reference" means litteraly same object, not copy. Returns array.
   # Clone first if you want to preserve the original array.
   #
-  #     ids = ({id:i} for i in [0..10])
+  #     ids = ({id: i} for i in [0..10])
   #     a = (ids[i] for i in [1, 3, 4, 1, 1, 10])
   #     # a is [{id: 1}, {id: 3}, {id: 4}, {id: 1}, {id: 1}, {id: 10}]
   #     b = clone a
@@ -462,10 +462,17 @@ ABM.util = u =
   uniq: (array) ->
     hash = {}
 
-    for index in [0...array.length]
-      if hash[array[index]] is true
-        array.splice index, 1
-      hash[array[index]] = true
+    i = 0
+    while i < array.length
+      if hash[array[i]] is true
+        array.splice i, 1
+        i -= 1
+      else
+        hash[array[i]] = true
+      i += 1
+      console.log i
+      console.log array[i]
+      console.log hash
 
     array
   

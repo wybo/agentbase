@@ -7,6 +7,7 @@ code = require "../lib/agentscript.coffee"
     @setupPatches()
     @setupAgents()
     @setupCitizens()
+    @setupLinks()
 
   setupPatches: ->
     @patches.create()
@@ -27,6 +28,10 @@ code = require "../lib/agentscript.coffee"
       if i > 14
         i = 10
         j += 1
+
+  setupLinks: ->
+    for [i, j] in [[0, 1], [2, 1], [1, 2], [1, 3], [4, 10]]
+      @links.create(@agents[i], @agents[j])
 
 @setupModel = (options = {}) ->
   options.torus ?= false

@@ -235,10 +235,8 @@ describe "Agent", ->
       model = t.setupModel()
       agents = model.agents
 
-      model.links.create(agents[0], agents[2])
-      model.links.create(agents[1], agents[2])
-
-      links = agents[2].inLinks()
+      # 0 - 1 & 2 - 1 linked
+      links = agents[1].inLinks()
 
       expect(links.length).toBe 2
       expect(links[0]).toBe model.links[0]
@@ -249,53 +247,47 @@ describe "Agent", ->
       model = t.setupModel()
       agents = model.agents
 
-      model.links.create(agents[0], agents[1])
-      model.links.create(agents[0], agents[2])
-
-      links = agents[0].outLinks()
+      # 1 - 2 & 1 - 3 linked
+      links = agents[1].outLinks()
 
       expect(links.length).toBe 2
-      expect(links[0]).toBe model.links[0]
-      expect(links[1]).toBe model.links[1]
+      expect(links[0]).toBe model.links[2]
+      expect(links[1]).toBe model.links[3]
 
   describe "linkNeighbors", ->
     it "returns all agents linked with", ->
       model = t.setupModel()
       agents = model.agents
 
-      model.links.create(agents[0], agents[1])
-      model.links.create(agents[0], agents[2])
+      # 0 - 1 & 2 - 1 & 1 - 2 & 1 - 3 linked
+      # Duplicate removed
+      linkedAgents = agents[1].linkNeighbors()
 
-      linkedAgents = agents[0].linkNeighbors()
-
-      expect(linkedAgents.length).toBe 2
-      expect(linkedAgents[0]).toBe agents[1]
+      expect(linkedAgents.length).toBe 3
+      expect(linkedAgents[0]).toBe agents[0]
       expect(linkedAgents[1]).toBe agents[2]
+      expect(linkedAgents[2]).toBe agents[3]
 
   describe "inLinkNeighbors", ->
     it "returns all agents that link to this one", ->
       model = t.setupModel()
       agents = model.agents
 
-      model.links.create(agents[0], agents[2])
-      model.links.create(agents[1], agents[2])
-
-      linkedAgents = agents[2].inLinkNeighbors()
+      # 0 - 1 & 2 - 1 linked
+      linkedAgents = agents[1].inLinkNeighbors()
 
       expect(linkedAgents.length).toBe 2
       expect(linkedAgents[0]).toBe agents[0]
-      expect(linkedAgents[1]).toBe agents[1]
+      expect(linkedAgents[1]).toBe agents[2]
 
   describe "outLinkNeighbors", ->
     it "returns all agents that link to this one", ->
       model = t.setupModel()
       agents = model.agents
 
-      model.links.create(agents[0], agents[1])
-      model.links.create(agents[0], agents[2])
-
-      linkedAgents = agents[0].outLinkNeighbors()
+      # 1 - 2 & 1 - 3 linked
+      linkedAgents = agents[1].outLinkNeighbors()
 
       expect(linkedAgents.length).toBe 2
-      expect(linkedAgents[0]).toBe agents[1]
-      expect(linkedAgents[1]).toBe agents[2]
+      expect(linkedAgents[0]).toBe agents[2]
+      expect(linkedAgents[1]).toBe agents[3]

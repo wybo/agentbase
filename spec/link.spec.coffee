@@ -3,17 +3,11 @@ t = require "./test.coffee"
 ABM = t.ABM
 u = ABM.util
 
-class LinkModel extends t.Model
-  setup: ->
-    super
-
-    for [i, j] in [[1, 2], [2, 3], [2, 4], [5, 11]]
-      @links.create(@agents[i], @agents[j])
-
 describe "Link", ->
   describe "die", ->
     it "removes the link", ->
-      model = t.setupModel(model: LinkModel)
+      model = t.setupModel()
+      length = model.links.length
       link = model.links[0]
       from = link.from
       to = link.to
@@ -21,12 +15,13 @@ describe "Link", ->
       link.die()
 
       #expect(link).toEqual(null)
+      expect(model.links.length).toEqual(length - 1)
       expect(from.links.length).toEqual(0)
-      expect(to.links.length).toEqual(2)
+      expect(to.links.length).toEqual(3)
 
   describe "bothEnds", ->
     it "returns both ends", ->
-      model = t.setupModel(model: LinkModel)
+      model = t.setupModel()
       link = model.links[0]
 
       both = link.bothEnds()
@@ -37,18 +32,18 @@ describe "Link", ->
 
   describe "length", ->
     it "returns the length between both ends", ->
-      model = t.setupModel(model: LinkModel)
+      model = t.setupModel()
       link = model.links[0]
 
       expect(link.length()).toBeCloseTo 1.41
 
-      long = model.links[3]
+      long = model.links[4]
 
       expect(long.length()).toBeCloseTo 8.49
 
   describe "otherEnd", ->
     it "returns the other end", ->
-      model = t.setupModel(model: LinkModel)
+      model = t.setupModel()
       link = model.links[1]
 
       expect(link.otherEnd(link.from)).toBe link.to

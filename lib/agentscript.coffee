@@ -447,11 +447,11 @@ ABM.util = u =
 
     array._sort lambda
 
-  # Mutator. Removes adjacent dups, by reference, in place from array.
+  # Mutator. Removes dups, by reference, in place from array.
   # Note "by reference" means litteraly same object, not copy. Returns array.
   # Clone first if you want to preserve the original array.
   #
-  #     ids = ({id:i} for i in [0..10])
+  #     ids = ({id: i} for i in [0..10])
   #     a = (ids[i] for i in [1, 3, 4, 1, 1, 10])
   #     # a is [{id: 1}, {id: 3}, {id: 4}, {id: 1}, {id: 1}, {id: 10}]
   #     b = clone a
@@ -462,10 +462,17 @@ ABM.util = u =
   uniq: (array) ->
     hash = {}
 
-    for index in [0...array.length]
-      if hash[array[index]] is true
-        array.splice index, 1
-      hash[array[index]] = true
+    i = 0
+    while i < array.length
+      if hash[array[i]] is true
+        array.splice i, 1
+        i -= 1
+      else
+        hash[array[i]] = true
+      i += 1
+      console.log i
+      console.log array[i]
+      console.log hash
 
     array
   
@@ -1391,17 +1398,26 @@ class ABM.Agent
   inLinks: ->
     link for link in @links when link.to is @
 
-  # Return all agents linked to me.
-  linkNeighbors: -> # return all agents linked to me
-    @otherEnd link for link in @links
+  # All agents linked to me.
+  linkNeighbors: ->
+    array = []
+    for link in @links
+      array.push @otherEnd(link)
+    u.uniq(array)
  
-  # Return other end of myInLinks
+  # Other end of myInLinks
   inLinkNeighbors: ->
-    link.from for link in @inLinks()
+    array = []
+    for link in @inLinks()
+      array.push link.from
+    u.uniq(array)
  
-  # Return other end of myOutinks
+  # Other end of myOutinks
   outLinkNeighbors: ->
-    link.to for link in @outLinks()
+    array = []
+    for link in @outLinks()
+      array.push link.to
+    u.uniq(array)
 
   # ### Drawing
 
@@ -1476,6 +1492,21 @@ class ABM.Agents extends ABM.Set
   neighboring: (agent, rangeOptions) ->
     array = agent.neighbors(rangeOptions)
     @in array
+
+  # Circle Layout: position the agents in the list in an equally
+  # spaced circle of the given radius, with the initial agent
+  # at the given start angle (default to pi / 2 or "up") and in the
+  # +1 or -1 direction (counder clockwise or clockwise) 
+  # defaulting to -1 (clockwise).
+  formCircle: (radius, startAngle = Math.PI / 2, direction = -1) ->
+    dTheta = 2 * Math.PI / @.length
+
+    for agent, i in @
+      agent.moveTo x: 0, y: 0
+      agent.heading = startAngle + direction * dTheta * i
+      agent.forward radius
+
+    null
 
 # Class Model is the control center for our Sets: Patches, Agents and Links.
 # Creating new models is done by subclassing class Model and overriding two 
@@ -1702,7 +1733,7 @@ class ABM.Links extends ABM.Set
   # Return all the nodes in this agentset, with duplicates
   # included.  If 4 links have the same endpoint, it will
   # appear 4 times.
-  allEnds: -> # all link ends, w / dups
+  nodesWithDups: -> # all link ends, w / dups
     set = @asSet []
 
     for link in @
@@ -1711,23 +1742,8 @@ class ABM.Links extends ABM.Set
     set
 
   # Returns all the nodes in this agentset with duplicates removed.
-  nodes: -> # allEnds without dups
-    @allEnds().uniq()
-  
-  # Circle Layout: position the agents in the list in an equally
-  # spaced circle of the given radius, with the initial agent
-  # at the given start angle (default to pi / 2 or "up") and in the
-  # +1 or -1 direction (counder clockwise or clockwise) 
-  # defaulting to -1 (clockwise).
-  layoutCircle: (list, radius, startAngle = Math.PI / 2, direction = -1) ->
-    dTheta = 2 * Math.PI / list.length
-
-    for agent, i in list
-      agent.moveTo x: 0, y: 0
-      agent.heading = startAngle + direction * dTheta * i
-      agent.forward radius
-
-    null
+  nodes: ->
+    @nodesWithDups().uniq()
 
 # Class Model is the control center for our Sets: Patches, Agents and Links.
 # Creating new models is done by subclassing class Model and overriding two 

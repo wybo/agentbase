@@ -6,8 +6,10 @@ u = ABM.util
 class CreateModel extends t.Model
   setup: ->
     @setupPatches()
+
     @counter = 0
-    @agents.create(2, (agent) => @counter += 1)
+    @agents.create(2, (agent) =>
+      @counter += 1)
 
 describe "Agents", ->
   describe "in", ->
@@ -64,3 +66,16 @@ describe "Agents", ->
 
       neighbors = model.citizens.neighboring(model.citizens[0], 8)
       expect(neighbors.length).toBe(9)
+
+  describe "formCircle", ->
+    it "positions the agents in a circle", ->
+      model = t.setupModel()
+
+      model.agents.formCircle(10)
+
+      expect(model.agents[0].position.x).toBeCloseTo 0
+      expect(model.agents[0].position.y).toBeCloseTo 10
+      expect(model.agents[10].position.x).toBeCloseTo 9.43
+      expect(model.agents[10].position.y).toBeCloseTo 3.32
+      expect(model.agents[41].position.x).toBeCloseTo -9.43
+      expect(model.agents[41].position.y).toBeCloseTo 3.32

@@ -27,7 +27,7 @@ class ABM.Links extends ABM.Set
   # Return all the nodes in this agentset, with duplicates
   # included.  If 4 links have the same endpoint, it will
   # appear 4 times.
-  allEnds: -> # all link ends, w / dups
+  nodesWithDups: -> # all link ends, w / dups
     set = @asSet []
 
     for link in @
@@ -36,20 +36,5 @@ class ABM.Links extends ABM.Set
     set
 
   # Returns all the nodes in this agentset with duplicates removed.
-  nodes: -> # allEnds without dups
-    @allEnds().uniq()
-  
-  # Circle Layout: position the agents in the list in an equally
-  # spaced circle of the given radius, with the initial agent
-  # at the given start angle (default to pi / 2 or "up") and in the
-  # +1 or -1 direction (counder clockwise or clockwise) 
-  # defaulting to -1 (clockwise).
-  layoutCircle: (list, radius, startAngle = Math.PI / 2, direction = -1) ->
-    dTheta = 2 * Math.PI / list.length
-
-    for agent, i in list
-      agent.moveTo x: 0, y: 0
-      agent.heading = startAngle + direction * dTheta * i
-      agent.forward radius
-
-    null
+  nodes: ->
+    @nodesWithDups().uniq()

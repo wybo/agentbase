@@ -29,7 +29,7 @@
         for agent in @agents
           agent.size = Math.sqrt agent.linkNeighbors().length
 
-        @links.layoutCircle @agents, @patches.max.x * 0.9
+        @agents.formCircle @patches.max.x * 0.9
 
         @histogram = u.histogram @agents, 1, (agent) ->
           agent.linkNeighbors().length
@@ -47,7 +47,7 @@
           agent.forward 8
 
       findPartner: ->
-        u.sample @links.sample().bothEnds() # or @links.allEnds().sample()
+        u.sample @links.sample().bothEnds()
 
     model = new MyModel {
       div: "layers",

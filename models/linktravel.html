@@ -42,7 +42,7 @@
               @links.create agent, @nodes.other(agent).sample() # @links.create a, @nodes().other(a).sample()
         
         if @layoutCircle
-          @links.layoutCircle @nodes, @patches.max.x - 1
+          @nodes.formCircle @patches.max.x - 1
         
         # Test labels
         # l.label = l.length().toFixed(0) for l in @links

@@ -297,9 +297,9 @@ describe "Util", ->
 
   describe "uniq", ->
     it "returns the array with only unique items", ->
-      array = [0, 2, 0, 8, 2]
+      array = [0, 2, 1, 0, 8, 2, 1, 1]
       u.uniq(array) # changes array in place
-      expect(array).toEqual [0, 2, 8]
+      expect(array).toEqual [0, 2, 1, 8]
 
   describe "flatten", ->
     it "flattens the matrix to an array", ->

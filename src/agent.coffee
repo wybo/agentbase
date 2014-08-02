@@ -168,17 +168,26 @@ class ABM.Agent
   inLinks: ->
     link for link in @links when link.to is @
 
-  # Return all agents linked to me.
-  linkNeighbors: -> # return all agents linked to me
-    @otherEnd link for link in @links
+  # All agents linked to me.
+  linkNeighbors: ->
+    array = []
+    for link in @links
+      array.push @otherEnd(link)
+    u.uniq(array)
  
-  # Return other end of myInLinks
+  # Other end of myInLinks
   inLinkNeighbors: ->
-    link.from for link in @inLinks()
+    array = []
+    for link in @inLinks()
+      array.push link.from
+    u.uniq(array)
  
-  # Return other end of myOutinks
+  # Other end of myOutinks
   outLinkNeighbors: ->
-    link.to for link in @outLinks()
+    array = []
+    for link in @outLinks()
+      array.push link.to
+    u.uniq(array)
 
   # ### Drawing
 

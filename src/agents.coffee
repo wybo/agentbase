@@ -40,3 +40,18 @@ class ABM.Agents extends ABM.Set
   neighboring: (agent, rangeOptions) ->
     array = agent.neighbors(rangeOptions)
     @in array
+
+  # Circle Layout: position the agents in the list in an equally
+  # spaced circle of the given radius, with the initial agent
+  # at the given start angle (default to pi / 2 or "up") and in the
+  # +1 or -1 direction (counder clockwise or clockwise) 
+  # defaulting to -1 (clockwise).
+  formCircle: (radius, startAngle = Math.PI / 2, direction = -1) ->
+    dTheta = 2 * Math.PI / @.length
+
+    for agent, i in @
+      agent.moveTo x: 0, y: 0
+      agent.heading = startAngle + direction * dTheta * i
+      agent.forward radius
+
+    null
