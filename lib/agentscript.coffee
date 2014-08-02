@@ -470,9 +470,6 @@ ABM.util = u =
       else
         hash[array[i]] = true
       i += 1
-      console.log i
-      console.log array[i]
-      console.log hash
 
     array
   

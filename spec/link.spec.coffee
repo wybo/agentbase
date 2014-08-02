@@ -14,10 +14,10 @@ describe "Link", ->
 
       link.die()
 
-      #expect(link).toEqual(null)
-      expect(model.links.length).toEqual(length - 1)
-      expect(from.links.length).toEqual(0)
-      expect(to.links.length).toEqual(3)
+      #expect(link).toEqual null
+      expect(model.links.length).toEqual length - 1
+      expect(from.links.length).toEqual 0
+      expect(to.links.length).toEqual 3
 
   describe "bothEnds", ->
     it "returns both ends", ->
@@ -27,8 +27,8 @@ describe "Link", ->
       both = link.bothEnds()
 
       expect(both.length).toEqual 2
-      expect(both[0].id).toBe(link.from.id)
-      expect(both[1].id).toBe(link.to.id)
+      expect(both[0].id).toBe link.from.id
+      expect(both[1].id).toBe link.to.id
 
   describe "length", ->
     it "returns the length between both ends", ->

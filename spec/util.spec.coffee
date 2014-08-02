@@ -313,30 +313,42 @@ describe "Util", ->
 
   describe "angle", ->
     it "returns the radians toward the second point", ->
-      expect(u.angle({x: 1, y: 1}, {x: 3, y: 3}, {isTorus: false})).toBeCloseTo 0.79
+      expect(u.angle({x: 1, y: 1}, {x: 3, y: 3},
+        {isTorus: false})).toBeCloseTo 0.79
 
     it "returns the radians toward the second point on a torus", ->
-      expect(u.angle({x: 1, y: 1}, {x: 3, y: 3}, {isTorus: true, width: 10, height: 10})).toBeCloseTo 0.79
-      expect(u.angle({x: 1, y: 1}, {x: 3, y: 3}, {isTorus: true, width: 3, height: 3})).toBeCloseTo -2.36
+      expect(u.angle({x: 1, y: 1}, {x: 3, y: 3},
+        {isTorus: true, width: 10, height: 10})).toBeCloseTo 0.79
+      expect(u.angle({x: 1, y: 1}, {x: 3, y: 3},
+        {isTorus: true, width: 3, height: 3})).toBeCloseTo -2.36
 
   describe "inCone", ->
     it "returns true if in cone", ->
-      expect(u.inCone(3, 6, 3, {x: 1, y: 1}, {x: 2, y: 2}, {isTorus: false})).toBe true
-      expect(u.inCone(3, 3, 1, {x: 1, y: 1}, {x: 2, y: 2}, {isTorus: false})).toBe false
+      expect(u.inCone(3, 6, 3, {x: 1, y: 1}, {x: 2, y: 2},
+        {isTorus: false})).toBe true
+      expect(u.inCone(3, 3, 1, {x: 1, y: 1}, {x: 2, y: 2},
+        {isTorus: false})).toBe false
 
     it "returns true if in cone for toruses too", ->
-      expect(u.inCone(3, 6, 3, {x: 1, y: 1}, {x: 2, y: 2}, {isTorus: true, width: 10, height: 10})).toBe true
-      expect(u.inCone(3, 3, 3, {x: 1, y: 1}, {x: 2, y: 2}, {isTorus: true, width: 10, height: 10})).toBe false
-      expect(u.inCone(3, 3, 3, {x: 1, y: 1}, {x: 2, y: 2}, {isTorus: true, width: 3, height: 3})).toBe true
+      expect(u.inCone(3, 6, 3, {x: 1, y: 1}, {x: 2, y: 2},
+        {isTorus: true, width: 10, height: 10})).toBe true
+      expect(u.inCone(3, 3, 3, {x: 1, y: 1}, {x: 2, y: 2},
+        {isTorus: true, width: 10, height: 10})).toBe false
+      expect(u.inCone(3, 3, 3, {x: 1, y: 1}, {x: 2, y: 2},
+        {isTorus: true, width: 3, height: 3})).toBe true
 
   describe "distance", ->
     it "returns distance between the points", ->
-      expect(u.distance({x: 1, y: 1}, {x: 3, y: 1}, {isTorus: false})).toBe 2
-      expect(u.distance({x: 1, y: 1}, {x: 4, y: 9}, {isTorus: false})).toBeCloseTo 8.54
+      expect(u.distance({x: 1, y: 1}, {x: 3, y: 1},
+        {isTorus: false})).toBe 2
+      expect(u.distance({x: 1, y: 1}, {x: 4, y: 9},
+        {isTorus: false})).toBeCloseTo 8.54
 
     it "returns distance between the closest points on the torus", ->
-      expect(u.distance({x: 1, y: 1}, {x: 4, y: 9}, {isTorus: true, width: 20, height: 20})).toBeCloseTo 8.54
-      expect(u.distance({x: 1, y: 1}, {x: 4, y: 9}, {isTorus: true, width: 10, height: 10})).toBeCloseTo 3.61
+      expect(u.distance({x: 1, y: 1}, {x: 4, y: 9},
+        {isTorus: true, width: 20, height: 20})).toBeCloseTo 8.54
+      expect(u.distance({x: 1, y: 1}, {x: 4, y: 9},
+        {isTorus: true, width: 10, height: 10})).toBeCloseTo 3.61
 
   describe "torus4Points", ->
     it "returns the 4 reflected points", ->
@@ -345,7 +357,8 @@ describe "Util", ->
 
   describe "closestTorusPoint", ->
     it "returns the closest of the 4 reflected points", ->
-      expect(u.closestTorusPoint({x: 1, y: 1}, {x: 4, y: 9}, 10, 10)).toEqual {x: 4, y: -1}
+      expect(u.closestTorusPoint({x: 1, y: 1}, {x: 4, y: 9},
+        10, 10)).toEqual {x: 4, y: -1}
 
   # ### File I/O
 
@@ -357,7 +370,7 @@ describe "Util", ->
       image = u.importImage(source, call)
       expect(image.src).toEqual source
       expect(image.isDone).toBe false
-      expect(image.onload.toString()).toContain("isDone")
+      expect(image.onload.toString()).toContain "isDone"
 
   describe "xhrLoadFile", ->
     it "returns an image object", ->
@@ -370,7 +383,7 @@ describe "Util", ->
       request = u.xhrLoadFile(source, null, type, call)
       expect(request.responseType).toEqual type
       expect(request.isDone).toBe false
-      expect(request.onload.toString()).toContain("isDone")
+      expect(request.onload.toString()).toContain "isDone"
 
   describe "filesLoaded", ->
     it "returns true if all files were loaded", ->
@@ -438,5 +451,3 @@ describe "Util", ->
       array = Uint8Array([1,2])
       array = u.typedToJS(array)
       expect(array.sort?).toBe true
-
-
