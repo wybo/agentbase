@@ -31,7 +31,7 @@ class ABM.Links extends ABM.Set
     set = @asSet []
 
     for link in @
-      set.push link.end1, link.end2
+      set.push link.from, link.to
 
     set
 

@@ -136,9 +136,9 @@
 
           unless (patch.isNest or patch.isFood) #  or patch.isOnEdge()
             if patch.foodPheromone > patch.nestPheromone
-              patch.fractionOfColor @foodColor, patch.foodPheromone
+              patch.color = u.fractionOfColor @foodColor, patch.foodPheromone
             else
-              patch.fractionOfColor @nestColor, patch.nestPheromone
+              patch.color = u.fractionOfColor @nestColor, patch.nestPheromone
 
         null
 

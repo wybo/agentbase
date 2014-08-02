@@ -6,6 +6,7 @@ path = require 'path'
 {exec} = require 'child_process'
 shell = require 'shelljs'
 readline = require 'readline'
+optparse = require 'optparse'
 # Note: try https://github.com/mgutz/execSync
 
 node_modules = path.join(path.dirname(fs.realpathSync(__filename)), '/node_modules/.bin')
@@ -22,8 +23,6 @@ srcDir = "src/"
 extrasDir = "extras/"
 toolsDir = 'tools/'
 libDir = 'lib/'
-
-TestCommand = "./node_modules/jasmine-node/bin/jasmine-node --coffee spec/"
 
 firstFileNames = ['util.coffee', 'set.coffee']
 FileNames = firstFileNames.concat(
@@ -46,8 +45,10 @@ task 'all', 'Compile coffee, minify js, create docs', ->
 compileFile = (path) ->
   console.log "Compiling #{path}"
   if (/.coffee$/.test(path))
-  then compileCoffee(path)
-  else compileJS(path)
+    compileCoffee(path)
+  else
+    compileJS(path)
+
 compileCoffee = (path) ->
   coffeeName = path.replace /^.*\//, ''
   coffeeDir = path.replace /\/[^/]*$/, ''
@@ -55,16 +56,20 @@ compileCoffee = (path) ->
     cd #{coffeeDir}
     coffee --map --compile --output ../#{libDir} #{coffeeName}
   """ , ->
+
 compileJS = (path) ->
   shell.exec """
     cp #{path} #{libDir}
   """, ->
+
 task 'build', 'Compile agentscript and libraries from source files', ->
   invoke 'build:agentscript'
   invoke 'build:extras'
+
 task 'build:agentscript', 'Compile agentscript from source files', ->
   invoke 'cat'
   compileFile MergedPath
+
 task 'build:extras', 'Compile all libraries from their source file', ->
   compileFile name for name in XPaths
 
@@ -82,11 +87,7 @@ task 'doc', 'Create documentation from source files', ->
     #{cpfiles}
     docco #{tmpfiles.join(" ")} -o docs  &&
     docco #{XPaths.join(" ")} -o docs
-  """, -> #{silent:true}, (code,output) -> console.log output
-# task 'xdoc', 'Create documentation for addons', ->
-#   shell.exec """
-#     docco #{XPaths.join(" ")} -o docs
-#   """, ->
+  """, -> #{silent:true}, (code, output) -> console.log output
 
 task 'git:prep', 'master: cake all; git add/status', ->
   # call doc task from shell .. async problems otherwise
@@ -96,12 +97,14 @@ task 'git:prep', 'master: cake all; git add/status', ->
     git add .
     git status
   """, ->
+
 task 'git:commit', 'master: commit, push to github', ->
   shell.exec """
     git checkout master
     git commit
     git push origin master
   """, ->
+
 task 'git:pages', 'gh-pages: merge master, push to github gh-page', ->
   console.log """
   This will checkout the gh-pages branchs, making your working
@@ -116,10 +119,12 @@ task 'git:pages', 'gh-pages: merge master, push to github gh-page', ->
         git push origin gh-pages
         git checkout master
       """, ->
+
 task 'git:diff', 'git diff the core and extras .coffee files', ->
   coffeeFiles = FilePaths.concat(XPaths).join(' ')
   diffFiles = "Cakefile README.md #{coffeeFiles} models sketches"
   exec "git diff #{diffFiles} | #{editor}"
+
 task 'git:diffhead', 'git diff staged/head core, extras, models', ->
   coffeeFiles = FilePaths.concat(XPaths).join(' ')
   diffFiles = "Cakefile README.md #{coffeeFiles} models sketches"
@@ -127,23 +132,28 @@ task 'git:diffhead', 'git diff staged/head core, extras, models', ->
 
 task 'minify', 'Create minified version of coffeescript.js', ->
   console.log "uglify javascript files"
+
   for file in JSNames
     shell.exec "uglifyjs #{libDir}#{file}.js -c -m -o #{libDir}#{file}.min.js", ->
   
 task 'update:cs', 'Update coffee-script.js', ->
   url = "http://jashkenas.github.io/coffee-script/extras/coffee-script.js"
-  shell.exec "cd #{toolsDir}; curl #{url} -O", 
+  shell.exec "cd #{toolsDir}; curl #{url} -O",
     -> console.log shell.grep(/^ \* /, "tools/coffee-script.js")
 
 task 'watch', 'Watch for source file updates, invoke builds', ->
   invoke 'build:agentscript'
+
   console.log "Watching source directory"
+
   for path in FilePaths then do (path) ->
     fs.watchFile path, (curr, prev) ->
       if +curr.mtime isnt +prev.mtime
         console.log "#{path}: #{curr.mtime}"
         invoke 'build:agentscript'
+
   invoke 'build:extras'
+
   for path in XPaths then do (path) ->
     fs.watchFile path, (curr, prev) ->
       if +curr.mtime isnt +prev.mtime
@@ -152,15 +162,25 @@ task 'watch', 'Watch for source file updates, invoke builds', ->
 
 wcCode = (file) ->
   shell.grep('-v', /^ *[#/]|^ *$|^ *root|setRootVars|^ *console/, file).split('\n').length
+
 task 'wc', 'Count the lines of coffeescript & javascript', ->
-  jsPath = MergedPath.replace("#{srcDir}","#{libDir}").replace('coffee','js')
+  jsPath = MergedPath.replace("#{srcDir}", "#{libDir}").replace('coffee', 'js')
   console.log "code: #{MergedPath}: #{wcCode(MergedPath)}"
   console.log "code: #{jsPath}: #{wcCode(jsPath)}"
 
-prompt = (q,f) ->
-  rl=readline.createInterface {input:process.stdin, output:process.stdout}
+prompt = (q, f) ->
+  rl = readline.createInterface {input: process.stdin, output: process.stdout}
   rl.question q, (ans) ->
     rl.close()
     f(ans)
-task 'test', 'Testing code', ->
-  shell.exec TestCommand, async: true
+
+option '-f', '--file [DIR]', 'Path to test file or test file name'
+task 'test', 'Testing code', (options) ->
+  file = 'spec/'
+  if options.file
+    name = options.file.replace /spec\//, ''
+    name = name.replace /\.spec.coffee/, ''
+    file += name + '.spec.coffee'
+
+  shell.exec "./node_modules/jasmine-node/bin/jasmine-node --coffee " +
+    "--verbose --captureExceptions " + file, async: true

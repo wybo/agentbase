@@ -138,6 +138,10 @@ describe "Util", ->
     it "throws an error if not supported", ->
       expect(u.colorFromString, "ultrasonicviolet").toThrow()
 
+  describe "fractionOfColor", ->
+    it "reduces the color towards white with fraction", ->
+      expect(u.fractionOfColor([128, 0, 32], 0.5)).toEqual [64, 0, 16]
+
   describe "brightenColor", ->
     it "brightens the color by fraction", ->
       expect(u.brightenColor([0, 255, 128], 0.1)).toEqual [26, 255, 154]
@@ -307,13 +311,13 @@ describe "Util", ->
 
   # ### Topology operations
 
-  describe "radiansToward", ->
+  describe "angle", ->
     it "returns the radians toward the second point", ->
-      expect(u.radiansToward({x: 1, y: 1}, {x: 3, y: 3}, {isTorus: false})).toBeCloseTo 0.79
+      expect(u.angle({x: 1, y: 1}, {x: 3, y: 3}, {isTorus: false})).toBeCloseTo 0.79
 
     it "returns the radians toward the second point on a torus", ->
-      expect(u.radiansToward({x: 1, y: 1}, {x: 3, y: 3}, {isTorus: true, width: 10, height: 10})).toBeCloseTo 0.79
-      expect(u.radiansToward({x: 1, y: 1}, {x: 3, y: 3}, {isTorus: true, width: 3, height: 3})).toBeCloseTo -2.36
+      expect(u.angle({x: 1, y: 1}, {x: 3, y: 3}, {isTorus: true, width: 10, height: 10})).toBeCloseTo 0.79
+      expect(u.angle({x: 1, y: 1}, {x: 3, y: 3}, {isTorus: true, width: 3, height: 3})).toBeCloseTo -2.36
 
   describe "inCone", ->
     it "returns true if in cone", ->
@@ -327,6 +331,7 @@ describe "Util", ->
 
   describe "distance", ->
     it "returns distance between the points", ->
+      expect(u.distance({x: 1, y: 1}, {x: 3, y: 1}, {isTorus: false})).toBe 2
       expect(u.distance({x: 1, y: 1}, {x: 4, y: 9}, {isTorus: false})).toBeCloseTo 8.54
 
     it "returns distance between the closest points on the torus", ->

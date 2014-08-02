@@ -33,6 +33,12 @@ describe "Agent", ->
       expect(agent.position).toEqual x: 11, y: 12
       expect(patch.agents[0]).toBe agent
 
+      agent.moveTo x: 8.5, y: 7.4
+      patch = model.patches.patch x: 9, y: 7
+
+      expect(agent.position).toEqual x: 8.5, y: 7.4
+      expect(patch.agents[0]).toBe agent
+
   describe "moveOff", ->
     it "moves the agent off the grid", ->
       model = t.setupModel()
@@ -74,6 +80,14 @@ describe "Agent", ->
       agent.face(x: 0, y: 0)
 
       expect(agent.heading).toBeCloseTo u.degreesToRadians(45)
+
+  describe "distance", ->
+    it "returns the distance to the given point", ->
+      model = t.setupModel()
+      agents = model.agents
+
+      expect(agents[0].distance(agents[1].position)).toBeCloseTo(
+        Math.sqrt(2))
 
   describe "neighbors", ->
     it "returns the neighbors in euclidian space", ->
@@ -179,3 +193,109 @@ describe "Agent", ->
 
       neighbors = agents[20].neighbors(cone: u.degreesToRadians(90), radius: 3)
       expect(neighbors.length).toBe 2
+
+  describe "die", ->
+    it "dies, is removed from patch and breed list", ->
+      model = t.setupModel()
+      agent = model.agents[0]
+      id = agent.id
+
+      patch = agent.patch
+      agent.die()
+
+      expect(patch.agents.length).toBe 0
+      expect(model.agents[0].id).not.toBe id
+
+  describe "hatch", ->
+    it "creates num new agents at this location", ->
+      model = t.setupModel()
+      agent = model.agents[0]
+      agent.custo = 1337
+
+      agent.hatch(2)
+      agents = agent.patch.agents
+
+      expect(agents.length).toBe 3
+      expect(agents[1].custom).toBe agent.custom
+      expect(agents[2].custom).toBe agent.custom
+
+  # ### Links
+
+  describe "otherEnd", ->
+    it "returns the other end of a link", ->
+      model = t.setupModel()
+      agents = model.agents
+
+      model.links.create(agents[0], agents[1])
+
+      expect(agents[0].otherEnd(model.links[0])).toBe agents[1]
+
+  describe "inLinks", ->
+    it "returns the incoming links", ->
+      model = t.setupModel()
+      agents = model.agents
+
+      model.links.create(agents[0], agents[2])
+      model.links.create(agents[1], agents[2])
+
+      links = agents[2].inLinks()
+
+      expect(links.length).toBe 2
+      expect(links[0]).toBe model.links[0]
+      expect(links[1]).toBe model.links[1]
+
+  describe "outLinks", ->
+    it "returns the outgoing links", ->
+      model = t.setupModel()
+      agents = model.agents
+
+      model.links.create(agents[0], agents[1])
+      model.links.create(agents[0], agents[2])
+
+      links = agents[0].outLinks()
+
+      expect(links.length).toBe 2
+      expect(links[0]).toBe model.links[0]
+      expect(links[1]).toBe model.links[1]
+
+  describe "linkNeighbors", ->
+    it "returns all agents linked with", ->
+      model = t.setupModel()
+      agents = model.agents
+
+      model.links.create(agents[0], agents[1])
+      model.links.create(agents[0], agents[2])
+
+      linkedAgents = agents[0].linkNeighbors()
+
+      expect(linkedAgents.length).toBe 2
+      expect(linkedAgents[0]).toBe agents[1]
+      expect(linkedAgents[1]).toBe agents[2]
+
+  describe "inLinkNeighbors", ->
+    it "returns all agents that link to this one", ->
+      model = t.setupModel()
+      agents = model.agents
+
+      model.links.create(agents[0], agents[2])
+      model.links.create(agents[1], agents[2])
+
+      linkedAgents = agents[2].inLinkNeighbors()
+
+      expect(linkedAgents.length).toBe 2
+      expect(linkedAgents[0]).toBe agents[0]
+      expect(linkedAgents[1]).toBe agents[1]
+
+  describe "outLinkNeighbors", ->
+    it "returns all agents that link to this one", ->
+      model = t.setupModel()
+      agents = model.agents
+
+      model.links.create(agents[0], agents[1])
+      model.links.create(agents[0], agents[2])
+
+      linkedAgents = agents[0].outLinkNeighbors()
+
+      expect(linkedAgents.length).toBe 2
+      expect(linkedAgents[0]).toBe agents[1]
+      expect(linkedAgents[1]).toBe agents[2]

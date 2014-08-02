@@ -9,23 +9,24 @@ class ABM.Agents extends ABM.Set
     super # call super with all the args I was called with
     @useSprites = false
 
-  # Have agents cache the links with them as a node.
-  # Optimizes Agent a.myLinks method. Call before any agents created.
-  cacheLinks: ->
-    @agentClass::cacheLinks = true # all agents, not individual breeds
-
   # Use sprites rather than drawing
   setUseSprites: (@useSprites = true) ->
   
   # Filter to return all instances of this breed. Note: if used by
   # the mainSet, returns just the agents that are not subclassed breeds.
-  in: (array) ->
-    @asSet (o for o in array when o.breed is @)
+  in: (agents) ->
+    array = []
+
+    for agent in agents
+      if agent.breed is @
+        array.push agent
+
+    @asSet array
 
   # Factory: create num new agents stored in this agentset. The optional init
   # proc is called on the new agent after inserting in its agentSet.
-  create: (num, init = ->) -> # returns array of new agents too
-    ((o) -> init(o); o) @add new @agentClass for i in [1..num] by 1 # too tricky?
+  create: (num, initialize = ->) -> # returns array of new agents too
+    ((o) -> initialize(o); o) @add new @agentClass for i in [1..num] by 1 # too tricky?
     # TODO refactor!
 
   # Remove all agents from set via agent.die()
@@ -36,6 +37,6 @@ class ABM.Agents extends ABM.Set
   
   # Return the members of this agentset that are neighbors of agent
   # using patch topology
-  neighboring: (agent, rangeOptions)->
+  neighboring: (agent, rangeOptions) ->
     array = agent.neighbors(rangeOptions)
-    if @mainSet? then @in array else @asSet array
+    @in array

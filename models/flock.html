@@ -75,7 +75,7 @@
         agent.forward .5 # move partial patch for smooth animation.
 
       separate: (agent, nearest) ->
-        angle = nearest.angleTowards agent.position
+        angle = u.angle nearest.position, agent.position, ABM.patches
         @turnTowards agent, angle
 
       align: (agent, flockmates) ->
@@ -95,9 +95,8 @@
         @safeAtan dy, dx
 
       averageHeadingTowards: (agent, flockmates) ->
-        # TODO reformat
-        dx = (Math.sin f.angleTowards agent.position for f in flockmates).reduce (x, y) -> x + y
-        dy = (Math.cos f.angleTowards agent.position for f in flockmates).reduce (x, y) -> x + y
+        dx = (Math.sin u.angle(f.position, agent.position, ABM.patches) for f in flockmates).reduce (x, y) -> x + y
+        dy = (Math.cos u.angle(f.position, agent.position, ABM.patches) for f in flockmates).reduce (x, y) -> x + y
         @safeAtan dy, dx
 
       safeAtan: (x, y) ->

@@ -261,7 +261,7 @@ class ABM.Patches extends ABM.Set
       patch[v] = patch._diffuseNext
       patch._diffuseNext = 0
       if c
-        patch.fractionOfColor c, patch[v]
+        patch.color = u.fractionOfColor c, patch[v]
     null # avoid returning copy of @
 
   # ### Drawing

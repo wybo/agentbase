@@ -53,7 +53,7 @@
 
       fadeEmbers: ->
         for ember in @embers by -1 # -1: allow die() in loop
-          ember.fractionOfColor ember.color, .8
+          ember.color = u.fractionOfColor ember.color, .8
           if 100 > Math.max ember.color... # or (Math.max a.color...) < 100 , needs parens
             ember.patch.color = ember.color
             ember.patch.draw @contexts.patches

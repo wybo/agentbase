@@ -144,10 +144,6 @@ class ABM.Model
   # Don't use if patch breeds have different colors.
   setMonochromePatches: -> @patches.monochrome = true
     
-  # Have agents cache the links with them as a node.
-  # Optimizes Agent a.myLinks method
-  setCacheMyLinks: -> @agents.cacheLinks()
-  
 #### User Model Creation
 # A user's model is made by subclassing Model and over-riding these
 # two abstract methods. `super` need not be called.

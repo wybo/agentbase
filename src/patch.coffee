@@ -35,16 +35,6 @@ class ABM.Patch
     "{id:#{@id} position: {x: #{@position.x}, y: #{@position.y}}," +
     "c: #{@color}}"
 
-  # Set patch color to `c` scaled by `fraction`. Usage:
-  #
-  #     patch.fractionOfColor patch.color, .8 # reduce patch color by .8
-  #     patch.fractionOfColor @foodColor, patch.foodPheromone # ants model
-  #
-  # Promotes color if currently using the default.
-  fractionOfColor: (color, fraction) ->
-    @color = u.clone @color unless @.hasOwnProperty("color")
-    u.fractionOfColor color, fraction, @color
-  
   # Draw the patch and its text label if there is one.
   draw: (context) ->
     context.fillStyle = u.colorString @color
@@ -104,6 +94,7 @@ class ABM.Patch
   
       if cacheKey?
         @neighborsCache[cacheKey] = neighbors
+
     return neighbors
 
   # Not to be used directly, will not cache.

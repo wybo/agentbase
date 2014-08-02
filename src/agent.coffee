@@ -6,23 +6,22 @@
 class ABM.Agent
   # Constructor & Class Variables:
   #
-  # * id:         unique identifier, promoted by agentset create() factory method
-  # * breed:      the agentset this agent belongs to
-  # * x, y:       position on the patch grid, in patch coordinates, default: 0, 0
-  # * size:       size of agent, in patch coordinates, default: 1
-  # * color:      the color of the agent, default: randomColor
-  # * shape:      the shape name of the agent, default: "default"
-  # * label:      a text label drawn on my instances
-  # * labelColor: the color of my label text
-  # * labelOffset:the x, y offset of my label from my x, y location
-  # * heading:    direction of the agent, in radians, from x-axis
-  # * hidden:     whether or not to draw this agent
-  # * patch:      patch at current x, y location
-  # * penDown:    true if agent pen is drawing
-  # * penSize:    size in pixels of the pen, default: 1 pixel
-  # * sprite:     an image of the agent if non null
-  # * cacheLinks: if true, keep array of links in/out of me
-  # * links:      array of links in/out of me.  Only used if @cacheLinks is true
+  # * id:          unique identifier, promoted by agentset create() factory method
+  # * breed:       the agentset this agent belongs to
+  # * x, y:        position on the patch grid, in patch coordinates, default: 0, 0
+  # * size:        size of agent, in patch coordinates, default: 1
+  # * color:       the color of the agent, default: randomColor
+  # * shape:       the shape name of the agent, default: "default"
+  # * label:       a text label drawn on my instances
+  # * labelColor:  the color of my label text
+  # * labelOffset: the x, y offset of my label from my x, y location
+  # * heading:     direction of the agent, in radians, from x-axis
+  # * hidden:      whether or not to draw this agent
+  # * patch:       patch at current x, y location
+  # * penDown:     true if agent pen is drawing
+  # * penSize:     size in pixels of the pen, default: 1 pixel
+  # * sprite:      an image of the agent if non null
+  # * links:       array of links in/out of me
   #
   # These class variables are "defaults" and many are "promoted" to instance variables.
   # To have these be set to a constant for all instances, use breed.setDefault.
@@ -42,14 +41,13 @@ class ABM.Agent
   penSize: 1            # the pen thickness in pixels
   heading: null         # the direction I'm pointed in, in radians
   sprite: null          # an image of me for optimized drawing
-  cacheLinks: false     # should I keep links to/from me in links array?.
   links: null           # array of links to/from me as an endpoint; init by ctor
 
   constructor: -> # called by agentSets create factory, not user
     @position = {x: 0, y: 0}
     @color = u.randomColor() unless @color? # promote color if default not set
     @heading = u.randomFloat(Math.PI * 2) unless @heading?
-    @links = [] if @cacheLinks
+    @links = []
     @moveTo @position
 
   # ### Strings
@@ -104,13 +102,7 @@ class ABM.Agent
   
   # Set heading towards given agent/patch using patch topology.
   face: (point) ->
-    @heading = @angleTowards point
-
-  # Return angle towards given agent/patch using patch topology.
-  #
-  # Does not change the orientation of the agent.
-  angleTowards: (point) ->
-    u.radiansToward @position, point, ABM.patches
+    @heading = u.angle @position, point, ABM.patches
 
   # Return distance in patch coordinates from me to given agent/patch
   # using patch topology (isTorus)
@@ -135,14 +127,8 @@ class ABM.Agent
           for agent in patch.agents
             if agent isnt @
               neighbors.push agent
-    neighbors
 
-  # Return the closest torus topology point of given agent/patch 
-  # relative to myself. 
-  # Used internally to determine how to draw links between two agents.
-  # See util.torusPoint.
-  closestTorusPoint: (point) ->
-    u.closestTorusPoint @position, point, ABM.patches.numX, ABM.patches.numY
+    neighbors
 
   # ### Life and death
 
@@ -150,55 +136,50 @@ class ABM.Agent
   # agents agentset and removing any links I may have.
   die: ->
     @breed.remove @
-    for l in @myLinks()
-      l.die()
+    for link in @links
+      link.die()
     @moveOff()
     null
 
   # Factory: create num new agents at this agents location. The optional init
   # proc is called on the new agent after inserting in its agentSet.
-  hatch: (num = 1, breed = ABM.agents, init = ->) ->
-    breed.create num, (a) => # fat arrow so that @ = this agent
-      a.moveTo @position # for side effects like patches.agents
-      a[k] = v for own k, v of @ when k isnt "id"
-      init(a) # Important: init called after object inserted in agent set
-      a
+  hatch: (number = 1, breed = ABM.agents, init = ->) ->
+    breed.create number, (agent) => # fat arrow so that @ = this agent
+      agent.moveTo @position # for side effects like patches.agents
+      for own key, value of @ when key isnt "id"
+        agent[key] = value
+      init(agent) # Important: init called after object inserted in agent set
+      agent
 
   # ### Links
 
   # Return other end of link from me
-  otherEnd: (l) ->
-    if l.end1 is @ then l.end2 else l.end1
+  otherEnd: (link) ->
+    if link.from is @
+      link.to
+    else
+      link.from
+ 
+  # Return links where I am the "from" agent in links.create
+  outLinks: ->
+    link for link in @links when link.from is @
+ 
+  # Return links where I am the "to" agent in links.create
+  inLinks: ->
+    link for link in @links when link.to is @
 
-  # Return all links linked to me
-  myLinks: ->
-    @links ? (l for l in ABM.links when (l.end1 is @) or (l.end2 is @))
-  
   # Return all agents linked to me.
   linkNeighbors: -> # return all agents linked to me
-    @otherEnd l for l in @myLinks()
-  
-  # Return links where I am the "to" agent in links.create
-  myInLinks: ->
-    l for l in @myLinks() when l.end2 is @
-
+    @otherEnd link for link in @links
+ 
   # Return other end of myInLinks
   inLinkNeighbors: ->
-    l.end1 for l in @myLinks() when l.end2 is @
-    
-  # Return links where I am the "from" agent in links.create
-  myOutLinks: ->
-    l for l in @myLinks() when l.end1 is @
-  
+    link.from for link in @inLinks()
+ 
   # Return other end of myOutinks
   outLinkNeighbors: ->
-    l.end2 for l in @myLinks() when l.end1 is @
+    link.to for link in @outLinks()
 
-  # Set agent color to `color` scaled by `fraction`. Usage: see patch.fractionOfColor
-  fractionOfColor: (color, fraction) ->
-    @color = u.clone @color unless @.hasOwnProperty("color")
-    u.fractionOfColor color, fraction, @color
-  
   # ### Drawing
 
   # Draw the agent, instanciating a sprite if required

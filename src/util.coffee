@@ -173,8 +173,8 @@ ABM.util = u =
     @randomMapColor [0, 127, 255]
 
   # Return new color, c, by scaling each value of the rgb color max.
-  fractionOfColor: (maxColor, fraction, color = []) ->
-    color.string = null
+  fractionOfColor: (maxColor, fraction) ->
+    color = []
     for value, i in maxColor
       color[i] = @clamp(Math.round(value * fraction), 0, 255)
     color
@@ -501,20 +501,20 @@ ABM.util = u =
   
   # Return angle in [-pi, pi] radians from point1 to point2
   # [See: Math.atan2](http://goo.gl/JS8DF)
-  radiansToward: (point1, point2, patches) ->
+  angle: (point1, point2, patches) ->
     if patches.isTorus
-      @radiansTowardTorus point1, point2, patches
+      @angleTorus point1, point2, patches
     else
-      @radiansTowardEuclidian point1, point2
+      @angleEuclidian point1, point2
 
   # Euclidian radians toward
-  radiansTowardEuclidian: (point1, point2) ->
+  angleEuclidian: (point1, point2) ->
     Math.atan2 point2.y - point1.y, point2.x - point1.x
 
   # Return the angle from x1, y1 to x2, y2 on torus using shortest reflection.
-  radiansTowardTorus: (point1, point2, patches) ->
+  angleTorus: (point1, point2, patches) ->
     closest = @closestTorusPoint point1, point2, patches.width, patches.height
-    @radiansTowardEuclidian point1, closest
+    @angleEuclidian point1, closest
 
   # Return true if point2 is in cone radians around heading radians from 
   # point1.x, point2.x and within distance radius from point1.x,
@@ -530,7 +530,7 @@ ABM.util = u =
     if radius < @distanceEuclidian point1, point2
       return false
 
-    angle = @radiansTowardEuclidian point1, point2 # angle from 1 to 2
+    angle = @angleEuclidian point1, point2 # angle from 1 to 2
     cone / 2 >= Math.abs @substractRadians(heading, angle)
 
   # Return true if point2 is in cone radians around heading radians from 

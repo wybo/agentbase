@@ -6,8 +6,8 @@ class ABM.Link
   #
   # * id:         unique identifier, promoted by agentset create() factory method
   # * breed:      the agentset this agent belongs to
-  # * end1:       two agents being connected
-  # * end2:
+  # * from:       two agents being connected
+  # * to:
   # * color:      defaults to light gray
   # * thickness:  thickness in pixels of the link, default 2
   # * label:      a text label drawn on my instances
@@ -17,8 +17,8 @@ class ABM.Link
 
   id: null               # unique id, promoted by agentset create factory method
   breed: null            # my agentSet, set by the agentSet owning me
-  end1:null              # My two endpoints, using agents. Promoted by ctor
-  end2:null
+  from: null              # My two endpoints, using agents. Promoted by ctor
+  to: null
   color: [130, 130, 130] # my color
   thickness: 2           # my thickness in pixels, default to 2
   hidden: false          # draw me?
@@ -26,10 +26,9 @@ class ABM.Link
   labelColor: [0, 0, 0]  # its color
   labelOffset: [0, 0]    # its offset from my midpoint
 
-  constructor: (@end1, @end2) ->
-    if @end1.links?
-      @end1.links.push @
-      @end2.links.push @
+  constructor: (@from, @to) ->
+    @from.links.push @
+    @to.links.push @
       
   # Draw a line between the two endpoints. Draws "around" the
   # torus if appropriate using two lines. As with Agent.draw,
@@ -41,15 +40,17 @@ class ABM.Link
     context.beginPath()
 
     if !ABM.patches.isTorus
-      context.moveTo @end1.position.x, @end1.position.y
-      context.lineTo @end2.position.x, @end2.position.y
+      context.moveTo @from.position.x, @from.position.y
+      context.lineTo @to.position.x, @to.position.y
     else
-      point = @end1.closestTorusPoint @end2.position
-      context.moveTo @end1.position.x, @end1.position.y
+      point = u.closestTorusPoint @from.position, @to.position,
+        ABM.patches.numX, ABM.patches.numY
+      context.moveTo @from.position.x, @from.position.y
       context.lineTo point.x, point.y
-      if point.x isnt @end2.position.x or point.y isnt @end2.position.y
-        point = @end2.closestTorusPoint @end1.position
-        context.moveTo @end2.position.x, @end2.position.y
+      if point.x isnt @to.position.x or point.y isnt @to.position.y
+        point = u.closestTorusPoint @to.position, @from.position,
+          ABM.patches.numX, ABM.patches.numY
+        context.moveTo @to.position.x, @to.position.y
         context.lineTo point.x, point.y
 
     context.closePath()
@@ -57,26 +58,24 @@ class ABM.Link
     context.restore()
 
     if @label?
-      x0 = u.linearInterpolate @end1.position.x, @end2.position.x, .5
-      y0 = u.linearInterpolate @end1.position.y, @end2.position.y, .5
+      x0 = u.linearInterpolate @from.position.x, @to.position.x, .5
+      y0 = u.linearInterpolate @from.position.y, @to.position.y, .5
       [x, y] = ABM.patches.patchXYtoPixelXY x0, y0
       u.contextDrawText context, @label, x + @labelOffset[0], y + @labelOffset[1], @labelColor
   
   # Remove this link from the agent set
   die: ->
     @breed.remove @
-    if @end1.links?
-      u.remove @end1.links, @
-    if @end2.links?
-      u.remove @end2.links, @
+    u.remove @from.links, @
+    u.remove @to.links, @
     null
   
   # Return the two endpoints of this link
-  bothEnds: -> [@end1, @end2]
+  bothEnds: -> [@from, @to]
   
   # Return the distance between the endpoints with the current topology.
-  length: -> @end1.distance @end2.position
+  length: -> @from.distance @to.position
   
   # Return the other end of the link, given an endpoint agent.
   # Assumes the given input *is* one of the link endpoint pairs!
-  otherEnd: (a) -> if @end1 is a then @end2 else @end1
+  otherEnd: (a) -> if @from is a then @to else @from
