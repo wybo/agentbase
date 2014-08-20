@@ -3,7 +3,7 @@
 # Class Links is a subclass of Set which stores instances of Link
 # or subclasses of Link
 
-class ABM.Links extends ABM.Set
+class ABM.Links extends ABM.BreedSet
   # Constructor: super creates the empty Set instance and installs
   # the agentClass (breed) variable shared by all the Links in this set.
   constructor: -> # agentClass, name, mainSet
@@ -28,7 +28,7 @@ class ABM.Links extends ABM.Set
   # included.  If 4 links have the same endpoint, it will
   # appear 4 times.
   nodesWithDups: -> # all link ends, w / dups
-    set = @asSet []
+    set = new ABM.Set
 
     for link in @
       set.push link.from, link.to

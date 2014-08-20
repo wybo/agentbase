@@ -2,7 +2,7 @@
 
 # Class Agents is a subclass of Set which stores instances of Agent or 
 # Breeds, which are subclasses of Agent
-class ABM.Agents extends ABM.Set
+class ABM.Agents extends ABM.BreedSet
   # Constructor creates the empty Set instance and installs
   # the agentClass (breed) variable shared by all the Agents in this set.
   constructor: -> # agentClass, name, mainSet
@@ -21,7 +21,7 @@ class ABM.Agents extends ABM.Set
       if agent.breed is @
         array.push agent
 
-    @asSet array
+    @from array
 
   # Factory: create num new agents stored in this agentset. The optional init
   # proc is called on the new agent after inserting in its agentSet.

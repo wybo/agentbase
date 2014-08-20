@@ -100,7 +100,7 @@ class ABM.Patch
   # Not to be used directly, will not cache.
   diamondNeighbors: (range, meToo) ->
     neighbors = @breed.patchRectangleNullPadded @, range, range, true
-    diamond = []
+    diamond = new ABM.Set
     counter = 0
     row = 0
     column = -1
@@ -116,4 +116,4 @@ class ABM.Patch
         diamond.push neighbor
       counter += 1
     u.remove(diamond, null)
-    return @breed.asSet diamond
+    return diamond

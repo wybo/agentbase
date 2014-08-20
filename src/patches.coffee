@@ -24,7 +24,7 @@
 # numY, height
 # minXcor, etc
 
-class ABM.Patches extends ABM.Set
+class ABM.Patches extends ABM.BreedSet
   # Constructor: super creates the empty Set instance and installs
   # the agentClass (breed) variable shared by all the Patches in this set.
   # Patches are created from top-left to bottom-right to match data sets.
@@ -117,7 +117,8 @@ class ABM.Patches extends ABM.Set
     u.remove(rectangle, null)
 
   patchRectangleNullPadded: (patch, dx, dy, meToo = false) ->
-    rectangle = []; # REMIND: optimize if no wrapping, rectangle inside patch boundaries
+    rectangle = new ABM.Set
+    # REMIND: optimize if no wrapping, rectangle inside patch boundaries
     for y in [(patch.position.y - dy)..(patch.position.y + dy)] by 1 # by 1: perf: avoid bidir JS for loop
       for x in [(patch.position.x - dx)..(patch.position.x + dx)] by 1
         nextPatch = null
@@ -138,7 +139,7 @@ class ABM.Patches extends ABM.Set
         if (meToo or patch isnt nextPatch)
           rectangle.push nextPatch
 
-    @asSet rectangle
+    return rectangle
 
   # Draws, or "imports" an image URL into the drawing layer.
   # The image is scaled to fit the drawing layer.
@@ -300,5 +301,3 @@ class ABM.Patches extends ABM.Set
       @drawScaledPixels context
     else
       super context
-
-

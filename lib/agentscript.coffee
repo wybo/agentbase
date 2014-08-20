@@ -22,21 +22,14 @@ do ->
   @requestAnimFrame or= (callback) -> @setTimeout(callback, 1000 / 60)
   @cancelAnimFrame or= (id) -> @clearTimeout(id)
 
-# Shim for `Array.indexOf` if not implemented.
-# Use [es5-shim](https://github.com/kriskowal/es5-shim) if additional shims needed.
-Array::indexOf or= (object) ->
-  for x, i in @
-    return i if x is object
-  -1
-
-Array::_sort = Array::sort
-
 # **ABM.util** contains the general utilities for the project. Note that within
 # **util** `@` referrs to ABM.util, *not* the global name space as above.
 # Alias: u is an alias for ABM.util within the agentscript module (not outside)
 #
 #      u.clearContext(context) is equivalent to
 #      ABM.util.clearContext(context)
+
+# Extended with ABM.util.array
 
 # TODO positions
 ABM.util = u =
@@ -241,7 +234,7 @@ ABM.util = u =
 
   # ### Array operations
   
-  # TODO allow user to add these to the Array object
+  # TODO remove after allowed user to add these to the Array object
 
   # Return an array of floating pt numbers as strings at given precision;
   # useful for printing
@@ -273,11 +266,16 @@ ABM.util = u =
     else
       array[method] 0
 
+  # Return first element of array.
+  first: (array) ->
+    array[0]
+
   # Return last element of array.
-  # Error if empty.
   last: (array) ->
-    @error "last: empty array" if @empty array
-    array[array.length - 1]
+    if @empty array
+      undefined
+    else
+      array[array.length - 1]
 
   # Return random element of array or number random elements of array.
   # Note: array elements presumed unique, i.e. objects or distinct primitives
@@ -893,14 +891,524 @@ ABM.util = u =
   typedToJS: (typedArray) ->
     (i for i in typedArray)
 
-# A **Set** is an array, along with a class, agentClass, whose instances
-# are the items of the array.  Instances of the class are created
-# by the `create` factory method of a Set.
+# Array utility functions. Are added to ABM.Array and to util for
+# legacy reasons.
+
+ABM.util.array =
+  # The static `ABM.Array.from` as a method.
+  # Used by methods creating new arrays.
+  from: (array, arrayType) ->
+    ABM.Array.from array, arrayType # setType = ABM.Set
+
+  # Return string representative of agentset.
+  toString: (array) ->
+    "[" + (object.toString() for object in array).join(", ") + "]"
+
+  # Return an array of floating pt numbers as strings at given precision;
+  # useful for printing
+  toFixed: (array, precision = 2) ->
+    newArray = []
+    for number in array
+      newArray.push number.toFixed precision
+    newArray
+
+  # Does the array have any elements? Is the array empty?
+  any: (array) ->
+    not @empty(array)
+
+  empty: (array) ->
+    array.length is 0
+
+  # Make a copy of the array. Needed when you don't want to modify the given
+  # array with mutator methods like sort, splice or your own functions.
+  # By giving begin/arguments, retrieve a subset of the array.
+  # Works with TypedArrays too.
+  clone: (array, begin = null, end = null) ->
+    if array.slice?
+      method = "slice"
+    else
+      method = "subarray"
+
+    if begin?
+      array[method] begin, end
+    else
+      array[method] 0
+
+  # Return first element of array.
+  first: (array) ->
+    array[0]
+
+  # Return last element of array.
+  last: (array) ->
+    if @empty array
+      undefined
+    else
+      array[array.length - 1]
+
+  # Return random element of array or number random elements of array.
+  # Note: array elements presumed unique, i.e. objects or distinct primitives
+  # Note: clone, shuffle then first number has poor performance
+  sample: (array, numberOrCondition = null, condition = null) ->
+    if u.isFunction numberOrCondition
+      condition = numberOrCondition
+    else if numberOrCondition?
+      number = Math.floor(numberOrCondition)
+
+    if number?
+      newArray = []
+      object = true
+      while newArray.length < number and object?
+        object = @sample(array, condition)
+        if object and object not in newArray
+          newArray.push object
+      return newArray
+    else if condition?
+      checked = []
+      while checked.length < array.length
+        object = @sample(array)
+        if object and object not in checked
+          checked.push object
+          if condition(object)
+            return object
+    else
+      if @empty array
+        return null
+      return array[u.randomInt array.length]
+
+  # True if object is in array.
+  contains: (array, object) ->
+    array.indexOf(object) >= 0
+
+  # Remove an object from an array.
+  # Error if object not in array.
+  remove: (array, object) ->
+    while true
+      index = array.indexOf object
+      break if index is -1
+      array.splice index, 1
+    array
+
+  # Remove elements in objects from an array. Binary search if f isnt null.
+  # Error if an object not in array.
+  removeItems: (array, objects) ->
+    for object in objects
+      @remove array, object
+    array
+
+  # Randomize the elements of this array.
+  shuffle: (array) ->
+    array.sort -> 0.5 - Math.random()
+
+  # TODO add array functions to Array extension, then allow it to be
+  # added to array in user models through an ABM.setup() function
+  #
+  # Return object when lambda(object) min/max in array. Error if array empty.
+  # If f is a string, return element with max value of that property.
+  # If "valueToo" then return a 2-array of the element and the value;
+  # used for cases where f is costly function.
+  # 
+  #     array = [{x: 1, y: 2}, {x: 3, y: 4}]
+  #     array.min()
+  #     # returns {x: 1, y: 2} 5
+  #     [min, dist2] = array.min(((o) -> o.x * o.x + o.y * o.y), true)
+  #     # returns {x: 3, y: 4}
+  min: (array, lambda = u.identityFunction, valueToo = false) ->
+    u.error "min: empty array" if @empty array
+    if u.isString lambda
+      lambda = u.propertyFunction lambda
+    minValue = Infinity
+    minObject = null
+
+    for object in array
+      value = lambda(object)
+      if value < minValue
+        minValue = value
+        minObject = object
+
+    if valueToo
+      [minObject, minValue]
+    else
+      minObject
+
+  max: (array, lambda = u.identityFunction, valueToo = false) ->
+    u.error "max: empty array" if @empty array
+    if u.isString lambda
+      lambda = u.propertyFunction lambda
+    maxValue = -Infinity
+    maxObject = null
+
+    for object in array
+      value = lambda(object)
+      if value > maxValue
+        maxValue = value
+        maxObject = object
+
+    if valueToo
+      [maxObject, maxValue]
+    else
+      maxObject
+
+  sum: (array, lambda = u.identityFunction) ->
+    if u.isString lambda
+      lambda = u.propertyFunction lambda
+
+    value = 0
+    for object in array
+      value += lambda(object)
+
+    value
+
+  average: (array, lambda = u.identityFunction) ->
+    @sum(array, lambda) / array.length
+
+  median: (array) ->
+    if array.sort?
+      array = @clone array
+    else
+      array = u.typedToJS array
+
+    middle = (array.length - 1) / 2
+
+    @sort array
+
+    (array[Math.floor(middle)] + array[Math.ceil(middle)]) / 2
+
+  # Return histogram of o when f(o) is a numeric value in array.
+  # Histogram interval is bin. Error if array empty.
+  # If f is a string, return histogram of that property.
+  #
+  # In examples below, histogram returns [3, 1, 1, 0, 0, 1]
+  #
+  #     a = [1, 3, 4, 1, 1, 10]
+  #     h = histogram a, 2, (i) -> i
+  #     
+  #     b = ({id:i} for i in a)
+  #     h = histogram b, 2, (o) -> o.id
+  #     h = histogram b, 2, "id"
+  histogram: (array, binSize = 1, lambda = u.identityFunction) ->
+    if u.isString lambda
+      lambda = u.propertyFunction lambda
+    histogram = []
+
+    for object in array
+      integer = Math.floor lambda(object) / binSize
+      histogram[integer] or= 0
+      histogram[integer] += 1
+
+    for value, integer in histogram when not value?
+      histogram[integer] = 0
+
+    histogram
+
+  # Mutator. Sort array of objects in place by the function f.
+  # If f is string, f returns property of object.
+  # Returns array.
+  # Clone first if you want to preserve the original array.
+  #
+  #     array = [{i: 1}, {i: 5}, {i: -1}, {i: 2}, {i: 2}]
+  #     sortBy array, "i"
+  #     # array now is [{i: -1}, {i: 1}, {i: 2}, {i: 2}, {i:5}]
+  sort: (array, lambda = null) ->
+    if u.isString lambda # use item[f] if f is string
+      lambda = u.propertySortFunction lambda
+
+    array._sort lambda
+
+  # Mutator. Removes dups, by reference, in place from array.
+  # Note "by reference" means litteraly same object, not copy. Returns array.
+  # Clone first if you want to preserve the original array.
+  #
+  #     ids = ({id: i} for i in [0..10])
+  #     a = (ids[i] for i in [1, 3, 4, 1, 1, 10])
+  #     # a is [{id: 1}, {id: 3}, {id: 4}, {id: 1}, {id: 1}, {id: 10}]
+  #     b = clone a
+  #     sortBy b, "id"
+  #     # b is [{id:1}, {id: 1}, {id: 1}, {id: 3}, {id: 4}, {id: 10}]
+  #     uniq b
+  #     # b now is [{id:1}, {id: 3}, {id: 4}, {id: 10}]
+  uniq: (array) ->
+    hash = {}
+
+    i = 0
+    while i < array.length
+      if hash[array[i]] is true
+        array.splice i, 1
+        i -= 1
+      else
+        hash[array[i]] = true
+      i += 1
+
+    array
+  
+  # Return a new array composed of the rows of a matrix. I.e. convert
+  #
+  #     [[1, 2, 3], [4, 5, 6]] to [1, 2, 3, 4, 5, 6]
+  flatten: (array) ->
+    array.reduce((arrayA, arrayB) ->
+      if not u.isArray arrayA
+        arrayA = [arrayA]
+      arrayA.concat arrayB)
+  
+  # Return an array with values in [low, high], defaults to [0, 1].
+  # Note: to have a half-open interval, [low, high), try high = high - .00009
+  normalize: (array, low = 0, high = 1) ->
+    min = @min array
+    max = @max array
+    scale = 1 / (max - min)
+    newArray = []
+    for number in array
+      newArray.push u.linearInterpolate(low, high, scale * (number - min))
+    newArray
+
+  normalizeInt: (array, low, high) ->
+    (Math.round i for i in @normalize array, low, high)
+
+  # Return a Uint8ClampedArray, normalized to [.5, 255.5] then round/clamp to [0, 255]
+  # TODO maybe data-specific?
+  normalize8: (array) ->
+    new Uint8ClampedArray @normalize(array, -.5, 255.5)
+
+  # ### Debugging
+  
+  # Useful in console.
+  # Also see [CoffeeConsole](http://goo.gl/1i7bd) Chrome extension.
+  
+  # Similar to NetLogo ask & with operators.
+  # Allows functions as strings. Use:
+  #
+  #     AS.getProp("x") # [1, 8, 6, 2, 2]
+  #     AS.with("o.x < 5").ask("o.x = o.x + 1")
+  #     AS.getProp("x") # [2, 8, 6, 3, 3]
+  #
+  #     ABM.agents.with("o.id < 100").ask("o.color = [255, 0, 0]")
+  ask: (array, functionString) ->
+    if u.isString functionString
+      eval("functionString=function(o){return " + functionString + ";}")
+    functionString(object) for object in array
+    array
+
+  with: (array, functionString) ->
+    if u.isString functionString
+      eval("f=function(o){return " + functionString + ";}")
+    @from (object for object in array when functionString(object))
+ 
+  # ### Property Utilities
+
+  # Property access, also useful for debugging<br>
+  
+  # Return an array of a property of the agentset
+  #
+  #      AS.getProp "x" # [0, 8, 6, 1, 1]
+  # TODO Prop -> Property
+  getProp: (array, property) ->
+    object[property] for object in array
+
+  # Return an array of agents with the property equal to the given value
+  #
+  #     AS.getPropWith "x", 1
+  #     [{id: 4, x: 1, y: 3},{id: 5, x: 1, y: 1}]
+  getPropWith: (array, property, value) ->
+    @from (object for object in array when object[property] is value)
+
+  # Set the property of the agents to a given value.  If value
+  # is an array, its values will be used, indexed by agentSet's index.
+  # This is generally used via: getProp, modify results, setProp
+  #
+  #     # increment x for agents with x=1
+  #     AS1 = ABM.Set.from AS.getPropWith("x", 1)
+  #     AS1.setProp "x", 2 # {id: 4, x: 2, y: 3}, {id: 5, x: 2, y: 1}
+  #
+  # Note this changes the last two objects in the original AS above
+  setProp: (array, property, value) ->
+    if u.isArray value
+      object[property] = value[i] for object, i in array
+    else
+      object[property] = value for object in array
+    array
+ 
+  # Return an array without given object
+  #
+  #     as = AS.clone().other(AS[0])
+  #     as.getProp "id"  # [1, 2, 3, 4] 
+  other: (array, given) ->
+    @from (object for object in array when object isnt given) # could clone & remove
+
+
+# Extends ABM.Array and util
+  
+ABM.util.array.extender =
+  methods: ->
+    (key for key, value of ABM.util.array when typeof value is 'function')
+
+  extendArray: (className) ->
+    methods = @methods()
+    for method in methods
+      eval("""
+        ABM.Array.prototype.#{method} = function() {
+          var options, _ref;
+          options = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+          return (_ref = u.array).#{method}.apply(_ref, [this].concat(__slice.call(options)));
+        };""")
+
+  extend: (util) ->
+    methods = @methods()
+    for method in methods
+      util[method] = ABM.util.array[method]
+
+# ### Extends ABM.util
+
+ABM.util.array.extender.extend(ABM.util)
+
+# An **ABM.Array** is an array, with some helper methods.
 #
-# It is a subclass of `Array` and is the base class for
-# `Patches`, `Agents`, and `Links`. A Set keeps track of all
-# its created instances.  It also provides, much like the **ABM.util**
-# module, many methods shared by all subclasses of Set.
+# It is a subclass of `Array` and is the base class for `ABM.Set`.
+#
+# Note: subclassing `Array` can be dangerous and we may have to convert
+# to a different style. See Trevor Burnham's [comments](http://goo.gl/Lca8g)
+# but thus far we've resolved all related problems.
+
+# Shim for `Array.indexOf` if not implemented.
+# Use [es5-shim](https://github.com/kriskowal/es5-shim) if additional shims needed.
+# TODO look into
+Array::indexOf or= (given) ->
+  for object, i in @
+    return i if object is given
+  -1
+
+Array::_sort = Array::sort
+
+# Extended with ABM.util.array
+
+class ABM.Array extends Array
+  # ### Static members
+  
+  # `from` is a static wrapper function converting an array into
+  # an `ABM.Array` ..
+  #
+  # It gains access to all the methods below. Ex:
+  #
+  #     array = [1, 2, 3]
+  #     ABM.Array.from(array)
+  #     randomNr = array.random()
+  @from: (array, arrayType = ABM.Array) ->
+    array.__proto__ = arrayType.prototype ? arrayType.constructor.prototype
+    array
+ 
+  # WARNING: Needs constructor or subclassing Array won't work
+  constructor: (options...) ->
+    if u.array.any options
+      return ABM.Array.from(options)
+ 
+  shuffle: ->
+    u.shuffle @
+
+  # Sort the agentset
+  #
+  sort: (options...) ->
+    u.sort @, options...
+
+  clone: ->
+    @from u.clone @
+
+  first: ->
+    u.first @
+
+# ### Extending
+
+ABM.util.array.extender.extendArray('ABM.Array')
+
+# An **ABM.AgentArray** is an array, with some agent/patch/link specific
+# helper methods.
+#
+# It is a subclass of `ABM.Array` and is the base class for `ABM.BreedSet`.
+
+class ABM.Set extends ABM.Array
+  # `from` is a static wrapper function converting an array into
+  # an `ABM.Set`
+  #
+  # It gains access to all the methods below. Ex:
+  #
+  #     array = [1, 2, 3]
+  #     ABM.Set.from(array)
+  #     randomNr = array.random()
+  @from: (array, setType = ABM.Set) ->
+    array.__proto__ = setType.prototype ? setType.constructor.prototype
+    array
+  
+  # The static `ABM.Set.from` as a method.
+  # Used by methods creating new sets.
+  from: (array, setType = @) ->
+    ABM.Set.from array, setType # setType = ABM.Set
+
+  # In the examples below, we'll use an array of primitive agent objects
+  # with three fields: id, x, y.
+  #
+  #     AS = for i in [1..5] # long form comprehension
+  #       {id:i, x:u.randomInt(10), y:u.randomInt(10)}
+  #     ABM.Set.from AS # Convert AS to Set in place
+  #        [{id: 1, x: 0, y: 1}, {id: 2, x: 8, y: 0}, {id: 3, x: 6, y: 4},
+  #         {id: 4, x: 1, y: 3}, {id: 5, x: 1, y: 1}]
+
+  # Set the default value of an agent class, return agentset
+  setDefault: (name, value) ->
+    @agentClass::[name] = value; @
+
+  # Return all agents that are not of the given breeds argument.
+  # Breeds is a string of space separated names:
+  #   @patches.exclude "roads houses"
+  exclude: (breeds) ->
+    breeds = breeds.split(" ")
+    @from (o for o in @ when o.breed.name not in breeds)
+
+  # ### Drawing
+  
+  # For agentsets whose agents have a `draw` method.
+  # Clears the graphics context (transparent), then
+  # calls each agent's draw(context) method.
+  draw: (context) ->
+    u.clearContext(context)
+    o.draw(context) for o in @ when not o.hidden
+    null
+  
+  # Show/Hide all of an agentset or breed.
+  # To show/hide an individual object, set its prototype: o.hidden = bool
+  show: ->
+    o.hidden = false for o in @
+    @draw(ABM.contexts[@name])
+
+  hide: ->
+    o.hidden = true for o in @
+    @draw(ABM.contexts[@name])
+
+  # ### Location/radius
+  
+  # Return all agents within d distance from given object.
+  inRadius: (point, options) -> # for any objects w/ x, y
+    inner = new ABM.Set
+    for entity in @
+      if entity.distance(point) <= options.radius
+        inner.push entity
+    return inner
+      
+  # As above, but returns agents also limited to the angle `cone`
+  # around a `heading` from point.
+  inCone: (point, options) ->
+    inner = new ABM.Set
+    for entity in @
+      if u.inCone(options.heading, options.cone, options.radius,
+          point, entity.position, ABM.patches)
+        inner.push entity
+    return inner
+
+# A **BreedSet** is an ABM.Set (which is an ABM.Array), along with a
+# class, agentClass, whose instances are the items of the array.
+# Instances of the class are created by the `create` factory method of
+# a BreedSet.
+#
+# It is a subclass of `ABM.Set` and is the base class for `Patches`,
+# `Agents`, and `Links`. A Set keeps track of all its created
+# instances. It also provides, much like the **ABM.util** module, some
+# methods shared by all subclasses of Set.
 #
 # ABM contains three agentsets created by class Model:
 #
@@ -912,33 +1420,15 @@ ABM.util = u =
 # for explanation of the overall semantics of Agent Based Modeling
 # used by Sets as well as Patches, Agents, and Links.
 #
-# Note: subclassing `Array` can be dangerous and we may have to convert
-# to a different style. See Trevor Burnham's [comments](http://goo.gl/Lca8g)
-# but thus far we've resolved all related problems.
-#
 # Because we are an array subset, @[i] == this[i] == agentset[i]
 
-class ABM.Set extends Array
-  # ### Static members
-  
-  # `asSet` is a static wrapper function converting an array of agents into
-  # an `Set` .. except for the ID which only impacts the add method.
-  # It is primarily used to turn a comprehension into a Set instance
-  # which then gains access to all the methods below.  Ex:
-  #
-  #     evens = (a for a in ABM.agents when a.id % 2 is 0)
-  #     ABM.Set.asSet(evens)
-  #     randomEven = evens.random()
-  @asSet: (a, setType = ABM.Set) ->
-    a.__proto__ = setType.prototype ? setType.constructor.prototype # setType.__proto__
-    a
-  
+class ABM.BreedSet extends ABM.Set
   # In the examples below, we'll use an array of primitive agent objects
   # with three fields: id, x, y.
   #
   #     AS = for i in [1..5] # long form comprehension
   #       {id:i, x:u.randomInt(10), y:u.randomInt(10)}
-  #     ABM.Set.asSet AS # Convert AS to Set in place
+  #     ABM.BreedSet.from AS # Convert AS to Set in place
   #        [{id: 1, x: 0, y: 1}, {id: 2, x: 8, y: 0}, {id: 3, x: 6, y: 4},
   #         {id: 4, x: 1, y: 3}, {id: 5, x: 1, y: 1}]
 
@@ -952,68 +1442,70 @@ class ABM.Set extends Array
     @agentClass = agentClass
     @name = name
     @mainSet = mainSet
-    @breeds = [] unless @mainSet?
+    unless @mainSet?
+      # Do not set breeds & ID if I'm a subset
+      @breeds = []
+      @ID = 0
     @agentClass::breed = @ # let the breed know I'm it's agentSet
-    @ownVariables = [] # keep list of user variables
-    @ID = 0 unless @mainSet? # Do not set ID if I'm a subset
 
   # Abstract method used by subclasses to create and add their instances.
   create: ->
-    
-  # Add an agent to the list.  Only used by agentset factory methods. Adds
+
+  # Add an agent to the list. Only used by agentset factory methods. Adds
   # the `id` property to all agents. Increment `ID`.
   # Returns the object for chaining.
   #
   # By "agent" we mean an instance of `Patch`, `Agent` and `Link` and their breeds
-  add: (object) ->
-    if @mainSet?
-      @mainSet.add object
+  originalPush: @::push
+  push: (object...) ->
+    if object.length > 1
+      for item in object
+        @push item
     else
-      object.id = @ID++
-    @push object
+      object = object[0]
+      @originalPush object
+
+      if @mainSet?
+        @mainSet.push object
+      else
+        if object.id?
+          if object.breed? and object.breed.name is not @name
+            object.id = @ID++
+        else
+          object.id = @ID++
+
     object
 
+  # TODO remove
+  add: (object) ->
+    @push object
+
   # Remove an agent from the agentset, returning the agentset.
-  # Note this does not change ID, thus an
-  # agentset can have gaps in terms of their id's. 
+  # Note this does not change delete id or change the set's ID, thus
+  # an agentset can have gaps in terms of their id's. 
   #
   #     AS.remove(AS[3]) # [{id: 0, x: 0, y: 1}, {id: 1, x: 8, y: 0},
   #                         {id: 2, x: 6, y: 4}, {id: 4, x: 1, y: 1}] 
   remove: (object) ->
     if @mainSet?
-      u.remove @mainSet, object
+      @mainSet.remove object
     u.remove @, object
     @
 
-  # Set the default value of an agent class, return agentset
-  setDefault: (name, value) -> @agentClass::[name] = value; @
+  pop: () ->
+    object = @last()
+    @remove(object)
+    object
 
-  # Declare variables of an agent class. 
-  # Vars = a string of space separated names or an array of name strings
-  # Return agentset.
-  own: (vars) -> # maybe not set default if val is null?
-    # vars = vars.split(" ") if not u.isArray vars
-    # for name in vars#.split(" ") # if not u.isArray vars
-    for name in vars.split(" ")
-      @setDefault name, null
-      @ownVariables.push name
-    @
-
-  # Move an agent from its Set/breed to be in this Set/breed.
-  # REMIND: match NetLogo sematics in terms of own variables.
-  setBreed: (a) -> # change agent a to be in this breed
-    u.remove a.breed, a
-    @.push a
-    proto = a.__proto__ = @agentClass.prototype
-    delete a[k] for own k, v of a when proto[k]?
-    a
-
-  # Return all agents that are not of the given breeds argument.
-  # Breeds is a string of space separated names:
-  #   @patches.exclude "roads houses"
-  exclude: (breeds) ->
-    breeds = breeds.split(" ")
-    @asSet (o for o in @ when o.breed.name not in breeds)
+  # Move an agent from its BreedSet to be in this BreedSet.
+  # TODO integrate with push
+  setBreed: (agent) ->
+    id = agent.id
+    agent.breed.remove agent
+    @push agent, id
+    proto = agent.__proto__ = @agentClass.prototype
+    delete agent[key] for own key, value of agent when proto[key]?
+    agent
 
   # Floodfill arguments:
   #
@@ -1042,188 +1534,10 @@ class ABM.Set extends Array
     else return () =>
       @floodFillOnce asetNext, fCandidate, fJoin, fCallback, fNeighbors, aset
   
-  # Remove adjacent duplicates, by reference.
-  #
-  #     as = (AS.random() for i in [1..4]) # 4 random agents w/ dups
-  #     ABM.Set.asSet as # [{id: 1, x: 8, y: 0}, {id: 0, x: 0, y: 1},
-  #                              {id: 0, x: 0, y: 1}, {id: 2, x: 6, y: 4}]
-  #     as.uniq() # [{id: 0, x: 0, y: 1}, {id: 1, x: 8, y: 0}, 
-  #                  {id: 2, x: 6, y: 4}]
-  uniq: -> u.uniq(@)
-
-  # The static `ABM.Set.asSet` as a method.
-  # Used by agentset methods creating new agentsets.
-  asSet: (a, setType = @) -> ABM.Set.asSet a, setType # setType = ABM.Set
-
   # Similar to above but sorted via `id`.
-  asOrderedSet: (a) -> @asSet(a).sort("id")
-
-  # Return string representative of agentset.
-  toString: -> "[" + (a.toString() for a in @).join(", ") + "]"
-
-  # ### Property Utilities
-  # Property access, also useful for debugging<br>
-  
-  # Return an array of a property of the agentset
-  #
-  #      AS.getProp "x" # [0, 8, 6, 1, 1]
-  getProp: (prop) -> o[prop] for o in @
-
-  # Return an array of agents with the property equal to the given value
-  #
-  #     AS.getPropWith "x", 1
-  #     [{id: 4, x: 1, y: 3},{id: 5, x: 1, y: 1}]
-  getPropWith: (prop, value) -> @asSet (o for o in @ when o[prop] is value)
-
-  # Set the property of the agents to a given value.  If value
-  # is an array, its values will be used, indexed by agentSet's index.
-  # This is generally used via: getProp, modify results, setProp
-  #
-  #     # increment x for agents with x=1
-  #     AS1 = ABM.Set.asSet AS.getPropWith("x", 1)
-  #     AS1.setProp "x", 2 # {id: 4, x: 2, y: 3}, {id: 5, x: 2, y: 1}
-  #
-  # Note this changes the last two objects in the original AS above
-  setProp: (prop, value) ->
-    if u.isArray value
-      o[prop] = value[i] for o, i in @; @
-    else
-      o[prop] = value for o in @; @
-  
-  # ### Array Utilities, often from ABM.util
-
-  # Randomize the agentset
-  #
-  #     AS.shuffle(); AS.getProp "id" # [3, 2, 1, 4, 5] 
-  shuffle: -> u.shuffle @
-
-  # Sort the agentset
-  #
-  sort: (options...) -> u.sort @, options...
-
-  # Make a copy of an agentset, return as new agentset.<br>
-  # NOTE: does *not* duplicate the objects, simply creates a new agentset
-  # with references to the same agents.  Ex: create a randomized version of AS
-  # but without mangling AS itself:
-  #
-  #     as = AS.clone().shuffle()
-  #     AS.getProp "id"  # [1, 2, 3, 4, 5]
-  #     as.getProp "id"  # [2, 4, 0, 1, 3]
-  clone: -> @asSet u.clone @
-
-  # Return the last agent in the agentset
-  #
-  #     AS.last().id             # l5
-  #     l = AS.last(); p = [l.x, l.y] # [1, 1]
-  last: -> u.last @
-
-  # Returns true if the agentset has any agents
-  #
-  #     AS.any()  # true
-  #     AS.getPropWith("x", 99).any() #false
-  any: -> u.any @
-
-  # Return an agentset without given agent a
-  #
-  #     as = AS.clone().other(AS[0])
-  #     as.getProp "id"  # [1, 2, 3, 4] 
-  other: (a) -> @asSet (o for o in @ when o isnt a) # could clone & remove
-
-  # Return random agent in agentset or an agentset made of n distinct agents.
-  sample: (options...) ->
-    random = u.sample @, options...
-    if random and random.isArray
-      @asSet random
-    else
-      random
-
-  # Return agent when f(o) min/max in agentset. If multiple agents have
-  # min/max value, return the first. Error if agentset empty.
-  # If f is a string, return element with min/max value of that property.
-  # If "valueToo" then return an array of the agent and the value.
-  # 
-  #     AS.min("x") # {id: 0, x: 0, y: 1}
-  #     AS.max((a) -> a.x + a.y, true) # {id: 2, x: 6, y: 4}, 10
-  min: (f, valueToo = false) ->
-    u.min @, f, valueToo
-
-  max: (f, valueToo = false) ->
-    u.max @, f, valueToo
-
-  # ### Drawing
-  
-  # For agentsets whose agents have a `draw` method.
-  # Clears the graphics context (transparent), then
-  # calls each agent's draw(context) method.
-  draw: (context) ->
-    u.clearContext(context)
-    o.draw(context) for o in @ when not o.hidden
-    null
-  
-  # Show/Hide all of an agentset or breed.
-  # To show/hide an individual object, set its prototype: o.hidden = bool
-  show: ->
-    o.hidden = false for o in @
-    @draw(ABM.contexts[@name])
-
-  hide: ->
-    o.hidden = true for o in @
-    @draw(ABM.contexts[@name])
-
-  # ### Debugging
-  
-  # Useful in console.
-  # Also see [CoffeeConsole](http://goo.gl/1i7bd) Chrome extension.
-  
-  # Similar to NetLogo ask & with operators.
-  # Allows functions as strings. Use:
-  #
-  #     AS.getProp("x") # [1, 8, 6, 2, 2]
-  #     AS.with("o.x < 5").ask("o.x = o.x + 1")
-  #     AS.getProp("x") # [2, 8, 6, 3, 3]
-  #
-  #     ABM.agents.with("o.id < 100").ask("o.color = [255, 0, 0]")
-  ask: (f) ->
-    eval("f=function(o){return " + f + ";}") if u.isString f
-    f(o) for o in @; @
-
-  with: (f) ->
-    eval("f=function(o){return " + f + ";}") if u.isString f
-    @asSet (o for o in @ when f(o))
-
-# The example agentset AS used in the code fragments was made like this,
-# slightly more useful than shown above due to the toString method.
-#
-#     class XY
-#       constructor: (@x, @y) ->
-#       toString: -> "{id: #{@id}, x: #{@x}, y: #{@y}}"
-#     @AS = new ABM.Set # @ => global name space
-#
-# The result of 
-#
-#     AS.add new XY(u.randomInt(10), u.randomInt(10)) for i in [1..5]
-#
-# random run, captured so we can reuse.
-#
-#     AS.add new XY(pt...) for pt in [[0, 1], [8, 0], [6, 4], [1, 3], [1, 1]]
-
-  # Return all agents within d distance from given object.
-  inRadius: (point, options) -> # for any objects w/ x, y
-    inner = []
-    for entity in @
-      if entity.distance(point) <= options.radius
-        inner.push entity
-    @asSet inner
-      
-  # As above, but returns agents also limited to the angle `cone`
-  # around a `heading` from point.
-  inCone: (point, options) ->
-    inner = []
-    for entity in @
-      if u.inCone(options.heading, options.cone, options.radius,
-          point, entity.position, ABM.patches)
-        inner.push entity
-    @asSet inner
+  # TODO remove
+  asOrderedSet: (a) ->
+    @from(a).sort("id")
 
 # ### Agent
   
@@ -1348,7 +1662,7 @@ class ABM.Agent
       else
         neighbors = square.inRadius(@position, options)
     else
-      neighbors = @breed.asSet []
+      neighbors = @breed.from []
       if @patch
         for patch in @patch.neighbors(options)
           for agent in patch.agents
@@ -1451,7 +1765,7 @@ class ABM.Agent
 
 # Class Agents is a subclass of Set which stores instances of Agent or 
 # Breeds, which are subclasses of Agent
-class ABM.Agents extends ABM.Set
+class ABM.Agents extends ABM.BreedSet
   # Constructor creates the empty Set instance and installs
   # the agentClass (breed) variable shared by all the Agents in this set.
   constructor: -> # agentClass, name, mainSet
@@ -1470,7 +1784,7 @@ class ABM.Agents extends ABM.Set
       if agent.breed is @
         array.push agent
 
-    @asSet array
+    @from array
 
   # Factory: create num new agents stored in this agentset. The optional init
   # proc is called on the new agent after inserting in its agentSet.
@@ -1706,7 +2020,7 @@ class ABM.Link
 # Class Links is a subclass of Set which stores instances of Link
 # or subclasses of Link
 
-class ABM.Links extends ABM.Set
+class ABM.Links extends ABM.BreedSet
   # Constructor: super creates the empty Set instance and installs
   # the agentClass (breed) variable shared by all the Links in this set.
   constructor: -> # agentClass, name, mainSet
@@ -1731,7 +2045,7 @@ class ABM.Links extends ABM.Set
   # included.  If 4 links have the same endpoint, it will
   # appear 4 times.
   nodesWithDups: -> # all link ends, w / dups
-    set = @asSet []
+    set = new ABM.Set
 
     for link in @
       set.push link.from, link.to
@@ -1792,9 +2106,9 @@ class ABM.Model
       #     u.setIdentity context
       #       <draw in native coordinate system>
       #     context.restore() # restore patch coordinate system
-      for own k, v of @contextsInit
-        @contexts[k] = context = u.createLayer @div, @world.pxWidth,
-          @world.pxHeight, v.z, v.context
+      for own key, value of @contextsInit
+        @contexts[key] = context = u.createLayer @div, @world.pxWidth,
+          @world.pxHeight, value.z, value.context
         if context.canvas?
           @setContextTransform context
         if context.canvas?
@@ -1932,6 +2246,7 @@ class ABM.Model
     @animator.once()
     @
 
+  # TODO rationalize as just stop & start, stop as pause if needed
   # Stop and reset the model, restarting if restart is true
 #  reset: (restart = false) ->
 #    console.log "reset: animator"
@@ -2038,12 +2353,6 @@ class ABM.Model
   linkBreeds: (list, agentClass = ABM.Link, breedSet = ABM.Links) ->
     @createBreeds list, 'links', agentClass, breedSet
   
-  # Utility for models to create agentsets from arrays.  Ex:
-  #
-  #     even = @asSet (a for a in @agents when a.id % 2 is 0)
-  #     even.shuffle().getProp("id") # [6, 0, 4, 2, 8]
-  asSet: (a, setType = ABM.Set) -> ABM.Set.asSet a, setType
-
   # A simple debug aid which places short names in the global name space.
   # Note we avoid using the actual name, such as "patches" because this
   # can cause our modules to mistakenly depend on a global name.
@@ -2052,6 +2361,7 @@ class ABM.Model
     u.waitOn (=> @modelReady), (=> @setRootVars())
     @
 
+  # TODO get rid of
   setRootVars: ->
     root.ps  = @patches
     root.p0  = @patches[0]
@@ -2170,7 +2480,7 @@ class ABM.Patch
   # Not to be used directly, will not cache.
   diamondNeighbors: (range, meToo) ->
     neighbors = @breed.patchRectangleNullPadded @, range, range, true
-    diamond = []
+    diamond = new ABM.Set
     counter = 0
     row = 0
     column = -1
@@ -2186,7 +2496,7 @@ class ABM.Patch
         diamond.push neighbor
       counter += 1
     u.remove(diamond, null)
-    return @breed.asSet diamond
+    return diamond
 
 # ### Patches
   
@@ -2214,7 +2524,7 @@ class ABM.Patch
 # numY, height
 # minXcor, etc
 
-class ABM.Patches extends ABM.Set
+class ABM.Patches extends ABM.BreedSet
   # Constructor: super creates the empty Set instance and installs
   # the agentClass (breed) variable shared by all the Patches in this set.
   # Patches are created from top-left to bottom-right to match data sets.
@@ -2307,7 +2617,8 @@ class ABM.Patches extends ABM.Set
     u.remove(rectangle, null)
 
   patchRectangleNullPadded: (patch, dx, dy, meToo = false) ->
-    rectangle = []; # REMIND: optimize if no wrapping, rectangle inside patch boundaries
+    rectangle = new ABM.Set
+    # REMIND: optimize if no wrapping, rectangle inside patch boundaries
     for y in [(patch.position.y - dy)..(patch.position.y + dy)] by 1 # by 1: perf: avoid bidir JS for loop
       for x in [(patch.position.x - dx)..(patch.position.x + dx)] by 1
         nextPatch = null
@@ -2328,7 +2639,7 @@ class ABM.Patches extends ABM.Set
         if (meToo or patch isnt nextPatch)
           rectangle.push nextPatch
 
-    @asSet rectangle
+    return rectangle
 
   # Draws, or "imports" an image URL into the drawing layer.
   # The image is scaled to fit the drawing layer.
@@ -2490,8 +2801,6 @@ class ABM.Patches extends ABM.Set
       @drawScaledPixels context
     else
       super context
-
-
 
 # A *very* simple shapes module for drawing
 # [NetLogo-like](http://ccl.northwestern.edu/netlogo/docs/) agents.

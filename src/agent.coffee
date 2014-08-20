@@ -121,7 +121,7 @@ class ABM.Agent
       else
         neighbors = square.inRadius(@position, options)
     else
-      neighbors = @breed.asSet []
+      neighbors = @breed.from []
       if @patch
         for patch in @patch.neighbors(options)
           for agent in patch.agents

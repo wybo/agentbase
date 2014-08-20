@@ -14,7 +14,7 @@ describe "Util", ->
     it "detects arrays as arrays", ->
       arrays = [
         []
-        ABM.Agents.asSet []
+        ABM.Agents.from []
         [1,2,3]
         ["some", 4]
       ]

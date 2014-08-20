@@ -48,9 +48,9 @@ class ABM.Model
       #     u.setIdentity context
       #       <draw in native coordinate system>
       #     context.restore() # restore patch coordinate system
-      for own k, v of @contextsInit
-        @contexts[k] = context = u.createLayer @div, @world.pxWidth,
-          @world.pxHeight, v.z, v.context
+      for own key, value of @contextsInit
+        @contexts[key] = context = u.createLayer @div, @world.pxWidth,
+          @world.pxHeight, value.z, value.context
         if context.canvas?
           @setContextTransform context
         if context.canvas?
@@ -188,6 +188,7 @@ class ABM.Model
     @animator.once()
     @
 
+  # TODO rationalize as just stop & start, stop as pause if needed
   # Stop and reset the model, restarting if restart is true
 #  reset: (restart = false) ->
 #    console.log "reset: animator"
@@ -294,12 +295,6 @@ class ABM.Model
   linkBreeds: (list, agentClass = ABM.Link, breedSet = ABM.Links) ->
     @createBreeds list, 'links', agentClass, breedSet
   
-  # Utility for models to create agentsets from arrays.  Ex:
-  #
-  #     even = @asSet (a for a in @agents when a.id % 2 is 0)
-  #     even.shuffle().getProp("id") # [6, 0, 4, 2, 8]
-  asSet: (a, setType = ABM.Set) -> ABM.Set.asSet a, setType
-
   # A simple debug aid which places short names in the global name space.
   # Note we avoid using the actual name, such as "patches" because this
   # can cause our modules to mistakenly depend on a global name.
@@ -308,6 +303,7 @@ class ABM.Model
     u.waitOn (=> @modelReady), (=> @setRootVars())
     @
 
+  # TODO get rid of
   setRootVars: ->
     root.ps  = @patches
     root.p0  = @patches[0]

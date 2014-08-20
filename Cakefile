@@ -24,7 +24,9 @@ extrasDir = "extras/"
 toolsDir = 'tools/'
 libDir = 'lib/'
 
-firstFileNames = ['util.coffee', 'set.coffee']
+firstFileNames = ['util.coffee', 'util_array.coffee', 'array.coffee',
+  'set.coffee', 'breed_set.coffee']
+
 FileNames = firstFileNames.concat(
   fs.readdirSync(srcDir).filter (file) -> file not in firstFileNames)
 FilePaths = ("#{srcDir}#{file}" for file in FileNames)

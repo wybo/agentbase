@@ -6,10 +6,10 @@ u = ABM.util
 describe "Patch", ->
   describe "patch", ->
     it "gets the patch", ->
-       model = t.setupModel()
-       patch = model.patches.patch x: -20, y: 20
+      model = t.setupModel()
+      patch = model.patches.patch x: -20, y: 20
 
-       expect(patch).toBe model.patches[0]
+      expect(patch).toBe model.patches[0]
 
   describe "neighbors", ->
     testMiddlePatch = (model) ->

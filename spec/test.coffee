@@ -4,10 +4,14 @@ code = require "../lib/agentscript.coffee"
 
 @Model = class Model extends ABM.Model
   setup: ->
+    @setupBreeds()
     @setupPatches()
     @setupAgents()
     @setupCitizens()
     @setupLinks()
+
+  setupBreeds: ->
+    @agentBreeds ["citizens"]
 
   setupPatches: ->
     @patches.create()
@@ -21,7 +25,6 @@ code = require "../lib/agentscript.coffee"
   setupCitizens: ->
     i = 10
     j = 10
-    @agentBreeds ["citizens"]
     for citizen in @citizens.create(10)
       citizen.moveTo x: i, y: j
       i += 1

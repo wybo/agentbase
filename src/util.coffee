@@ -22,21 +22,14 @@ do ->
   @requestAnimFrame or= (callback) -> @setTimeout(callback, 1000 / 60)
   @cancelAnimFrame or= (id) -> @clearTimeout(id)
 
-# Shim for `Array.indexOf` if not implemented.
-# Use [es5-shim](https://github.com/kriskowal/es5-shim) if additional shims needed.
-Array::indexOf or= (object) ->
-  for x, i in @
-    return i if x is object
-  -1
-
-Array::_sort = Array::sort
-
 # **ABM.util** contains the general utilities for the project. Note that within
 # **util** `@` referrs to ABM.util, *not* the global name space as above.
 # Alias: u is an alias for ABM.util within the agentscript module (not outside)
 #
 #      u.clearContext(context) is equivalent to
 #      ABM.util.clearContext(context)
+
+# Extended with ABM.util.array
 
 # TODO positions
 ABM.util = u =
@@ -241,7 +234,7 @@ ABM.util = u =
 
   # ### Array operations
   
-  # TODO allow user to add these to the Array object
+  # TODO remove after allowed user to add these to the Array object
 
   # Return an array of floating pt numbers as strings at given precision;
   # useful for printing
@@ -273,11 +266,16 @@ ABM.util = u =
     else
       array[method] 0
 
+  # Return first element of array.
+  first: (array) ->
+    array[0]
+
   # Return last element of array.
-  # Error if empty.
   last: (array) ->
-    @error "last: empty array" if @empty array
-    array[array.length - 1]
+    if @empty array
+      undefined
+    else
+      array[array.length - 1]
 
   # Return random element of array or number random elements of array.
   # Note: array elements presumed unique, i.e. objects or distinct primitives

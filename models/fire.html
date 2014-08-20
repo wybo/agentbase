@@ -40,14 +40,9 @@
         console.log "burnedTrees #{@burnedTrees}"
 
         @burnedTrees = 0 # reset from initial ignites
-        # console.log "embers: ", @embers; window.embers = @embers
-        # console.log "fires: ", @fires; window.fires = @fires
-        # console.log "agents:", @agents
 
       ignite: (patch) ->
         patch.sprout 1, @fires, (ember) ->
-          #ember.breed = "fires"
-          #ember.color = [255, 0, 0]
         patch.color = [0, 0, 0] # in original model but apparently not needed, refresh off?
         @burnedTrees++
 
