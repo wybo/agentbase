@@ -36,7 +36,9 @@ class ABM.Array extends Array
   # WARNING: Needs constructor or subclassing Array won't work
   constructor: (options...) ->
     if u.array.any options
-      return ABM.Array.from(options)
+      return @constructor.from(options)
+    else
+      super
  
   shuffle: ->
     u.shuffle @

@@ -251,10 +251,20 @@ ABM.util.array =
   #
   #     [[1, 2, 3], [4, 5, 6]] to [1, 2, 3, 4, 5, 6]
   flatten: (array) ->
-    array.reduce((arrayA, arrayB) ->
-      if not u.isArray arrayA
-        arrayA = [arrayA]
-      arrayA.concat arrayB)
+    # TODO make work with gridpath model, concat does not handle Sets,
+    # though it does in the tests
+    #array.reduce((arrayA, arrayB) ->
+    #  if not u.isArray arrayA
+    #    arrayA = [arrayA]
+    #    arrayA.concat arrayB)
+    newArray = []
+    for element in array
+      if u.isArray element
+        for subElemen in element
+          newArray.push subElemen
+      else
+        newArray.push element
+    newArray
   
   # Return an array with values in [low, high], defaults to [0, 1].
   # Note: to have a half-open interval, [low, high), try high = high - .00009
@@ -351,10 +361,15 @@ ABM.util.array.extender =
     methods = @methods()
     for method in methods
       eval("""
-        ABM.Array.prototype.#{method} = function() {
-          var options, _ref;
+        #{className}.prototype.#{method} = function() {
+          var options, _ref, _ret;
           options = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-          return (_ref = u.array).#{method}.apply(_ref, [this].concat(__slice.call(options)));
+          _ret = (_ref = u.array).#{method}.apply(_ref, [this].concat(__slice.call(options)));
+          if (ABM.util.isArray(_ret)) {
+            return this.constructor.from(_ret);
+          } else {
+            return _ret;
+          }
         };""")
 
   extend: (util) ->

@@ -20,6 +20,7 @@ class ABM.Set extends ABM.Array
   # Used by methods creating new sets.
   from: (array, setType = @) ->
     ABM.Set.from array, setType # setType = ABM.Set
+    # TODO see if can be removed
 
   # In the examples below, we'll use an array of primitive agent objects
   # with three fields: id, x, y.
@@ -32,7 +33,8 @@ class ABM.Set extends ABM.Array
 
   # Set the default value of an agent class, return agentset
   setDefault: (name, value) ->
-    @agentClass::[name] = value; @
+    @agentClass::[name] = value
+    @
 
   # Return all agents that are not of the given breeds argument.
   # Breeds is a string of space separated names:

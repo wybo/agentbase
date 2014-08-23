@@ -55,8 +55,9 @@ ABM.util = u =
   
   # Good replacements for Javascript's badly broken`typeof` and `instanceof`
   # See [underscore.coffee](http://goo.gl/L0umK)
-  isArray: Array.isArray or (object) ->
-    !!(object and obj.concat and object.unshift and not object.callee)
+  # TODO fix: Array.isArray or (object) ->
+  isArray: (object) ->
+    !!(object and object.concat and object.unshift and not object.callee)
 
   isFunction: (object) ->
     !!(object and object.constructor and object.call and object.apply)
@@ -231,273 +232,6 @@ ABM.util = u =
 
   ownValues: (object) ->
     (value for own key, value of object)
-
-  # ### Array operations
-  
-  # TODO remove after allowed user to add these to the Array object
-
-  # Return an array of floating pt numbers as strings at given precision;
-  # useful for printing
-  toFixed: (array, precision = 2) ->
-    newArray = []
-    for number in array
-      newArray.push number.toFixed precision
-    newArray
-
-  # Does the array have any elements? Is the array empty?
-  any: (array) ->
-    not u.empty(array)
-
-  empty: (array) ->
-    array.length is 0
-
-  # Make a copy of the array. Needed when you don't want to modify the given
-  # array with mutator methods like sort, splice or your own functions.
-  # By giving begin/arguments, retrieve a subset of the array.
-  # Works with TypedArrays too.
-  clone: (array, begin = null, end = null) ->
-    if array.slice?
-      method = "slice"
-    else
-      method = "subarray"
-
-    if begin?
-      array[method] begin, end
-    else
-      array[method] 0
-
-  # Return first element of array.
-  first: (array) ->
-    array[0]
-
-  # Return last element of array.
-  last: (array) ->
-    if @empty array
-      undefined
-    else
-      array[array.length - 1]
-
-  # Return random element of array or number random elements of array.
-  # Note: array elements presumed unique, i.e. objects or distinct primitives
-  # Note: clone, shuffle then first number has poor performance
-  sample: (array, numberOrCondition = null, condition = null) ->
-    if @isFunction numberOrCondition
-      condition = numberOrCondition
-    else if numberOrCondition?
-      number = Math.floor(numberOrCondition)
-
-    if number?
-      newArray = []
-      object = true
-      while newArray.length < number and object?
-        object = @sample(array, condition)
-        if object and object not in newArray
-          newArray.push object
-      return newArray
-    else if condition?
-      checked = []
-      while checked.length < array.length
-        object = @sample(array)
-        if object and object not in checked
-          checked.push object
-          if condition(object)
-            return object
-    else
-      if @empty array
-        return null
-      return array[@randomInt array.length]
-
-  # True if object is in array.
-  contains: (array, object) ->
-    array.indexOf(object) >= 0
-
-  # Remove an object from an array.
-  # Error if object not in array.
-  remove: (array, object) ->
-    while true
-      index = array.indexOf object
-      break if index is -1
-      array.splice index, 1
-    array
-
-  # Remove elements in objects from an array. Binary search if f isnt null.
-  # Error if an object not in array.
-  removeItems: (array, objects) ->
-    for object in objects
-      @remove array, object
-    array
-
-  # Randomize the elements of this array.
-  shuffle: (array) ->
-    array.sort -> 0.5 - Math.random()
-
-  # TODO add array functions to Array extension, then allow it to be
-  # added to array in user models through an ABM.setup() function
-  #
-  # Return object when lambda(object) min/max in array. Error if array empty.
-  # If f is a string, return element with max value of that property.
-  # If "valueToo" then return a 2-array of the element and the value;
-  # used for cases where f is costly function.
-  # 
-  #     array = [{x: 1, y: 2}, {x: 3, y: 4}]
-  #     array.min()
-  #     # returns {x: 1, y: 2} 5
-  #     [min, dist2] = array.min(((o) -> o.x * o.x + o.y * o.y), true)
-  #     # returns {x: 3, y: 4}
-  min: (array, lambda = @identityFunction, valueToo = false) ->
-    @error "min: empty array" if @empty array
-    if @isString lambda
-      lambda = @propertyFunction lambda
-    minValue = Infinity
-    minObject = null
-
-    for object in array
-      value = lambda(object)
-      if value < minValue
-        minValue = value
-        minObject = object
-
-    if valueToo
-      [minObject, minValue]
-    else
-      minObject
-
-  max: (array, lambda = @identityFunction, valueToo = false) ->
-    @error "max: empty array" if @empty array
-    if @isString lambda
-      lambda = @propertyFunction lambda
-    maxValue = -Infinity
-    maxObject = null
-
-    for object in array
-      value = lambda(object)
-      if value > maxValue
-        maxValue = value
-        maxObject = object
-
-    if valueToo
-      [maxObject, maxValue]
-    else
-      maxObject
-
-  sum: (array, lambda = @identityFunction) ->
-    if @isString lambda
-      lambda = @propertyFunction lambda
-
-    value = 0
-    for object in array
-      value += lambda(object)
-
-    value
-
-  average: (array, lambda = @identityFunction) ->
-    @sum(array, lambda) / array.length
-
-  median: (array) ->
-    if array.sort?
-      array = @clone array
-    else
-      array = @typedToJS array
-
-    middle = (array.length - 1) / 2
-
-    @sort array
-    (array[Math.floor(middle)] + array[Math.ceil(middle)]) / 2
-
-  # Return histogram of o when f(o) is a numeric value in array.
-  # Histogram interval is bin. Error if array empty.
-  # If f is a string, return histogram of that property.
-  #
-  # In examples below, histogram returns [3, 1, 1, 0, 0, 1]
-  #
-  #     a = [1, 3, 4, 1, 1, 10]
-  #     h = histogram a, 2, (i) -> i
-  #     
-  #     b = ({id:i} for i in a)
-  #     h = histogram b, 2, (o) -> o.id
-  #     h = histogram b, 2, "id"
-  histogram: (array, binSize = 1, lambda = @identityFunction) ->
-    if @isString lambda
-      lambda = @propertyFunction lambda
-    histogram = []
-
-    for object in array
-      integer = Math.floor lambda(object) / binSize
-      histogram[integer] or= 0
-      histogram[integer] += 1
-
-    for value, integer in histogram when not value?
-      histogram[integer] = 0
-
-    histogram
-
-  # Mutator. Sort array of objects in place by the function f.
-  # If f is string, f returns property of object.
-  # Returns array.
-  # Clone first if you want to preserve the original array.
-  #
-  #     array = [{i: 1}, {i: 5}, {i: -1}, {i: 2}, {i: 2}]
-  #     sortBy array, "i"
-  #     # array now is [{i: -1}, {i: 1}, {i: 2}, {i: 2}, {i:5}]
-  sort: (array, lambda = null) ->
-    if @isString lambda # use item[f] if f is string
-      lambda = @propertySortFunction lambda
-
-    array._sort lambda
-
-  # Mutator. Removes dups, by reference, in place from array.
-  # Note "by reference" means litteraly same object, not copy. Returns array.
-  # Clone first if you want to preserve the original array.
-  #
-  #     ids = ({id: i} for i in [0..10])
-  #     a = (ids[i] for i in [1, 3, 4, 1, 1, 10])
-  #     # a is [{id: 1}, {id: 3}, {id: 4}, {id: 1}, {id: 1}, {id: 10}]
-  #     b = clone a
-  #     sortBy b, "id"
-  #     # b is [{id:1}, {id: 1}, {id: 1}, {id: 3}, {id: 4}, {id: 10}]
-  #     uniq b
-  #     # b now is [{id:1}, {id: 3}, {id: 4}, {id: 10}]
-  uniq: (array) ->
-    hash = {}
-
-    i = 0
-    while i < array.length
-      if hash[array[i]] is true
-        array.splice i, 1
-        i -= 1
-      else
-        hash[array[i]] = true
-      i += 1
-
-    array
-  
-  # Return a new array composed of the rows of a matrix. I.e. convert
-  #
-  #     [[1, 2, 3], [4, 5, 6]] to [1, 2, 3, 4, 5, 6]
-  flatten: (array) ->
-    array.reduce((arrayA, arrayB) ->
-      if not u.isArray arrayA
-        arrayA = [arrayA]
-      arrayA.concat arrayB)
-  
-  # Return an array with values in [low, high], defaults to [0, 1].
-  # Note: to have a half-open interval, [low, high), try high = high - .00009
-  normalize: (array, low = 0, high = 1) ->
-    min = @min array
-    max = @max array
-    scale = 1 / (max - min)
-    newArray = []
-    for number in array
-      newArray.push @linearInterpolate(low, high, scale * (number - min))
-    newArray
-
-  normalizeInt: (array, low, high) ->
-    (Math.round i for i in @normalize array, low, high)
-
-  # Return a Uint8ClampedArray, normalized to [.5, 255.5] then round/clamp to [0, 255]
-  # TODO maybe data-specific?
-  normalize8: (array) ->
-    new Uint8ClampedArray @normalize(array, -.5, 255.5)
 
   # ### Topology operations
   
@@ -1144,10 +878,20 @@ ABM.util.array =
   #
   #     [[1, 2, 3], [4, 5, 6]] to [1, 2, 3, 4, 5, 6]
   flatten: (array) ->
-    array.reduce((arrayA, arrayB) ->
-      if not u.isArray arrayA
-        arrayA = [arrayA]
-      arrayA.concat arrayB)
+    # TODO make work with gridpath model, concat does not handle Sets,
+    # though it does in the tests
+    #array.reduce((arrayA, arrayB) ->
+    #  if not u.isArray arrayA
+    #    arrayA = [arrayA]
+    #    arrayA.concat arrayB)
+    newArray = []
+    for element in array
+      if u.isArray element
+        for subElemen in element
+          newArray.push subElemen
+      else
+        newArray.push element
+    newArray
   
   # Return an array with values in [low, high], defaults to [0, 1].
   # Note: to have a half-open interval, [low, high), try high = high - .00009
@@ -1244,10 +988,15 @@ ABM.util.array.extender =
     methods = @methods()
     for method in methods
       eval("""
-        ABM.Array.prototype.#{method} = function() {
-          var options, _ref;
+        #{className}.prototype.#{method} = function() {
+          var options, _ref, _ret;
           options = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-          return (_ref = u.array).#{method}.apply(_ref, [this].concat(__slice.call(options)));
+          _ret = (_ref = u.array).#{method}.apply(_ref, [this].concat(__slice.call(options)));
+          if (ABM.util.isArray(_ret)) {
+            return this.constructor.from(_ret);
+          } else {
+            return _ret;
+          }
         };""")
 
   extend: (util) ->
@@ -1297,7 +1046,9 @@ class ABM.Array extends Array
   # WARNING: Needs constructor or subclassing Array won't work
   constructor: (options...) ->
     if u.array.any options
-      return ABM.Array.from(options)
+      return @constructor.from(options)
+    else
+      super
  
   shuffle: ->
     u.shuffle @
@@ -1339,6 +1090,7 @@ class ABM.Set extends ABM.Array
   # Used by methods creating new sets.
   from: (array, setType = @) ->
     ABM.Set.from array, setType # setType = ABM.Set
+    # TODO see if can be removed
 
   # In the examples below, we'll use an array of primitive agent objects
   # with three fields: id, x, y.
@@ -1351,7 +1103,8 @@ class ABM.Set extends ABM.Array
 
   # Set the default value of an agent class, return agentset
   setDefault: (name, value) ->
-    @agentClass::[name] = value; @
+    @agentClass::[name] = value
+    @
 
   # Return all agents that are not of the given breeds argument.
   # Breeds is a string of space separated names:
@@ -1498,11 +1251,10 @@ class ABM.BreedSet extends ABM.Set
     object
 
   # Move an agent from its BreedSet to be in this BreedSet.
-  # TODO integrate with push
+  #
   setBreed: (agent) ->
-    id = agent.id
     agent.breed.remove agent
-    @push agent, id
+    @push agent
     proto = agent.__proto__ = @agentClass.prototype
     delete agent[key] for own key, value of agent when proto[key]?
     agent
@@ -2064,7 +1816,7 @@ class ABM.Links extends ABM.BreedSet
 
 ABM.models = {} # user space, put your models here
 
-class ABM.Model
+ABM.model = class ABM.Model
   # Class variable for layers parameters. 
   # Can be added to by programmer to modify/create layers, **before** starting your own model.
   # Example:
@@ -2085,8 +1837,6 @@ class ABM.Model
   # * intialize various instance variables
   # * call `setup` abstract method
   constructor: (options) ->
-    ABM.model = @
-
     div = options.div
     isHeadless = options.isHeadless = options.isHeadless? or not div?
     @setWorld options

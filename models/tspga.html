@@ -102,7 +102,7 @@
         a.tourNodes.clone().shuffle()
 
       inversionStrategy: (a) ->
-        @asSet @newInversion a.tourNodes
+        ABM.Set.from @newInversion a.tourNodes
 
       newInversion: (nlist) ->
         len = nlist.length

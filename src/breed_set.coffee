@@ -96,11 +96,10 @@ class ABM.BreedSet extends ABM.Set
     object
 
   # Move an agent from its BreedSet to be in this BreedSet.
-  # TODO integrate with push
+  #
   setBreed: (agent) ->
-    id = agent.id
     agent.breed.remove agent
-    @push agent, id
+    @push agent
     proto = agent.__proto__ = @agentClass.prototype
     delete agent[key] for own key, value of agent when proto[key]?
     agent

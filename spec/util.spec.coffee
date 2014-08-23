@@ -11,12 +11,17 @@ describe "Util", ->
       expect(u.error, "Something").toThrow()
 
   describe "isArray", ->
-    it "detects arrays as arrays", ->
+    it "detects arrays, and subclasses of array as arrays", ->
       arrays = [
         []
         ABM.Agents.from []
-        [1,2,3]
+        [1, 2, 3]
         ["some", 4]
+        new ABM.Array(1, 2)
+        new ABM.Set(5, 2, 99)
+        new ABM.Set()
+        ABM.Set.from [5, 2, 99]
+        new ABM.BreedSet(ABM.Agent, "agents")
       ]
 
       for array in arrays
@@ -202,112 +207,7 @@ describe "Util", ->
       expect(u.toFixed([1.334, 5.445, 11.666], 1))
         .toEqual ["1.3", "5.4", "11.7"]
 
-  describe "any", ->
-    it "returns false if empty", ->
-      expect(u.any([])).toBe false
-
-  describe "empty", ->
-    it "returns true if empty", ->
-      expect(u.empty([])).toBe true
-      expect(u.empty([1,2])).toBe false
-
-  describe "clone", ->
-    it "returns a copy of the array", ->
-      array = [1,2,3]
-      array2 = u.clone(array)
-      expect(array).toEqual array2
-      array2[1] = 7
-      expect(array).not.toEqual array2
-
-  describe "last", ->
-    it "returns the last element", ->
-      expect(u.last([1,2,3])).toEqual 3
-
-  describe "sample", ->
-    it "returns one object if no number given", ->
-      u.randomSeed(2)
-      number = u.sample([1, 2, 3, 4])
-      expect(number).toEqual 4
-  
-    it "returns the number object if number given", ->
-      u.randomSeed(2)
-      array = u.sample([1, 2, 3, 4], 2)
-      expect(array).toEqual [4, 1]
-
-    it "returns sample for which true if condition given", ->
-      u.randomSeed(10)
-      number = u.sample([1, 2, 3, 4, 5, 6], (number) -> number % 2 is 0)
-      expect(number).toEqual 2
-
-    it "returns sample for which true if condition and number is given", ->
-      u.randomSeed(2)
-      array = u.sample([1, 2, 3, 4, 5, 6], 2, (number) -> number % 2 is 0)
-      expect(array).toEqual [6, 2]
-
-  describe "contains", ->
-    it "returns true if it contains the element", ->
-      expect(u.contains([1, 2, 3], 2)).toBe true
-      expect(u.contains([1, 2, 3], 5)).toBe false
-
-  describe "remove", ->
-    it "removes the item", ->
-      expect(u.remove([1, 2, 3], 2)).toEqual [1, 3]
-      expect(u.remove, [1, 2, 3], 5).toThrow()
-
-  describe "removeItems", ->
-    it "removes the items", ->
-      expect(u.removeItems([1, 2, 3, 4, 5], [2, 4])).toEqual [1, 3, 5]
-
-  describe "shuffle", ->
-    it "shuffles the array", ->
-      u.randomSeed(2)
-      expect(u.shuffle([1, 2, 3])).toEqual [1, 3, 2]
-
-  describe "min", ->
-    it "returns the smallest element", ->
-      expect(u.min([7, 3, 2, 3])).toEqual 2
-
-  describe "max", ->
-    it "returns the biggest element", ->
-      expect(u.max([7, 3, 2, 3])).toEqual 7
-
-  describe "sum", ->
-    it "returns the sum", ->
-      expect(u.sum([7, 3, 2, 3])).toEqual 15
-
-  describe "average", ->
-    it "returns the average", ->
-      expect(u.average([7, 3, 2, 3])).toEqual 3.75
-
-  describe "median", ->
-    it "returns the median", ->
-      expect(u.median([7, 3, 2])).toEqual 3
-      expect(u.median([7, 3, 2, 4])).toEqual 3.5
-
-  describe "histogram", ->
-    it "returns the histogram", ->
-      expect(u.histogram([0, 2, 6, 8, 2], 3)).toEqual [3, 0, 2]
-
-  describe "sort", ->
-    it "sorts the array", ->
-      array = [2.4, 8, 2]
-      u.sort(array, (objectA, objectB) ->
-        Math.floor(objectA) > Math.floor(objectB))
-      expect(array).toEqual [2.4, 2, 8]
-
-  describe "uniq", ->
-    it "returns the array with only unique items", ->
-      array = [0, 2, 1, 0, 8, 2, 1, 1]
-      u.uniq(array) # changes array in place
-      expect(array).toEqual [0, 2, 1, 8]
-
-  describe "flatten", ->
-    it "flattens the matrix to an array", ->
-      expect(u.flatten([[7], [3, 2], [3]])).toEqual [7, 3, 2, 3]
-
-  describe "normalize", ->
-    it "returns the array normalized", ->
-      expect(u.normalize([4, 9, 7], 5, 10)).toEqual [5, 10, 8]
+  # Other array tests are in Array spec
 
   # ### Topology operations
 

@@ -10,7 +10,7 @@
       setup: ->
         @agentBreeds ["embers", "fires"]
         @agents.setDefault "shape", "square"
-        @agents.setDefault "color", [255,0,0]
+        @agents.setDefault "color", [255, 0, 0]
         @agents.setDefault "heading", 0 # override promotion to random angle
         
         @refreshPatches = false # <1fps->50-55fps, no surprise, app optimized for this 
@@ -42,7 +42,7 @@
         @burnedTrees = 0 # reset from initial ignites
 
       ignite: (patch) ->
-        patch.sprout 1, @fires, (ember) ->
+        patch.sprout 1, @fires
         patch.color = [0, 0, 0] # in original model but apparently not needed, refresh off?
         @burnedTrees++
 

@@ -4,11 +4,15 @@ code = require "../lib/agentscript.coffee"
 
 @Model = class Model extends ABM.Model
   setup: ->
+    @preSetup()
     @setupBreeds()
     @setupPatches()
     @setupAgents()
     @setupCitizens()
     @setupLinks()
+
+  preSetup: ->
+    # Can be set to prepare things
 
   setupBreeds: ->
     @agentBreeds ["citizens"]
@@ -38,7 +42,7 @@ code = require "../lib/agentscript.coffee"
 
 @setupModel = (options = {}) ->
   options.torus ?= false
-  options.model ?= Model
+  options.model ?= @Model
 
   model = new options.model({
     patchSize: 20,

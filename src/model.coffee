@@ -6,7 +6,7 @@
 
 ABM.models = {} # user space, put your models here
 
-class ABM.Model
+ABM.model = class ABM.Model
   # Class variable for layers parameters. 
   # Can be added to by programmer to modify/create layers, **before** starting your own model.
   # Example:
@@ -27,8 +27,6 @@ class ABM.Model
   # * intialize various instance variables
   # * call `setup` abstract method
   constructor: (options) ->
-    ABM.model = @
-
     div = options.div
     isHeadless = options.isHeadless = options.isHeadless? or not div?
     @setWorld options
