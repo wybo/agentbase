@@ -251,19 +251,23 @@ ABM.util.array =
   #
   #     [[1, 2, 3], [4, 5, 6]] to [1, 2, 3, 4, 5, 6]
   flatten: (array) ->
-    # TODO make work with gridpath model, concat does not handle Sets,
-    # though it does in the tests
-    #array.reduce((arrayA, arrayB) ->
-    #  if not u.isArray arrayA
-    #    arrayA = [arrayA]
-    #    arrayA.concat arrayB)
-    newArray = []
-    for element in array
-      if u.isArray element
-        for subElemen in element
-          newArray.push subElemen
-      else
+    array.reduce((arrayA, arrayB) ->
+      if not u.isArray arrayA
+        arrayA = new ABM.Array arrayA
+      arrayA.concat arrayB)
+
+  # Returns a new array that has addArray appended
+  #
+  # Concat checks [[ClassName]], and this does not work for things
+  # inheriting from Array.
+  concat: (array, addArray) ->
+    newArray = array.clone()
+    if u.isArray addArray
+      for element in addArray
         newArray.push element
+    else
+      newArray.push addArray
+
     newArray
   
   # Return an array with values in [low, high], defaults to [0, 1].

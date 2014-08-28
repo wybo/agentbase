@@ -20,6 +20,7 @@ prompt = (qstring, f) -> # prompt w/ question, respond with f(ans)
     f(ans)
 
 srcDir = "src/"
+specDir = "spec/"
 extrasDir = "extras/"
 toolsDir = 'tools/'
 libDir = 'lib/'
@@ -27,16 +28,25 @@ libDir = 'lib/'
 firstFileNames = ['util.coffee', 'util_array.coffee', 'array.coffee',
   'set.coffee', 'breed_set.coffee']
 
-FileNames = firstFileNames.concat(
-  fs.readdirSync(srcDir).filter (file) -> file not in firstFileNames)
+FileNames = firstFileNames.concat(fs.readdirSync(srcDir)
+  .filter (file) -> file not in firstFileNames)
 FilePaths = ("#{srcDir}#{file}" for file in FileNames)
 MergedPath = "#{libDir}agentscript.coffee"
 
-XNames = "data mouse fbui".split(" ")
-XJSNames = "as.dat.gui data.tile".split(" ")
-XPaths = ("#{extrasDir}#{f}.coffee" for f in XNames)
-  .concat("#{extrasDir}#{f}.js" for f in XJSNames)
-JSNames = XNames.concat(XJSNames, ["agentscript"])
+specCopiedFilename = 'shared.spec.coffee'
+
+SpecCopyPaths = ["#{specDir}#{specCopiedFilename}",
+  "#{libDir}#{specCopiedFilename}"]
+SpecFileNames = fs.readdirSync(specDir)
+  .filter (file) -> file isnt specCopiedFilename
+SpecFilePaths = ("#{specDir}#{file}" for file in SpecFileNames)
+SpecMergedPath = "#{libDir}spec.coffee"
+
+ExtrasNames = "data mouse fbui".split(" ")
+ExtrasJSNames = "as.dat.gui data.tile".split(" ")
+ExtrasFilePaths = ("#{extrasDir}#{f}.coffee" for f in ExtrasNames)
+  .concat("#{extrasDir}#{f}.js" for f in ExtrasJSNames)
+JSNames = ExtrasNames.concat(ExtrasJSNames, ["agentscript"])
 
 task 'all', 'Compile coffee, minify js, create docs', ->
   invoke 'build'
@@ -69,14 +79,26 @@ task 'build', 'Compile agentscript and libraries from source files', ->
   invoke 'build:extras'
 
 task 'build:agentscript', 'Compile agentscript from source files', ->
-  invoke 'cat'
+  invoke 'merge:agentscript'
   compileFile MergedPath
 
-task 'build:extras', 'Compile all libraries from their source file', ->
-  compileFile name for name in XPaths
+task 'build:spec', 'Compile spec from source files', ->
+  invoke 'merge:spec'
+  compileFile SpecMergedPath
+  compileFile SpecCopyPaths[1]
 
-task 'cat', 'Concatenate agentscript files', ->
+task 'build:extras', 'Compile all libraries from their source file', ->
+  compileFile name for name in ExtrasFilePaths
+
+task 'merge:agentscript', 'Concatenate agentscript files', ->
+  console.log "Merging #{MergedPath}"
   shell.cat(FilePaths).to(MergedPath)
+
+task 'merge:spec', 'Concatenate spec files', ->
+  console.log "Merging #{SpecMergedPath}"
+  shell.cat(SpecFilePaths).to(SpecMergedPath)
+  console.log "Copying #{SpecCopyPaths[1]}"
+  shell.cp('-f', SpecCopyPaths...)
 
 task 'doc', 'Create documentation from source files', ->
   tmpfiles = ("/tmp/#{i + 1}-#{file}" for file, i in FileNames)
@@ -88,7 +110,7 @@ task 'doc', 'Create documentation from source files', ->
     grep -v '^ *<' < models/template.html > #{template}
     #{cpfiles}
     docco #{tmpfiles.join(" ")} -o docs  &&
-    docco #{XPaths.join(" ")} -o docs
+    docco #{ExtrasFilePaths.join(" ")} -o docs
   """, -> #{silent:true}, (code, output) -> console.log output
 
 task 'git:prep', 'master: cake all; git add/status', ->
@@ -123,12 +145,12 @@ task 'git:pages', 'gh-pages: merge master, push to github gh-page', ->
       """, ->
 
 task 'git:diff', 'git diff the core and extras .coffee files', ->
-  coffeeFiles = FilePaths.concat(XPaths).join(' ')
+  coffeeFiles = FilePaths.concat(ExtrasFilePaths).join(' ')
   diffFiles = "Cakefile README.md #{coffeeFiles} models sketches"
   exec "git diff #{diffFiles} | #{editor}"
 
 task 'git:diffhead', 'git diff staged/head core, extras, models', ->
-  coffeeFiles = FilePaths.concat(XPaths).join(' ')
+  coffeeFiles = FilePaths.concat(ExtrasFilePaths).join(' ')
   diffFiles = "Cakefile README.md #{coffeeFiles} models sketches"
   exec "git diff --staged #{diffFiles} | #{editor}"
 
@@ -143,24 +165,22 @@ task 'update:cs', 'Update coffee-script.js', ->
   shell.exec "cd #{toolsDir}; curl #{url} -O",
     -> console.log shell.grep(/^ \* /, "tools/coffee-script.js")
 
-task 'watch', 'Watch for source file updates, invoke builds', ->
-  invoke 'build:agentscript'
+watchPaths = (paths, callTask) ->
+  invoke callTask
 
+  for path in paths then do (path) ->
+    fs.watchFile path, (curr, prev) ->
+      if +curr.mtime isnt +prev.mtime
+        console.log "#{path}: #{curr.mtime}"
+        invoke callTask
+
+task 'watch', 'Watch for source file updates, invoke builds', ->
   console.log "Watching source directory"
 
-  for path in FilePaths then do (path) ->
-    fs.watchFile path, (curr, prev) ->
-      if +curr.mtime isnt +prev.mtime
-        console.log "#{path}: #{curr.mtime}"
-        invoke 'build:agentscript'
-
-  invoke 'build:extras'
-
-  for path in XPaths then do (path) ->
-    fs.watchFile path, (curr, prev) ->
-      if +curr.mtime isnt +prev.mtime
-        console.log "#{path}: #{curr.mtime}"
-        compileFile path
+  watchPaths(FilePaths, 'build:agentscript')
+  watchPaths(SpecFilePaths, 'build:spec')
+  watchPaths([SpecCopyPaths[0]], 'build:spec')
+  watchPaths(ExtrasFilePaths, 'build:extras')
 
 wcCode = (file) ->
   shell.grep('-v', /^ *[#/]|^ *$|^ *root|setRootVars|^ *console/, file).split('\n').length

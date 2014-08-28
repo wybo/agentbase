@@ -10,7 +10,8 @@
     "shelljs": "~0.2.6",
     "docco": "~0.6.3",
     "uglify-js": "~2.4.12",
-    "jasmine-node": "~1.14.3",
+    "jasmine-core": "~2.0.4",
+    "http-server": "~0.6.1",
     "coffee-script": "~1.7.1",
     "optparse": "~1.0.5"
   },

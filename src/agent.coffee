@@ -71,7 +71,7 @@ class ABM.Agent
     oldPatch = @patch
     @patch = ABM.patches.patch @position
 
-    if oldPatch is not @patch
+    if oldPatch and oldPatch isnt @patch
       u.remove oldPatch.agents, @
     @patch.agents.push @
 
@@ -86,7 +86,8 @@ class ABM.Agent
 
   # Moves the agent off the grid, making him lose his patch
   moveOff: ->
-    u.remove @patch.agents, @
+    if @patch
+      u.remove @patch.agents, @
     @patch = @position = null
 
   # Move forward (along heading) by distance units (patch coordinates),

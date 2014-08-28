@@ -1,8 +1,8 @@
-#t = require "../src/array.coffee"
-#ABM = t.ABM
-t = require "./test.coffee"
+if typeof window == 'undefined'
+  t = require "./shared.spec.coffee"
+  eval 'var ABM = t.ABM' # because CoffeeScript sets var to null
 
-ABM = t.ABM
+t = ABM.test
 u = ABM.util
 
 describe "Array", ->
@@ -88,6 +88,10 @@ describe "Array", ->
     it "removes the item", ->
       expect(new ABM.Array(1, 2, 3)
         .remove(2)).toEqual new ABM.Array 1, 3
+
+      array = new ABM.Array(1, 'z', 7, 7)
+      array.remove(7)
+      expect(array).toEqual new ABM.Array 1, 'z'
 
   describe "removeItems", ->
     it "removes the items", ->

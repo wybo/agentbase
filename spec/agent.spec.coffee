@@ -1,6 +1,8 @@
-t = require "./test.coffee"
+if typeof window == 'undefined'
+  t = require "./shared.spec.coffee"
+  eval 'var ABM = t.ABM' # because CoffeeScript sets var to null
 
-ABM = t.ABM
+t = ABM.test
 u = ABM.util
 
 describe "Agent", ->
@@ -20,12 +22,15 @@ describe "Agent", ->
       model = t.setupModel()
       agent = model.agents[0]
 
+      oldPatch = agent.patch
+      oldPatchAgents = oldPatch.agents.length
       agent.moveTo x: 17, y: 15
       patch = model.patches.patch x: 17, y: 15
 
       expect(agent.position).toEqual x: 17, y: 15
       expect(agent.patch).toBe patch
       expect(patch.agents[0]).toBe agent
+      expect(oldPatch.agents.length).toBe oldPatchAgents - 1
 
       agent.moveTo x: 11, y: 12
       patch = model.patches.patch x: 11, y: 12

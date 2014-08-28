@@ -878,19 +878,23 @@ ABM.util.array =
   #
   #     [[1, 2, 3], [4, 5, 6]] to [1, 2, 3, 4, 5, 6]
   flatten: (array) ->
-    # TODO make work with gridpath model, concat does not handle Sets,
-    # though it does in the tests
-    #array.reduce((arrayA, arrayB) ->
-    #  if not u.isArray arrayA
-    #    arrayA = [arrayA]
-    #    arrayA.concat arrayB)
-    newArray = []
-    for element in array
-      if u.isArray element
-        for subElemen in element
-          newArray.push subElemen
-      else
+    array.reduce((arrayA, arrayB) ->
+      if not u.isArray arrayA
+        arrayA = new ABM.Array arrayA
+      arrayA.concat arrayB)
+
+  # Returns a new array that has addArray appended
+  #
+  # Concat checks [[ClassName]], and this does not work for things
+  # inheriting from Array.
+  concat: (array, addArray) ->
+    newArray = array.clone()
+    if u.isArray addArray
+      for element in addArray
         newArray.push element
+    else
+      newArray.push addArray
+
     newArray
   
   # Return an array with values in [low, high], defaults to [0, 1].
@@ -1047,25 +1051,11 @@ class ABM.Array extends Array
   constructor: (options...) ->
     if u.array.any options
       return @constructor.from(options)
-    else
-      super
  
-  shuffle: ->
-    u.shuffle @
-
-  # Sort the agentset
-  #
-  sort: (options...) ->
-    u.sort @, options...
-
-  clone: ->
-    @from u.clone @
-
-  first: ->
-    u.first @
-
 # ### Extending
 
+# Adds most methods
+#
 ABM.util.array.extender.extendArray('ABM.Array')
 
 # An **ABM.AgentArray** is an array, with some agent/patch/link specific
@@ -1364,7 +1354,7 @@ class ABM.Agent
     oldPatch = @patch
     @patch = ABM.patches.patch @position
 
-    if oldPatch is not @patch
+    if oldPatch and oldPatch isnt @patch
       u.remove oldPatch.agents, @
     @patch.agents.push @
 
@@ -1379,7 +1369,8 @@ class ABM.Agent
 
   # Moves the agent off the grid, making him lose his patch
   moveOff: ->
-    u.remove @patch.agents, @
+    if @patch
+      u.remove @patch.agents, @
     @patch = @position = null
 
   # Move forward (along heading) by distance units (patch coordinates),

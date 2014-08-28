@@ -1,8 +1,12 @@
-code = require "../lib/agentscript.coffee"
+if typeof window == 'undefined'
+  code = require "../lib/agentscript.coffee"
+  eval 'var ABM = this.ABM = code.ABM'
 
-@ABM = ABM = code.ABM
+u = ABM.util
 
-@Model = class Model extends ABM.Model
+ABM.test = {}
+
+ABM.test.Model = class Model extends ABM.Model
   setup: ->
     @preSetup()
     @setupBreeds()
@@ -40,9 +44,9 @@ code = require "../lib/agentscript.coffee"
     for [i, j] in [[0, 1], [2, 1], [1, 2], [1, 3], [4, 10]]
       @links.create(@agents[i], @agents[j])
 
-@setupModel = (options = {}) ->
+ABM.test.setupModel = (options = {}) ->
   options.torus ?= false
-  options.model ?= @Model
+  options.model ?= Model
 
   model = new options.model({
     patchSize: 20,

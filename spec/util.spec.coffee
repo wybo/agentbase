@@ -1,9 +1,15 @@
-t = require "./test.coffee"
+if typeof window == 'undefined'
+  t = require "./shared.spec.coffee"
+  eval 'var ABM = t.ABM' # because CoffeeScript sets var to null
 
-ABM = t.ABM
+t = ABM.test
 u = ABM.util
 
 describe "Util", ->
+  if typeof window != 'undefined'
+    eval 'global = window'
+    # if tested in the browser Node global does not exist
+
   # ### Language extensions
 
   describe "error", ->
@@ -348,6 +354,6 @@ describe "Util", ->
 
   describe "typedToJS", ->
     it "returns a JS array", ->
-      array = Uint8Array([1,2])
+      array = new Uint8Array([1,2])
       array = u.typedToJS(array)
       expect(array.sort?).toBe true

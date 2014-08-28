@@ -37,23 +37,9 @@ class ABM.Array extends Array
   constructor: (options...) ->
     if u.array.any options
       return @constructor.from(options)
-    else
-      super
  
-  shuffle: ->
-    u.shuffle @
-
-  # Sort the agentset
-  #
-  sort: (options...) ->
-    u.sort @, options...
-
-  clone: ->
-    @from u.clone @
-
-  first: ->
-    u.first @
-
 # ### Extending
 
+# Adds most methods
+#
 ABM.util.array.extender.extendArray('ABM.Array')

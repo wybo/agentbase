@@ -1,6 +1,8 @@
-t = require "./test.coffee"
+if typeof window == 'undefined'
+  t = require "./shared.spec.coffee"
+  eval 'var ABM = t.ABM' # because CoffeeScript sets var to null
 
-ABM = t.ABM
+t = ABM.test
 u = ABM.util
 
 describe "Link", ->

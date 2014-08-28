@@ -1,9 +1,11 @@
-t = require "./test.coffee"
+if typeof window == 'undefined'
+  t = require "./shared.spec.coffee"
+  eval 'var ABM = t.ABM' # because CoffeeScript sets var to null
 
-ABM = t.ABM
+t = ABM.test
 u = ABM.util
 
-class CreateModel extends t.Model
+class LinksCreateModel extends t.Model
   setup: ->
     @setupPatches()
     @setupAgents()
@@ -16,7 +18,7 @@ class CreateModel extends t.Model
 describe "Links", ->
   describe "create", ->
     it "creates the link", ->
-      model = t.setupModel(model: CreateModel)
+      model = t.setupModel(model: LinksCreateModel)
       link = model.links[0]
 
       expect(link.from).toBe model.agents[0]
