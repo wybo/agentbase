@@ -1,4 +1,4 @@
 #!/bin/bash
 
-echo 'Run specs at http://localhost:8082/spec.html'
-./node_modules/http-server/bin/http-server
+echo 'Run specs at http://localhost:8000/spec.html'
+./node_modules/http-server/bin/http-server -p 8000

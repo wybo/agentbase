@@ -190,30 +190,21 @@ describe "Util", ->
       object = new Object # an object
       object.bull = "pen"
       object.fly = -> 1 + 1
-      expect(u.ownKeys(object)).toEqual ["bull", "fly"]
+      expect(u.ownKeys(object)).toEqual new ABM.Array "bull", "fly"
 
   describe "ownVariableKeys", ->
     it "returns the attributes that are not functions", ->
       object = new Object # an object
       object.bull = "pen"
       object.fly = -> 1 + 1
-      expect(u.ownVariableKeys(object)).toEqual ["bull"]
+      expect(u.ownVariableKeys(object)).toEqual new ABM.Array "bull"
 
   describe "ownValues", ->
     it "returns the values", ->
       object = new Object # an object
       object.bull = "pen"
       object.fly = -> 1 + 1
-      expect(u.ownValues(object)).toEqual ["pen", object.fly]
-
-  # ### Array operations
-
-  describe "toFixed", ->
-    it "returns the array rounded, as strings", ->
-      expect(u.toFixed([1.334, 5.445, 11.666], 1))
-        .toEqual ["1.3", "5.4", "11.7"]
-
-  # Other array tests are in Array spec
+      expect(u.ownValues(object)).toEqual new ABM.Array "pen", object.fly
 
   # ### Topology operations
 

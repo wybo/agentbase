@@ -114,7 +114,8 @@ class ABM.Patches extends ABM.BreedSet
   # Exclude `patch` unless meToo is true, default false.
   patchRectangle: (patch, dx, dy, meToo = false) ->
     rectangle = @patchRectangleNullPadded(patch, dx, dy, meToo)
-    u.remove(rectangle, null)
+
+    rectangle.remove(null)
 
   patchRectangleNullPadded: (patch, dx, dy, meToo = false) ->
     rectangle = new ABM.Set

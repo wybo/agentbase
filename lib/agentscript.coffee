@@ -224,14 +224,15 @@ ABM.util = u =
   # ### Object operations
   
   # Return object's own key or variable values
+  #
   ownKeys: (object) ->
-    (key for own key, value of object)
+    ABM.Array.from(key for own key, value of object)
 
   ownVariableKeys: (object) ->
-    (key for own key, value of object when not @isFunction value)
+    ABM.Array.from(key for own key, value of object when not @isFunction value)
 
   ownValues: (object) ->
-    (value for own key, value of object)
+    ABM.Array.from(value for own key, value of object)
 
   # ### Topology operations
   
@@ -633,6 +634,7 @@ ABM.util.array =
   # Used by methods creating new arrays.
   from: (array, arrayType) ->
     ABM.Array.from array, arrayType # setType = ABM.Set
+  # TODO replace in code
 
   # Return string representative of agentset.
   toString: (array) ->
@@ -689,7 +691,7 @@ ABM.util.array =
       number = Math.floor(numberOrCondition)
 
     if number?
-      newArray = []
+      newArray = new ABM.Array
       object = true
       while newArray.length < number and object?
         object = @sample(array, condition)
@@ -697,7 +699,7 @@ ABM.util.array =
           newArray.push object
       return newArray
     else if condition?
-      checked = []
+      checked = new ABM.Array
       while checked.length < array.length
         object = @sample(array)
         if object and object not in checked
@@ -924,9 +926,9 @@ ABM.util.array =
   # Similar to NetLogo ask & with operators.
   # Allows functions as strings. Use:
   #
-  #     AS.getProp("x") # [1, 8, 6, 2, 2]
+  #     AS.getProperty("x") # [1, 8, 6, 2, 2]
   #     AS.with("o.x < 5").ask("o.x = o.x + 1")
-  #     AS.getProp("x") # [2, 8, 6, 3, 3]
+  #     AS.getProperty("x") # [2, 8, 6, 3, 3]
   #
   #     ABM.agents.with("o.id < 100").ask("o.color = [255, 0, 0]")
   ask: (array, functionString) ->
@@ -946,28 +948,28 @@ ABM.util.array =
   
   # Return an array of a property of the agentset
   #
-  #      AS.getProp "x" # [0, 8, 6, 1, 1]
+  #      AS.getProperty "x" # [0, 8, 6, 1, 1]
   # TODO Prop -> Property
-  getProp: (array, property) ->
+  getProperty: (array, property) ->
     object[property] for object in array
 
   # Return an array of agents with the property equal to the given value
   #
-  #     AS.getPropWith "x", 1
+  #     AS.getPropertyWith "x", 1
   #     [{id: 4, x: 1, y: 3},{id: 5, x: 1, y: 1}]
-  getPropWith: (array, property, value) ->
+  getPropertyWith: (array, property, value) ->
     @from (object for object in array when object[property] is value)
 
   # Set the property of the agents to a given value.  If value
   # is an array, its values will be used, indexed by agentSet's index.
-  # This is generally used via: getProp, modify results, setProp
+  # This is generally used via: getProperty, modify results, setProperty
   #
   #     # increment x for agents with x=1
-  #     AS1 = ABM.Set.from AS.getPropWith("x", 1)
-  #     AS1.setProp "x", 2 # {id: 4, x: 2, y: 3}, {id: 5, x: 2, y: 1}
+  #     AS1 = ABM.Set.from AS.getPropertyWith("x", 1)
+  #     AS1.setProperty "x", 2 # {id: 4, x: 2, y: 3}, {id: 5, x: 2, y: 1}
   #
   # Note this changes the last two objects in the original AS above
-  setProp: (array, property, value) ->
+  setProperty: (array, property, value) ->
     if u.isArray value
       object[property] = value[i] for object, i in array
     else
@@ -977,7 +979,7 @@ ABM.util.array =
   # Return an array without given object
   #
   #     as = AS.clone().other(AS[0])
-  #     as.getProp "id"  # [1, 2, 3, 4] 
+  #     as.getProperty "id"  # [1, 2, 3, 4] 
   other: (array, given) ->
     @from (object for object in array when object isnt given) # could clone & remove
 
@@ -1002,15 +1004,6 @@ ABM.util.array.extender =
             return _ret;
           }
         };""")
-
-  extend: (util) ->
-    methods = @methods()
-    for method in methods
-      util[method] = ABM.util.array[method]
-
-# ### Extends ABM.util
-
-ABM.util.array.extender.extend(ABM.util)
 
 # An **ABM.Array** is an array, with some helper methods.
 #
@@ -1049,14 +1042,254 @@ class ABM.Array extends Array
  
   # WARNING: Needs constructor or subclassing Array won't work
   constructor: (options...) ->
-    if u.array.any options
-      return @constructor.from(options)
+    return @constructor.from(options)
  
 # ### Extending
 
 # Adds most methods
 #
 ABM.util.array.extender.extendArray('ABM.Array')
+
+# A *very* simple shapes module for drawing
+# [NetLogo-like](http://ccl.northwestern.edu/netlogo/docs/) agents.
+
+ABM.util.shapes = do ->
+  # Each shape is a named object with two members: 
+  # a boolean rotate and a draw procedure and two optional
+  # properties: img for images, and shortcut for a transform-less version of draw.
+  # The shape is used in the following context with a color set
+  # and a transform such that the shape should be drawn in a -.5 to .5 square
+  #
+  #     context.save()
+  #     context.fillStyle = u.colorString color
+  #     context.translate x, y; context.scale size, size;
+  #     context.rotate heading if shape.rotate
+  #     context.beginPath(); shape.draw(context); context.closePath()
+  #     context.fill()
+  #     context.restore()
+  #
+  # The list of current shapes, via `u.shapes.names()` below, is:
+  #
+  #     ["default", "triangle", "arrow", "bug", "pyramid", 
+  #      "circle", "square", "pentagon", "ring", "cup", "person"]
+  
+  # A simple polygon utility:  c is the 2D context, and a is an array of 2D points.
+  # c.closePath() and c.fill() will be called by the calling agent, see initial 
+  # discription of drawing context.  It is used in adding a new shape above.
+  poly = (c, a) ->
+    for p, i in a
+      if i is 0 then c.moveTo p[0], p[1] else c.lineTo p[0], p[1]
+    null
+
+  # Centered drawing primitives: centered on x,y with a given width/height size.
+  # Useful for shortcuts
+  circ = (c, x, y, s) -> c.arc x, y, s / 2, 0, 2 * Math.PI # centered circle
+
+  ccirc = (c, x, y, s) -> c.arc x, y, s / 2, 0, 2 * Math.PI, true # centered counter clockwise circle
+
+  cimg = (c, x, y, s, img) ->
+    c.scale 1,-1
+    c.drawImage img, x - s / 2, y - s / 2, s, s
+    c.scale 1,-1 # centered image
+
+  csq = (c, x, y, s) -> c.fillRect x - s / 2, y - s / 2, s, s # centered square
+  
+  # An async util for delayed drawing of images into sprite slots
+  fillSlot = (slot, img) ->
+    slot.context.save()
+    slot.context.scale 1, -1
+    slot.context.drawImage img, slot.x, -(slot.y + slot.bits), slot.bits, slot.bits
+    slot.context.restore()
+
+  # The spritesheet data, indexed by bits
+  spriteSheets = new ABM.Array
+  
+  # The module returns the following object:
+  default:
+    rotate: true
+    draw: (c) ->
+      poly c, [[.5, 0], [-.5, -.5], [-.25, 0], [-.5, .5]]
+
+  triangle:
+    rotate: true
+    draw: (c) ->
+      poly c, [[.5, 0], [-.5, -.4], [-.5, .4]]
+
+  arrow:
+    rotate: true
+    draw: (c) ->
+      poly c, [[.5,0], [0, .5], [0, .2], [-.5, .2], [-.5, -.2], [0, -.2], [0, -.5]]
+
+  bug:
+    rotate: true
+    draw: (c) ->
+      c.strokeStyle = c.fillStyle
+      c.lineWidth = .05
+      poly c, [[.4, .225], [.2, 0], [.4, -.225]]
+      c.stroke()
+      c.beginPath()
+      circ c, .12, 0, .26
+      circ c, -.05, 0, .26
+      circ c, -.27, 0, .4
+
+  pyramid:
+    rotate: false
+    draw: (c) ->
+      poly c, [[0, .5], [-.433, -.25], [.433, -.25]]
+
+  circle: # Note: NetLogo's dot is simply circle with a small size
+    shortcut: (c, x, y, s) ->
+      c.beginPath()
+      circ c, x, y, s
+      c.closePath()
+      c.fill()
+    rotate: false
+    draw: (c) ->
+      circ c, 0, 0, 1 # c.arc 0, 0,.5, 0, 2 * Math.PI
+
+  square:
+    shortcut: (c, x, y, s) ->
+      csq c, x, y, s
+    rotate: false
+    draw: (c) ->
+      csq c, 0, 0, 1 #c.fillRect -.5, -.5, 1 , 1
+
+  pentagon:
+    rotate: false
+    draw: (c) ->
+      poly c, [[0, .45], [-.45, .1], [-.3, -.45], [.3, -.45], [.45, .1]]
+
+  ring:
+    rotate: false
+    draw: (c) ->
+      circ c, 0, 0, 1
+      c.closePath()
+      ccirc c, 0, 0, .6
+
+  person:
+    rotate: false
+    draw: (c) ->
+      poly c, [
+        [.15, .2], [.3, 0], [.125, -.1], [.125, .05], [.1, -.15], [.25, -.5],
+        [.05, -.5], [0, -.25], [-.05, -.5], [-.25, -.5], [-.1, -.15],
+        [-.125, .05], [-.125, -.1], [-.3, 0], [-.15, .2]
+      ]
+      c.closePath()
+      circ c, 0, .35, .30
+
+  # Return a list of the available shapes, see above.
+  names: ->
+    array = new ABM.Array
+    for own name, val of @
+      if val.rotate? and val.draw?
+        array.push name
+    array
+
+  # Add your own shape. Will be included in names list.  Usage:
+  #
+  #     u.shapes.add "test", true, (c) -> # bowtie/hourglass
+  #       u.shapes.poly c, [[-.5, -.5], [.5, .5], [-.5, .5], [.5, -.5]]
+  #
+  # Note: an image that is not rotated automatically gets a shortcut. 
+  add: (name, rotate, draw, shortcut) -> # draw can be an image, shortcut defaults to null
+    if u.isFunction draw
+      shape = {rotate, draw}
+    else
+      shape = {rotate, img:draw, draw:(c) -> cimg c, .5, .5, 1, @img}
+
+    @[name] = shape
+
+    if shortcut? # can override img default shortcut if needed
+      shape.shortcut = shortcut
+    else if shape.img? and not shape.rotate
+      shape.shortcut = (c, x, y, s) ->
+        cimg c, x, y, s, @img
+
+  # Add local private objects for use by add() and debugging
+  poly:poly, circ:circ, ccirc:ccirc, cimg:cimg, csq:csq # export utils for use by add
+
+  spriteSheets:spriteSheets # export spriteSheets for debugging, showing in DOM
+
+  # Two draw procedures, one for shapes, the other for sprites made from shapes.
+  draw: (context, shape, x, y, size, rad, color) ->
+    if shape.shortcut?
+      context.fillStyle = u.colorString color unless shape.img?
+      shape.shortcut context, x, y, size
+    else
+      context.save()
+      context.translate x, y
+      context.scale size, size if size isnt 1
+      context.rotate rad if rad isnt 0
+      if shape.img? # is an image, not a path function
+        shape.draw context
+      else
+        context.fillStyle = u.colorString color
+        context.beginPath()
+        shape.draw context
+        context.closePath()
+        context.fill()
+      context.restore()
+    shape
+
+  drawSprite: (context, s, x, y, size, rad) ->
+    if rad is 0
+      context.drawImage s.context.canvas, s.x, s.y, s.bits, s.bits, x - size / 2,
+        y - size / 2, size, size
+    else
+      context.save()
+      context.translate x, y # see http://goo.gl/VUlhY for drawing centered rotated images
+      context.rotate rad
+      context.drawImage s.context.canvas, s.x, s.y, s.bits, s.bits, -size / 2,
+        -size / 2, size, size
+      context.restore()
+    s
+
+  # Convert a shape to a sprite by allocating a sprite sheet "slot" and drawing
+  # the shape to fit it. Return existing sprite if duplicate.
+  shapeToSprite: (name, color, size) ->
+    bits = Math.ceil ABM.patches.toBits size
+    shape = @[name]
+    index = if shape.img? then name else "#{name}-#{u.colorString(color)}"
+    context = spriteSheets[bits]
+
+    # Create sheet for this bit size if it does not yet exist
+    unless context?
+      spriteSheets[bits] = context = u.createContext bits * 10, bits
+      context.nextX = 0
+      context.nextY = 0
+      context.index = {}
+
+    # Return matching sprite if index match found
+    return foundSlot if (foundSlot = context.index[index])?
+
+    # Extend the sheet if we're out of space
+    if bits*context.nextX is context.canvas.width
+      u.resizeContext context, context.canvas.width, context.canvas.height + bits
+      context.nextX = 0
+      context.nextY++
+    # Create the sprite "slot" object and install in index object
+    x = bits * context.nextX
+    y = bits * context.nextY
+    slot = {context, x, y, size, bits, name, color, index}
+    context.index[index] = slot
+
+    # Draw the shape into the sprite slot
+    if (img = shape.img)? # is an image, not a path function
+      if img.height isnt 0 then fillSlot(slot, img)
+      else img.onload = -> fillSlot(slot, img)
+    else
+      context.save()
+      context.scale bits, bits
+      context.translate context.nextX + .5, context.nextY + .5
+      context.fillStyle = u.colorString color
+      context.beginPath()
+      shape.draw context
+      context.closePath()
+      context.fill()
+      context.restore()
+
+    context.nextX++
+    slot
 
 # An **ABM.AgentArray** is an array, with some agent/patch/link specific
 # helper methods.
@@ -1232,7 +1465,7 @@ class ABM.BreedSet extends ABM.Set
   remove: (object) ->
     if @mainSet?
       @mainSet.remove object
-    u.remove @, object
+    u.array.remove @, object
     @
 
   pop: () ->
@@ -1330,7 +1563,7 @@ class ABM.Agent
     @position = {x: 0, y: 0}
     @color = u.randomColor() unless @color? # promote color if default not set
     @heading = u.randomFloat(Math.PI * 2) unless @heading?
-    @links = []
+    @links = new ABM.Array
     @moveTo @position
 
   # ### Strings
@@ -1355,7 +1588,7 @@ class ABM.Agent
     @patch = ABM.patches.patch @position
 
     if oldPatch and oldPatch isnt @patch
-      u.remove oldPatch.agents, @
+      oldPatch.agents.remove @
     @patch.agents.push @
 
     if @penDown
@@ -1370,7 +1603,7 @@ class ABM.Agent
   # Moves the agent off the grid, making him lose his patch
   moveOff: ->
     if @patch
-      u.remove @patch.agents, @
+      @patch.agents.remove @
     @patch = @position = null
 
   # Move forward (along heading) by distance units (patch coordinates),
@@ -1454,24 +1687,24 @@ class ABM.Agent
 
   # All agents linked to me.
   linkNeighbors: ->
-    array = []
+    array = new ABM.Array
     for link in @links
       array.push @otherEnd(link)
-    u.uniq(array)
+    array.uniq()
  
   # Other end of myInLinks
   inLinkNeighbors: ->
-    array = []
+    array = new ABM.Array
     for link in @inLinks()
       array.push link.from
-    u.uniq(array)
+    array.uniq()
  
   # Other end of myOutinks
   outLinkNeighbors: ->
-    array = []
+    array = new ABM.Array
     for link in @outLinks()
       array.push link.to
-    u.uniq(array)
+    array.uniq()
 
   # ### Drawing
 
@@ -1479,13 +1712,13 @@ class ABM.Agent
   draw: (context) ->
     if @patch is null
       return
-    shape = ABM.shapes[@shape]
+    shape = u.shapes[@shape]
     radians = if shape.rotate then @heading else 0 # radians
     if @sprite? or @breed.useSprites
       @setSprite() unless @sprite? # lazy evaluation of useSprites
-      ABM.shapes.drawSprite context, @sprite, @position.x, @position.y, @size, radians
+      u.shapes.drawSprite context, @sprite, @position.x, @position.y, @size, radians
     else
-      ABM.shapes.draw context, shape, @position.x, @position.y, @size, radians, @color
+      u.shapes.draw context, shape, @position.x, @position.y, @size, radians, @color
     if @label?
       [x, y] = ABM.patches.patchXYtoPixelXY @x, @y
       u.contextDrawText context, @label, x + @labelOffset[0], y + @labelOffset[1], @labelColor
@@ -1499,7 +1732,7 @@ class ABM.Agent
       @size = sprite.size
     else
       @color = u.randomColor unless @color?
-      @sprite = ABM.shapes.shapeToSprite @shape, @color, @size
+      @sprite = u.shapes.shapeToSprite @shape, @color, @size
     
   # Draw the agent on the drawing layer, leaving permanent image.
   stamp: -> @draw ABM.drawing
@@ -1744,19 +1977,25 @@ class ABM.Link
   # Remove this link from the agent set
   die: ->
     @breed.remove @
-    u.remove @from.links, @
-    u.remove @to.links, @
+    @from.links.remove @
+    @to.links.remove @
     null
   
   # Return the two endpoints of this link
-  bothEnds: -> [@from, @to]
+  bothEnds: ->
+    new ABM.Array(@from, @to)
   
   # Return the distance between the endpoints with the current topology.
-  length: -> @from.distance @to.position
+  length: ->
+    @from.distance @to.position
   
   # Return the other end of the link, given an endpoint agent.
   # Assumes the given input *is* one of the link endpoint pairs!
-  otherEnd: (a) -> if @from is a then @to else @from
+  otherEnd: (a) ->
+    if @from is a 
+      @to
+    else
+      @from
 
 # ### Links
   
@@ -1885,6 +2124,7 @@ ABM.model = class ABM.Model
     @globalNames = u.ownKeys @
     @globalNames.set = false
     @startup()
+
     u.waitOnFiles =>
       @modelReady = true
       @setup()
@@ -1927,7 +2167,7 @@ ABM.model = class ABM.Model
       @globalNames = globalNames
       @globalNames.set = true
     else
-      @globalNames = u.removeItems u.ownKeys(@), @globalNames
+      @globalNames = u.ownKeys(@).removeItems @globalNames
 
 #### Optimizations:
   
@@ -2000,7 +2240,7 @@ ABM.model = class ABM.Model
 #    console.log "reset: agents"
 #    @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
 #    @links = ABM.links = new ABM.Links ABM.Link, "links"
-#    u.s.spriteSheets.length = 0 # possibly null out entries?
+#    u.shapes.spriteSheets.length = 0 # possibly null out entries?
 #    console.log "reset: setup"
 #    @setup()
 #    @setRootVars() if @debugging
@@ -2149,7 +2389,7 @@ class ABM.Patch
   #constructor: (@x, @y) ->
   constructor: (@position) ->
     @neighborsCache = {}
-    @agents = []
+    @agents = new ABM.Array
 
   # Return a string representation of the patch.
   toString: ->
@@ -2166,7 +2406,7 @@ class ABM.Patch
         position.y + @labelOffset[1], @labelColor
   
   empty: ->
-    u.empty @agents
+    @agents.empty()
 
   # Returns true if this patch is on the edge of the grid.
   isOnEdge: ->
@@ -2226,6 +2466,7 @@ class ABM.Patch
     row = 0
     column = -1
     span = range * 2 + 1
+
     for neighbor in neighbors
       row = counter % span
       if row == 0
@@ -2236,7 +2477,9 @@ class ABM.Patch
           (meToo or distanceRow + distanceColumn != 0)
         diamond.push neighbor
       counter += 1
-    u.remove(diamond, null)
+
+    diamond.remove(null)
+
     return diamond
 
 # ### Patches
@@ -2355,7 +2598,8 @@ class ABM.Patches extends ABM.BreedSet
   # Exclude `patch` unless meToo is true, default false.
   patchRectangle: (patch, dx, dy, meToo = false) ->
     rectangle = @patchRectangleNullPadded(patch, dx, dy, meToo)
-    u.remove(rectangle, null)
+
+    rectangle.remove(null)
 
   patchRectangleNullPadded: (patch, dx, dy, meToo = false) ->
     rectangle = new ABM.Set
@@ -2542,229 +2786,3 @@ class ABM.Patches extends ABM.BreedSet
       @drawScaledPixels context
     else
       super context
-
-# A *very* simple shapes module for drawing
-# [NetLogo-like](http://ccl.northwestern.edu/netlogo/docs/) agents.
-
-ABM.shapes = ABM.util.s = do ->
-  # Each shape is a named object with two members: 
-  # a boolean rotate and a draw procedure and two optional
-  # properties: img for images, and shortcut for a transform-less version of draw.
-  # The shape is used in the following context with a color set
-  # and a transform such that the shape should be drawn in a -.5 to .5 square
-  #
-  #     context.save()
-  #     context.fillStyle = u.colorString color
-  #     context.translate x, y; context.scale size, size;
-  #     context.rotate heading if shape.rotate
-  #     context.beginPath(); shape.draw(context); context.closePath()
-  #     context.fill()
-  #     context.restore()
-  #
-  # The list of current shapes, via `ABM.shapes.names()` below, is:
-  #
-  #     ["default", "triangle", "arrow", "bug", "pyramid", 
-  #      "circle", "square", "pentagon", "ring", "cup", "person"]
-  
-  # A simple polygon utility:  c is the 2D context, and a is an array of 2D points.
-  # c.closePath() and c.fill() will be called by the calling agent, see initial 
-  # discription of drawing context.  It is used in adding a new shape above.
-  poly = (c, a) ->
-    for p, i in a
-      if i is 0 then c.moveTo p[0], p[1] else c.lineTo p[0], p[1]
-    null
-
-  # Centered drawing primitives: centered on x,y with a given width/height size.
-  # Useful for shortcuts
-  circ = (c, x, y, s) -> c.arc x, y, s / 2, 0, 2 * Math.PI # centered circle
-
-  ccirc = (c, x, y, s) -> c.arc x, y, s / 2, 0, 2 * Math.PI, true # centered counter clockwise circle
-
-  cimg = (c, x, y, s, img) ->
-    c.scale 1,-1
-    c.drawImage img, x - s / 2, y - s / 2, s, s
-    c.scale 1,-1 # centered image
-
-  csq = (c, x, y, s) -> c.fillRect x - s / 2, y - s / 2, s, s # centered square
-  
-  # An async util for delayed drawing of images into sprite slots
-  fillSlot = (slot, img) ->
-    slot.context.save()
-    slot.context.scale 1, -1
-    slot.context.drawImage img, slot.x, -(slot.y + slot.bits), slot.bits, slot.bits
-    slot.context.restore()
-
-  # The spritesheet data, indexed by bits
-  spriteSheets = []
-  
-  # The module returns the following object:
-  default:
-    rotate: true
-    draw: (c) -> poly c, [[.5, 0], [-.5, -.5], [-.25, 0], [-.5, .5]]
-
-  triangle:
-    rotate: true
-    draw: (c) -> poly c, [[.5, 0], [-.5, -.4],[-.5, .4]]
-
-  arrow:
-    rotate: true
-    draw: (c) ->
-      poly c, [[.5,0], [0, .5], [0, .2], [-.5, .2], [-.5, -.2], [0, -.2], [0, -.5]]
-
-  bug:
-    rotate: true
-    draw: (c) ->
-      c.strokeStyle = c.fillStyle
-      c.lineWidth = .05
-      poly c, [[.4, .225], [.2, 0], [.4, -.225]]
-      c.stroke()
-      c.beginPath()
-      circ c, .12, 0, .26
-      circ c, -.05, 0, .26
-      circ c, -.27, 0, .4
-
-  pyramid:
-    rotate: false
-    draw: (c) -> poly c, [[0, .5], [-.433, -.25], [.433, -.25]]
-
-  circle: # Note: NetLogo's dot is simply circle with a small size
-    shortcut: (c, x, y, s) ->
-      c.beginPath()
-      circ c, x, y, s
-      c.closePath()
-      c.fill()
-    rotate: false
-    draw: (c) -> circ c, 0, 0, 1 # c.arc 0, 0,.5, 0, 2 * Math.PI
-
-  square:
-    shortcut: (c, x, y, s) -> csq c, x, y, s
-    rotate: false
-    draw: (c) -> csq c, 0, 0, 1 #c.fillRect -.5, -.5, 1 , 1
-
-  pentagon:
-    rotate: false
-    draw: (c) ->
-      poly c, [[0, .45], [-.45, .1], [-.3, -.45], [.3, -.45], [.45, .1]]
-
-  ring:
-    rotate: false
-    draw: (c) ->
-      circ c, 0, 0, 1
-      c.closePath()
-      ccirc c, 0, 0, .6
-
-  person:
-    rotate: false
-    draw: (c) ->
-      poly c, [
-        [.15, .2], [.3, 0], [.125, -.1], [.125, .05], [.1, -.15], [.25, -.5],
-        [.05, -.5], [0, -.25], [-.05, -.5], [-.25, -.5], [-.1, -.15],
-        [-.125, .05], [-.125, -.1], [-.3, 0], [-.15, .2]
-      ]
-      c.closePath()
-      circ c, 0, .35, .30
-
-  # Return a list of the available shapes, see above.
-  names: ->
-    (name for own name, val of @ when val.rotate? and val.draw?)
-
-  # Add your own shape. Will be included in names list.  Usage:
-  #
-  #     ABM.shapes.add "test", true, (c) -> # bowtie/hourglass
-  #       ABM.shapes.poly c, [[-.5, -.5], [.5, .5], [-.5, .5], [.5, -.5]]
-  #
-  # Note: an image that is not rotated automatically gets a shortcut. 
-  add: (name, rotate, draw, shortcut) -> # draw can be an image, shortcut defaults to null
-    if u.isFunction draw
-      s = {rotate, draw}
-    else
-      s = {rotate, img:draw, draw:(c) -> cimg c, .5, .5, 1, @img}
-
-    @[name] = s
-
-    if shortcut? # can override img default shortcut if needed
-      s.shortcut = shortcut
-    else if s.img? and not s.rotate
-      s.shortcut = (c, x, y, s) ->
-        cimg c, x, y, s, @img
-
-  # Add local private objects for use by add() and debugging
-  poly:poly, circ:circ, ccirc:ccirc, cimg:cimg, csq:csq # export utils for use by add
-
-  spriteSheets:spriteSheets # export spriteSheets for debugging, showing in DOM
-
-  # Two draw procedures, one for shapes, the other for sprites made from shapes.
-  draw: (context, shape, x, y, size, rad, color) ->
-    if shape.shortcut?
-      context.fillStyle = u.colorString color unless shape.img?
-      shape.shortcut context, x, y, size
-    else
-      context.save()
-      context.translate x, y
-      context.scale size, size if size isnt 1
-      context.rotate rad if rad isnt 0
-      if shape.img? # is an image, not a path function
-        shape.draw context
-      else
-        context.fillStyle = u.colorString color
-        context.beginPath()
-        shape.draw context
-        context.closePath()
-        context.fill()
-      context.restore()
-    shape
-
-  drawSprite: (context, s, x, y, size, rad) ->
-    if rad is 0
-      context.drawImage s.context.canvas, s.x, s.y, s.bits, s.bits, x - size / 2,
-        y - size / 2, size, size
-    else
-      context.save()
-      context.translate x, y # see http://goo.gl/VUlhY for drawing centered rotated images
-      context.rotate rad
-      context.drawImage s.context.canvas, s.x, s.y, s.bits, s.bits, -size / 2,
-        -size / 2, size, size
-      context.restore()
-    s
-
-  # Convert a shape to a sprite by allocating a sprite sheet "slot" and drawing
-  # the shape to fit it. Return existing sprite if duplicate.
-  shapeToSprite: (name, color, size) ->
-    bits = Math.ceil ABM.patches.toBits size
-    shape = @[name]
-    index = if shape.img? then name else "#{name}-#{u.colorString(color)}"
-    context = spriteSheets[bits]
-    # Create sheet for this bit size if it does not yet exist
-    unless context?
-      spriteSheets[bits] = context = u.createContext bits * 10, bits
-      context.nextX = 0
-      context.nextY = 0
-      context.index = {}
-    # Return matching sprite if index match found
-    return foundSlot if (foundSlot = context.index[index])?
-    # Extend the sheet if we're out of space
-    if bits*context.nextX is context.canvas.width
-      u.resizeContext context, context.canvas.width, context.canvas.height + bits
-      context.nextX = 0
-      context.nextY++
-    # Create the sprite "slot" object and install in index object
-    x = bits * context.nextX
-    y = bits * context.nextY
-    slot = {context, x, y, size, bits, name, color, index}
-    context.index[index] = slot
-    # Draw the shape into the sprite slot
-    if (img = shape.img)? # is an image, not a path function
-      if img.height isnt 0 then fillSlot(slot, img)
-      else img.onload = -> fillSlot(slot, img)
-    else
-      context.save()
-      context.scale bits, bits
-      context.translate context.nextX + .5, context.nextY + .5
-      context.fillStyle = u.colorString color
-      context.beginPath()
-      shape.draw context
-      context.closePath()
-      context.fill()
-      context.restore()
-    context.nextX++
-    slot

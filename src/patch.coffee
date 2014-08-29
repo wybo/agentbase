@@ -28,7 +28,7 @@ class ABM.Patch
   #constructor: (@x, @y) ->
   constructor: (@position) ->
     @neighborsCache = {}
-    @agents = []
+    @agents = new ABM.Array
 
   # Return a string representation of the patch.
   toString: ->
@@ -45,7 +45,7 @@ class ABM.Patch
         position.y + @labelOffset[1], @labelColor
   
   empty: ->
-    u.empty @agents
+    @agents.empty()
 
   # Returns true if this patch is on the edge of the grid.
   isOnEdge: ->
@@ -105,6 +105,7 @@ class ABM.Patch
     row = 0
     column = -1
     span = range * 2 + 1
+
     for neighbor in neighbors
       row = counter % span
       if row == 0
@@ -115,5 +116,7 @@ class ABM.Patch
           (meToo or distanceRow + distanceColumn != 0)
         diamond.push neighbor
       counter += 1
-    u.remove(diamond, null)
+
+    diamond.remove(null)
+
     return diamond

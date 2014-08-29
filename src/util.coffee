@@ -224,14 +224,15 @@ ABM.util = u =
   # ### Object operations
   
   # Return object's own key or variable values
+  #
   ownKeys: (object) ->
-    (key for own key, value of object)
+    ABM.Array.from(key for own key, value of object)
 
   ownVariableKeys: (object) ->
-    (key for own key, value of object when not @isFunction value)
+    ABM.Array.from(key for own key, value of object when not @isFunction value)
 
   ownValues: (object) ->
-    (value for own key, value of object)
+    ABM.Array.from(value for own key, value of object)
 
   # ### Topology operations
   

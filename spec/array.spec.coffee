@@ -7,20 +7,25 @@ u = ABM.util
 
 describe "Array", ->
   describe "from", ->
-    it "Turns array into an ABM.Array", ->
+    it "turns array into an ABM.Array", ->
       array = ABM.Array.from [3, 2, 1]
 
       expect(array.length).toBe 3
       expect(typeof array.histogram).toBe 'function'
       expect(array.constructor.name).toBe 'Array'
+      expect(array).toEqual(new ABM.Array(3, 2, 1))
+
+    it "also works on an ABM.Array", ->
+      first = ABM.Array.from [3, 2, 1]
+      array = ABM.Array.from first
+
+      expect(array.length).toBe 3
+      expect(typeof array.histogram).toBe 'function'
+      expect(array.constructor.name).toBe 'Array'
+      expect(array).toEqual(new ABM.Array(3, 2, 1))
 
   describe "constructor", ->
     it "Creates the array", ->
-      array = new ABM.Array
-
-      expect(array.length).toBe 0
-      expect(array.constructor.name).toBe 'Array'
-
       array = new ABM.Array 1, 2, 3
 
       expect(array.length).toBe 3
@@ -30,10 +35,22 @@ describe "Array", ->
 
       expect(array.length).toBe 1
 
+    it "Creates empty arrays correctly", ->
+      array = new ABM.Array
+
+      expect(array.length).toBe 0
+      expect(array.constructor.name).toBe 'Array'
+
+      array.push 2
+      expect(array.length).toBe 1
+      expect(array.constructor.name).toBe 'Array'
+      expect(array).toEqual new ABM.Array 2
+
   describe "toFixed", ->
     it "returns the array rounded, as strings", ->
       expect(new ABM.Array(1.334, 5.445, 11.666).toFixed(1))
         .toEqual new ABM.Array "1.3", "5.4", "11.7"
+
 
   describe "any", ->
     it "returns false if empty", ->
@@ -62,7 +79,7 @@ describe "Array", ->
       number = new ABM.Array(1, 2, 3, 4).sample()
       expect(number).toEqual 4
   
-    it "returns the number object if number given", ->
+    it "returns the number of objects if number given", ->
       u.randomSeed(2)
       array = new ABM.Array(1, 2, 3, 4).sample(2)
       expect(array).toEqual new ABM.Array 4, 1
@@ -133,14 +150,14 @@ describe "Array", ->
   describe "sort", ->
     it "sorts the array", ->
       array = new ABM.Array 2.4, 8, 2
-      u.sort(array, (objectA, objectB) ->
+      array.sort((objectA, objectB) ->
         Math.floor(objectA) > Math.floor(objectB))
       expect(array).toEqual new ABM.Array 2.4, 2, 8
 
   describe "uniq", ->
     it "returns the array with only unique items", ->
       array = new ABM.Array 0, 2, 1, 0, 8, 2, 1, 1
-      u.uniq(array) # changes array in place
+      array.uniq() # changes array in place
       expect(array).toEqual new ABM.Array 0, 2, 1, 8
 
   describe "flatten", ->

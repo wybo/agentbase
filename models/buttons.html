@@ -5,7 +5,8 @@
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
 
-    u = ABM.util # ABM.util alias, u.s is also ABM.shape accessor.
+    u = ABM.util
+
     class MyModel extends ABM.Model
       setup: ->
         @refreshPatches = false # for static patches
@@ -34,16 +35,16 @@
         @links.create b1, b2, (l) ->
           l.draw ABM.contexts.links
         
-        g = @graphOf b1
-        c = u.min(g, "id").color
+        graph = @graphOf b1
+        color = graph.min("id").color
 
-        for node in g
-          node.color = c
+        for node in graph
+          node.color = color
 
-        if g.length > @cluster
-          console.log "New largest cluster: size: #{g.length} tick: #{@animator.ticks}"
+        if graph.length > @cluster
+          console.log "New largest cluster: size: #{graph.length} tick: #{@animator.ticks}"
 
-        @cluster = Math.max @cluster, g.length
+        @cluster = Math.max @cluster, graph.length
         
         if @cluster is @buttons
           console.log "Completed at tick #{@animator.ticks}:" +
@@ -51,10 +52,18 @@
           @stop()
         
       graphOf: (node) ->
+        array = new ABM.Array
+
         for agent in @agents
           agent.marked = false
+
         @markNeighbors node
-        a for a in @agents when a.marked
+
+        for agent in @agents
+          if agent.marked
+            array.push agent
+
+        array
 
       markNeighbors: (node) ->
         node.marked = true

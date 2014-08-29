@@ -20,7 +20,8 @@
     #
     # below, which passes all its arguments to `Model`
     
-    u = ABM.util # ABM.util alias, u.s is also ABM.shapes accessor.
+    u = ABM.util
+
     log = (arg) -> console.log arg
 
     class MyModel extends ABM.Model
@@ -29,15 +30,14 @@
       # processed by `starup`.  Useful for large files, but here just
       # for an example, not needed by simple models.
       startup: -> # called by constructor
-        # Add new shapes; u.s. is ABM.shapes.
-        u.s.add "bowtie", true, (c) -> u.s.poly c, [[-.5, -.5], [.5, .5], [-.5, .5], [.5, -.5]]
+        u.shapes.add "bowtie", true, (c) -> u.shapes.poly c, [[-.5, -.5], [.5, .5], [-.5, .5], [.5, -.5]]
         # The following two example lines don't work when opened locally
         # in Chrome (they work fine from a webserver). Uncomment if you'd
         # like to add custom images.
         
-        # u.s.add "cc", true, u.importImage("data/coffee.png")
+        # u.shapes.add "cc", true, u.importImage("data/coffee.png")
         
-        # u.s.add "redfish", false, u.importImage("data/redfish64t.png")
+        # u.shapes.add "redfish", false, u.importImage("data/redfish64t.png")
 
       # Initialize our model via the `setup` abstract method.
       # This model simply creates `population` agents with
@@ -77,7 +77,7 @@
         # and layout the agents randomly or in a circle depending
         # on our modeel's `startCircle` variable.
         for agent in @agents.create @population
-          agent.shape = u.sample u.s.names() # random shapes
+          agent.shape = u.shapes.names().sample() # random shapes
           if @startCircle
             agent.forward @patches.max.x / 2 # start in circle
           else
@@ -88,8 +88,8 @@
         # [string interpolation](http://jashkenas.github.com/coffee-script/#strings)
         log "total agents: #{@agents.length}, total patches: #{@patches.length}"
         # Print number of agents with each shape
-        for s in u.s.names()
-          num = @agents.getPropWith("shape", s).length
+        for s in u.shapes.names()
+          num = @agents.getPropertyWith("shape", s).length
           log "#{num} #{s}"
 
       # Update our model via the second abstract method, `step`
@@ -114,7 +114,7 @@
           @refreshPatches = false
 
         if @animator.draws is 2 # Show the sprite sheet if there is one after first draw
-          sheet = u.last(u.s.spriteSheets) if u.s.spriteSheets.length isnt 0
+          sheet = u.shapes.spriteSheets.last() if u.shapes.spriteSheets.length isnt 0
           if sheet?
             log sheet
             document.getElementById("play").appendChild(sheet.canvas)
@@ -142,7 +142,7 @@
 
       reportInfo: ->
         # Report the average heading, in radians and degrees
-        headings = @agents.getProp "heading"
+        headings = @agents.getProperty "heading"
         avgHeading = (headings.reduce (a, b) -> a + b) / @agents.length
         # Note: multiline strings. block strings also available.
         log "

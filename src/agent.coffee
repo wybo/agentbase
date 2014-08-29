@@ -47,7 +47,7 @@ class ABM.Agent
     @position = {x: 0, y: 0}
     @color = u.randomColor() unless @color? # promote color if default not set
     @heading = u.randomFloat(Math.PI * 2) unless @heading?
-    @links = []
+    @links = new ABM.Array
     @moveTo @position
 
   # ### Strings
@@ -72,7 +72,7 @@ class ABM.Agent
     @patch = ABM.patches.patch @position
 
     if oldPatch and oldPatch isnt @patch
-      u.remove oldPatch.agents, @
+      oldPatch.agents.remove @
     @patch.agents.push @
 
     if @penDown
@@ -87,7 +87,7 @@ class ABM.Agent
   # Moves the agent off the grid, making him lose his patch
   moveOff: ->
     if @patch
-      u.remove @patch.agents, @
+      @patch.agents.remove @
     @patch = @position = null
 
   # Move forward (along heading) by distance units (patch coordinates),
@@ -171,24 +171,24 @@ class ABM.Agent
 
   # All agents linked to me.
   linkNeighbors: ->
-    array = []
+    array = new ABM.Array
     for link in @links
       array.push @otherEnd(link)
-    u.uniq(array)
+    array.uniq()
  
   # Other end of myInLinks
   inLinkNeighbors: ->
-    array = []
+    array = new ABM.Array
     for link in @inLinks()
       array.push link.from
-    u.uniq(array)
+    array.uniq()
  
   # Other end of myOutinks
   outLinkNeighbors: ->
-    array = []
+    array = new ABM.Array
     for link in @outLinks()
       array.push link.to
-    u.uniq(array)
+    array.uniq()
 
   # ### Drawing
 
@@ -196,13 +196,13 @@ class ABM.Agent
   draw: (context) ->
     if @patch is null
       return
-    shape = ABM.shapes[@shape]
+    shape = u.shapes[@shape]
     radians = if shape.rotate then @heading else 0 # radians
     if @sprite? or @breed.useSprites
       @setSprite() unless @sprite? # lazy evaluation of useSprites
-      ABM.shapes.drawSprite context, @sprite, @position.x, @position.y, @size, radians
+      u.shapes.drawSprite context, @sprite, @position.x, @position.y, @size, radians
     else
-      ABM.shapes.draw context, shape, @position.x, @position.y, @size, radians, @color
+      u.shapes.draw context, shape, @position.x, @position.y, @size, radians, @color
     if @label?
       [x, y] = ABM.patches.patchXYtoPixelXY @x, @y
       u.contextDrawText context, @label, x + @labelOffset[0], y + @labelOffset[1], @labelColor
@@ -216,7 +216,7 @@ class ABM.Agent
       @size = sprite.size
     else
       @color = u.randomColor unless @color?
-      @sprite = ABM.shapes.shapeToSprite @shape, @color, @size
+      @sprite = u.shapes.shapeToSprite @shape, @color, @size
     
   # Draw the agent on the drawing layer, leaving permanent image.
   stamp: -> @draw ABM.drawing

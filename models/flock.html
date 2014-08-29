@@ -7,7 +7,8 @@
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
     
-    u = ABM.util # ABM.util alias, u.s is also ABM.shape accessor.
+    u = ABM.util
+
     class MyModel extends ABM.Model
       
       setVision: (@vision) ->
@@ -54,7 +55,7 @@
           @flock agent
 
         if @animator.draws is 2 # Show the sprite sheet if there is one after first draw
-          sheet = u.last(u.s.spriteSheets) if u.s.spriteSheets.length isnt 0
+          sheet = u.shapes.spriteSheets.last() if u.shapes.spriteSheets.length isnt 0
           if sheet?
             console.log sheet if @useConsole
             document.getElementById("play").appendChild(sheet.canvas)
@@ -64,9 +65,9 @@
         flockmates = agent.neighbors(@vision)
 
         if flockmates.length isnt 0
-          [nearestNeighbor, d] = u.min flockmates, ((f) ->
-            f.distance agent.position), true
-          if d < @minSeparation
+          [nearestNeighbor, distance] = flockmates.min(((f) ->
+            f.distance agent.position), true)
+          if distance < @minSeparation
             @separate agent, nearestNeighbor
           else
             @align agent, flockmates

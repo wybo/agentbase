@@ -87,7 +87,7 @@ class ABM.BreedSet extends ABM.Set
   remove: (object) ->
     if @mainSet?
       @mainSet.remove object
-    u.remove @, object
+    u.array.remove @, object
     @
 
   pop: () ->

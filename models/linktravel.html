@@ -5,7 +5,7 @@
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
     
-    u = ABM.util # ABM.util alias, u.s is also ABM.shape accessor.
+    u = ABM.util
 
     class MyModel extends ABM.Model
       setup: ->
@@ -52,7 +52,7 @@
         for i in [1..@numDrivers]
           node = @nodes.sample() # n = @nodes().sample()
           node.hatch 1, @drivers, (agent) =>
-            agent.fromNode = agent.toNode = u.sample node.linkNeighbors() #.sample()
+            agent.fromNode = agent.toNode = node.linkNeighbors().sample() #.sample()
             agent.face agent.toNode.position
             agent.v = @baseVelocity + u.randomFloat @velocityDelta
         null # avoid returning "for" results above
@@ -65,7 +65,7 @@
             Math.min driver.v, driver.distance(driver.toNode.position))
           if .01 > driver.distance driver.toNode.position
             driver.fromNode = driver.toNode
-            driver.toNode = u.sample driver.toNode.linkNeighbors()
+            driver.toNode = driver.toNode.linkNeighbors().sample()
         null # avoid returning "for" results above
 
     model = new MyModel {

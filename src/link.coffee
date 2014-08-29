@@ -66,16 +66,22 @@ class ABM.Link
   # Remove this link from the agent set
   die: ->
     @breed.remove @
-    u.remove @from.links, @
-    u.remove @to.links, @
+    @from.links.remove @
+    @to.links.remove @
     null
   
   # Return the two endpoints of this link
-  bothEnds: -> [@from, @to]
+  bothEnds: ->
+    new ABM.Array(@from, @to)
   
   # Return the distance between the endpoints with the current topology.
-  length: -> @from.distance @to.position
+  length: ->
+    @from.distance @to.position
   
   # Return the other end of the link, given an endpoint agent.
   # Assumes the given input *is* one of the link endpoint pairs!
-  otherEnd: (a) -> if @from is a then @to else @from
+  otherEnd: (a) ->
+    if @from is a 
+      @to
+    else
+      @from

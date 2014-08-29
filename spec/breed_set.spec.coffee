@@ -64,8 +64,8 @@ describe "Set", ->
 
       model.citizens.remove(agent)
 
-      expect(u.contains(model.agents, agent)).not.toBe true
-      expect(u.contains(model.citizens, agent)).not.toBe true
+      expect(model.agents.contains(agent)).not.toBe true
+      expect(model.citizens.contains(agent)).not.toBe true
 
   describe "pop", ->
     it "Removes last object", ->
@@ -75,7 +75,7 @@ describe "Set", ->
       returned = model.citizens.pop()
 
       expect(returned).toBe agent
-      expect(u.contains(model.agents, agent)).not.toBe true
+      expect(model.agents.contains(agent)).not.toBe true
 
   describe "setBreed", ->
     it "Sets the breed", ->

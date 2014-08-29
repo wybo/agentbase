@@ -35,8 +35,7 @@ class ABM.Array extends Array
  
   # WARNING: Needs constructor or subclassing Array won't work
   constructor: (options...) ->
-    if u.array.any options
-      return @constructor.from(options)
+    return @constructor.from(options)
  
 # ### Extending
 

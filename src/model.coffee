@@ -84,6 +84,7 @@ ABM.model = class ABM.Model
     @globalNames = u.ownKeys @
     @globalNames.set = false
     @startup()
+
     u.waitOnFiles =>
       @modelReady = true
       @setup()
@@ -126,7 +127,7 @@ ABM.model = class ABM.Model
       @globalNames = globalNames
       @globalNames.set = true
     else
-      @globalNames = u.removeItems u.ownKeys(@), @globalNames
+      @globalNames = u.ownKeys(@).removeItems @globalNames
 
 #### Optimizations:
   
@@ -199,7 +200,7 @@ ABM.model = class ABM.Model
 #    console.log "reset: agents"
 #    @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
 #    @links = ABM.links = new ABM.Links ABM.Link, "links"
-#    u.s.spriteSheets.length = 0 # possibly null out entries?
+#    u.shapes.spriteSheets.length = 0 # possibly null out entries?
 #    console.log "reset: setup"
 #    @setup()
 #    @setRootVars() if @debugging

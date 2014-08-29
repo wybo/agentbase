@@ -6,6 +6,7 @@ ABM.util.array =
   # Used by methods creating new arrays.
   from: (array, arrayType) ->
     ABM.Array.from array, arrayType # setType = ABM.Set
+  # TODO replace in code
 
   # Return string representative of agentset.
   toString: (array) ->
@@ -62,7 +63,7 @@ ABM.util.array =
       number = Math.floor(numberOrCondition)
 
     if number?
-      newArray = []
+      newArray = new ABM.Array
       object = true
       while newArray.length < number and object?
         object = @sample(array, condition)
@@ -70,7 +71,7 @@ ABM.util.array =
           newArray.push object
       return newArray
     else if condition?
-      checked = []
+      checked = new ABM.Array
       while checked.length < array.length
         object = @sample(array)
         if object and object not in checked
@@ -297,9 +298,9 @@ ABM.util.array =
   # Similar to NetLogo ask & with operators.
   # Allows functions as strings. Use:
   #
-  #     AS.getProp("x") # [1, 8, 6, 2, 2]
+  #     AS.getProperty("x") # [1, 8, 6, 2, 2]
   #     AS.with("o.x < 5").ask("o.x = o.x + 1")
-  #     AS.getProp("x") # [2, 8, 6, 3, 3]
+  #     AS.getProperty("x") # [2, 8, 6, 3, 3]
   #
   #     ABM.agents.with("o.id < 100").ask("o.color = [255, 0, 0]")
   ask: (array, functionString) ->
@@ -319,28 +320,28 @@ ABM.util.array =
   
   # Return an array of a property of the agentset
   #
-  #      AS.getProp "x" # [0, 8, 6, 1, 1]
+  #      AS.getProperty "x" # [0, 8, 6, 1, 1]
   # TODO Prop -> Property
-  getProp: (array, property) ->
+  getProperty: (array, property) ->
     object[property] for object in array
 
   # Return an array of agents with the property equal to the given value
   #
-  #     AS.getPropWith "x", 1
+  #     AS.getPropertyWith "x", 1
   #     [{id: 4, x: 1, y: 3},{id: 5, x: 1, y: 1}]
-  getPropWith: (array, property, value) ->
+  getPropertyWith: (array, property, value) ->
     @from (object for object in array when object[property] is value)
 
   # Set the property of the agents to a given value.  If value
   # is an array, its values will be used, indexed by agentSet's index.
-  # This is generally used via: getProp, modify results, setProp
+  # This is generally used via: getProperty, modify results, setProperty
   #
   #     # increment x for agents with x=1
-  #     AS1 = ABM.Set.from AS.getPropWith("x", 1)
-  #     AS1.setProp "x", 2 # {id: 4, x: 2, y: 3}, {id: 5, x: 2, y: 1}
+  #     AS1 = ABM.Set.from AS.getPropertyWith("x", 1)
+  #     AS1.setProperty "x", 2 # {id: 4, x: 2, y: 3}, {id: 5, x: 2, y: 1}
   #
   # Note this changes the last two objects in the original AS above
-  setProp: (array, property, value) ->
+  setProperty: (array, property, value) ->
     if u.isArray value
       object[property] = value[i] for object, i in array
     else
@@ -350,7 +351,7 @@ ABM.util.array =
   # Return an array without given object
   #
   #     as = AS.clone().other(AS[0])
-  #     as.getProp "id"  # [1, 2, 3, 4] 
+  #     as.getProperty "id"  # [1, 2, 3, 4] 
   other: (array, given) ->
     @from (object for object in array when object isnt given) # could clone & remove
 
@@ -375,12 +376,3 @@ ABM.util.array.extender =
             return _ret;
           }
         };""")
-
-  extend: (util) ->
-    methods = @methods()
-    for method in methods
-      util[method] = ABM.util.array[method]
-
-# ### Extends ABM.util
-
-ABM.util.array.extender.extend(ABM.util)

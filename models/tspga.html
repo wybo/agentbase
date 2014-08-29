@@ -5,7 +5,8 @@
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
     
-    u = ABM.util # ABM.util alias, u.s is also ABM.shape accessor.
+    u = ABM.util
+
     class MyModel extends ABM.Model
       setup: ->
         @agentBreeds ["nodes", "travelers"]
@@ -69,7 +70,7 @@
         @links.clear()
         @links.create nodeList[0], nodeList.last()
         @links.create nodeList[i], nodeList[i - 1] for i in [1...nodeList.length]
-        # @links.setProp "color", [255,0,0]
+        # @links.setProperty "color", [255,0,0]
         
       lengthFromNodes: (nodeList) ->
         len = nodeList[0].distance(nodeList.last().position)

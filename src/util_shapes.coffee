@@ -1,7 +1,7 @@
 # A *very* simple shapes module for drawing
 # [NetLogo-like](http://ccl.northwestern.edu/netlogo/docs/) agents.
 
-ABM.shapes = ABM.util.s = do ->
+ABM.util.shapes = do ->
   # Each shape is a named object with two members: 
   # a boolean rotate and a draw procedure and two optional
   # properties: img for images, and shortcut for a transform-less version of draw.
@@ -16,7 +16,7 @@ ABM.shapes = ABM.util.s = do ->
   #     context.fill()
   #     context.restore()
   #
-  # The list of current shapes, via `ABM.shapes.names()` below, is:
+  # The list of current shapes, via `u.shapes.names()` below, is:
   #
   #     ["default", "triangle", "arrow", "bug", "pyramid", 
   #      "circle", "square", "pentagon", "ring", "cup", "person"]
@@ -50,16 +50,18 @@ ABM.shapes = ABM.util.s = do ->
     slot.context.restore()
 
   # The spritesheet data, indexed by bits
-  spriteSheets = []
+  spriteSheets = new ABM.Array
   
   # The module returns the following object:
   default:
     rotate: true
-    draw: (c) -> poly c, [[.5, 0], [-.5, -.5], [-.25, 0], [-.5, .5]]
+    draw: (c) ->
+      poly c, [[.5, 0], [-.5, -.5], [-.25, 0], [-.5, .5]]
 
   triangle:
     rotate: true
-    draw: (c) -> poly c, [[.5, 0], [-.5, -.4],[-.5, .4]]
+    draw: (c) ->
+      poly c, [[.5, 0], [-.5, -.4], [-.5, .4]]
 
   arrow:
     rotate: true
@@ -80,7 +82,8 @@ ABM.shapes = ABM.util.s = do ->
 
   pyramid:
     rotate: false
-    draw: (c) -> poly c, [[0, .5], [-.433, -.25], [.433, -.25]]
+    draw: (c) ->
+      poly c, [[0, .5], [-.433, -.25], [.433, -.25]]
 
   circle: # Note: NetLogo's dot is simply circle with a small size
     shortcut: (c, x, y, s) ->
@@ -89,12 +92,15 @@ ABM.shapes = ABM.util.s = do ->
       c.closePath()
       c.fill()
     rotate: false
-    draw: (c) -> circ c, 0, 0, 1 # c.arc 0, 0,.5, 0, 2 * Math.PI
+    draw: (c) ->
+      circ c, 0, 0, 1 # c.arc 0, 0,.5, 0, 2 * Math.PI
 
   square:
-    shortcut: (c, x, y, s) -> csq c, x, y, s
+    shortcut: (c, x, y, s) ->
+      csq c, x, y, s
     rotate: false
-    draw: (c) -> csq c, 0, 0, 1 #c.fillRect -.5, -.5, 1 , 1
+    draw: (c) ->
+      csq c, 0, 0, 1 #c.fillRect -.5, -.5, 1 , 1
 
   pentagon:
     rotate: false
@@ -121,26 +127,30 @@ ABM.shapes = ABM.util.s = do ->
 
   # Return a list of the available shapes, see above.
   names: ->
-    (name for own name, val of @ when val.rotate? and val.draw?)
+    array = new ABM.Array
+    for own name, val of @
+      if val.rotate? and val.draw?
+        array.push name
+    array
 
   # Add your own shape. Will be included in names list.  Usage:
   #
-  #     ABM.shapes.add "test", true, (c) -> # bowtie/hourglass
-  #       ABM.shapes.poly c, [[-.5, -.5], [.5, .5], [-.5, .5], [.5, -.5]]
+  #     u.shapes.add "test", true, (c) -> # bowtie/hourglass
+  #       u.shapes.poly c, [[-.5, -.5], [.5, .5], [-.5, .5], [.5, -.5]]
   #
   # Note: an image that is not rotated automatically gets a shortcut. 
   add: (name, rotate, draw, shortcut) -> # draw can be an image, shortcut defaults to null
     if u.isFunction draw
-      s = {rotate, draw}
+      shape = {rotate, draw}
     else
-      s = {rotate, img:draw, draw:(c) -> cimg c, .5, .5, 1, @img}
+      shape = {rotate, img:draw, draw:(c) -> cimg c, .5, .5, 1, @img}
 
-    @[name] = s
+    @[name] = shape
 
     if shortcut? # can override img default shortcut if needed
-      s.shortcut = shortcut
-    else if s.img? and not s.rotate
-      s.shortcut = (c, x, y, s) ->
+      shape.shortcut = shortcut
+    else if shape.img? and not shape.rotate
+      shape.shortcut = (c, x, y, s) ->
         cimg c, x, y, s, @img
 
   # Add local private objects for use by add() and debugging
@@ -189,14 +199,17 @@ ABM.shapes = ABM.util.s = do ->
     shape = @[name]
     index = if shape.img? then name else "#{name}-#{u.colorString(color)}"
     context = spriteSheets[bits]
+
     # Create sheet for this bit size if it does not yet exist
     unless context?
       spriteSheets[bits] = context = u.createContext bits * 10, bits
       context.nextX = 0
       context.nextY = 0
       context.index = {}
+
     # Return matching sprite if index match found
     return foundSlot if (foundSlot = context.index[index])?
+
     # Extend the sheet if we're out of space
     if bits*context.nextX is context.canvas.width
       u.resizeContext context, context.canvas.width, context.canvas.height + bits
@@ -207,6 +220,7 @@ ABM.shapes = ABM.util.s = do ->
     y = bits * context.nextY
     slot = {context, x, y, size, bits, name, color, index}
     context.index[index] = slot
+
     # Draw the shape into the sprite slot
     if (img = shape.img)? # is an image, not a path function
       if img.height isnt 0 then fillSlot(slot, img)
@@ -221,5 +235,6 @@ ABM.shapes = ABM.util.s = do ->
       context.closePath()
       context.fill()
       context.restore()
+
     context.nextX++
     slot

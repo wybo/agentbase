@@ -5,7 +5,8 @@
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
     
-    u = ABM.util # ABM.util alias, u.s is also ABM.shape accessor.
+    u = ABM.util
+
     class MyModel extends ABM.Model
       setup: ->
         @refreshPatches = false # for static patches
@@ -31,7 +32,7 @@
 
         @agents.formCircle @patches.max.x * 0.9
 
-        @histogram = u.histogram @agents, 1, (agent) ->
+        @histogram = @agents.histogram 1, (agent) ->
           agent.linkNeighbors().length
 
         if @animator.ticks % 25 is 0
@@ -47,7 +48,7 @@
           agent.forward 8
 
       findPartner: ->
-        u.sample @links.sample().bothEnds()
+        @links.sample().bothEnds().sample()
 
     model = new MyModel {
       div: "layers",
