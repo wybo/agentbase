@@ -6,7 +6,7 @@
 
 ABM.models = {} # user space, put your models here
 
-ABM.model = class ABM.Model
+class ABM.Model
   # Class variable for layers parameters. 
   # Can be added to by programmer to modify/create layers, **before** starting your own model.
   # Example:
@@ -28,10 +28,10 @@ ABM.model = class ABM.Model
   # * call `setup` abstract method
   constructor: (options) ->
     div = options.div
-    isHeadless = options.isHeadless = options.isHeadless? or not div?
+    isHeadless = options.isHeadless = options.isHeadless or not div?
     @setWorld options
 
-    @contexts = ABM.contexts = {}
+    @contexts = {}
 
     unless isHeadless
       (@div = document.getElementById(div)).setAttribute 'style',
@@ -56,7 +56,7 @@ ABM.model = class ABM.Model
         u.elementTextParams context, "10px sans-serif", "center", "middle"
 
       # One of the layers is used for drawing only, not an agentset:
-      @drawing = ABM.drawing = @contexts.drawing
+      @drawing = @contexts.drawing
       @drawing.clear = => u.clearContext @drawing
       # Setup spotlight layer, also not an agentset:
       @contexts.spotlight.globalCompositeOperation = "xor"
@@ -71,6 +71,15 @@ ABM.model = class ABM.Model
     # Optimization: If any of these is set to false, the associated
     # agentset is drawn only once, remaining static after that.
     @refreshLinks = @refreshAgents = @refreshPatches = true
+
+    # Give class prototypes a 'model' attribute that references this model.
+    @Patches = @extendWithModel(ABM.Patches)
+    @Patch = @extendWithModel(ABM.Patch)
+    @Agents = @extendWithModel(ABM.Agents)
+    @Agent = @extendWithModel(ABM.Agent)
+    @Links = @extendWithModel(ABM.Links)
+    @Link = @extendWithModel(ABM.Link)
+    @Set = @extendWithModel(ABM.Set)
 
     # Initialize agentsets.
     @patchBreeds 'patches'
@@ -103,7 +112,7 @@ ABM.model = class ABM.Model
     options.max ?= {x: options.mapSize / 2, y: options.mapSize / 2}
     options.mapSize = null # not passed on, because optional
 
-    ABM.world = @world = {}
+    @world = {}
 
     for own key, value of options
       @world[key] = value
@@ -128,6 +137,18 @@ ABM.model = class ABM.Model
       @globalNames.set = true
     else
       @globalNames = u.ownKeys(@).removeItems @globalNames
+
+  # Add this model to a class's prototype. This is used in
+  # the model constructor to create Patch/Patches, Agent/Agents,
+  # and Link/Links classes with a built-in reference to their model.
+  extendWithModel: (original) ->
+    model = @
+    class extendedClass extends original
+      @model: model
+      model: model
+      constructor: ->
+        super
+    return extendedClass
 
 #### Optimizations:
   
@@ -187,24 +208,32 @@ ABM.model = class ABM.Model
     @animator.once()
     @
 
-  # TODO rationalize as just stop & start, stop as pause if needed
   # Stop and reset the model, restarting if restart is true
-#  reset: (restart = false) ->
-#    console.log "reset: animator"
-#    @animator.reset() # stop & reset ticks/steps counters
-#    console.log "reset: contexts"
-#    # clear/resize b4 agentsets
-#    (v.restore(); @setContextTransform v) for k, v of @contexts when v.canvas?
-#    console.log "reset: patches"
-#    @patches = ABM.patches = new ABM.Patches ABM.Patch, "patches"
-#    console.log "reset: agents"
-#    @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
-#    @links = ABM.links = new ABM.Links ABM.Link, "links"
-#    u.shapes.spriteSheets.length = 0 # possibly null out entries?
-#    console.log "reset: setup"
-#    @setup()
-#    @setRootVars() if @debugging
-#    @start() if restart
+  reset: (restart = false) ->
+    console.log "reset: animator"
+    
+    @animator.reset() # stop & reset ticks/steps counters
+    
+    console.log "reset: contexts"
+    
+    # clear/resize before agentsets
+    for key, value in @contexts
+      if value.canvas?
+        value.restore()
+        @setContextTransform value
+    
+    console.log "reset: patches, agents, links"
+    
+    @patchBreeds 'patches'
+    @agentBreeds 'agents'
+    @linkBreeds 'links'
+
+    u.s.spriteSheets.length = 0 # possibly null out entries?
+    console.log "reset: setup"
+    
+    @setup()
+    @setRootVars() if @debugging
+    @start() if restart
 
 #### Animation.
   
@@ -252,7 +281,7 @@ ABM.model = class ABM.Model
 #     @embers and @fires
 #     @spokes and @rims 
 #
-# These agentsets' `create` methods create subclasses of Agent/Link.
+# These agentsets' `create` method create subclasses of Agent/Link.
 # Use of <breed>.setDefault methods work as for agents/links, creating default
 # values for the breed set:
 #
@@ -273,7 +302,7 @@ ABM.model = class ABM.Model
 
     for string in list
       if string is type
-        ABM[type] = @[type] = new breedSet agentClass, string
+        @[type] = new breedSet agentClass, string
       else
         breedClass = class Breed extends agentClass
         breed = @[string] = # add @<breed> to local scope
@@ -285,13 +314,13 @@ ABM.model = class ABM.Model
 
     @[type].breeds = breeds
 
-  patchBreeds: (list, agentClass = ABM.Patch, breedSet = ABM.Patches) ->
+  patchBreeds: (list, agentClass = @Patch, breedSet = @Patches) ->
     @createBreeds list, 'patches', agentClass, breedSet
 
-  agentBreeds: (list, agentClass = ABM.Agent, breedSet = ABM.Agents) ->
+  agentBreeds: (list, agentClass = @Agent, breedSet = @Agents) ->
     @createBreeds list, 'agents', agentClass, breedSet
 
-  linkBreeds: (list, agentClass = ABM.Link, breedSet = ABM.Links) ->
+  linkBreeds: (list, agentClass = @Link, breedSet = @Links) ->
     @createBreeds list, 'links', agentClass, breedSet
   
   # A simple debug aid which places short names in the global name space.

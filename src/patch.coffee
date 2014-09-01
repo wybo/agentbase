@@ -1,7 +1,7 @@
 # ### Patch
   
 # Class Patch instances represent a rectangle on a grid.  They hold variables
-# that are in the patches the agents live on.  The set of all patches (ABM.patches)
+# that are in the patches the agents live on. The set of all patches (@model.patches)
 # is the world on which the agents live and the model runs.
 class ABM.Patch
   # Constructor & Class Variables:
@@ -54,7 +54,7 @@ class ABM.Patch
   
   # Factory: Create num new agents on this patch. The optional init
   # proc is called on the new agent after inserting in its agentSet.
-  sprout: (number = 1, breed = ABM.agents, init = ->) ->
+  sprout: (number = 1, breed = @model.agents, init = ->) ->
     breed.create number, (agent) => # fat arrow so that @ = this patch
       agent.moveTo @position
       init(agent)
@@ -63,7 +63,7 @@ class ABM.Patch
   # Return distance in patch coordinates from me to given agent/patch
   # using patch topology (isTorus)
   distance: (point) -> # o any object w/ x, y, patch or agent
-    u.distance @position, point, ABM.patches
+    u.distance @position, point, @model.patches
 
   # Get neighbors for patch
   neighbors: (options) ->
@@ -100,7 +100,7 @@ class ABM.Patch
   # Not to be used directly, will not cache.
   diamondNeighbors: (range, meToo) ->
     neighbors = @breed.patchRectangleNullPadded @, range, range, true
-    diamond = new ABM.Set
+    diamond = new @model.Set
     counter = 0
     row = 0
     column = -1

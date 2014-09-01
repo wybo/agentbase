@@ -1,5 +1,5 @@
 if typeof window == 'undefined'
-  t = require "./shared.spec.coffee"
+  t = require "./shared.coffee"
   eval 'var ABM = t.ABM' # because CoffeeScript sets var to null
 
 t = ABM.test

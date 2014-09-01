@@ -161,7 +161,7 @@ ABM.util = u =
   # Random color from a colormap set of r, g, b values.
   # Default is one of 125 (5^3) colors
   randomMapColor: (set = [0, 63, 127, 191, 255]) ->
-    [@sample(set), @sample(set), @sample(set)]
+    [@array.sample(set), @array.sample(set), @array.sample(set)]
 
   randomBrightColor: () ->
     @randomMapColor [0, 127, 255]

@@ -32,8 +32,8 @@
         b1 = @agents.sample()
         b2 = @agents.other(b1).sample()
         
-        @links.create b1, b2, (l) ->
-          l.draw ABM.contexts.links
+        @links.create b1, b2, (l) =>
+          l.draw @contexts.links
         
         graph = @graphOf b1
         color = graph.min("id").color

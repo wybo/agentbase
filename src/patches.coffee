@@ -31,7 +31,9 @@ class ABM.Patches extends ABM.BreedSet
   constructor: -> # agentClass, name, mainSet
     super # call super with all the args I was called with
     @monochrome = false # set to true to optimize patches all default color
-    @[key] = value for own key, value of ABM.world # add world items to patches
+    # add world items to patches
+    for own key, value of @model.world
+      @[key] = value
   
   # Setup patch world from world parameters.
   # Note that this is done as separate method so like other agentsets,
@@ -118,7 +120,7 @@ class ABM.Patches extends ABM.BreedSet
     rectangle.remove(null)
 
   patchRectangleNullPadded: (patch, dx, dy, meToo = false) ->
-    rectangle = new ABM.Set
+    rectangle = new @model.Set
     # REMIND: optimize if no wrapping, rectangle inside patch boundaries
     for y in [(patch.position.y - dy)..(patch.position.y + dy)] by 1 # by 1: perf: avoid bidir JS for loop
       for x in [(patch.position.x - dx)..(patch.position.x + dx)] by 1
@@ -155,7 +157,7 @@ class ABM.Patches extends ABM.BreedSet
       f() if f?
 
   # Direct install image into the given context, not async.
-  installDrawing: (img, context = ABM.contexts.drawing) ->
+  installDrawing: (img, context = @model.contexts.drawing) ->
     u.setIdentity context
     context.drawImage img, 0, 0, context.canvas.width, context.canvas.height
     context.restore() # restore patch transform
@@ -271,7 +273,7 @@ class ABM.Patches extends ABM.BreedSet
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
   # if browser does not support smoothing flags.
   usePixels: (@drawWithPixels = true) ->
-    context = ABM.contexts.patches
+    context = @model.contexts.patches
     u.setContextSmoothing context, not @drawWithPixels
 
   # Setup pixels used for `drawScaledPixels` and `importColors`
@@ -279,7 +281,7 @@ class ABM.Patches extends ABM.BreedSet
   setPixels: ->
     if @patchSize is 1
       @usePixels()
-      @pixelsContext = ABM.contexts.patches
+      @pixelsContext = @model.contexts.patches
     else
       @pixelsContext = u.createContext @width, @height
 

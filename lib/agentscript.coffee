@@ -161,7 +161,7 @@ ABM.util = u =
   # Random color from a colormap set of r, g, b values.
   # Default is one of 125 (5^3) colors
   randomMapColor: (set = [0, 63, 127, 191, 255]) ->
-    [@sample(set), @sample(set), @sample(set)]
+    [@array.sample(set), @array.sample(set), @array.sample(set)]
 
   randomBrightColor: () ->
     @randomMapColor [0, 127, 255]
@@ -633,7 +633,7 @@ ABM.util.array =
   # The static `ABM.Array.from` as a method.
   # Used by methods creating new arrays.
   from: (array, arrayType) ->
-    ABM.Array.from array, arrayType # setType = ABM.Set
+    ABM.Array.from array, arrayType
   # TODO replace in code
 
   # Return string representative of agentset.
@@ -930,7 +930,7 @@ ABM.util.array =
   #     AS.with("o.x < 5").ask("o.x = o.x + 1")
   #     AS.getProperty("x") # [2, 8, 6, 3, 3]
   #
-  #     ABM.agents.with("o.id < 100").ask("o.color = [255, 0, 0]")
+  #     myModel.agents.with("o.id < 100").ask("o.color = [255, 0, 0]")
   ask: (array, functionString) ->
     if u.isString functionString
       eval("functionString=function(o){return " + functionString + ";}")
@@ -1098,10 +1098,10 @@ ABM.util.shapes = do ->
   fillSlot = (slot, img) ->
     slot.context.save()
     slot.context.scale 1, -1
-    slot.context.drawImage img, slot.x, -(slot.y + slot.bits), slot.bits, slot.bits
+    slot.context.drawImage img, slot.x, -(slot.y + slot.spriteSize), slot.spriteSize, slot.spriteSize
     slot.context.restore()
 
-  # The spritesheet data, indexed by bits
+  # The spritesheet data, indexed by spriteSize
   spriteSheets = new ABM.Array
   
   # The module returns the following object:
@@ -1166,6 +1166,17 @@ ABM.util.shapes = do ->
       c.closePath()
       ccirc c, 0, 0, .6
 
+  filledRing:
+    rotate: false
+    draw: (c) ->
+      circ(c, 0, 0, 1)
+      tempStyle = c.fillStyle # save fill style
+      c.fillStyle = c.strokeStyle # use stroke style for larger circle
+      c.fill()
+      c.fillStyle = tempStyle
+      c.beginPath()
+      circ(c, 0, 0, 0.8)
+
   person:
     rotate: false
     draw: (c) ->
@@ -1211,9 +1222,10 @@ ABM.util.shapes = do ->
   spriteSheets:spriteSheets # export spriteSheets for debugging, showing in DOM
 
   # Two draw procedures, one for shapes, the other for sprites made from shapes.
-  draw: (context, shape, x, y, size, rad, color) ->
+  draw: (context, shape, x, y, size, rad, color, strokeColor) ->
     if shape.shortcut?
-      context.fillStyle = u.colorString color unless shape.img?
+      unless shape.img?
+        context.fillStyle = u.colorString color
       shape.shortcut context, x, y, size
     else
       context.save()
@@ -1224,37 +1236,46 @@ ABM.util.shapes = do ->
         shape.draw context
       else
         context.fillStyle = u.colorString color
+        if strokeColor
+          context.strokeStyle = u.colorStr strokeColor
+          context.lineWidth = 0.05
+        context.save()
         context.beginPath()
         shape.draw context
         context.closePath()
+        context.restore()
         context.fill()
+        context.stroke() if strokeColor
+
       context.restore()
     shape
 
-  drawSprite: (context, s, x, y, size, rad) ->
+  drawSprite: (context, slot, x, y, size, rad) ->
     if rad is 0
-      context.drawImage s.context.canvas, s.x, s.y, s.bits, s.bits, x - size / 2,
-        y - size / 2, size, size
+      context.drawImage context.canvas, slot.x, slot.y, slot.spriteSize,
+        slot.spriteSize, x - size / 2, y - size / 2, size, size
     else
       context.save()
       context.translate x, y # see http://goo.gl/VUlhY for drawing centered rotated images
       context.rotate rad
-      context.drawImage s.context.canvas, s.x, s.y, s.bits, s.bits, -size / 2,
-        -size / 2, size, size
+      context.drawImage slot.context.canvas, slot.x, slot.y, slot.spriteSize,
+        slot.spriteSize, -size / 2, -size / 2, size, size
       context.restore()
-    s
+    slot
 
   # Convert a shape to a sprite by allocating a sprite sheet "slot" and drawing
   # the shape to fit it. Return existing sprite if duplicate.
-  shapeToSprite: (name, color, size) ->
-    bits = Math.ceil ABM.patches.toBits size
+  shapeToSprite: (name, color, size, strokeColor) ->
+    spriteSize = Math.ceil size
+    strokePadding = 4
+    slotSize = spriteSize + strokePadding
     shape = @[name]
     index = if shape.img? then name else "#{name}-#{u.colorString(color)}"
-    context = spriteSheets[bits]
+    context = spriteSheets[slotSize]
 
     # Create sheet for this bit size if it does not yet exist
     unless context?
-      spriteSheets[bits] = context = u.createContext bits * 10, bits
+      spriteSheets[slotSize] = context = u.createContext slotSize * 10, slotSize
       context.nextX = 0
       context.nextY = 0
       context.index = {}
@@ -1263,31 +1284,45 @@ ABM.util.shapes = do ->
     return foundSlot if (foundSlot = context.index[index])?
 
     # Extend the sheet if we're out of space
-    if bits*context.nextX is context.canvas.width
-      u.resizeContext context, context.canvas.width, context.canvas.height + bits
+    if slotSize * context.nextX is context.canvas.width
+      u.resizeContext context, context.canvas.width, context.canvas.height + slotSize
       context.nextX = 0
       context.nextY++
+
     # Create the sprite "slot" object and install in index object
-    x = bits * context.nextX
-    y = bits * context.nextY
-    slot = {context, x, y, size, bits, name, color, index}
+    x =  slotSize * context.nextX + strokePadding / 2
+    y =  slotSize * context.nextY + strokePadding / 2
+    slot = {context, x, y, size, spriteSize, name, color, strokeColor, index}
     context.index[index] = slot
 
     # Draw the shape into the sprite slot
     if (img = shape.img)? # is an image, not a path function
-      if img.height isnt 0 then fillSlot(slot, img)
-      else img.onload = -> fillSlot(slot, img)
+      if img.height isnt 0
+        fillSlot(slot, img)
+      else img.onload = ->
+        fillSlot(slot, img)
     else
       context.save()
-      context.scale bits, bits
-      context.translate context.nextX + .5, context.nextY + .5
+      context.translate (context.nextX + 0.5) * (slotSize),
+        (context.nextY + 0.5) * (slotSize)
+      context.scale spriteSize, spriteSize
       context.fillStyle = u.colorString color
+
+      if strokeColor
+        context.strokeStyle = u.colorString strokeColor
+        context.lineWidth = 0.05
+
+      context.save()
       context.beginPath()
       shape.draw context
       context.closePath()
-      context.fill()
       context.restore()
+      context.fill()
+      if strokeColor
+        context.stroke()
 
+      context.restore()
+    
     context.nextX++
     slot
 
@@ -1298,21 +1333,26 @@ ABM.util.shapes = do ->
 
 class ABM.Set extends ABM.Array
   # `from` is a static wrapper function converting an array into
-  # an `ABM.Set`
+  # an `@model.Set`
   #
   # It gains access to all the methods below. Ex:
   #
   #     array = [1, 2, 3]
-  #     ABM.Set.from(array)
+  #     @model.Set.from(array)
   #     randomNr = array.random()
-  @from: (array, setType = ABM.Set) ->
+  @from: (array, setType) ->
+    if @model?
+      setType ||= @model.Set
+    else
+      setType ||= ABM.Set
+
     array.__proto__ = setType.prototype ? setType.constructor.prototype
     array
   
-  # The static `ABM.Set.from` as a method.
+  # The static `@model.Set.from` as a method.
   # Used by methods creating new sets.
   from: (array, setType = @) ->
-    ABM.Set.from array, setType # setType = ABM.Set
+    @model.Set.from array, setType # setType = @model.Set
     # TODO see if can be removed
 
   # In the examples below, we'll use an array of primitive agent objects
@@ -1320,7 +1360,7 @@ class ABM.Set extends ABM.Array
   #
   #     AS = for i in [1..5] # long form comprehension
   #       {id:i, x:u.randomInt(10), y:u.randomInt(10)}
-  #     ABM.Set.from AS # Convert AS to Set in place
+  #     @model.Set.from AS # Convert AS to Set in place
   #        [{id: 1, x: 0, y: 1}, {id: 2, x: 8, y: 0}, {id: 3, x: 6, y: 4},
   #         {id: 4, x: 1, y: 3}, {id: 5, x: 1, y: 1}]
 
@@ -1350,17 +1390,17 @@ class ABM.Set extends ABM.Array
   # To show/hide an individual object, set its prototype: o.hidden = bool
   show: ->
     o.hidden = false for o in @
-    @draw(ABM.contexts[@name])
+    @draw(@model.contexts[@name])
 
   hide: ->
     o.hidden = true for o in @
-    @draw(ABM.contexts[@name])
+    @draw(@model.contexts[@name])
 
   # ### Location/radius
   
   # Return all agents within d distance from given object.
   inRadius: (point, options) -> # for any objects w/ x, y
-    inner = new ABM.Set
+    inner = new @model.Set
     for entity in @
       if entity.distance(point) <= options.radius
         inner.push entity
@@ -1369,10 +1409,10 @@ class ABM.Set extends ABM.Array
   # As above, but returns agents also limited to the angle `cone`
   # around a `heading` from point.
   inCone: (point, options) ->
-    inner = new ABM.Set
+    inner = new @model.Set
     for entity in @
       if u.inCone(options.heading, options.cone, options.radius,
-          point, entity.position, ABM.patches)
+          point, entity.position, @model.patches)
         inner.push entity
     return inner
 
@@ -1386,11 +1426,11 @@ class ABM.Set extends ABM.Array
 # instances. It also provides, much like the **ABM.util** module, some
 # methods shared by all subclasses of Set.
 #
-# ABM contains three agentsets created by class Model:
+# A model contains three BreedSets:
 #
-# * `ABM.patches`: the model's "world" grid
-# * `ABM.agents`: the model's agents living on the patches
-# * `ABM.links`: the network links connecting agent pairs
+# * `patches`: the model's "world" grid
+# * `agents`: the model's agents living on the patches
+# * `links`: the network links connecting agent pairs
 #
 # See NetLogo [documentation](http://ccl.northwestern.edu/netlogo/docs/)
 # for explanation of the overall semantics of Agent Based Modeling
@@ -1548,6 +1588,7 @@ class ABM.Agent
   patch: null           # the patch I'm on
   size: 1               # my size in patch coordinates
   color: null           # default color, overrides random color if set
+  strokeColor: null     # color of the border of an agent
   shape: "default"      # my shape
   hidden: false         # draw me?
   label: null           # my text
@@ -1583,18 +1624,18 @@ class ABM.Agent
     if @penDown
       [x0, y0] = [@position.x, @position.y]
 
-    @position = ABM.patches.coordinate point
+    @position = @model.patches.coordinate point
     oldPatch = @patch
-    @patch = ABM.patches.patch @position
+    @patch = @model.patches.patch @position
 
     if oldPatch and oldPatch isnt @patch
       oldPatch.agents.remove @
     @patch.agents.push @
 
     if @penDown
-      drawing = ABM.drawing
+      drawing = @model.drawing
       drawing.strokeStyle = u.colorString @color
-      drawing.lineWidth = ABM.patches.fromBits @penSize
+      drawing.lineWidth = @model.patches.fromBits @penSize
       drawing.beginPath()
       drawing.moveTo x0, y0
       drawing.lineTo @position.x, @position.y # REMIND: euclidean
@@ -1619,12 +1660,12 @@ class ABM.Agent
   
   # Set heading towards given agent/patch using patch topology.
   face: (point) ->
-    @heading = u.angle @position, point, ABM.patches
+    @heading = u.angle @position, point, @model.patches
 
   # Return distance in patch coordinates from me to given agent/patch
   # using patch topology (isTorus)
   distance: (point) -> # o any object w/ x, y, patch or agent
-    u.distance @position, point, ABM.patches
+    u.distance @position, point, @model.patches
 
   # Returns the neighbors (agents) of this agent
   neighbors: (options) ->
@@ -1653,14 +1694,14 @@ class ABM.Agent
   # agents agentset and removing any links I may have.
   die: ->
     @breed.remove @
-    for link in @links
+    for link in @links by -1
       link.die()
     @moveOff()
     null
 
   # Factory: create num new agents at this agents location. The optional init
   # proc is called on the new agent after inserting in its agentSet.
-  hatch: (number = 1, breed = ABM.agents, init = ->) ->
+  hatch: (number = 1, breed = @model.agents, init = ->) ->
     breed.create number, (agent) => # fat arrow so that @ = this agent
       agent.moveTo @position # for side effects like patches.agents
       for own key, value of @ when key isnt "id"
@@ -1718,9 +1759,9 @@ class ABM.Agent
       @setSprite() unless @sprite? # lazy evaluation of useSprites
       u.shapes.drawSprite context, @sprite, @position.x, @position.y, @size, radians
     else
-      u.shapes.draw context, shape, @position.x, @position.y, @size, radians, @color
+      u.shapes.draw context, shape, @position.x, @position.y, @size, radians, @color, @strokeColor
     if @label?
-      [x, y] = ABM.patches.patchXYtoPixelXY @x, @y
+      [x, y] = @model.patches.patchXYtoPixelXY @x, @y
       u.contextDrawText context, @label, x + @labelOffset[0], y + @labelOffset[1], @labelColor
   
   # Set an individual agent's sprite, synching its color, shape, size
@@ -1728,14 +1769,16 @@ class ABM.Agent
     if (sprite)?
       @sprite = sprite
       @color = sprite.color
+      @strokeColor = sprite.strokeColor
       @shape = sprite.shape
       @size = sprite.size
     else
       @color = u.randomColor unless @color?
-      @sprite = u.shapes.shapeToSprite @shape, @color, @size
+      @sprite = u.shapes.shapeToSprite @shape, @color,
+        @model.patches.toBits(@size), @strokeColor
     
   # Draw the agent on the drawing layer, leaving permanent image.
-  stamp: -> @draw ABM.drawing
+  stamp: -> @draw @model.drawing
 
 # ### Agents
 
@@ -1947,20 +1990,20 @@ class ABM.Link
   draw: (context) ->
     context.save()
     context.strokeStyle = u.colorString @color
-    context.lineWidth = ABM.patches.fromBits @thickness
+    context.lineWidth = @model.patches.fromBits @thickness
     context.beginPath()
 
-    if !ABM.patches.isTorus
+    if !@model.patches.isTorus
       context.moveTo @from.position.x, @from.position.y
       context.lineTo @to.position.x, @to.position.y
     else
       point = u.closestTorusPoint @from.position, @to.position,
-        ABM.patches.numX, ABM.patches.numY
+        @model.patches.numX, @model.patches.numY
       context.moveTo @from.position.x, @from.position.y
       context.lineTo point.x, point.y
       if point.x isnt @to.position.x or point.y isnt @to.position.y
         point = u.closestTorusPoint @to.position, @from.position,
-          ABM.patches.numX, ABM.patches.numY
+          @model.patches.numX, @model.patches.numY
         context.moveTo @to.position.x, @to.position.y
         context.lineTo point.x, point.y
 
@@ -1971,7 +2014,7 @@ class ABM.Link
     if @label?
       x0 = u.linearInterpolate @from.position.x, @to.position.x, .5
       y0 = u.linearInterpolate @from.position.y, @to.position.y, .5
-      [x, y] = ABM.patches.patchXYtoPixelXY x0, y0
+      [x, y] = @model.patches.patchXYtoPixelXY x0, y0
       u.contextDrawText context, @label, x + @labelOffset[0], y + @labelOffset[1], @labelColor
   
   # Remove this link from the agent set
@@ -2027,7 +2070,7 @@ class ABM.Links extends ABM.BreedSet
   # included.  If 4 links have the same endpoint, it will
   # appear 4 times.
   nodesWithDups: -> # all link ends, w / dups
-    set = new ABM.Set
+    set = new @model.Set
 
     for link in @
       set.push link.from, link.to
@@ -2046,7 +2089,7 @@ class ABM.Links extends ABM.BreedSet
 
 ABM.models = {} # user space, put your models here
 
-ABM.model = class ABM.Model
+class ABM.Model
   # Class variable for layers parameters. 
   # Can be added to by programmer to modify/create layers, **before** starting your own model.
   # Example:
@@ -2068,10 +2111,10 @@ ABM.model = class ABM.Model
   # * call `setup` abstract method
   constructor: (options) ->
     div = options.div
-    isHeadless = options.isHeadless = options.isHeadless? or not div?
+    isHeadless = options.isHeadless = options.isHeadless or not div?
     @setWorld options
 
-    @contexts = ABM.contexts = {}
+    @contexts = {}
 
     unless isHeadless
       (@div = document.getElementById(div)).setAttribute 'style',
@@ -2096,7 +2139,7 @@ ABM.model = class ABM.Model
         u.elementTextParams context, "10px sans-serif", "center", "middle"
 
       # One of the layers is used for drawing only, not an agentset:
-      @drawing = ABM.drawing = @contexts.drawing
+      @drawing = @contexts.drawing
       @drawing.clear = => u.clearContext @drawing
       # Setup spotlight layer, also not an agentset:
       @contexts.spotlight.globalCompositeOperation = "xor"
@@ -2111,6 +2154,15 @@ ABM.model = class ABM.Model
     # Optimization: If any of these is set to false, the associated
     # agentset is drawn only once, remaining static after that.
     @refreshLinks = @refreshAgents = @refreshPatches = true
+
+    # Give class prototypes a 'model' attribute that references this model.
+    @Patches = @extendWithModel(ABM.Patches)
+    @Patch = @extendWithModel(ABM.Patch)
+    @Agents = @extendWithModel(ABM.Agents)
+    @Agent = @extendWithModel(ABM.Agent)
+    @Links = @extendWithModel(ABM.Links)
+    @Link = @extendWithModel(ABM.Link)
+    @Set = @extendWithModel(ABM.Set)
 
     # Initialize agentsets.
     @patchBreeds 'patches'
@@ -2143,7 +2195,7 @@ ABM.model = class ABM.Model
     options.max ?= {x: options.mapSize / 2, y: options.mapSize / 2}
     options.mapSize = null # not passed on, because optional
 
-    ABM.world = @world = {}
+    @world = {}
 
     for own key, value of options
       @world[key] = value
@@ -2168,6 +2220,18 @@ ABM.model = class ABM.Model
       @globalNames.set = true
     else
       @globalNames = u.ownKeys(@).removeItems @globalNames
+
+  # Add this model to a class's prototype. This is used in
+  # the model constructor to create Patch/Patches, Agent/Agents,
+  # and Link/Links classes with a built-in reference to their model.
+  extendWithModel: (original) ->
+    model = @
+    class extendedClass extends original
+      @model: model
+      model: model
+      constructor: ->
+        super
+    return extendedClass
 
 #### Optimizations:
   
@@ -2227,24 +2291,32 @@ ABM.model = class ABM.Model
     @animator.once()
     @
 
-  # TODO rationalize as just stop & start, stop as pause if needed
   # Stop and reset the model, restarting if restart is true
-#  reset: (restart = false) ->
-#    console.log "reset: animator"
-#    @animator.reset() # stop & reset ticks/steps counters
-#    console.log "reset: contexts"
-#    # clear/resize b4 agentsets
-#    (v.restore(); @setContextTransform v) for k, v of @contexts when v.canvas?
-#    console.log "reset: patches"
-#    @patches = ABM.patches = new ABM.Patches ABM.Patch, "patches"
-#    console.log "reset: agents"
-#    @agents = ABM.agents = new ABM.Agents ABM.Agent, "agents"
-#    @links = ABM.links = new ABM.Links ABM.Link, "links"
-#    u.shapes.spriteSheets.length = 0 # possibly null out entries?
-#    console.log "reset: setup"
-#    @setup()
-#    @setRootVars() if @debugging
-#    @start() if restart
+  reset: (restart = false) ->
+    console.log "reset: animator"
+    
+    @animator.reset() # stop & reset ticks/steps counters
+    
+    console.log "reset: contexts"
+    
+    # clear/resize before agentsets
+    for key, value in @contexts
+      if value.canvas?
+        value.restore()
+        @setContextTransform value
+    
+    console.log "reset: patches, agents, links"
+    
+    @patchBreeds 'patches'
+    @agentBreeds 'agents'
+    @linkBreeds 'links'
+
+    u.s.spriteSheets.length = 0 # possibly null out entries?
+    console.log "reset: setup"
+    
+    @setup()
+    @setRootVars() if @debugging
+    @start() if restart
 
 #### Animation.
   
@@ -2292,7 +2364,7 @@ ABM.model = class ABM.Model
 #     @embers and @fires
 #     @spokes and @rims 
 #
-# These agentsets' `create` methods create subclasses of Agent/Link.
+# These agentsets' `create` method create subclasses of Agent/Link.
 # Use of <breed>.setDefault methods work as for agents/links, creating default
 # values for the breed set:
 #
@@ -2313,7 +2385,7 @@ ABM.model = class ABM.Model
 
     for string in list
       if string is type
-        ABM[type] = @[type] = new breedSet agentClass, string
+        @[type] = new breedSet agentClass, string
       else
         breedClass = class Breed extends agentClass
         breed = @[string] = # add @<breed> to local scope
@@ -2325,13 +2397,13 @@ ABM.model = class ABM.Model
 
     @[type].breeds = breeds
 
-  patchBreeds: (list, agentClass = ABM.Patch, breedSet = ABM.Patches) ->
+  patchBreeds: (list, agentClass = @Patch, breedSet = @Patches) ->
     @createBreeds list, 'patches', agentClass, breedSet
 
-  agentBreeds: (list, agentClass = ABM.Agent, breedSet = ABM.Agents) ->
+  agentBreeds: (list, agentClass = @Agent, breedSet = @Agents) ->
     @createBreeds list, 'agents', agentClass, breedSet
 
-  linkBreeds: (list, agentClass = ABM.Link, breedSet = ABM.Links) ->
+  linkBreeds: (list, agentClass = @Link, breedSet = @Links) ->
     @createBreeds list, 'links', agentClass, breedSet
   
   # A simple debug aid which places short names in the global name space.
@@ -2362,7 +2434,7 @@ ABM.model = class ABM.Model
 # ### Patch
   
 # Class Patch instances represent a rectangle on a grid.  They hold variables
-# that are in the patches the agents live on.  The set of all patches (ABM.patches)
+# that are in the patches the agents live on. The set of all patches (@model.patches)
 # is the world on which the agents live and the model runs.
 class ABM.Patch
   # Constructor & Class Variables:
@@ -2415,7 +2487,7 @@ class ABM.Patch
   
   # Factory: Create num new agents on this patch. The optional init
   # proc is called on the new agent after inserting in its agentSet.
-  sprout: (number = 1, breed = ABM.agents, init = ->) ->
+  sprout: (number = 1, breed = @model.agents, init = ->) ->
     breed.create number, (agent) => # fat arrow so that @ = this patch
       agent.moveTo @position
       init(agent)
@@ -2424,7 +2496,7 @@ class ABM.Patch
   # Return distance in patch coordinates from me to given agent/patch
   # using patch topology (isTorus)
   distance: (point) -> # o any object w/ x, y, patch or agent
-    u.distance @position, point, ABM.patches
+    u.distance @position, point, @model.patches
 
   # Get neighbors for patch
   neighbors: (options) ->
@@ -2461,7 +2533,7 @@ class ABM.Patch
   # Not to be used directly, will not cache.
   diamondNeighbors: (range, meToo) ->
     neighbors = @breed.patchRectangleNullPadded @, range, range, true
-    diamond = new ABM.Set
+    diamond = new @model.Set
     counter = 0
     row = 0
     column = -1
@@ -2515,7 +2587,9 @@ class ABM.Patches extends ABM.BreedSet
   constructor: -> # agentClass, name, mainSet
     super # call super with all the args I was called with
     @monochrome = false # set to true to optimize patches all default color
-    @[key] = value for own key, value of ABM.world # add world items to patches
+    # add world items to patches
+    for own key, value of @model.world
+      @[key] = value
   
   # Setup patch world from world parameters.
   # Note that this is done as separate method so like other agentsets,
@@ -2602,7 +2676,7 @@ class ABM.Patches extends ABM.BreedSet
     rectangle.remove(null)
 
   patchRectangleNullPadded: (patch, dx, dy, meToo = false) ->
-    rectangle = new ABM.Set
+    rectangle = new @model.Set
     # REMIND: optimize if no wrapping, rectangle inside patch boundaries
     for y in [(patch.position.y - dy)..(patch.position.y + dy)] by 1 # by 1: perf: avoid bidir JS for loop
       for x in [(patch.position.x - dx)..(patch.position.x + dx)] by 1
@@ -2639,7 +2713,7 @@ class ABM.Patches extends ABM.BreedSet
       f() if f?
 
   # Direct install image into the given context, not async.
-  installDrawing: (img, context = ABM.contexts.drawing) ->
+  installDrawing: (img, context = @model.contexts.drawing) ->
     u.setIdentity context
     context.drawImage img, 0, 0, context.canvas.width, context.canvas.height
     context.restore() # restore patch transform
@@ -2755,7 +2829,7 @@ class ABM.Patches extends ABM.BreedSet
   # Draw patches using scaled image of colors. Note anti-aliasing may occur
   # if browser does not support smoothing flags.
   usePixels: (@drawWithPixels = true) ->
-    context = ABM.contexts.patches
+    context = @model.contexts.patches
     u.setContextSmoothing context, not @drawWithPixels
 
   # Setup pixels used for `drawScaledPixels` and `importColors`
@@ -2763,7 +2837,7 @@ class ABM.Patches extends ABM.BreedSet
   setPixels: ->
     if @patchSize is 1
       @usePixels()
-      @pixelsContext = ABM.contexts.patches
+      @pixelsContext = @model.contexts.patches
     else
       @pixelsContext = u.createContext @width, @height
 

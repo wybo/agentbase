@@ -28,7 +28,7 @@ class ABM.Links extends ABM.BreedSet
   # included.  If 4 links have the same endpoint, it will
   # appear 4 times.
   nodesWithDups: -> # all link ends, w / dups
-    set = new ABM.Set
+    set = new @model.Set
 
     for link in @
       set.push link.from, link.to

@@ -5,7 +5,7 @@ ABM.util.array =
   # The static `ABM.Array.from` as a method.
   # Used by methods creating new arrays.
   from: (array, arrayType) ->
-    ABM.Array.from array, arrayType # setType = ABM.Set
+    ABM.Array.from array, arrayType
   # TODO replace in code
 
   # Return string representative of agentset.
@@ -302,7 +302,7 @@ ABM.util.array =
   #     AS.with("o.x < 5").ask("o.x = o.x + 1")
   #     AS.getProperty("x") # [2, 8, 6, 3, 3]
   #
-  #     ABM.agents.with("o.id < 100").ask("o.color = [255, 0, 0]")
+  #     myModel.agents.with("o.id < 100").ask("o.color = [255, 0, 0]")
   ask: (array, functionString) ->
     if u.isString functionString
       eval("functionString=function(o){return " + functionString + ";}")

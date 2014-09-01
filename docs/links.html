@@ -2,7 +2,7 @@
 
 <html>
 <head>
-  <title>6-links.coffee</title>
+  <title>links.coffee</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
   <link rel="stylesheet" media="all" href="docco.css" />
@@ -11,62 +11,11 @@
   <div id="container">
     <div id="background"></div>
     
-      <ul id="jump_to">
-        <li>
-          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
-          <a class="small" href="javascript:void(0);">+</a>
-          <div id="jump_wrapper">
-          <div id="jump_page">
-            
-              
-              <a class="source" href="1-util.html">
-                1-util.coffee
-              </a>
-            
-              
-              <a class="source" href="2-shapes.html">
-                2-shapes.coffee
-              </a>
-            
-              
-              <a class="source" href="3-agentset.html">
-                3-agentset.coffee
-              </a>
-            
-              
-              <a class="source" href="4-patches.html">
-                4-patches.coffee
-              </a>
-            
-              
-              <a class="source" href="5-agents.html">
-                5-agents.coffee
-              </a>
-            
-              
-              <a class="source" href="6-links.html">
-                6-links.coffee
-              </a>
-            
-              
-              <a class="source" href="7-model.html">
-                7-model.coffee
-              </a>
-            
-              
-              <a class="source" href="8-template.html">
-                8-template.coffee
-              </a>
-            
-          </div>
-        </li>
-      </ul>
-    
     <ul class="sections">
         
           <li id="title">
               <div class="annotation">
-                  <h1>6-links.coffee</h1>
+                  <h1>links.coffee</h1>
               </div>
           </li>
         
@@ -154,9 +103,9 @@ is called with patch coordinate transform installed.</p>
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">draw</span>: <span class="hljs-function"><span class="hljs-params">(ctx)</span> -&gt;</span>
     ctx.save()
     ctx.strokeStyle = u.colorStr <span class="hljs-property">@color</span>
-    ctx.lineWidth = ABM.patches.fromBits <span class="hljs-property">@thickness</span>
+    ctx.lineWidth = <span class="hljs-property">@model</span>.patches.fromBits <span class="hljs-property">@thickness</span>
     ctx.beginPath()
-    <span class="hljs-keyword">if</span> !ABM.patches.isTorus
+    <span class="hljs-keyword">if</span> !<span class="hljs-property">@model</span>.patches.isTorus
       ctx.moveTo <span class="hljs-property">@end1</span>.x, <span class="hljs-property">@end1</span>.y
       ctx.lineTo <span class="hljs-property">@end2</span>.x, <span class="hljs-property">@end2</span>.y
     <span class="hljs-keyword">else</span>
@@ -172,7 +121,7 @@ is called with patch coordinate transform installed.</p>
     ctx.restore()
     <span class="hljs-keyword">if</span> <span class="hljs-property">@label</span>?
       [x0, y0]  = u.lerp2 <span class="hljs-property">@end1</span>.x, <span class="hljs-property">@end1</span>.y, <span class="hljs-property">@end2</span>.x, <span class="hljs-property">@end2</span>.y, <span class="hljs-number">.5</span>
-      [x,y] = ABM.patches.patchXYtoPixelXY x0, y0
+      [x,y] = <span class="hljs-property">@model</span>.patches.patchXYtoPixelXY x0, y0
       u.ctxDrawText ctx, <span class="hljs-property">@label</span>, x+<span class="hljs-property">@labelOffset</span>[<span class="hljs-number">0</span>], y+<span class="hljs-property">@labelOffset</span>[<span class="hljs-number">1</span>], <span class="hljs-property">@labelColor</span></pre></div></div>
             
         </li>

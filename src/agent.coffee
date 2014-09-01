@@ -32,6 +32,7 @@ class ABM.Agent
   patch: null           # the patch I'm on
   size: 1               # my size in patch coordinates
   color: null           # default color, overrides random color if set
+  strokeColor: null     # color of the border of an agent
   shape: "default"      # my shape
   hidden: false         # draw me?
   label: null           # my text
@@ -67,18 +68,18 @@ class ABM.Agent
     if @penDown
       [x0, y0] = [@position.x, @position.y]
 
-    @position = ABM.patches.coordinate point
+    @position = @model.patches.coordinate point
     oldPatch = @patch
-    @patch = ABM.patches.patch @position
+    @patch = @model.patches.patch @position
 
     if oldPatch and oldPatch isnt @patch
       oldPatch.agents.remove @
     @patch.agents.push @
 
     if @penDown
-      drawing = ABM.drawing
+      drawing = @model.drawing
       drawing.strokeStyle = u.colorString @color
-      drawing.lineWidth = ABM.patches.fromBits @penSize
+      drawing.lineWidth = @model.patches.fromBits @penSize
       drawing.beginPath()
       drawing.moveTo x0, y0
       drawing.lineTo @position.x, @position.y # REMIND: euclidean
@@ -103,12 +104,12 @@ class ABM.Agent
   
   # Set heading towards given agent/patch using patch topology.
   face: (point) ->
-    @heading = u.angle @position, point, ABM.patches
+    @heading = u.angle @position, point, @model.patches
 
   # Return distance in patch coordinates from me to given agent/patch
   # using patch topology (isTorus)
   distance: (point) -> # o any object w/ x, y, patch or agent
-    u.distance @position, point, ABM.patches
+    u.distance @position, point, @model.patches
 
   # Returns the neighbors (agents) of this agent
   neighbors: (options) ->
@@ -137,14 +138,14 @@ class ABM.Agent
   # agents agentset and removing any links I may have.
   die: ->
     @breed.remove @
-    for link in @links
+    for link in @links by -1
       link.die()
     @moveOff()
     null
 
   # Factory: create num new agents at this agents location. The optional init
   # proc is called on the new agent after inserting in its agentSet.
-  hatch: (number = 1, breed = ABM.agents, init = ->) ->
+  hatch: (number = 1, breed = @model.agents, init = ->) ->
     breed.create number, (agent) => # fat arrow so that @ = this agent
       agent.moveTo @position # for side effects like patches.agents
       for own key, value of @ when key isnt "id"
@@ -202,9 +203,9 @@ class ABM.Agent
       @setSprite() unless @sprite? # lazy evaluation of useSprites
       u.shapes.drawSprite context, @sprite, @position.x, @position.y, @size, radians
     else
-      u.shapes.draw context, shape, @position.x, @position.y, @size, radians, @color
+      u.shapes.draw context, shape, @position.x, @position.y, @size, radians, @color, @strokeColor
     if @label?
-      [x, y] = ABM.patches.patchXYtoPixelXY @x, @y
+      [x, y] = @model.patches.patchXYtoPixelXY @x, @y
       u.contextDrawText context, @label, x + @labelOffset[0], y + @labelOffset[1], @labelColor
   
   # Set an individual agent's sprite, synching its color, shape, size
@@ -212,11 +213,13 @@ class ABM.Agent
     if (sprite)?
       @sprite = sprite
       @color = sprite.color
+      @strokeColor = sprite.strokeColor
       @shape = sprite.shape
       @size = sprite.size
     else
       @color = u.randomColor unless @color?
-      @sprite = u.shapes.shapeToSprite @shape, @color, @size
+      @sprite = u.shapes.shapeToSprite @shape, @color,
+        @model.patches.toBits(@size), @strokeColor
     
   # Draw the agent on the drawing layer, leaving permanent image.
-  stamp: -> @draw ABM.drawing
+  stamp: -> @draw @model.drawing

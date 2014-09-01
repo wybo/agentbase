@@ -2,7 +2,7 @@
 
 <html>
 <head>
-  <title>3-agentset.coffee</title>
+  <title>agentset.coffee</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
   <link rel="stylesheet" media="all" href="docco.css" />
@@ -11,62 +11,11 @@
   <div id="container">
     <div id="background"></div>
     
-      <ul id="jump_to">
-        <li>
-          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
-          <a class="small" href="javascript:void(0);">+</a>
-          <div id="jump_wrapper">
-          <div id="jump_page">
-            
-              
-              <a class="source" href="1-util.html">
-                1-util.coffee
-              </a>
-            
-              
-              <a class="source" href="2-shapes.html">
-                2-shapes.coffee
-              </a>
-            
-              
-              <a class="source" href="3-agentset.html">
-                3-agentset.coffee
-              </a>
-            
-              
-              <a class="source" href="4-patches.html">
-                4-patches.coffee
-              </a>
-            
-              
-              <a class="source" href="5-agents.html">
-                5-agents.coffee
-              </a>
-            
-              
-              <a class="source" href="6-links.html">
-                6-links.coffee
-              </a>
-            
-              
-              <a class="source" href="7-model.html">
-                7-model.coffee
-              </a>
-            
-              
-              <a class="source" href="8-template.html">
-                8-template.coffee
-              </a>
-            
-          </div>
-        </li>
-      </ul>
-    
     <ul class="sections">
         
           <li id="title">
               <div class="annotation">
-                  <h1>3-agentset.coffee</h1>
+                  <h1>agentset.coffee</h1>
               </div>
           </li>
         
@@ -85,11 +34,11 @@ by the <code>create</code> factory method of an AgentSet.</p>
 <code>Patches</code>, <code>Agents</code>, and <code>Links</code>. An AgentSet keeps track of all
 its created instances.  It also provides, much like the <strong>ABM.util</strong>
 module, many methods shared by all subclasses of AgentSet.</p>
-<p>ABM contains three agentsets created by class Model:</p>
+<p>A model contains three agentsets:</p>
 <ul>
-<li><code>ABM.patches</code>: the model’s “world” grid</li>
-<li><code>ABM.agents</code>: the model’s agents living on the patches</li>
-<li><code>ABM.links</code>: the network links connecting agent pairs</li>
+<li><code>patches</code>: the model’s “world” grid</li>
+<li><code>agents</code>: the model’s agents living on the patches</li>
+<li><code>links</code>: the network links connecting agent pairs</li>
 </ul>
 <p>See NetLogo <a href="http://ccl.northwestern.edu/netlogo/docs/">documentation</a>
 for explanation of the overall semantics of Agent Based Modeling
@@ -130,7 +79,7 @@ but thus far we’ve resolved all related problems.</p>
 an <code>AgentSet</code> .. except for the ID which only impacts the add method.
 It is primarily used to turn a comprehension into an AgentSet instance
 which then gains access to all the methods below.  Ex:</p>
-<pre><code>evens = (a <span class="hljs-keyword">for</span> a <span class="hljs-keyword">in</span> ABM.agents <span class="hljs-keyword">when</span> a.id % <span class="hljs-number">2</span> <span class="hljs-keyword">is</span> <span class="hljs-number">0</span>)
+<pre><code>evens = (a <span class="hljs-keyword">for</span> a <span class="hljs-keyword">in</span> <span class="hljs-property">@model</span>.agents <span class="hljs-keyword">when</span> a.id % <span class="hljs-number">2</span> <span class="hljs-keyword">is</span> <span class="hljs-number">0</span>)
 ABM.AgentSet.asSet(evens)
 randomEven = evens.oneOf()
 </code></pre>
@@ -240,7 +189,7 @@ Returns the object for chaining. The set will be sorted by <code>id</code>.</p>
               </div>
               <p>Remove an agent from the agentset, returning the agentset.
 Note this does not change ID, thus an
-agentset can have gaps in terms of their id’s. Assumes set is
+agentset can have gaps in terms of their ids. Assumes set is
 sorted by <code>id</code>. If the set is one created by <code>asSet</code>, and the original
 array is unsorted, simply call <code>sortById</code> first, see <code>sortById</code> below.</p>
 <pre><code>AS.remove(AS[<span class="hljs-number">3</span>]) <span class="hljs-comment"># [{id:0,x:0,y:1}, {id:1,x:8,y:0},</span>
@@ -491,7 +440,7 @@ Used by agentset methods creating new agentsets.</p>
 </code></pre>
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">getProp</span>: <span class="hljs-function"><span class="hljs-params">(prop)</span> -&gt;</span> o[prop] <span class="hljs-keyword">for</span> o <span class="hljs-keyword">in</span> @</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">getProp</span>: <span class="hljs-function"><span class="hljs-params">(prop)</span> -&gt;</span> ABM.util.aProp(@, prop)</pre></div></div>
             
         </li>
         
@@ -769,8 +718,8 @@ To show/hide an individual object, set its prototype: o.hidden = bool</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">show</span>:<span class="hljs-function"> -&gt;</span> o.hidden = <span class="hljs-literal">false</span> <span class="hljs-keyword">for</span> o <span class="hljs-keyword">in</span> @; <span class="hljs-property">@draw</span>(ABM.contexts[<span class="hljs-property">@name</span>])
-  <span class="hljs-attribute">hide</span>:<span class="hljs-function"> -&gt;</span> o.hidden = <span class="hljs-literal">true</span> <span class="hljs-keyword">for</span> o <span class="hljs-keyword">in</span> @; <span class="hljs-property">@draw</span>(ABM.contexts[<span class="hljs-property">@name</span>])</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">show</span>:<span class="hljs-function"> -&gt;</span> o.hidden = <span class="hljs-literal">false</span> <span class="hljs-keyword">for</span> o <span class="hljs-keyword">in</span> @; <span class="hljs-property">@draw</span>(<span class="hljs-property">@model</span>.contexts[<span class="hljs-property">@name</span>])
+  <span class="hljs-attribute">hide</span>:<span class="hljs-function"> -&gt;</span> o.hidden = <span class="hljs-literal">true</span> <span class="hljs-keyword">for</span> o <span class="hljs-keyword">in</span> @; <span class="hljs-property">@draw</span>(<span class="hljs-property">@model</span>.contexts[<span class="hljs-property">@name</span>])</pre></div></div>
             
         </li>
         
@@ -794,7 +743,7 @@ To show/hide an individual object, set its prototype: o.hidden = bool</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-40">&#182;</a>
               </div>
-              <p>For ABM.patches &amp; ABM.agents which have x,y. See ABM.util doc.</p>
+              <p>For patches &amp; agents, which have x,y. See ABM.util doc.</p>
 <p>Return all agents in agentset within d distance from given object.
 By default excludes the given object. Uses linear/torus distance
 depending on patches.isTorus, and patches width/height if needed.</p>
@@ -803,8 +752,8 @@ depending on patches.isTorus, and patches width/height if needed.</p>
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">inRadius</span>: <span class="hljs-function"><span class="hljs-params">(o, d, meToo=<span class="hljs-literal">false</span>)</span> -&gt;</span> <span class="hljs-comment"># for any objects w/ x,y</span>
     d2 = d*d; x=o.x; y=o.y
-    <span class="hljs-keyword">if</span> ABM.patches.isTorus
-      w=ABM.patches.numX; h=ABM.patches.numY
+    <span class="hljs-keyword">if</span> <span class="hljs-property">@model</span>.patches.isTorus
+      w=<span class="hljs-property">@model</span>.patches.numX; h=<span class="hljs-property">@model</span>.patches.numY
       <span class="hljs-property">@asSet</span> (a <span class="hljs-keyword">for</span> a <span class="hljs-keyword">in</span> @ <span class="hljs-keyword">when</span> \
         u.torusSqDistance(x,y,a.x,a.y,w,h)&lt;=d2 <span class="hljs-keyword">and</span> (meToo <span class="hljs-keyword">or</span> a <span class="hljs-keyword">isnt</span> o))
     <span class="hljs-keyword">else</span>
@@ -828,8 +777,8 @@ a <code>heading</code> from object <code>o</code>.</p>
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">inCone</span>: <span class="hljs-function"><span class="hljs-params">(o, heading, cone, radius, meToo=<span class="hljs-literal">false</span>)</span> -&gt;</span>
     rSet = <span class="hljs-property">@inRadius</span> o, radius, meToo
     x=o.x; y=o.y
-    <span class="hljs-keyword">if</span> ABM.patches.isTorus
-      w=ABM.patches.numX; h=ABM.patches.numY
+    <span class="hljs-keyword">if</span> <span class="hljs-property">@model</span>.patches.isTorus
+      w=<span class="hljs-property">@model</span>.patches.numX; h=<span class="hljs-property">@model</span>.patches.numY
       <span class="hljs-property">@asSet</span> (a <span class="hljs-keyword">for</span> a <span class="hljs-keyword">in</span> rSet <span class="hljs-keyword">when</span> \
         (a <span class="hljs-keyword">is</span> o <span class="hljs-keyword">and</span> meToo) <span class="hljs-keyword">or</span> u.inTorusCone(heading,cone,radius,x,y,a.x,a.y,w,h))
     <span class="hljs-keyword">else</span>
@@ -878,7 +827,7 @@ Allows functions as strings. Use:</p>
 AS.<span class="hljs-reserved">with</span>(<span class="hljs-string">"o.x&lt;5"</span>).ask(<span class="hljs-string">"o.x=o.x+1"</span>)
 AS.getProp(<span class="hljs-string">"x"</span>) <span class="hljs-comment"># [2, 8, 6, 3, 3]</span>
 
-ABM.agents.<span class="hljs-reserved">with</span>(<span class="hljs-string">"o.id&lt;100"</span>).ask(<span class="hljs-string">"o.color=[255,0,0]"</span>)
+myModel.agents.<span class="hljs-reserved">with</span>(<span class="hljs-string">"o.id&lt;100"</span>).ask(<span class="hljs-string">"o.color=[255,0,0]"</span>)
 </code></pre>
             </div>
             

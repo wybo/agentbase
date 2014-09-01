@@ -11,42 +11,6 @@
   <div id="container">
     <div id="background"></div>
     
-      <ul id="jump_to">
-        <li>
-          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
-          <a class="small" href="javascript:void(0);">+</a>
-          <div id="jump_wrapper">
-          <div id="jump_page">
-            
-              
-              <a class="source" href="as.dat.gui.html">
-                as.dat.gui.js
-              </a>
-            
-              
-              <a class="source" href="data.html">
-                data.coffee
-              </a>
-            
-              
-              <a class="source" href="data.tile.html">
-                data.tile.js
-              </a>
-            
-              
-              <a class="source" href="fbui.html">
-                fbui.coffee
-              </a>
-            
-              
-              <a class="source" href="mouse.html">
-                mouse.coffee
-              </a>
-            
-          </div>
-        </li>
-      </ul>
-    
     <ul class="sections">
         
           <li id="title">
@@ -86,26 +50,28 @@ easier to get data out of a tile server and into a model.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>
-(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
-    ABM.TileDataSet = (<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
+    ABM.TileDataSet = (<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
 
-        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">TileDataSet</span><span class="hljs-params">(width, height, tileSize)</span> {</span>
-        	<span class="hljs-keyword">this</span>.tileSize = tileSize || <span class="hljs-number">256</span>;
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">TileDataSet</span><span class="hljs-params">(width, height, tileSize, model)</span> </span>{
+            <span class="hljs-keyword">this</span>.tileSize = tileSize || <span class="hljs-number">256</span>;
 
-        	<span class="hljs-keyword">this</span>.tiles = {};
+            <span class="hljs-keyword">this</span>.tiles = {};
 
-        	<span class="hljs-keyword">this</span>.width = width;
-        	<span class="hljs-keyword">this</span>.height = height;
+            <span class="hljs-keyword">this</span>.width = width;
+            <span class="hljs-keyword">this</span>.height = height;
+            
+            <span class="hljs-keyword">this</span>.model = model;
 
-        	<span class="hljs-keyword">this</span>.zoom = <span class="hljs-number">0</span>;
-        	<span class="hljs-keyword">this</span>.origin = { x: <span class="hljs-number">0</span>, y: <span class="hljs-number">0</span> };
+            <span class="hljs-keyword">this</span>.zoom = <span class="hljs-number">0</span>;
+            <span class="hljs-keyword">this</span>.origin = { x: <span class="hljs-number">0</span>, y: <span class="hljs-number">0</span> };
         }
 
         TileDataSet.prototype = <span class="hljs-keyword">new</span> ABM.DataSet();
 
-        TileDataSet.prototype.addTile = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(tilePoint, tile)</span> {</span>
-        	<span class="hljs-keyword">var</span> tileId = [tilePoint.z, tilePoint.x, tilePoint.y].join(<span class="hljs-string">"/"</span>);
-        	<span class="hljs-keyword">this</span>.tiles[tileId] = tile;
+        TileDataSet.prototype.addTile = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(tilePoint, tile)</span> </span>{
+            <span class="hljs-keyword">var</span> tileId = [tilePoint.z, tilePoint.x, tilePoint.y].join(<span class="hljs-string">"/"</span>);
+            <span class="hljs-keyword">this</span>.tiles[tileId] = tile;
         }</pre></div></div>
             
         </li>
@@ -122,23 +88,23 @@ in pixels relative to the dataset origin.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        TileDataSet.prototype.getTileContainingPoint = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(x, y)</span> {</span>
-        	<span class="hljs-keyword">var</span> zoom = <span class="hljs-keyword">this</span>.zoom,
-        		pixelCoord = {
-        			x: <span class="hljs-keyword">this</span>.origin.x + x,
-        			y: <span class="hljs-keyword">this</span>.origin.y + y
-        		};
+            <div class="content"><div class='highlight'><pre>        TileDataSet.prototype.getTileContainingPoint = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(x, y)</span> </span>{
+            <span class="hljs-keyword">var</span> zoom = <span class="hljs-keyword">this</span>.zoom,
+                pixelCoord = {
+                    x: <span class="hljs-keyword">this</span>.origin.x + x,
+                    y: <span class="hljs-keyword">this</span>.origin.y + y
+                };
 
-        	<span class="hljs-keyword">var</span> tileX = <span class="hljs-built_in">Math</span>.floor(pixelCoord.x / <span class="hljs-keyword">this</span>.tileSize),
-        		tileY = <span class="hljs-built_in">Math</span>.floor(pixelCoord.y / <span class="hljs-keyword">this</span>.tileSize);
+            <span class="hljs-keyword">var</span> tileX = <span class="hljs-built_in">Math</span>.floor(pixelCoord.x / <span class="hljs-keyword">this</span>.tileSize),
+                tileY = <span class="hljs-built_in">Math</span>.floor(pixelCoord.y / <span class="hljs-keyword">this</span>.tileSize);
 
-        	<span class="hljs-keyword">var</span> tileCtx = <span class="hljs-keyword">this</span>.tiles[zoom+<span class="hljs-string">"/"</span>+tileX+<span class="hljs-string">"/"</span>+tileY];
-        	
-        	<span class="hljs-keyword">if</span> (!tileCtx) {
-        		console.log(<span class="hljs-string">"ERR: tried to sample tile"</span>, zoom, tileX, tileY, <span class="hljs-string">"but it doesn't exist."</span>);
-        	}
+            <span class="hljs-keyword">var</span> tileCtx = <span class="hljs-keyword">this</span>.tiles[zoom+<span class="hljs-string">"/"</span>+tileX+<span class="hljs-string">"/"</span>+tileY];
+            
+            <span class="hljs-keyword">if</span> (!tileCtx) {
+                <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"ERR: tried to sample tile"</span>, zoom, tileX, tileY, <span class="hljs-string">"but it doesn't exist."</span>);
+            }
 
-        	<span class="hljs-keyword">return</span> tileCtx;
+            <span class="hljs-keyword">return</span> tileCtx;
         }</pre></div></div>
             
         </li>
@@ -156,7 +122,7 @@ or after receiving a ‘tilesready’ event.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        TileDataSet.prototype.importTileData = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+            <div class="content"><div class='highlight'><pre>        TileDataSet.prototype.importTileData = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
             <span class="hljs-keyword">this</span>.data = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Array</span>(<span class="hljs-keyword">this</span>.width*<span class="hljs-keyword">this</span>.height);</pre></div></div>
             
         </li>
@@ -298,8 +264,8 @@ want to implement a custom parser</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        TileDataSet.prototype.parseTileData = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(imageData)</span> {</span>
-        	<span class="hljs-keyword">return</span> imageData;
+            <div class="content"><div class='highlight'><pre>        TileDataSet.prototype.parseTileData = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(imageData)</span> </span>{
+            <span class="hljs-keyword">return</span> imageData;
         }</pre></div></div>
             
         </li>
@@ -318,9 +284,9 @@ the tile layer must be an instance of L.CrossOriginTileLayer
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        TileDataSet.prototype.bindToLeaflet = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(leafletMap, leafletLayer, preventMapEmbed)</span> {</span>
-        	<span class="hljs-keyword">this</span>.leafletMap = leafletMap;
-        	<span class="hljs-keyword">this</span>.leafletLayer = leafletLayer;</pre></div></div>
+            <div class="content"><div class='highlight'><pre>        TileDataSet.prototype.bindToLeaflet = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(leafletMap, leafletLayer, preventMapEmbed)</span> </span>{
+            <span class="hljs-keyword">this</span>.leafletMap = leafletMap;
+            <span class="hljs-keyword">this</span>.leafletLayer = leafletLayer;</pre></div></div>
             
         </li>
         
@@ -336,16 +302,16 @@ inside of the Agentscript wrapper</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        	<span class="hljs-keyword">if</span> (!preventMapEmbed) {
-        		<span class="hljs-keyword">this</span>.embedLeaflet();
-        		<span class="hljs-keyword">var</span> mapSize = <span class="hljs-keyword">this</span>.leafletMap.getSize();
-        		<span class="hljs-keyword">this</span>.width = mapSize.x;
-        		<span class="hljs-keyword">this</span>.height = mapSize.y;
-        	}
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">if</span> (!preventMapEmbed) {
+                <span class="hljs-keyword">this</span>.embedLeaflet();
+                <span class="hljs-keyword">var</span> mapSize = <span class="hljs-keyword">this</span>.leafletMap.getSize();
+                <span class="hljs-keyword">this</span>.width = mapSize.x;
+                <span class="hljs-keyword">this</span>.height = mapSize.y;
+            }
 
-        	<span class="hljs-keyword">this</span>.tileSize = leafletLayer._getTileSize();
-        	<span class="hljs-keyword">this</span>.origin = <span class="hljs-keyword">this</span>.leafletMap.getPixelBounds().min;
-        	<span class="hljs-keyword">this</span>.zoom = leafletMap.getZoom();</pre></div></div>
+            <span class="hljs-keyword">this</span>.tileSize = leafletLayer._getTileSize();
+            <span class="hljs-keyword">this</span>.origin = <span class="hljs-keyword">this</span>.leafletMap.getPixelBounds().min;
+            <span class="hljs-keyword">this</span>.zoom = leafletMap.getZoom();</pre></div></div>
             
         </li>
         
@@ -360,15 +326,16 @@ inside of the Agentscript wrapper</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        	leafletLayer.on(<span class="hljs-string">'tileload'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(e)</span> {</span>
-        		<span class="hljs-keyword">var</span> tilePoint = urlToTileCoords(e.url);
+            <div class="content"><div class='highlight'><pre>            leafletLayer.on(<span class="hljs-string">'tileload'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(e)</span> </span>{
+                <span class="hljs-keyword">var</span> tilePoint = urlToTileCoords(e.url);
 
                 <span class="hljs-keyword">if</span> (!tilePoint) {
-                    console.log(<span class="hljs-string">"err: couldn't parse tile coordinates for"</span>, e.url);
+                    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"err: couldn't parse tile coordinates for"</span>, e.url);
                     <span class="hljs-keyword">return</span>;
                 }
-        		
+                
                 <span class="hljs-keyword">var</span> tile = ABM.util.imageToCtx(e.tile, <span class="hljs-keyword">this</span>.tileSize, <span class="hljs-keyword">this</span>.tileSize);
+
         		<span class="hljs-keyword">this</span>.addTile(tilePoint, tile);
         	}.bind(<span class="hljs-keyword">this</span>));</pre></div></div>
             
@@ -385,7 +352,7 @@ inside of the Agentscript wrapper</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        	leafletMap.on(<span class="hljs-string">'zoomstart'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+            <div class="content"><div class='highlight'><pre>        	leafletMap.on(<span class="hljs-string">'zoomstart'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
         		<span class="hljs-keyword">this</span>.tiles = {};
         	}.bind(<span class="hljs-keyword">this</span>));</pre></div></div>
             
@@ -402,7 +369,7 @@ inside of the Agentscript wrapper</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        	leafletMap.on(<span class="hljs-string">'moveend'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+            <div class="content"><div class='highlight'><pre>        	leafletMap.on(<span class="hljs-string">'moveend'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
         		<span class="hljs-keyword">this</span>.origin = <span class="hljs-keyword">this</span>.leafletMap.getPixelBounds().min;
         	}.bind(<span class="hljs-keyword">this</span>));</pre></div></div>
             
@@ -419,7 +386,7 @@ inside of the Agentscript wrapper</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        	leafletMap.on(<span class="hljs-string">'zoomend'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+            <div class="content"><div class='highlight'><pre>        	leafletMap.on(<span class="hljs-string">'zoomend'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
         		<span class="hljs-keyword">this</span>.zoom = <span class="hljs-keyword">this</span>.leafletMap.getZoom();
         	}.bind(<span class="hljs-keyword">this</span>));</pre></div></div>
             
@@ -437,7 +404,7 @@ by wrapping the leafletLayer’s event listener</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        	<span class="hljs-keyword">this</span>.on = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(name, fn)</span> {</span>
+            <div class="content"><div class='highlight'><pre>        	<span class="hljs-keyword">this</span>.on = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(name, fn)</span> </span>{
         		<span class="hljs-keyword">var</span> leafletLayer = <span class="hljs-keyword">this</span>.leafletLayer;
         		
         		<span class="hljs-keyword">if</span> (!leafletLayer) {
@@ -447,7 +414,7 @@ by wrapping the leafletLayer’s event listener</p>
         		leafletLayer.on(name, fn);
         	}
 
-            <span class="hljs-keyword">this</span>.off = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(name, fn)</span> {</span>
+            <span class="hljs-keyword">this</span>.off = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(name, fn)</span> </span>{
                 <span class="hljs-keyword">var</span> leafletLayer = <span class="hljs-keyword">this</span>.leafletLayer;
                 
                 <span class="hljs-keyword">if</span> (!leafletLayer) {
@@ -475,29 +442,29 @@ finished loading</p>
             <div class="content"><div class='highlight'><pre>        	<span class="hljs-keyword">var</span> mapReady = <span class="hljs-literal">true</span>,
         		tilesReady = <span class="hljs-literal">false</span>;
 
-        	leafletLayer.on(<span class="hljs-string">'loading'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+        	leafletLayer.on(<span class="hljs-string">'loading'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
         		tilesReady = <span class="hljs-literal">false</span>;
         	});
 
-        	leafletMap.on(<span class="hljs-string">'movestart'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+        	leafletMap.on(<span class="hljs-string">'movestart'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
         		mapReady = <span class="hljs-literal">false</span>;
         	});
 
-        	leafletLayer.on(<span class="hljs-string">'load'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+        	leafletLayer.on(<span class="hljs-string">'load'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
         		tilesReady = <span class="hljs-literal">true</span>;
         		<span class="hljs-keyword">if</span> (mapReady) {
         			<span class="hljs-keyword">this</span>.leafletLayer.fire(<span class="hljs-string">'tilesready'</span>);
         		}
         	}.bind(<span class="hljs-keyword">this</span>));
 
-        	leafletMap.on(<span class="hljs-string">'moveend'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+        	leafletMap.on(<span class="hljs-string">'moveend'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
         		mapReady = <span class="hljs-literal">true</span>;
         		<span class="hljs-keyword">if</span> (tilesReady) {
         			<span class="hljs-keyword">this</span>.leafletLayer.fire(<span class="hljs-string">'tilesready'</span>);
         		}
         	}.bind(<span class="hljs-keyword">this</span>));
 
-        	<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">urlToTileCoords</span><span class="hljs-params">(url)</span> {</span>
+        	<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">urlToTileCoords</span><span class="hljs-params">(url)</span> </span>{
         		<span class="hljs-keyword">var</span> coordRegex = <span class="hljs-regexp">/.*\/(\d+)\/(\d+)\/(\d+)\.png$/</span>;
         		<span class="hljs-keyword">var</span> coords = coordRegex.exec(url);
         		<span class="hljs-keyword">return</span> coords &amp;&amp; {
@@ -508,13 +475,13 @@ finished loading</p>
         	}
         }
 
-        TileDataSet.prototype.embedLeaflet = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
-        	<span class="hljs-keyword">if</span> (!ABM.model.div) {
-        		console.log(<span class="hljs-string">"ERR: Tried to embed leaflet map into a headless model, or before model div was initialized."</span>);
-        		<span class="hljs-keyword">return</span>;
-        	}
+        TileDataSet.prototype.embedLeaflet = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
+            <span class="hljs-keyword">if</span> (!<span class="hljs-keyword">this</span>.model.div) {
+                <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"ERR: Tried to embed leaflet map into a headless model, or before model div was initialized."</span>);
+                <span class="hljs-keyword">return</span>;
+            }
 
-        	ABM.util.insertLayer(ABM.model.div, <span class="hljs-keyword">this</span>.leafletMap.getContainer(), ABM.world.pxWidth+<span class="hljs-string">"px"</span>, ABM.world.pxHeight+<span class="hljs-string">"px"</span>, <span class="hljs-number">15</span>);</pre></div></div>
+            ABM.util.insertLayer(<span class="hljs-keyword">this</span>.model.div, <span class="hljs-keyword">this</span>.leafletMap.getContainer(), <span class="hljs-keyword">this</span>.model.world.pxWidth+<span class="hljs-string">"px"</span>, <span class="hljs-keyword">this</span>.model.world.pxHeight+<span class="hljs-string">"px"</span>, <span class="hljs-number">15</span>);</pre></div></div>
             
         </li>
         
@@ -552,8 +519,8 @@ finished loading</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>L.CrossOriginTileLayer = L.TileLayer.extend({
-	_createTile: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
-		<span class="hljs-keyword">var</span> tile = L.TileLayer.prototype._createTile.apply(<span class="hljs-keyword">this</span>);</pre></div></div>
+    _createTile: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> </span>{
+        <span class="hljs-keyword">var</span> tile = L.TileLayer.prototype._createTile.apply(<span class="hljs-keyword">this</span>);</pre></div></div>
             
         </li>
         
@@ -569,13 +536,13 @@ lets us access their imagedata</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>		tile.crossOrigin = <span class="hljs-string">''</span>;
-		<span class="hljs-keyword">return</span> tile;
-	}
+            <div class="content"><div class='highlight'><pre>        tile.crossOrigin = <span class="hljs-string">''</span>;
+        <span class="hljs-keyword">return</span> tile;
+    }
 });
 
-L.crossOriginTileLayer = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(url, options)</span> {</span>
-	<span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> L.CrossOriginTileLayer(url, options);
+L.crossOriginTileLayer = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(url, options)</span> </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> L.CrossOriginTileLayer(url, options);
 }</pre></div></div>
             
         </li>

@@ -1,5 +1,5 @@
 if typeof window == 'undefined'
-  t = require "./shared.spec.coffee"
+  t = require "./shared.coffee"
   eval 'var ABM = t.ABM' # because CoffeeScript sets var to null
 
 t = ABM.test
@@ -20,7 +20,7 @@ describe "Set", ->
     it "Creates a subset", ->
       model = t.setupModel()
 
-      set = new ABM.BreedSet(ABM.Agent, "ducks", ABM.Agent::breed)
+      set = new ABM.BreedSet(model.Agent, "ducks", model.Agent::breed)
 
       expect(set.length).toBe 0
       expect(set.mainSet.name).toBe "agents"

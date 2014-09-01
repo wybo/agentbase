@@ -1,5 +1,5 @@
 if typeof window == 'undefined'
-  t = require "./shared.spec.coffee"
+  t = require "./shared.coffee"
   eval 'var ABM = t.ABM' # because CoffeeScript sets var to null
 
 t = ABM.test
@@ -28,7 +28,7 @@ describe "Set", ->
 
       model.agents.setDefault('size', 17)
  
-      expect(ABM.Agent::size).toBe 17
+      expect(model.Agent::size).toBe 17
 
     it "The default gets propagated", ->
       t.Model.prototype.preSetup = ->
@@ -36,10 +36,11 @@ describe "Set", ->
 
       model = t.setupModel()
 
-      expect(ABM.Agent::shape).toBe "square"
+      expect(model.Agent::shape).toBe "square"
       expect(model.agents[0].shape).toBe "square"
       expect(model.citizens[0].shape).toBe "square"
   
+  # All other Array methods are tested in superclass Array
   describe "flatten", ->
     it "Flattens the set, also with subsets", ->
       set = new ABM.Set 1, 3, 9
@@ -69,5 +70,3 @@ describe "Set", ->
 
       expect(set.flatten()).toEqual new ABM.Set patches[3], patches[1], patches[4],
         patches[2], patches[8], patches[9]
-
-  # All other array methods are tested in superclass Array

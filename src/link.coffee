@@ -36,20 +36,20 @@ class ABM.Link
   draw: (context) ->
     context.save()
     context.strokeStyle = u.colorString @color
-    context.lineWidth = ABM.patches.fromBits @thickness
+    context.lineWidth = @model.patches.fromBits @thickness
     context.beginPath()
 
-    if !ABM.patches.isTorus
+    if !@model.patches.isTorus
       context.moveTo @from.position.x, @from.position.y
       context.lineTo @to.position.x, @to.position.y
     else
       point = u.closestTorusPoint @from.position, @to.position,
-        ABM.patches.numX, ABM.patches.numY
+        @model.patches.numX, @model.patches.numY
       context.moveTo @from.position.x, @from.position.y
       context.lineTo point.x, point.y
       if point.x isnt @to.position.x or point.y isnt @to.position.y
         point = u.closestTorusPoint @to.position, @from.position,
-          ABM.patches.numX, ABM.patches.numY
+          @model.patches.numX, @model.patches.numY
         context.moveTo @to.position.x, @to.position.y
         context.lineTo point.x, point.y
 
@@ -60,7 +60,7 @@ class ABM.Link
     if @label?
       x0 = u.linearInterpolate @from.position.x, @to.position.x, .5
       y0 = u.linearInterpolate @from.position.y, @to.position.y, .5
-      [x, y] = ABM.patches.patchXYtoPixelXY x0, y0
+      [x, y] = @model.patches.patchXYtoPixelXY x0, y0
       u.contextDrawText context, @label, x + @labelOffset[0], y + @labelOffset[1], @labelColor
   
   # Remove this link from the agent set

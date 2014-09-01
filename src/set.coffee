@@ -5,21 +5,26 @@
 
 class ABM.Set extends ABM.Array
   # `from` is a static wrapper function converting an array into
-  # an `ABM.Set`
+  # an `@model.Set`
   #
   # It gains access to all the methods below. Ex:
   #
   #     array = [1, 2, 3]
-  #     ABM.Set.from(array)
+  #     @model.Set.from(array)
   #     randomNr = array.random()
-  @from: (array, setType = ABM.Set) ->
+  @from: (array, setType) ->
+    if @model?
+      setType ||= @model.Set
+    else
+      setType ||= ABM.Set
+
     array.__proto__ = setType.prototype ? setType.constructor.prototype
     array
   
-  # The static `ABM.Set.from` as a method.
+  # The static `@model.Set.from` as a method.
   # Used by methods creating new sets.
   from: (array, setType = @) ->
-    ABM.Set.from array, setType # setType = ABM.Set
+    @model.Set.from array, setType # setType = @model.Set
     # TODO see if can be removed
 
   # In the examples below, we'll use an array of primitive agent objects
@@ -27,7 +32,7 @@ class ABM.Set extends ABM.Array
   #
   #     AS = for i in [1..5] # long form comprehension
   #       {id:i, x:u.randomInt(10), y:u.randomInt(10)}
-  #     ABM.Set.from AS # Convert AS to Set in place
+  #     @model.Set.from AS # Convert AS to Set in place
   #        [{id: 1, x: 0, y: 1}, {id: 2, x: 8, y: 0}, {id: 3, x: 6, y: 4},
   #         {id: 4, x: 1, y: 3}, {id: 5, x: 1, y: 1}]
 
@@ -57,17 +62,17 @@ class ABM.Set extends ABM.Array
   # To show/hide an individual object, set its prototype: o.hidden = bool
   show: ->
     o.hidden = false for o in @
-    @draw(ABM.contexts[@name])
+    @draw(@model.contexts[@name])
 
   hide: ->
     o.hidden = true for o in @
-    @draw(ABM.contexts[@name])
+    @draw(@model.contexts[@name])
 
   # ### Location/radius
   
   # Return all agents within d distance from given object.
   inRadius: (point, options) -> # for any objects w/ x, y
-    inner = new ABM.Set
+    inner = new @model.Set
     for entity in @
       if entity.distance(point) <= options.radius
         inner.push entity
@@ -76,9 +81,9 @@ class ABM.Set extends ABM.Array
   # As above, but returns agents also limited to the angle `cone`
   # around a `heading` from point.
   inCone: (point, options) ->
-    inner = new ABM.Set
+    inner = new @model.Set
     for entity in @
       if u.inCone(options.heading, options.cone, options.radius,
-          point, entity.position, ABM.patches)
+          point, entity.position, @model.patches)
         inner.push entity
     return inner

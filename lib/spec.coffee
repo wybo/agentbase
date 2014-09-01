@@ -1,5 +1,5 @@
 if typeof window == 'undefined'
-  t = require "./shared.spec.coffee"
+  t = require "./shared.coffee"
   eval 'var ABM = t.ABM' # because CoffeeScript sets var to null
 
 t = ABM.test
@@ -298,7 +298,7 @@ describe "Agent", ->
       expect(linkedAgents[1]).toBe agents[3]
 
 if typeof window == 'undefined'
-  t = require "./shared.spec.coffee"
+  t = require "./shared.coffee"
   eval 'var ABM = t.ABM' # because CoffeeScript sets var to null
 
 t = ABM.test
@@ -382,7 +382,7 @@ describe "Agents", ->
       expect(model.agents[41].position.y).toBeCloseTo 3.32
 
 if typeof window == 'undefined'
-  t = require "./shared.spec.coffee"
+  t = require "./shared.coffee"
   eval 'var ABM = t.ABM' # because CoffeeScript sets var to null
 
 t = ABM.test
@@ -557,7 +557,7 @@ describe "Array", ->
         .toEqual new ABM.Array 5, 10, 8
 
 if typeof window == 'undefined'
-  t = require "./shared.spec.coffee"
+  t = require "./shared.coffee"
   eval 'var ABM = t.ABM' # because CoffeeScript sets var to null
 
 t = ABM.test
@@ -578,7 +578,7 @@ describe "Set", ->
     it "Creates a subset", ->
       model = t.setupModel()
 
-      set = new ABM.BreedSet(ABM.Agent, "ducks", ABM.Agent::breed)
+      set = new ABM.BreedSet(model.Agent, "ducks", model.Agent::breed)
 
       expect(set.length).toBe 0
       expect(set.mainSet.name).toBe "agents"
@@ -664,7 +664,7 @@ describe "Set", ->
 #      expect(ABM.Agent::size).toBe 17
 
 if typeof window == 'undefined'
-  t = require "./shared.spec.coffee"
+  t = require "./shared.coffee"
   eval 'var ABM = t.ABM' # because CoffeeScript sets var to null
 
 t = ABM.test
@@ -717,7 +717,7 @@ describe "Link", ->
       expect(link.otherEnd(link.to)).toBe link.from
 
 if typeof window == 'undefined'
-  t = require "./shared.spec.coffee"
+  t = require "./shared.coffee"
   eval 'var ABM = t.ABM' # because CoffeeScript sets var to null
 
 t = ABM.test
@@ -775,7 +775,7 @@ describe "Links", ->
       expect(nodes[5]).toBe agents[10]
 
 if typeof window == 'undefined'
-  t = require "./shared.spec.coffee"
+  t = require "./shared.coffee"
   eval 'var ABM = t.ABM' # because CoffeeScript sets var to null
 
 t = ABM.test
@@ -792,7 +792,7 @@ describe "Model", ->
 # TODO finish
 
 if typeof window == 'undefined'
-  t = require "./shared.spec.coffee"
+  t = require "./shared.coffee"
   eval 'var ABM = t.ABM' # because CoffeeScript sets var to null
 
 t = ABM.test
@@ -916,7 +916,7 @@ describe "Patch", ->
       expect(patch.neighborsCache['{"range":1}'].length).toBe 8
 
 if typeof window == 'undefined'
-  t = require "./shared.spec.coffee"
+  t = require "./shared.coffee"
   eval 'var ABM = t.ABM' # because CoffeeScript sets var to null
 
 t = ABM.test
@@ -954,7 +954,7 @@ describe "Patches", ->
       expect(coordinate).toEqual x: 9, y: -16
 
 if typeof window == 'undefined'
-  t = require "./shared.spec.coffee"
+  t = require "./shared.coffee"
   eval 'var ABM = t.ABM' # because CoffeeScript sets var to null
 
 t = ABM.test
@@ -983,7 +983,7 @@ describe "Set", ->
 
       model.agents.setDefault('size', 17)
  
-      expect(ABM.Agent::size).toBe 17
+      expect(model.Agent::size).toBe 17
 
     it "The default gets propagated", ->
       t.Model.prototype.preSetup = ->
@@ -991,10 +991,11 @@ describe "Set", ->
 
       model = t.setupModel()
 
-      expect(ABM.Agent::shape).toBe "square"
+      expect(model.Agent::shape).toBe "square"
       expect(model.agents[0].shape).toBe "square"
       expect(model.citizens[0].shape).toBe "square"
   
+  # All other Array methods are tested in superclass Array
   describe "flatten", ->
     it "Flattens the set, also with subsets", ->
       set = new ABM.Set 1, 3, 9
@@ -1025,10 +1026,8 @@ describe "Set", ->
       expect(set.flatten()).toEqual new ABM.Set patches[3], patches[1], patches[4],
         patches[2], patches[8], patches[9]
 
-  # All other array methods are tested in superclass Array
-
 if typeof window == 'undefined'
-  t = require "./shared.spec.coffee"
+  t = require "./shared.coffee"
   eval 'var ABM = t.ABM' # because CoffeeScript sets var to null
 
 t = ABM.test

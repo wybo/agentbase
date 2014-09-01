@@ -8,11 +8,11 @@
 # instances. It also provides, much like the **ABM.util** module, some
 # methods shared by all subclasses of Set.
 #
-# ABM contains three agentsets created by class Model:
+# A model contains three BreedSets:
 #
-# * `ABM.patches`: the model's "world" grid
-# * `ABM.agents`: the model's agents living on the patches
-# * `ABM.links`: the network links connecting agent pairs
+# * `patches`: the model's "world" grid
+# * `agents`: the model's agents living on the patches
+# * `links`: the network links connecting agent pairs
 #
 # See NetLogo [documentation](http://ccl.northwestern.edu/netlogo/docs/)
 # for explanation of the overall semantics of Agent Based Modeling
