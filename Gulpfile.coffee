@@ -9,7 +9,6 @@ lazypipe = require 'lazypipe'
 taskList = require 'gulp-task-listing'
 fs = require 'fs'
 path = require 'path'
-optparse = require 'optparse'
 
 readFilePaths = (sourceDir, firstFiles) ->
   fileNames = firstFiles.concat(fs.readdirSync(sourceDir)
