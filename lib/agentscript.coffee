@@ -2156,18 +2156,18 @@ class ABM.Model
     @refreshLinks = @refreshAgents = @refreshPatches = true
 
     # Give class prototypes a 'model' attribute that references this model.
-    @Patches = @extendWithModel(ABM.Patches)
-    @Patch = @extendWithModel(ABM.Patch)
-    @Agents = @extendWithModel(ABM.Agents)
-    @Agent = @extendWithModel(ABM.Agent)
-    @Links = @extendWithModel(ABM.Links)
-    @Link = @extendWithModel(ABM.Link)
-    @Set = @extendWithModel(ABM.Set)
+    @Patches = @extendWithModel(@world.Patches)
+    @Patch = @extendWithModel(@world.Patch)
+    @Agents = @extendWithModel(@world.Agents)
+    @Agent = @extendWithModel(@world.Agent)
+    @Links = @extendWithModel(@world.Links)
+    @Link = @extendWithModel(@world.Link)
+    @Set = @extendWithModel(@world.Set)
 
     # Initialize agentsets.
-    @patchBreeds 'patches'
-    @agentBreeds 'agents'
-    @linkBreeds 'links'
+    @patches = new @Patches @Patch, "patches"
+    @agents = new @Agents @Agent, "agents"
+    @links = new @Links @Link, "links"
 
     # Initialize model global resources
     @debugging = false
@@ -2185,11 +2185,14 @@ class ABM.Model
   # Initialize/reset world parameters.
   setWorld: (options) ->
     defaults = {
+      Agents: ABM.Agents, Agent: ABM.Agent, Links: ABM.Links, Link: ABM.Link,
+      Patches: ABM.Patches, Patch: ABM.Patch, Set: ABM.Set,
       patchSize: 13, mapSize: 32, isTorus: false, hasNeighbors: true,
       isHeadless: false}
 
     for own key, value of defaults
       options[key] ?= value
+    console.log options
 
     options.min ?= {x: -1 * options.mapSize / 2, y: -1 * options.mapSize / 2}
     options.max ?= {x: options.mapSize / 2, y: options.mapSize / 2}
@@ -2307,9 +2310,9 @@ class ABM.Model
     
     console.log "reset: patches, agents, links"
     
-    @patchBreeds 'patches'
-    @agentBreeds 'agents'
-    @linkBreeds 'links'
+    @patches = new @Patches @Patch, "patches"
+    @agents = new @Agents @Agent, "agents"
+    @links = new @Links @Link, "links"
 
     u.s.spriteSheets.length = 0 # possibly null out entries?
     console.log "reset: setup"
@@ -2375,7 +2378,7 @@ class ABM.Model
   
   createBreeds: (list, type, agentClass, breedSet) ->
     if u.isString list
-      list = list.split(" ")
+      list = list.split(" ") # TODO remove
 
     breeds = []
     breeds.classes = {}
@@ -2397,14 +2400,14 @@ class ABM.Model
 
     @[type].breeds = breeds
 
-  patchBreeds: (list, agentClass = @Patch, breedSet = @Patches) ->
-    @createBreeds list, 'patches', agentClass, breedSet
+  patchBreeds: (list) ->
+    @createBreeds list, 'patches', @Patch, @Patches
 
-  agentBreeds: (list, agentClass = @Agent, breedSet = @Agents) ->
-    @createBreeds list, 'agents', agentClass, breedSet
+  agentBreeds: (list) ->
+    @createBreeds list, 'agents', @Agent, @Agents
 
-  linkBreeds: (list, agentClass = @Link, breedSet = @Links) ->
-    @createBreeds list, 'links', agentClass, breedSet
+  linkBreeds: (list) ->
+    @createBreeds list, 'links', @Link, @Links
   
   # A simple debug aid which places short names in the global name space.
   # Note we avoid using the actual name, such as "patches" because this
