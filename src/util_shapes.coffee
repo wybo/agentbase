@@ -247,8 +247,9 @@ ABM.util.shapes = do ->
     if (img = shape.img)? # is an image, not a path function
       if img.height isnt 0
         fillSlot(slot, img)
-      else img.onload = ->
-        fillSlot(slot, img)
+      else
+        img.onload = ->
+          fillSlot(slot, img)
     else
       context.save()
       context.translate (context.nextX + 0.5) * (slotSize),
