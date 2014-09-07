@@ -36,12 +36,13 @@ do ->
 #
 # Extended with ABM.util.array.
 #
-ABM.util = u =
+# @mixin # for codo doc generator
+ABM.util =
   # ### Language extensions
   
   # Shortcut for throwing an error.  Good for debugging:
   #
-  #   error("wtf? foo=#{foo}") if fooProblem
+  #     error("wtf? foo=#{foo}") if fooProblem
   #
   error: (string) ->
     throw new Error string
@@ -297,9 +298,9 @@ ABM.util = u =
   #
   inCone: (heading, cone, radius, point1, point2, patches) ->
     if patches.isTorus
-      u.inConeTorus(heading, cone, radius, point1, point2, patches)
+      @inConeTorus(heading, cone, radius, point1, point2, patches)
     else
-      u.inConeEuclidian(heading, cone, radius, point1, point2)
+      @inConeEuclidian(heading, cone, radius, point1, point2)
 
   # inCone for euclidian distance.
   #
@@ -724,10 +725,20 @@ ABM.util = u =
   typedToJS: (typedArray) ->
     (i for i in typedArray)
 
+# Set the shortcut
+#
+u = ABM.util
+
+# Dummy class for codo doc generator.
+#
+# @include ABM.util
+class ABM.Util
+
 # Array utility functions. Are added to ABM.Array.
 #
 # TODO allow be used in user models through an ABM.noArray() function.
 #
+# @mixin # for codo doc generator
 ABM.util.array =
   # The static `ABM.Array.from` as a method.  Used by methods creating
   # new arrays.
@@ -852,12 +863,12 @@ ABM.util.array =
   # If "valueToo" then return a 2-array of the element and the value;
   # used for cases where f is costly function.
   # 
-  #   array = [{x: 1, y: 2}, {x: 3, y: 4}]
-  #   array.min()
-  #   # returns {x: 1, y: 2} 5
+  #     array = [{x: 1, y: 2}, {x: 3, y: 4}]
+  #     array.min()
+  #     # returns {x: 1, y: 2} 5
   #
-  #   [min, dist2] = array.min(((o) -> o.x * o.x + o.y * o.y), true)
-  #   # returns {x: 3, y: 4}
+  #     [min, dist2] = array.min(((o) -> o.x * o.x + o.y * o.y), true)
+  #     # returns {x: 3, y: 4}
   #
   min: (array, call = u.identityFunction, valueToo = false) ->
     u.error "min: empty array" if @empty array
@@ -934,12 +945,12 @@ ABM.util.array =
   #
   # In examples below, histogram returns [3, 1, 1, 0, 0, 1]
   #
-  #   array = [1, 3, 4, 1, 1, 10]
-  #   histogram = histogram array, 2, (i) -> i
+  #     array = [1, 3, 4, 1, 1, 10]
+  #     histogram = histogram array, 2, (i) -> i
   #     
-  #   hash = ({id:i} for i in array)
-  #   histogram = histogram hash, 2, (o) -> o.id
-  #   histogram = histogram hash, 2, "id"
+  #     hash = ({id:i} for i in array)
+  #     histogram = histogram hash, 2, (o) -> o.id
+  #     histogram = histogram hash, 2, "id"
   #
   histogram: (array, binSize = 1, call = u.identityFunction) ->
     if u.isString call
@@ -963,9 +974,9 @@ ABM.util.array =
   #
   # Clone first if you want to preserve the original array.
   #
-  #   array = [{i: 1}, {i: 5}, {i: -1}, {i: 2}, {i: 2}]
-  #   sortBy array, "i"
-  #   # array now is [{i: -1}, {i: 1}, {i: 2}, {i: 2}, {i:5}]
+  #     array = [{i: 1}, {i: 5}, {i: -1}, {i: 2}, {i: 2}]
+  #     sortBy array, "i"
+  #     # array now is [{i: -1}, {i: 1}, {i: 2}, {i: 2}, {i:5}]
   #
   sort: (array, call = null) ->
     if u.isString call # use item[f] if f is string
@@ -977,16 +988,16 @@ ABM.util.array =
   # "by reference" means litteraly same object, not copy. Returns
   # array. Clone first if you want to preserve the original array.
   #
-  #   ids = ({id: i} for i in [0..10])
-  #   array = (ids[i] for i in [1, 3, 4, 1, 1, 10])
-  #   # array is [{id: 1}, {id: 3}, {id: 4}, {id: 1}, {id: 1}, {id: 10}]
+  #     ids = ({id: i} for i in [0..10])
+  #     array = (ids[i] for i in [1, 3, 4, 1, 1, 10])
+  #     # array is [{id: 1}, {id: 3}, {id: 4}, {id: 1}, {id: 1}, {id: 10}]
   #
-  #   arrayB = clone array
-  #   sortBy arrayB, "id"
-  #   # arrayB is [{id:1}, {id: 1}, {id: 1}, {id: 3}, {id: 4}, {id: 10}]
+  #     arrayB = clone array
+  #     sortBy arrayB, "id"
+  #     # arrayB is [{id:1}, {id: 1}, {id: 1}, {id: 3}, {id: 4}, {id: 10}]
   #
-  #   uniq arrayB
-  #   # arrayB now is [{id:1}, {id: 3}, {id: 4}, {id: 10}]
+  #     uniq arrayB
+  #     # arrayB now is [{id:1}, {id: 3}, {id: 4}, {id: 10}]
   #
   uniq: (array) ->
     hash = {}
@@ -1004,9 +1015,9 @@ ABM.util.array =
   
   # Return a new array composed of the rows of a matrix.
   #
-  #   array = [[1, 2, 3], [4, 5, 6]]
-  #   array.flatten()
-  #   # returns [1, 2, 3, 4, 5, 6]
+  #     array = [[1, 2, 3], [4, 5, 6]]
+  #     array.flatten()
+  #     # returns [1, 2, 3, 4, 5, 6]
   #
   flatten: (array) ->
     array.reduce((arrayA, arrayB) ->
@@ -1052,10 +1063,10 @@ ABM.util.array =
   # Similar to NetLogo ask & with operators.
   # Use:
   #
-  #   array.with((object) -> object.x < 5)
-  #     .ask((object) -> object.x = object.x + 1)
-  #   myModel.agents.with((object) -> object.id < 100)
-  #     .ask(object.color = [255, 0, 0])
+  #     array.with((object) -> object.x < 5)
+  #       .ask((object) -> object.x = object.x + 1)
+  #     myModel.agents.with((object) -> object.id < 100)
+  #       .ask(object.color = [255, 0, 0])
   #
   ask: (array, call) ->
     for object in array
@@ -1071,8 +1082,8 @@ ABM.util.array =
   #
   # Return an array of a property of the BreedSet.
   #
-  #   array.getProperty("x") # [1, 8, 6, 2, 2]
-  #   array.getProperty("x") # [2, 8, 6, 3, 3]
+  #     array.getProperty("x") # [1, 8, 6, 2, 2]
+  #     array.getProperty("x") # [2, 8, 6, 3, 3]
   #
   getProperty: (array, property) ->
     newArray = new ABM.Array
@@ -1085,8 +1096,8 @@ ABM.util.array =
   # array, its values will be used, indexed by agentSet's index. This
   # is generally used via: getProperty, modify results, setProperty.
   #
-  #   set.setProperty "x", 2
-  #   # {id: 4, x: 2, y: 3}, {id: 5, x: 2, y: 1}
+  #     set.setProperty "x", 2
+  #     # {id: 4, x: 2, y: 3}, {id: 5, x: 2, y: 1}
   #
   setProperty: (array, property, value) ->
     for object in array
@@ -1096,8 +1107,8 @@ ABM.util.array =
  
   # Return an array without given object.
   #
-  #   as = AS.clone().other(AS[0])
-  #   as.getProperty "id" # [1, 2, 3, 4] 
+  #     as = AS.clone().other(AS[0])
+  #     as.getProperty "id" # [1, 2, 3, 4] 
   #
   other: (array, given) ->
     newArray = new ABM.Array
@@ -1130,14 +1141,11 @@ ABM.util.array.extender =
           }
         };""")
 
-# An array, with some helper methods added in from ABM.util.array.
+# Dummy class for codo doc generator.
 #
-# It is a subclass of `Array` and is the base class for `ABM.Set`.
-#
-# Note: subclassing `Array` can be dangerous but thus far we've
-# resolved all related problems. See Trevor Burnham's
-# [comments](http://goo.gl/Lca8g)
-#
+# @include ABM.util.array
+class ABM.Util.Array
+
 # Shim for `Array.indexOf` if not implemented.
 #
 # Use [es5-shim](https://github.com/kriskowal/es5-shim) if additional
@@ -1154,6 +1162,16 @@ Array::indexOf or= (given) ->
 #
 Array::_sort = Array::sort
 
+# An array, with some helper methods added in from ABM.util.array.
+#
+# It is a subclass of `Array` and is the base class for `ABM.Set`.
+#
+# Note: subclassing `Array` can be dangerous but thus far we've
+# resolved all related problems. See Trevor Burnham's
+# [comments](http://goo.gl/Lca8g)
+#
+# for codo doc generator
+# @include ABM.util.array
 class ABM.Array extends Array
   # ### Static members
   
@@ -1161,9 +1179,9 @@ class ABM.Array extends Array
   #
   # It gains access to all the methods below. Ex:
   #
-  #   array = [1, 2, 3]
-  #   ABM.Array.from(array)
-  #   randomNr = array.random()
+  #     array = [1, 2, 3]
+  #     ABM.Array.from(array)
+  #     randomNr = array.random()
   #
   @from: (array, arrayType = ABM.Array) ->
     array.__proto__ = arrayType.prototype ? arrayType.constructor.prototype
@@ -1191,19 +1209,20 @@ ABM.util.array.extender.extendArray('ABM.Array')
 # The shape is used in the following context with a color set
 # and a transform such that the shape should be drawn in a -.5 to .5 square
 #
-#   context.save()
-#   context.fillStyle = u.colorString color
-#   context.translate x, y; context.scale size, size;
-#   context.rotate heading if shape.rotate
-#   context.beginPath(); shape.draw(context); context.closePath()
-#   context.fill()
-#   context.restore()
+#     context.save()
+#     context.fillStyle = u.colorString color
+#     context.translate x, y; context.scale size, size;
+#     context.rotate heading if shape.rotate
+#     context.beginPath(); shape.draw(context); context.closePath()
+#     context.fill()
+#     context.restore()
 #
 # The list of current shapes, via `u.shapes.names()` below, is:
 #
-#   ["default", "triangle", "arrow", "bug", "pyramid", 
-#    "circle", "square", "pentagon", "ring", "cup", "person"]
+#     ["default", "triangle", "arrow", "bug", "pyramid", 
+#       "circle", "square", "pentagon", "ring", "cup", "person"]
 # 
+# @mixin # for codo doc generator
 ABM.util.shapes =
   # A simple polygon utility: c is the 2D context, and a is an array
   # of 2D points; c.closePath() and c.fill() will be called by the
@@ -1352,8 +1371,8 @@ ABM.util.shapes =
   #
   # Usage:
   #
-  #   u.shapes.add "test", true, (c) -> # bowtie/hourglass
-  #     u.shapes.polygon c, [[-.5, -.5], [.5, .5], [-.5, .5], [.5, -.5]]
+  #     u.shapes.add "test", true, (c) -> # bowtie/hourglass
+  #       u.shapes.polygon c, [[-.5, -.5], [.5, .5], [-.5, .5], [.5, -.5]]
   #
   # Note: an image that is not rotated automatically gets a shortcut. 
   #
@@ -1487,6 +1506,11 @@ ABM.util.shapes =
 
     slot
 
+# Dummy class for codo doc generator.
+#
+# @include ABM.util.shapes
+class ABM.Util.Shapes
+
 # A Set is an array, with some agent/patch/link specific helper methods.
 #
 # It is a subclass of `ABM.Array` and is the base class for `ABM.BreedSet`.
@@ -1497,9 +1521,9 @@ class ABM.Set extends ABM.Array
   #
   # It gains access to all the methods below. Ex:
   #
-  #  array = [1, 2, 3]
-  #  @model.Set.from(array)
-  #  randomNr = array.random()
+  #     array = [1, 2, 3]
+  #     @model.Set.from(array)
+  #     randomNr = array.random()
   #
   @from: (array, setType) ->
     if @model?
@@ -1536,7 +1560,7 @@ class ABM.Set extends ABM.Array
   # Return all agents that are not of the given breeds argument.
   # Breeds is a string of space separated names:
   #
-  #   @patches.exclude "roads houses"
+  #     @patches.exclude "roads houses"
   #
   exclude: (breeds) ->
     breeds = breeds.split(" ")
@@ -2328,8 +2352,8 @@ class ABM.Model
       (@div = document.getElementById(div)).setAttribute 'style',
         "position:relative; width:#{@world.pxWidth}px; height:#{@world.pxHeight}px"
 
-      # * Create 2D canvas contexts layered on top of each other.
-      # * Initialize a patch coordinate transform for each layer.
+      # Create 2D canvas contexts layered on top of each other.
+      # Initialize a patch coordinate transform for each layer.
       # 
       # Note: this transform is permanent .. there isn't the usual context.restore().
       # To use the original canvas 2D transform temporarily:
@@ -2570,7 +2594,7 @@ class ABM.Model
   #
   # Usage:
   #
-  #   @setSpotliight breed.sample()
+  #     @setSpotlight breed.sample()
   #
   # To draw one of a random breed. Remove spotlight by passing `null`.
   #
@@ -2592,21 +2616,21 @@ class ABM.Model
   
   # Three breed commands:
   #
-  #  @patchBreeds ["streets", "buildings"]
-  #  @agentBreeds ["embers", "fires"]
-  #  @linkBreeds ["spokes", "rims"]
+  #     @patchBreeds ["streets", "buildings"]
+  #     @agentBreeds ["embers", "fires"]
+  #     @linkBreeds ["spokes", "rims"]
   #
   # will create 6 BreedSets: 
   #
-  #  @streets and @buildings
-  #  @embers and @fires
-  #  @spokes and @rims 
+  #     @streets and @buildings
+  #     @embers and @fires
+  #     @spokes and @rims 
   #
   # These BreedSets' `create` methods create subclasses of Agent/Link.
   # Use of <breed>.setDefault methods work as for agents/links,
   # creating default values for the breed set:
   #
-  #  @embers.setDefault "color", [255, 0, 0]
+  #     @embers.setDefault "color", [255, 0, 0]
   #
   # ..will set the default color for just the embers.
   #

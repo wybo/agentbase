@@ -1,0 +1,46 @@
+Coding-style is a subjective matter but it helps readibility a lot.
+
+Consistency within projects is most important, hence the following
+guidelines for code that you'd like to see merged into AgentBase (you
+are free to do whatever you want in your ABM models ;-)
+
+Names:
+
+- Use descriptive names; full words instead of single
+  letters or things that are ambiguous.
+
+  So `patch' instead of `p' or `pch', `toString' instead' of `toStr'.
+
+- CamelCase for classnames, lowerCamelCase for variable names.
+
+- Put classes each in their own file.
+
+Spacing:
+
+- Put space between your operators.
+
+  So someVariable = 3 * 5 + (another - 11) / 7
+  
+  NOT someVariable=3*5+(another-11)/7 (we have minification for that)
+
+- Space code out over multiple lines as this furthers legibility (such as 
+  if, then else, etc). Don't use `then' or any ';'s.
+
+  So
+
+  alpha = 5
+  betha = 7
+  if alpha == 5
+    betha = 8
+
+  NOT alpha = 5; betha = 7; if (alpha == 5) then betha = 8
+
+Generally:
+
+- Don't use any javascript in code that you'd like to see merged, except
+  in evals in rare cases.
+
+- CPU & memory optimizations are nice, but if they make things too
+  convoluted (especially for modelers) we will probably not want them.
+
+Finally; enjoy beautiful code! :)

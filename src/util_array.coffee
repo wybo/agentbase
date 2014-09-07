@@ -2,6 +2,7 @@
 #
 # TODO allow be used in user models through an ABM.noArray() function.
 #
+# @mixin # for codo doc generator
 ABM.util.array =
   # The static `ABM.Array.from` as a method.  Used by methods creating
   # new arrays.
@@ -126,12 +127,12 @@ ABM.util.array =
   # If "valueToo" then return a 2-array of the element and the value;
   # used for cases where f is costly function.
   # 
-  #   array = [{x: 1, y: 2}, {x: 3, y: 4}]
-  #   array.min()
-  #   # returns {x: 1, y: 2} 5
+  #     array = [{x: 1, y: 2}, {x: 3, y: 4}]
+  #     array.min()
+  #     # returns {x: 1, y: 2} 5
   #
-  #   [min, dist2] = array.min(((o) -> o.x * o.x + o.y * o.y), true)
-  #   # returns {x: 3, y: 4}
+  #     [min, dist2] = array.min(((o) -> o.x * o.x + o.y * o.y), true)
+  #     # returns {x: 3, y: 4}
   #
   min: (array, call = u.identityFunction, valueToo = false) ->
     u.error "min: empty array" if @empty array
@@ -208,12 +209,12 @@ ABM.util.array =
   #
   # In examples below, histogram returns [3, 1, 1, 0, 0, 1]
   #
-  #   array = [1, 3, 4, 1, 1, 10]
-  #   histogram = histogram array, 2, (i) -> i
+  #     array = [1, 3, 4, 1, 1, 10]
+  #     histogram = histogram array, 2, (i) -> i
   #     
-  #   hash = ({id:i} for i in array)
-  #   histogram = histogram hash, 2, (o) -> o.id
-  #   histogram = histogram hash, 2, "id"
+  #     hash = ({id:i} for i in array)
+  #     histogram = histogram hash, 2, (o) -> o.id
+  #     histogram = histogram hash, 2, "id"
   #
   histogram: (array, binSize = 1, call = u.identityFunction) ->
     if u.isString call
@@ -237,9 +238,9 @@ ABM.util.array =
   #
   # Clone first if you want to preserve the original array.
   #
-  #   array = [{i: 1}, {i: 5}, {i: -1}, {i: 2}, {i: 2}]
-  #   sortBy array, "i"
-  #   # array now is [{i: -1}, {i: 1}, {i: 2}, {i: 2}, {i:5}]
+  #     array = [{i: 1}, {i: 5}, {i: -1}, {i: 2}, {i: 2}]
+  #     sortBy array, "i"
+  #     # array now is [{i: -1}, {i: 1}, {i: 2}, {i: 2}, {i:5}]
   #
   sort: (array, call = null) ->
     if u.isString call # use item[f] if f is string
@@ -251,16 +252,16 @@ ABM.util.array =
   # "by reference" means litteraly same object, not copy. Returns
   # array. Clone first if you want to preserve the original array.
   #
-  #   ids = ({id: i} for i in [0..10])
-  #   array = (ids[i] for i in [1, 3, 4, 1, 1, 10])
-  #   # array is [{id: 1}, {id: 3}, {id: 4}, {id: 1}, {id: 1}, {id: 10}]
+  #     ids = ({id: i} for i in [0..10])
+  #     array = (ids[i] for i in [1, 3, 4, 1, 1, 10])
+  #     # array is [{id: 1}, {id: 3}, {id: 4}, {id: 1}, {id: 1}, {id: 10}]
   #
-  #   arrayB = clone array
-  #   sortBy arrayB, "id"
-  #   # arrayB is [{id:1}, {id: 1}, {id: 1}, {id: 3}, {id: 4}, {id: 10}]
+  #     arrayB = clone array
+  #     sortBy arrayB, "id"
+  #     # arrayB is [{id:1}, {id: 1}, {id: 1}, {id: 3}, {id: 4}, {id: 10}]
   #
-  #   uniq arrayB
-  #   # arrayB now is [{id:1}, {id: 3}, {id: 4}, {id: 10}]
+  #     uniq arrayB
+  #     # arrayB now is [{id:1}, {id: 3}, {id: 4}, {id: 10}]
   #
   uniq: (array) ->
     hash = {}
@@ -278,9 +279,9 @@ ABM.util.array =
   
   # Return a new array composed of the rows of a matrix.
   #
-  #   array = [[1, 2, 3], [4, 5, 6]]
-  #   array.flatten()
-  #   # returns [1, 2, 3, 4, 5, 6]
+  #     array = [[1, 2, 3], [4, 5, 6]]
+  #     array.flatten()
+  #     # returns [1, 2, 3, 4, 5, 6]
   #
   flatten: (array) ->
     array.reduce((arrayA, arrayB) ->
@@ -326,10 +327,10 @@ ABM.util.array =
   # Similar to NetLogo ask & with operators.
   # Use:
   #
-  #   array.with((object) -> object.x < 5)
-  #     .ask((object) -> object.x = object.x + 1)
-  #   myModel.agents.with((object) -> object.id < 100)
-  #     .ask(object.color = [255, 0, 0])
+  #     array.with((object) -> object.x < 5)
+  #       .ask((object) -> object.x = object.x + 1)
+  #     myModel.agents.with((object) -> object.id < 100)
+  #       .ask(object.color = [255, 0, 0])
   #
   ask: (array, call) ->
     for object in array
@@ -345,8 +346,8 @@ ABM.util.array =
   #
   # Return an array of a property of the BreedSet.
   #
-  #   array.getProperty("x") # [1, 8, 6, 2, 2]
-  #   array.getProperty("x") # [2, 8, 6, 3, 3]
+  #     array.getProperty("x") # [1, 8, 6, 2, 2]
+  #     array.getProperty("x") # [2, 8, 6, 3, 3]
   #
   getProperty: (array, property) ->
     newArray = new ABM.Array
@@ -359,8 +360,8 @@ ABM.util.array =
   # array, its values will be used, indexed by agentSet's index. This
   # is generally used via: getProperty, modify results, setProperty.
   #
-  #   set.setProperty "x", 2
-  #   # {id: 4, x: 2, y: 3}, {id: 5, x: 2, y: 1}
+  #     set.setProperty "x", 2
+  #     # {id: 4, x: 2, y: 3}, {id: 5, x: 2, y: 1}
   #
   setProperty: (array, property, value) ->
     for object in array
@@ -370,8 +371,8 @@ ABM.util.array =
  
   # Return an array without given object.
   #
-  #   as = AS.clone().other(AS[0])
-  #   as.getProperty "id" # [1, 2, 3, 4] 
+  #     as = AS.clone().other(AS[0])
+  #     as.getProperty "id" # [1, 2, 3, 4] 
   #
   other: (array, given) ->
     newArray = new ABM.Array
@@ -403,3 +404,8 @@ ABM.util.array.extender =
             return _ret;
           }
         };""")
+
+# Dummy class for codo doc generator.
+#
+# @include ABM.util.array
+class ABM.Util.Array

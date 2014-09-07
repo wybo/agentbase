@@ -100,7 +100,7 @@
         # Print number of agents with each shape
         for shape in u.shapes.names()
           num = @agents.with((agent) -> agent.shape == shape).length
-          log "#{num} #{s}"
+          log "#{num} #{shape}"
 
       # Update, or run our model for one step, via the second built in
       # method, `step`.

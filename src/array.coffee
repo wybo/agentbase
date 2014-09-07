@@ -1,11 +1,3 @@
-# An array, with some helper methods added in from ABM.util.array.
-#
-# It is a subclass of `Array` and is the base class for `ABM.Set`.
-#
-# Note: subclassing `Array` can be dangerous but thus far we've
-# resolved all related problems. See Trevor Burnham's
-# [comments](http://goo.gl/Lca8g)
-#
 # Shim for `Array.indexOf` if not implemented.
 #
 # Use [es5-shim](https://github.com/kriskowal/es5-shim) if additional
@@ -22,6 +14,16 @@ Array::indexOf or= (given) ->
 #
 Array::_sort = Array::sort
 
+# An array, with some helper methods added in from ABM.util.array.
+#
+# It is a subclass of `Array` and is the base class for `ABM.Set`.
+#
+# Note: subclassing `Array` can be dangerous but thus far we've
+# resolved all related problems. See Trevor Burnham's
+# [comments](http://goo.gl/Lca8g)
+#
+# for codo doc generator
+# @include ABM.util.array
 class ABM.Array extends Array
   # ### Static members
   
@@ -29,9 +31,9 @@ class ABM.Array extends Array
   #
   # It gains access to all the methods below. Ex:
   #
-  #   array = [1, 2, 3]
-  #   ABM.Array.from(array)
-  #   randomNr = array.random()
+  #     array = [1, 2, 3]
+  #     ABM.Array.from(array)
+  #     randomNr = array.random()
   #
   @from: (array, arrayType = ABM.Array) ->
     array.__proto__ = arrayType.prototype ? arrayType.constructor.prototype

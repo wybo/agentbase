@@ -36,12 +36,13 @@ do ->
 #
 # Extended with ABM.util.array.
 #
-ABM.util = u =
+# @mixin # for codo doc generator
+ABM.util =
   # ### Language extensions
   
   # Shortcut for throwing an error.  Good for debugging:
   #
-  #   error("wtf? foo=#{foo}") if fooProblem
+  #     error("wtf? foo=#{foo}") if fooProblem
   #
   error: (string) ->
     throw new Error string
@@ -297,9 +298,9 @@ ABM.util = u =
   #
   inCone: (heading, cone, radius, point1, point2, patches) ->
     if patches.isTorus
-      u.inConeTorus(heading, cone, radius, point1, point2, patches)
+      @inConeTorus(heading, cone, radius, point1, point2, patches)
     else
-      u.inConeEuclidian(heading, cone, radius, point1, point2)
+      @inConeEuclidian(heading, cone, radius, point1, point2)
 
   # inCone for euclidian distance.
   #
@@ -723,3 +724,12 @@ ABM.util = u =
   #
   typedToJS: (typedArray) ->
     (i for i in typedArray)
+
+# Set the shortcut
+#
+u = ABM.util
+
+# Dummy class for codo doc generator.
+#
+# @include ABM.util
+class ABM.Util

@@ -36,8 +36,8 @@ class ABM.Model
       (@div = document.getElementById(div)).setAttribute 'style',
         "position:relative; width:#{@world.pxWidth}px; height:#{@world.pxHeight}px"
 
-      # * Create 2D canvas contexts layered on top of each other.
-      # * Initialize a patch coordinate transform for each layer.
+      # Create 2D canvas contexts layered on top of each other.
+      # Initialize a patch coordinate transform for each layer.
       # 
       # Note: this transform is permanent .. there isn't the usual context.restore().
       # To use the original canvas 2D transform temporarily:
@@ -278,7 +278,7 @@ class ABM.Model
   #
   # Usage:
   #
-  #   @setSpotliight breed.sample()
+  #     @setSpotlight breed.sample()
   #
   # To draw one of a random breed. Remove spotlight by passing `null`.
   #
@@ -300,21 +300,21 @@ class ABM.Model
   
   # Three breed commands:
   #
-  #  @patchBreeds ["streets", "buildings"]
-  #  @agentBreeds ["embers", "fires"]
-  #  @linkBreeds ["spokes", "rims"]
+  #     @patchBreeds ["streets", "buildings"]
+  #     @agentBreeds ["embers", "fires"]
+  #     @linkBreeds ["spokes", "rims"]
   #
   # will create 6 BreedSets: 
   #
-  #  @streets and @buildings
-  #  @embers and @fires
-  #  @spokes and @rims 
+  #     @streets and @buildings
+  #     @embers and @fires
+  #     @spokes and @rims 
   #
   # These BreedSets' `create` methods create subclasses of Agent/Link.
   # Use of <breed>.setDefault methods work as for agents/links,
   # creating default values for the breed set:
   #
-  #  @embers.setDefault "color", [255, 0, 0]
+  #     @embers.setDefault "color", [255, 0, 0]
   #
   # ..will set the default color for just the embers.
   #

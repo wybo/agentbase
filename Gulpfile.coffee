@@ -54,7 +54,7 @@ gulp.task 'build', ['build-agentbase', 'build-specs']
 
 # Watch tasks
 # TODO make build as well
-gulp.task 'watch', ->
+gulp.task 'watch', ['build'], ->
   gulp.watch 'src/*.coffee',
     ['build-agentbase']
 
@@ -63,7 +63,7 @@ gulp.task 'watch', ->
 
 # Documentation tasks
 gulp.task 'docs', ->
-  return gulp.src ["src/*coffee", "models/template.coffee"]
+  return gulp.src ["src/*coffee"]
   .pipe docco()
   .pipe gulp.dest('docs/')
 

@@ -7,19 +7,20 @@
 # The shape is used in the following context with a color set
 # and a transform such that the shape should be drawn in a -.5 to .5 square
 #
-#   context.save()
-#   context.fillStyle = u.colorString color
-#   context.translate x, y; context.scale size, size;
-#   context.rotate heading if shape.rotate
-#   context.beginPath(); shape.draw(context); context.closePath()
-#   context.fill()
-#   context.restore()
+#     context.save()
+#     context.fillStyle = u.colorString color
+#     context.translate x, y; context.scale size, size;
+#     context.rotate heading if shape.rotate
+#     context.beginPath(); shape.draw(context); context.closePath()
+#     context.fill()
+#     context.restore()
 #
 # The list of current shapes, via `u.shapes.names()` below, is:
 #
-#   ["default", "triangle", "arrow", "bug", "pyramid", 
-#    "circle", "square", "pentagon", "ring", "cup", "person"]
+#     ["default", "triangle", "arrow", "bug", "pyramid", 
+#       "circle", "square", "pentagon", "ring", "cup", "person"]
 # 
+# @mixin # for codo doc generator
 ABM.util.shapes =
   # A simple polygon utility: c is the 2D context, and a is an array
   # of 2D points; c.closePath() and c.fill() will be called by the
@@ -168,8 +169,8 @@ ABM.util.shapes =
   #
   # Usage:
   #
-  #   u.shapes.add "test", true, (c) -> # bowtie/hourglass
-  #     u.shapes.polygon c, [[-.5, -.5], [.5, .5], [-.5, .5], [.5, -.5]]
+  #     u.shapes.add "test", true, (c) -> # bowtie/hourglass
+  #       u.shapes.polygon c, [[-.5, -.5], [.5, .5], [-.5, .5], [.5, -.5]]
   #
   # Note: an image that is not rotated automatically gets a shortcut. 
   #
@@ -302,3 +303,8 @@ ABM.util.shapes =
     context.nextX++
 
     slot
+
+# Dummy class for codo doc generator.
+#
+# @include ABM.util.shapes
+class ABM.Util.Shapes

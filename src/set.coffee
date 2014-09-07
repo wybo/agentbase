@@ -8,9 +8,9 @@ class ABM.Set extends ABM.Array
   #
   # It gains access to all the methods below. Ex:
   #
-  #  array = [1, 2, 3]
-  #  @model.Set.from(array)
-  #  randomNr = array.random()
+  #     array = [1, 2, 3]
+  #     @model.Set.from(array)
+  #     randomNr = array.random()
   #
   @from: (array, setType) ->
     if @model?
@@ -47,7 +47,7 @@ class ABM.Set extends ABM.Array
   # Return all agents that are not of the given breeds argument.
   # Breeds is a string of space separated names:
   #
-  #   @patches.exclude "roads houses"
+  #     @patches.exclude "roads houses"
   #
   exclude: (breeds) ->
     breeds = breeds.split(" ")
