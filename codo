@@ -1,0 +1,3 @@
+#!/bin/bash
+
+./node_modules/codo/bin/codo src

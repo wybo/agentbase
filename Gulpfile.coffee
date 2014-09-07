@@ -37,7 +37,7 @@ coffeeTasks = lazypipe()
 #  .pipe sourcemaps.write, '.'
   .pipe jsTasks
 
-gulp.task 'all', ['build', 'docs']
+gulp.task 'all', ['build']
 
 # Build tasks:
 gulp.task 'build-agentbase', ->
@@ -61,7 +61,6 @@ gulp.task 'watch', ['build'], ->
   gulp.watch 'spec/*.coffee',
     ['build-specs']
 
-# Documentation tasks
 gulp.task 'docs', ->
   return gulp.src ["src/*coffee"]
   .pipe docco()

@@ -68,7 +68,7 @@ Our tasks are all run via npm run <task>` and they are:
 
     watch         # Watch for source file updates, invoke build
     build         # compile and minify src/ and extras/ to lib/
-    docs          # use docco on sources to create docs/
+    doc           # use codo on sources to create docs/
     all           # Compile coffee, minify js, create docs
 
 Behind the scenes npm invokes [gulp](http://gulpjs.com/), whose tasks
@@ -98,7 +98,7 @@ See [github](https://guides.github.com/activities/contributing-to-open-source/) 
     README.md           This file
     STYLEGUIDE.txt      Suggestions for coding-style 
     package.json        NPM Package file, see npm install below
-    docs/               Docco documentation
+    doc/                Documentation
     lib/                All .js/min.js files
     models/             Sample models
     src/                Component .coffee files for agentscript.coffee

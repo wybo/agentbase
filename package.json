@@ -26,7 +26,7 @@
   "scripts": {
     "all": "gulp all",
     "build": "gulp build",
-    "docs": "gulp docs",
+    "doc": "codo src",
     "watch": "gulp watch"
   },
   "devDependencies": {
@@ -34,7 +34,6 @@
     "gulp-coffee": "^2.0.1",
     "gulp-sourcemaps": "^1.1.3",
     "gulp-concat": "^2.3.0",
-    "gulp-docco": "0.0.4",
     "gulp-rename": "^1.2.0",
     "gulp-task-listing": "^0.3.0",
     "gulp-uglify": "^0.3.1",
