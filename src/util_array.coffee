@@ -121,7 +121,7 @@ ABM.util.array =
   shuffle: (array) ->
     array.sort -> 0.5 - Math.random()
 
-  # Return object when lambda(object) min/max in array. Error if array empty.
+  # Return object when call(object) min/max in array. Error if array empty.
   # If f is a string, return element with max value of that property.
   # If "valueToo" then return a 2-array of the element and the value;
   # used for cases where f is costly function.
@@ -133,15 +133,15 @@ ABM.util.array =
   #   [min, dist2] = array.min(((o) -> o.x * o.x + o.y * o.y), true)
   #   # returns {x: 3, y: 4}
   #
-  min: (array, lambda = u.identityFunction, valueToo = false) ->
+  min: (array, call = u.identityFunction, valueToo = false) ->
     u.error "min: empty array" if @empty array
-    if u.isString lambda
-      lambda = u.propertyFunction lambda
+    if u.isString call
+      call = u.propertyFunction call
     minValue = Infinity
     minObject = null
 
     for object in array
-      value = lambda(object)
+      value = call(object)
       if value < minValue
         minValue = value
         minObject = object
@@ -153,15 +153,15 @@ ABM.util.array =
 
   # See min.
   #
-  max: (array, lambda = u.identityFunction, valueToo = false) ->
+  max: (array, call = u.identityFunction, valueToo = false) ->
     u.error "max: empty array" if @empty array
-    if u.isString lambda
-      lambda = u.propertyFunction lambda
+    if u.isString call
+      call = u.propertyFunction call
     maxValue = -Infinity
     maxObject = null
 
     for object in array
-      value = lambda(object)
+      value = call(object)
       if value > maxValue
         maxValue = value
         maxObject = object
@@ -173,20 +173,20 @@ ABM.util.array =
 
   # Sums up the contents of the array.
   #
-  sum: (array, lambda = u.identityFunction) ->
-    if u.isString lambda
-      lambda = u.propertyFunction lambda
+  sum: (array, call = u.identityFunction) ->
+    if u.isString call
+      call = u.propertyFunction call
 
     value = 0
     for object in array
-      value += lambda(object)
+      value += call(object)
 
     value
 
   # Calculates the average of the array.
   #
-  average: (array, lambda = u.identityFunction) ->
-    @sum(array, lambda) / array.length
+  average: (array, call = u.identityFunction) ->
+    @sum(array, call) / array.length
 
   # Returns the median for the array.
   #
@@ -203,7 +203,7 @@ ABM.util.array =
     (array[Math.floor(middle)] + array[Math.ceil(middle)]) / 2
 
   # Return histogram of o when f(o) is a numeric value in array.
-  # Histogram interval is bin. Error if array empty. If lambda 
+  # Histogram interval is bin. Error if array empty. If call 
   # is a string, return histogram of that property.
   #
   # In examples below, histogram returns [3, 1, 1, 0, 0, 1]
@@ -215,13 +215,13 @@ ABM.util.array =
   #   histogram = histogram hash, 2, (o) -> o.id
   #   histogram = histogram hash, 2, "id"
   #
-  histogram: (array, binSize = 1, lambda = u.identityFunction) ->
-    if u.isString lambda
-      lambda = u.propertyFunction lambda
+  histogram: (array, binSize = 1, call = u.identityFunction) ->
+    if u.isString call
+      call = u.propertyFunction call
     histogram = []
 
     for object in array
-      integer = Math.floor lambda(object) / binSize
+      integer = Math.floor call(object) / binSize
       histogram[integer] or= 0
       histogram[integer] += 1
 
@@ -241,11 +241,11 @@ ABM.util.array =
   #   sortBy array, "i"
   #   # array now is [{i: -1}, {i: 1}, {i: 2}, {i: 2}, {i:5}]
   #
-  sort: (array, lambda = null) ->
-    if u.isString lambda # use item[f] if f is string
-      lambda = u.propertySortFunction lambda
+  sort: (array, call = null) ->
+    if u.isString call # use item[f] if f is string
+      call = u.propertySortFunction call
 
-    array._sort lambda
+    array._sort call
 
   # Mutator. Removes dups, by reference, in place from array. Note
   # "by reference" means litteraly same object, not copy. Returns

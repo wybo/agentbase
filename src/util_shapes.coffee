@@ -27,11 +27,11 @@ ABM.util.shapes =
   # used in adding a new shape above.
   #
   polygon: (context, array) ->
-    for p, i in array
+    for position, i in array
       if i is 0
-        context.moveTo p[0], p[1]
+        context.moveTo position[0], position[1]
       else
-        context.lineTo p[0], p[1]
+        context.lineTo position[0], position[1]
 
     null
 
@@ -86,7 +86,7 @@ ABM.util.shapes =
   arrow:
     rotate: true
     draw: (context) ->
-      u.shapes.polygon context, [[.5,0], [0, .5], [0, .2], [-.5, .2], [-.5, -.2], [0, -.2], [0, -.5]]
+      u.shapes.polygon context, [[.5, 0], [0, .5], [0, .2], [-.5, .2], [-.5, -.2], [0, -.2], [0, -.5]]
 
   bug:
     rotate: true

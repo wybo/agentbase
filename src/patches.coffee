@@ -209,30 +209,6 @@ class ABM.Patches extends ABM.BreedSet
   patchXYtoPixelXY: (x, y) ->
     [(x - @minCoordinate.x) * @patchSize, (@maxCoordinate.y - y) * @patchSize]
     
-  # Draws, or "imports" an image URL into the patches as their color property.
-  # The drawing is scaled to the number of x, y patches, thus one pixel
-  # per patch. The colors are then transferred to the patches.
-  # Map is a color map, only for gray for now.
-  #
-  importColors: (imageSource, call, map) ->
-    u.importImage imageSource, (image) => # fat arrow, this context
-      @installColors(image, map)
-      call() if call?
-
-  # Direct install image into the patch colors, not async.
-  #
-  installColors: (image, map) ->
-    u.setIdentity @pixelsContext
-    @pixelsContext.drawImage image, 0, 0, @width, @height # scale if needed
-    data = @pixelsContext.getImageData(0, 0, @width, @height).data
-
-    for patch in @
-      i = @pixelByteIndex patch
-      # promote initial default
-      patch.color = if map? then map[i] else [data[i++], data[i++], data[i]]
-
-    @pixelsContext.restore() # restore patch transform
-
   # Draw the patches via pixel manipulation rather than 2D drawRect.
   # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq)
   #
@@ -240,9 +216,16 @@ class ABM.Patches extends ABM.BreedSet
     # u.setIdentity context & context.restore() only needed if patchSize 
     # not 1, pixel ops don't use transform but @patchSize > 1 uses
     # a drawimage
-    u.setIdentity context if @patchSize isnt 1
-    if @pixelsData32? then @drawScaledPixels32 context else @drawScaledPixels8 context
-    context.restore() if @patchSize isnt 1
+    if @patchSize isnt 1
+      u.setIdentity context
+
+    if @pixelsData32?
+      @drawScaledPixels32 context
+    else
+      @drawScaledPixels8 context
+
+    if @patchSize isnt 1
+      context.restore()
 
   # The 8-bit version for drawScaledPixels. Used for systems w/o typed
   # arrays.
@@ -251,32 +234,52 @@ class ABM.Patches extends ABM.BreedSet
     data = @pixelsData
     for patch in @
       i = @pixelByteIndex patch
-      c = patch.color
-      if c.length is 4
-        a = c[3]
+      color = patch.color
+
+      if color.length is 4
+        transparency = color[3]
       else
-        a = 255
-      data[i + j] = c[j] for j in [0..2]
-      data[i + 3] = a
+        transparency = 255
+
+      for j in [0..2]
+        data[i + j] = color[j]
+
+      data[i + 3] = transparency
+
     @pixelsContext.putImageData @pixelsImageData, 0, 0
-    return if @patchSize is 1
-    context.drawImage @pixelsContext.canvas, 0, 0, context.canvas.width, context.canvas.height
+
+    if @patchSize is 1
+      return
+
+    context.drawImage @pixelsContext.canvas, 0, 0, context.canvas.width,
+      context.canvas.height
 
   # The 32-bit version of drawScaledPixels, with both little and big
   # endian hardware.
   #
   drawScaledPixels32: (context) ->
     data = @pixelsData32
-    for p in @
-      i = @pixelWordIndex p
-      c = patch.color
-      a = if c.length is 4 then c[3] else 255
+    for patch in @
+      i = @pixelWordIndex patch
+      color = patch.color
+
+      if color.length is 4
+        transparency = color[3]
+      else
+        transparency = 255
+
       if @pixelsAreLittleEndian
-      then data[i] = (a << 24) | (c[2] << 16) | (c[1] << 8) | c[0]
-      else data[i] = (c[0] << 24) | (c[1] << 16) | (c[2] << 8) | a
+        data[i] = (transparency << 24) | (color[2] << 16) | (color[1] << 8) | color[0]
+      else
+        data[i] = (color[0] << 24) | (color[1] << 16) | (color[2] << 8) | transparency
+
     @pixelsContext.putImageData @pixelsImageData, 0, 0
-    return if @patchSize is 1
-    context.drawImage @pixelsContext.canvas, 0, 0, context.canvas.width, context.canvas.height
+
+    if @patchSize is 1
+      return
+
+    context.drawImage @pixelsContext.canvas, 0, 0, context.canvas.width,
+      context.canvas.height
 
   # Diffuse the value of patch variable `patch.variable` by
   # distributing `rate` percent of each patch's value of `variable` to

@@ -847,7 +847,7 @@ ABM.util.array =
   shuffle: (array) ->
     array.sort -> 0.5 - Math.random()
 
-  # Return object when lambda(object) min/max in array. Error if array empty.
+  # Return object when call(object) min/max in array. Error if array empty.
   # If f is a string, return element with max value of that property.
   # If "valueToo" then return a 2-array of the element and the value;
   # used for cases where f is costly function.
@@ -859,15 +859,15 @@ ABM.util.array =
   #   [min, dist2] = array.min(((o) -> o.x * o.x + o.y * o.y), true)
   #   # returns {x: 3, y: 4}
   #
-  min: (array, lambda = u.identityFunction, valueToo = false) ->
+  min: (array, call = u.identityFunction, valueToo = false) ->
     u.error "min: empty array" if @empty array
-    if u.isString lambda
-      lambda = u.propertyFunction lambda
+    if u.isString call
+      call = u.propertyFunction call
     minValue = Infinity
     minObject = null
 
     for object in array
-      value = lambda(object)
+      value = call(object)
       if value < minValue
         minValue = value
         minObject = object
@@ -879,15 +879,15 @@ ABM.util.array =
 
   # See min.
   #
-  max: (array, lambda = u.identityFunction, valueToo = false) ->
+  max: (array, call = u.identityFunction, valueToo = false) ->
     u.error "max: empty array" if @empty array
-    if u.isString lambda
-      lambda = u.propertyFunction lambda
+    if u.isString call
+      call = u.propertyFunction call
     maxValue = -Infinity
     maxObject = null
 
     for object in array
-      value = lambda(object)
+      value = call(object)
       if value > maxValue
         maxValue = value
         maxObject = object
@@ -899,20 +899,20 @@ ABM.util.array =
 
   # Sums up the contents of the array.
   #
-  sum: (array, lambda = u.identityFunction) ->
-    if u.isString lambda
-      lambda = u.propertyFunction lambda
+  sum: (array, call = u.identityFunction) ->
+    if u.isString call
+      call = u.propertyFunction call
 
     value = 0
     for object in array
-      value += lambda(object)
+      value += call(object)
 
     value
 
   # Calculates the average of the array.
   #
-  average: (array, lambda = u.identityFunction) ->
-    @sum(array, lambda) / array.length
+  average: (array, call = u.identityFunction) ->
+    @sum(array, call) / array.length
 
   # Returns the median for the array.
   #
@@ -929,7 +929,7 @@ ABM.util.array =
     (array[Math.floor(middle)] + array[Math.ceil(middle)]) / 2
 
   # Return histogram of o when f(o) is a numeric value in array.
-  # Histogram interval is bin. Error if array empty. If lambda 
+  # Histogram interval is bin. Error if array empty. If call 
   # is a string, return histogram of that property.
   #
   # In examples below, histogram returns [3, 1, 1, 0, 0, 1]
@@ -941,13 +941,13 @@ ABM.util.array =
   #   histogram = histogram hash, 2, (o) -> o.id
   #   histogram = histogram hash, 2, "id"
   #
-  histogram: (array, binSize = 1, lambda = u.identityFunction) ->
-    if u.isString lambda
-      lambda = u.propertyFunction lambda
+  histogram: (array, binSize = 1, call = u.identityFunction) ->
+    if u.isString call
+      call = u.propertyFunction call
     histogram = []
 
     for object in array
-      integer = Math.floor lambda(object) / binSize
+      integer = Math.floor call(object) / binSize
       histogram[integer] or= 0
       histogram[integer] += 1
 
@@ -967,11 +967,11 @@ ABM.util.array =
   #   sortBy array, "i"
   #   # array now is [{i: -1}, {i: 1}, {i: 2}, {i: 2}, {i:5}]
   #
-  sort: (array, lambda = null) ->
-    if u.isString lambda # use item[f] if f is string
-      lambda = u.propertySortFunction lambda
+  sort: (array, call = null) ->
+    if u.isString call # use item[f] if f is string
+      call = u.propertySortFunction call
 
-    array._sort lambda
+    array._sort call
 
   # Mutator. Removes dups, by reference, in place from array. Note
   # "by reference" means litteraly same object, not copy. Returns
@@ -1219,11 +1219,11 @@ ABM.util.shapes =
   # used in adding a new shape above.
   #
   polygon: (context, array) ->
-    for p, i in array
+    for position, i in array
       if i is 0
-        context.moveTo p[0], p[1]
+        context.moveTo position[0], position[1]
       else
-        context.lineTo p[0], p[1]
+        context.lineTo position[0], position[1]
 
     null
 
@@ -1278,7 +1278,7 @@ ABM.util.shapes =
   arrow:
     rotate: true
     draw: (context) ->
-      u.shapes.polygon context, [[.5,0], [0, .5], [0, .2], [-.5, .2], [-.5, -.2], [0, -.2], [0, -.5]]
+      u.shapes.polygon context, [[.5, 0], [0, .5], [0, .2], [-.5, .2], [-.5, -.2], [0, -.2], [0, -.5]]
 
   bug:
     rotate: true
@@ -2982,30 +2982,6 @@ class ABM.Patches extends ABM.BreedSet
   patchXYtoPixelXY: (x, y) ->
     [(x - @minCoordinate.x) * @patchSize, (@maxCoordinate.y - y) * @patchSize]
     
-  # Draws, or "imports" an image URL into the patches as their color property.
-  # The drawing is scaled to the number of x, y patches, thus one pixel
-  # per patch. The colors are then transferred to the patches.
-  # Map is a color map, only for gray for now.
-  #
-  importColors: (imageSource, call, map) ->
-    u.importImage imageSource, (image) => # fat arrow, this context
-      @installColors(image, map)
-      call() if call?
-
-  # Direct install image into the patch colors, not async.
-  #
-  installColors: (image, map) ->
-    u.setIdentity @pixelsContext
-    @pixelsContext.drawImage image, 0, 0, @width, @height # scale if needed
-    data = @pixelsContext.getImageData(0, 0, @width, @height).data
-
-    for patch in @
-      i = @pixelByteIndex patch
-      # promote initial default
-      patch.color = if map? then map[i] else [data[i++], data[i++], data[i]]
-
-    @pixelsContext.restore() # restore patch transform
-
   # Draw the patches via pixel manipulation rather than 2D drawRect.
   # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq)
   #
@@ -3013,9 +2989,16 @@ class ABM.Patches extends ABM.BreedSet
     # u.setIdentity context & context.restore() only needed if patchSize 
     # not 1, pixel ops don't use transform but @patchSize > 1 uses
     # a drawimage
-    u.setIdentity context if @patchSize isnt 1
-    if @pixelsData32? then @drawScaledPixels32 context else @drawScaledPixels8 context
-    context.restore() if @patchSize isnt 1
+    if @patchSize isnt 1
+      u.setIdentity context
+
+    if @pixelsData32?
+      @drawScaledPixels32 context
+    else
+      @drawScaledPixels8 context
+
+    if @patchSize isnt 1
+      context.restore()
 
   # The 8-bit version for drawScaledPixels. Used for systems w/o typed
   # arrays.
@@ -3024,32 +3007,52 @@ class ABM.Patches extends ABM.BreedSet
     data = @pixelsData
     for patch in @
       i = @pixelByteIndex patch
-      c = patch.color
-      if c.length is 4
-        a = c[3]
+      color = patch.color
+
+      if color.length is 4
+        transparency = color[3]
       else
-        a = 255
-      data[i + j] = c[j] for j in [0..2]
-      data[i + 3] = a
+        transparency = 255
+
+      for j in [0..2]
+        data[i + j] = color[j]
+
+      data[i + 3] = transparency
+
     @pixelsContext.putImageData @pixelsImageData, 0, 0
-    return if @patchSize is 1
-    context.drawImage @pixelsContext.canvas, 0, 0, context.canvas.width, context.canvas.height
+
+    if @patchSize is 1
+      return
+
+    context.drawImage @pixelsContext.canvas, 0, 0, context.canvas.width,
+      context.canvas.height
 
   # The 32-bit version of drawScaledPixels, with both little and big
   # endian hardware.
   #
   drawScaledPixels32: (context) ->
     data = @pixelsData32
-    for p in @
-      i = @pixelWordIndex p
-      c = patch.color
-      a = if c.length is 4 then c[3] else 255
+    for patch in @
+      i = @pixelWordIndex patch
+      color = patch.color
+
+      if color.length is 4
+        transparency = color[3]
+      else
+        transparency = 255
+
       if @pixelsAreLittleEndian
-      then data[i] = (a << 24) | (c[2] << 16) | (c[1] << 8) | c[0]
-      else data[i] = (c[0] << 24) | (c[1] << 16) | (c[2] << 8) | a
+        data[i] = (transparency << 24) | (color[2] << 16) | (color[1] << 8) | color[0]
+      else
+        data[i] = (color[0] << 24) | (color[1] << 16) | (color[2] << 8) | transparency
+
     @pixelsContext.putImageData @pixelsImageData, 0, 0
-    return if @patchSize is 1
-    context.drawImage @pixelsContext.canvas, 0, 0, context.canvas.width, context.canvas.height
+
+    if @patchSize is 1
+      return
+
+    context.drawImage @pixelsContext.canvas, 0, 0, context.canvas.width,
+      context.canvas.height
 
   # Diffuse the value of patch variable `patch.variable` by
   # distributing `rate` percent of each patch's value of `variable` to
