@@ -6,12 +6,64 @@ t = ABM.test
 u = ABM.util
 
 describe "Patch", ->
-  describe "patch", ->
+  describe "toString", ->
+    it "returns the patch as a string", ->
+      model = t.setupModel()
+      patch = model.patches.patch x: -20, y: 20
+      
+      expect(patch.toString())
+        .toBe '{id: 0 position: {x: -20, y: 20}, c: 0, 0, 0}'
+
+  describe "empty", ->
+    it "returns true if the patch is empty", ->
+      model = t.setupModel()
+      patch = model.patches.patch x: -20, y: 20
+      agent = model.agents[0]
+
+      agent.moveTo x: -20, y: 20
+      expect(patch.empty()).toBe false
+
+      agent.moveTo x: -19, y: 20
+      expect(patch.empty()).toBe true
+
+  describe "isOnEdge", ->
+    it "returns true if the patch is on the edge", ->
+      model = t.setupModel()
+      patch = model.patches.patch x: -20, y: 20
+      
+      expect(patch.isOnEdge()).toBe true
+
+      patch2 = model.patches.patch x: -10, y: 20
+
+      expect(patch2.isOnEdge()).toBe true
+
+      patch3 = model.patches.patch x: -10, y: 11
+
+      expect(patch3.isOnEdge()).toBe false
+
+  describe "sprout", ->
     it "gets the patch", ->
       model = t.setupModel()
       patch = model.patches.patch x: -20, y: 20
 
-      expect(patch).toBe model.patches[0]
+      agent_count = model.agents.length
+      @adder = new ABM.Array
+
+      test = (object) => # keep context
+        @adder.push object.id
+
+      patch.sprout(2, model.agents, test)
+
+      expect(model.agents.length).toBe agent_count + 2
+      expect(@adder.length).toBe 2
+      expect(@adder.last()).toBe model.agents.last().id
+
+  describe "distance", ->
+    it "returns distance to the point", ->
+      model = t.setupModel()
+      patch = model.patches.patch x: 1, y: 1
+
+      expect(patch.distance({x: 3, y: 1})).toBe 2
 
   describe "neighbors", ->
     testMiddlePatch = (model) ->
@@ -121,20 +173,3 @@ describe "Patch", ->
 
       neighbors = patch.neighbors(range: 1)
       expect(patch.neighborsCache['{"range":1}'].length).toBe 8
-
-  describe "sprout", ->
-    it "gets the patch", ->
-      model = t.setupModel()
-      patch = model.patches.patch x: -20, y: 20
-
-      agent_count = model.agents.length
-      @adder = new ABM.Array
-
-      test = (object) => # keep context
-        @adder.push object.id
-
-      patch.sprout(2, model.agents, test)
-
-      expect(model.agents.length).toBe agent_count + 2
-      expect(@adder.length).toBe 2
-      expect(@adder.last()).toBe model.agents.last().id

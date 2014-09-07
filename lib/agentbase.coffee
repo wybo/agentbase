@@ -1044,67 +1044,54 @@ ABM.util.array =
   normalizeInt: (array, low, high) ->
     (Math.round i for i in @normalize array, low, high)
 
-  # ### Debugging
+  # ### Property & debugging
   
   # Useful in console.
   # Also see [CoffeeConsole](http://goo.gl/1i7bd) Chrome extension.
   # 
   # Similar to NetLogo ask & with operators.
-  # Allows functions as strings. Use:
+  # Use:
   #
-  #   array.getProperty("x") # [1, 8, 6, 2, 2]
-  #   array.with("o.x < 5").ask("o.x = o.x + 1")
-  #   array.getProperty("x") # [2, 8, 6, 3, 3]
+  #   array.with((object) -> object.x < 5)
+  #     .ask((object) -> object.x = object.x + 1)
+  #   myModel.agents.with((object) -> object.id < 100)
+  #     .ask(object.color = [255, 0, 0])
   #
-  #   myModel.agents.with("o.id < 100").ask("o.color = [255, 0, 0]")
-  #
-  ask: (array, functionString) ->
-    if u.isString functionString
-      eval("functionString=function(o){return " + functionString + ";}")
-    functionString(object) for object in array
+  ask: (array, call) ->
+    for object in array
+      call(object)
     array
 
   with: (array, functionString) ->
     if u.isString functionString
-      eval("f=function(o){return " + functionString + ";}")
+      eval("f=function(object){return " + functionString + ";}")
     @from (object for object in array when functionString(object))
  
-  # ### Property Utilities
-
   # Property access, also useful for debugging.
   #
   # Return an array of a property of the BreedSet.
   #
-  #   AS.getProperty "x" # [0, 8, 6, 1, 1]
+  #   array.getProperty("x") # [1, 8, 6, 2, 2]
+  #   array.getProperty("x") # [2, 8, 6, 3, 3]
   #
   getProperty: (array, property) ->
-    object[property] for object in array
+    newArray = new ABM.Array
+    for object in array
+      newArray.push object[property]
 
-  # Return an array of agents with the property equal to the given value
-  #
-  #   array.getPropertyWith "x", 1
-  #   # returns [{id: 4, x: 1, y: 3},{id: 5, x: 1, y: 1}]
-  #
-  getPropertyWith: (array, property, value) ->
-    @from (object for object in array when object[property] is value)
+    newArray
 
   # Set the property of the agents to a given value. If value is an
   # array, its values will be used, indexed by agentSet's index. This
   # is generally used via: getProperty, modify results, setProperty.
   #
-  #   # increment x for agents with x=1
-  #   set1 = ABM.Set.from array.getPropertyWith("x", 1)
-  #   set1.setProperty "x", 2
+  #   set.setProperty "x", 2
   #   # {id: 4, x: 2, y: 3}, {id: 5, x: 2, y: 1}
   #
-  # Note this changes the last two objects in the original array
-  # above.
-  #
   setProperty: (array, property, value) ->
-    if u.isArray value
-      object[property] = value[i] for object, i in array
-    else
-      object[property] = value for object in array
+    for object in array
+      object[property] = value
+
     array
  
   # Return an array without given object.
@@ -1113,7 +1100,12 @@ ABM.util.array =
   #   as.getProperty "id" # [1, 2, 3, 4] 
   #
   other: (array, given) ->
-    @from (object for object in array when object isnt given)
+    newArray = new ABM.Array
+    for object in array
+      if object isnt given
+        newArray.push object
+
+    newArray
 
 # ### Extensions
   
@@ -1558,7 +1550,11 @@ class ABM.Set extends ABM.Array
   #
   draw: (context) ->
     u.clearContext(context)
-    o.draw(context) for o in @ when not o.hidden
+
+    for object in @
+      if not object.hidden
+        object.draw(context)
+
     null
   
   # Show/Hide all of an agentset or breed.
@@ -1566,14 +1562,14 @@ class ABM.Set extends ABM.Array
   # To show/hide an individual object, set its prototype: o.hidden = bool
   #
   show: ->
-    for o in @
-      o.hidden = false
+    for object in @
+      object.hidden = false
 
     @draw(@model.contexts[@name])
 
   hide: ->
-    for o in @
-      o.hidden = true
+    for object in @
+      object.hidden = true
 
     @draw(@model.contexts[@name])
 
@@ -1581,7 +1577,7 @@ class ABM.Set extends ABM.Array
   
   # Return all agents within d distance from given object.
   #
-  inRadius: (point, options) -> # for any objects w/ x, y
+  inRadius: (point, options) -> # for any objects w / x, y
     inner = new @model.Set
     for entity in @
       if entity.distance(point) <= options.radius
@@ -2042,12 +2038,15 @@ class ABM.Animator
   # Adjust animator. Call before model.start() in setup() to change
   # default settings.
   #
-  setRate: (@rate, @multiStep = @isHeadless) -> @resetTimes() # Change rate while running?
+  setRate: (@rate, @multiStep = @isHeadless) ->
+    @resetTimes() # Change rate while running?
 
   # Starts model.
   #
   start: ->
-    return unless @stopped # avoid multiple animates
+    unless @stopped # avoid multiple animates
+      return
+
     @resetTimes()
     @stopped = false
     @animate()
@@ -2095,11 +2094,13 @@ class ABM.Animator
 
   # Get current time, with high resolution timer if available.
   #
-  now: -> (performance ? Date).now()
+  now: ->
+    (performance ? Date).now()
 
   # Time in ms since starting animator.
   #
-  ms: -> @now() - @startMS
+  ms: ->
+    @now() - @startMS
 
   # Get ticks/draws per second. They will differ if multiStep. The
   # "if" is to avoid from ms=0.
@@ -2172,6 +2173,34 @@ class ABM.Link
     @from.links.push @
     @to.links.push @
       
+  # Remove this link from the agent set.
+  #
+  die: ->
+    @breed.remove @
+    @from.links.remove @
+    @to.links.remove @
+    null
+  
+  # Return the two endpoints of this link.
+  #
+  bothEnds: ->
+    new ABM.Array(@from, @to)
+  
+  # Return the distance between the endpoints with the current topology.
+  #
+  length: ->
+    @from.distance @to.position
+  
+  # Return the other end of the link, given an endpoint agent.
+  #
+  # Assumes the given input *is* one of the link endpoint pairs!
+  #
+  otherEnd: (agent) ->
+    if @from is agent
+      @to
+    else
+      @from
+
   # Draw a line between the two endpoints. Draws "around" the
   # torus if appropriate using two lines. As with Agent.draw,
   # is called with patch coordinate transform installed.
@@ -2205,34 +2234,6 @@ class ABM.Link
       y0 = u.linearInterpolate @from.position.y, @to.position.y, .5
       [x, y] = @model.patches.patchXYtoPixelXY x0, y0
       u.contextDrawText context, @label, x + @labelOffset[0], y + @labelOffset[1], @labelColor
-  
-  # Remove this link from the agent set.
-  #
-  die: ->
-    @breed.remove @
-    @from.links.remove @
-    @to.links.remove @
-    null
-  
-  # Return the two endpoints of this link.
-  #
-  bothEnds: ->
-    new ABM.Array(@from, @to)
-  
-  # Return the distance between the endpoints with the current topology.
-  #
-  length: ->
-    @from.distance @to.position
-  
-  # Return the other end of the link, given an endpoint agent.
-  #
-  # Assumes the given input *is* one of the link endpoint pairs!
-  #
-  otherEnd: (agent) ->
-    if @from is agent
-      @to
-    else
-      @from
 
 # Links is a subclass of BreedSet which stores instances of Link.
 #
@@ -2674,19 +2675,9 @@ class ABM.Patch
   # Returns a string representation of the patch.
   #
   toString: ->
-    "{id:#{@id} position: {x: #{@position.x}, y: #{@position.y}}," +
-    "c: #{@color}}"
-
-  # Draw the patch and its text label if there is one.
-  #
-  draw: (context) ->
-    context.fillStyle = u.colorString @color
-    context.fillRect @position.x - .5, @position.y - .5, 1, 1
-    if @label? # REMIND: should be 2nd pass.
-      position = @breed.patchXYtoPixelXY @position
-      u.contextDrawText context, @label, position.x + @labelOffset.x,
-        position.y + @labelOffset.y, @labelColor
-  
+    "{id: #{@id} position: {x: #{@position.x}, y: #{@position.y}}" +
+    ", c: #{@color.join(", ")}}"
+ 
   # Returns true if the patch is empty.
   #
   empty: ->
@@ -2770,6 +2761,16 @@ class ABM.Patch
     diamond.remove(null)
 
     return diamond
+
+  # Draw the patch and its text label if there is one.
+  #
+  draw: (context) ->
+    context.fillStyle = u.colorString @color
+    context.fillRect @position.x - .5, @position.y - .5, 1, 1
+    if @label? # REMIND: should be 2nd pass.
+      position = @breed.patchXYtoPixelXY @position
+      u.contextDrawText context, @label, position.x + @labelOffset.x,
+        position.y + @labelOffset.y, @labelColor
 
 # Patches is a singleton 2D matrix of Patch instances, each patch
 # representing a 1x1 square in patch coordinates (via 2D coordinate

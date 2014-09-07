@@ -20,12 +20,15 @@ class ABM.Animator
   # Adjust animator. Call before model.start() in setup() to change
   # default settings.
   #
-  setRate: (@rate, @multiStep = @isHeadless) -> @resetTimes() # Change rate while running?
+  setRate: (@rate, @multiStep = @isHeadless) ->
+    @resetTimes() # Change rate while running?
 
   # Starts model.
   #
   start: ->
-    return unless @stopped # avoid multiple animates
+    unless @stopped # avoid multiple animates
+      return
+
     @resetTimes()
     @stopped = false
     @animate()
@@ -73,11 +76,13 @@ class ABM.Animator
 
   # Get current time, with high resolution timer if available.
   #
-  now: -> (performance ? Date).now()
+  now: ->
+    (performance ? Date).now()
 
   # Time in ms since starting animator.
   #
-  ms: -> @now() - @startMS
+  ms: ->
+    @now() - @startMS
 
   # Get ticks/draws per second. They will differ if multiStep. The
   # "if" is to avoid from ms=0.

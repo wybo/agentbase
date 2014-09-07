@@ -95,12 +95,3 @@ describe "Set", ->
 
       expect(citizen.breed.name).toBe "agents"
       expect(citizen.id).toBe citizensOldId
-
-    it "Sets the breed, copying the prototype if classes differ", ->
-#      model = t.setupModel(model: BreedsModel)
-
-#      rat = model.rats[0]
-
-#      model.swans.setBreed rat
- 
-#      expect(ABM.Agent::size).toBe 17

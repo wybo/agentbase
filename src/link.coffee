@@ -28,6 +28,34 @@ class ABM.Link
     @from.links.push @
     @to.links.push @
       
+  # Remove this link from the agent set.
+  #
+  die: ->
+    @breed.remove @
+    @from.links.remove @
+    @to.links.remove @
+    null
+  
+  # Return the two endpoints of this link.
+  #
+  bothEnds: ->
+    new ABM.Array(@from, @to)
+  
+  # Return the distance between the endpoints with the current topology.
+  #
+  length: ->
+    @from.distance @to.position
+  
+  # Return the other end of the link, given an endpoint agent.
+  #
+  # Assumes the given input *is* one of the link endpoint pairs!
+  #
+  otherEnd: (agent) ->
+    if @from is agent
+      @to
+    else
+      @from
+
   # Draw a line between the two endpoints. Draws "around" the
   # torus if appropriate using two lines. As with Agent.draw,
   # is called with patch coordinate transform installed.
@@ -61,31 +89,3 @@ class ABM.Link
       y0 = u.linearInterpolate @from.position.y, @to.position.y, .5
       [x, y] = @model.patches.patchXYtoPixelXY x0, y0
       u.contextDrawText context, @label, x + @labelOffset[0], y + @labelOffset[1], @labelColor
-  
-  # Remove this link from the agent set.
-  #
-  die: ->
-    @breed.remove @
-    @from.links.remove @
-    @to.links.remove @
-    null
-  
-  # Return the two endpoints of this link.
-  #
-  bothEnds: ->
-    new ABM.Array(@from, @to)
-  
-  # Return the distance between the endpoints with the current topology.
-  #
-  length: ->
-    @from.distance @to.position
-  
-  # Return the other end of the link, given an endpoint agent.
-  #
-  # Assumes the given input *is* one of the link endpoint pairs!
-  #
-  otherEnd: (agent) ->
-    if @from is agent
-      @to
-    else
-      @from

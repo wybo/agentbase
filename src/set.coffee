@@ -61,7 +61,11 @@ class ABM.Set extends ABM.Array
   #
   draw: (context) ->
     u.clearContext(context)
-    o.draw(context) for o in @ when not o.hidden
+
+    for object in @
+      if not object.hidden
+        object.draw(context)
+
     null
   
   # Show/Hide all of an agentset or breed.
@@ -69,14 +73,14 @@ class ABM.Set extends ABM.Array
   # To show/hide an individual object, set its prototype: o.hidden = bool
   #
   show: ->
-    for o in @
-      o.hidden = false
+    for object in @
+      object.hidden = false
 
     @draw(@model.contexts[@name])
 
   hide: ->
-    for o in @
-      o.hidden = true
+    for object in @
+      object.hidden = true
 
     @draw(@model.contexts[@name])
 
@@ -84,7 +88,7 @@ class ABM.Set extends ABM.Array
   
   # Return all agents within d distance from given object.
   #
-  inRadius: (point, options) -> # for any objects w/ x, y
+  inRadius: (point, options) -> # for any objects w / x, y
     inner = new @model.Set
     for entity in @
       if entity.distance(point) <= options.radius

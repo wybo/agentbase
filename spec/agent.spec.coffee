@@ -235,18 +235,6 @@ describe "Agent", ->
 
       expect(agents[0].otherEnd(model.links[0])).toBe agents[1]
 
-  describe "inLinks", ->
-    it "returns the incoming links", ->
-      model = t.setupModel()
-      agents = model.agents
-
-      # 0 - 1 & 2 - 1 linked
-      links = agents[1].inLinks()
-
-      expect(links.length).toBe 2
-      expect(links[0]).toBe model.links[0]
-      expect(links[1]).toBe model.links[1]
-
   describe "outLinks", ->
     it "returns the outgoing links", ->
       model = t.setupModel()
@@ -258,6 +246,18 @@ describe "Agent", ->
       expect(links.length).toBe 2
       expect(links[0]).toBe model.links[2]
       expect(links[1]).toBe model.links[3]
+
+  describe "inLinks", ->
+    it "returns the incoming links", ->
+      model = t.setupModel()
+      agents = model.agents
+
+      # 0 - 1 & 2 - 1 linked
+      links = agents[1].inLinks()
+
+      expect(links.length).toBe 2
+      expect(links[0]).toBe model.links[0]
+      expect(links[1]).toBe model.links[1]
 
   describe "linkNeighbors", ->
     it "returns all agents linked with", ->

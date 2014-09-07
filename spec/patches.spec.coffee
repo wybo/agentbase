@@ -14,9 +14,15 @@ describe "Patches", ->
       expect(index).toBe 840
 
   describe "patch", ->
-    it "returns the patch at the coordinate", ->
+    it "gets the patch", ->
       model = t.setupModel()
-      patch = model.patches.patch x: 0, y: 0.1
+      patch = model.patches.patch x: -20, y: 20
+
+      expect(patch).toBe model.patches[0]
+
+    it "returns the patch even if the coordinate is a float", ->
+      model = t.setupModel()
+      patch = model.patches.patch x: 0, y: 0.2
 
       expect(patch.position).toEqual x: 0, y: 0
 
@@ -35,3 +41,5 @@ describe "Patches", ->
 
       coordinate = model.patches.coordinate x: 50, y: 25
       expect(coordinate).toEqual x: 9, y: -16
+
+  # TODO finish

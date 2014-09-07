@@ -40,6 +40,8 @@ describe "Set", ->
       expect(model.agents[0].shape).toBe "square"
       expect(model.citizens[0].shape).toBe "square"
   
+  # TODO finish
+
   # All other Array methods are tested in superclass Array
   describe "flatten", ->
     it "Flattens the set, also with subsets", ->

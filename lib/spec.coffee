@@ -293,18 +293,6 @@ describe "Agent", ->
 
       expect(agents[0].otherEnd(model.links[0])).toBe agents[1]
 
-  describe "inLinks", ->
-    it "returns the incoming links", ->
-      model = t.setupModel()
-      agents = model.agents
-
-      # 0 - 1 & 2 - 1 linked
-      links = agents[1].inLinks()
-
-      expect(links.length).toBe 2
-      expect(links[0]).toBe model.links[0]
-      expect(links[1]).toBe model.links[1]
-
   describe "outLinks", ->
     it "returns the outgoing links", ->
       model = t.setupModel()
@@ -316,6 +304,18 @@ describe "Agent", ->
       expect(links.length).toBe 2
       expect(links[0]).toBe model.links[2]
       expect(links[1]).toBe model.links[3]
+
+  describe "inLinks", ->
+    it "returns the incoming links", ->
+      model = t.setupModel()
+      agents = model.agents
+
+      # 0 - 1 & 2 - 1 linked
+      links = agents[1].inLinks()
+
+      expect(links.length).toBe 2
+      expect(links[0]).toBe model.links[0]
+      expect(links[1]).toBe model.links[1]
 
   describe "linkNeighbors", ->
     it "returns all agents linked with", ->
@@ -487,11 +487,15 @@ describe "Array", ->
       expect(array.constructor.name).toBe 'Array'
       expect(array).toEqual new ABM.Array 2
 
+  describe "toString", ->
+    it "returns the array as strings", ->
+      expect(new ABM.Array(1.334, 5.445, 11.666).toString())
+        .toEqual "[1.334, 5.445, 11.666]"
+
   describe "toFixed", ->
     it "returns the array rounded, as strings", ->
       expect(new ABM.Array(1.334, 5.445, 11.666).toFixed(1))
         .toEqual new ABM.Array "1.3", "5.4", "11.7"
-
 
   describe "any", ->
     it "returns false if empty", ->
@@ -509,6 +513,10 @@ describe "Array", ->
       expect(array).toEqual ABM.Array.from array2
       array2[1] = 7
       expect(array[1]).not.toEqual array2[1]
+
+  describe "first", ->
+    it "returns the first element", ->
+      expect(new ABM.Array(1, 2, 3).first()).toEqual 1
 
   describe "last", ->
     it "returns the last element", ->
@@ -614,6 +622,38 @@ describe "Array", ->
       expect(new ABM.Array(4, 9, 7).normalize(5, 10))
         .toEqual new ABM.Array 5, 10, 8
 
+  describe "ask", ->
+    it "runs the function against the array", ->
+      array = new ABM.Array({}, {}, {})
+      array.ask((object) -> object.x = 3)
+
+      expect(array[2].x).toEqual 3
+
+  describe "with", ->
+    it "runs the array for which it evaluates to true", ->
+      array = new ABM.Array(4, 9, 10, 7)
+      even = array.with((object) -> object % 2 == 0)
+      expect(even).toEqual new ABM.Array 4, 10
+
+      variable = 3
+      even2 = array.with((object) -> object % variable == 0)
+      expect(even2).toEqual new ABM.Array 9
+
+  describe "getProperty", ->
+    it "returns the values for property", ->
+      expect(new ABM.Array({x: 6}, {y: 77}, {x: 11}).getProperty('x'))
+        .toEqual new ABM.Array 6, undefined, 11
+
+  describe "setProperty", ->
+    it "returns the values for property", ->
+      expect(new ABM.Array({}, {}, {}).setProperty('y', 22))
+        .toEqual new ABM.Array({y: 22}, {y: 22}, {y: 22})
+
+  describe "other", ->
+    it "returns the array without the given item", ->
+      expect(new ABM.Array(4, 9, 7).other(9))
+        .toEqual new ABM.Array 4, 7
+
 if typeof window == 'undefined'
   t = require "./shared.coffee"
   eval 'var ABM = t.ABM' # because CoffeeScript sets var to null
@@ -711,15 +751,6 @@ describe "Set", ->
 
       expect(citizen.breed.name).toBe "agents"
       expect(citizen.id).toBe citizensOldId
-
-    it "Sets the breed, copying the prototype if classes differ", ->
-#      model = t.setupModel(model: BreedsModel)
-
-#      rat = model.rats[0]
-
-#      model.swans.setBreed rat
- 
-#      expect(ABM.Agent::size).toBe 17
 
 if typeof window == 'undefined'
   t = require "./shared.coffee"
@@ -857,12 +888,64 @@ t = ABM.test
 u = ABM.util
 
 describe "Patch", ->
-  describe "patch", ->
+  describe "toString", ->
+    it "returns the patch as a string", ->
+      model = t.setupModel()
+      patch = model.patches.patch x: -20, y: 20
+      
+      expect(patch.toString())
+        .toBe '{id: 0 position: {x: -20, y: 20}, c: 0, 0, 0}'
+
+  describe "empty", ->
+    it "returns true if the patch is empty", ->
+      model = t.setupModel()
+      patch = model.patches.patch x: -20, y: 20
+      agent = model.agents[0]
+
+      agent.moveTo x: -20, y: 20
+      expect(patch.empty()).toBe false
+
+      agent.moveTo x: -19, y: 20
+      expect(patch.empty()).toBe true
+
+  describe "isOnEdge", ->
+    it "returns true if the patch is on the edge", ->
+      model = t.setupModel()
+      patch = model.patches.patch x: -20, y: 20
+      
+      expect(patch.isOnEdge()).toBe true
+
+      patch2 = model.patches.patch x: -10, y: 20
+
+      expect(patch2.isOnEdge()).toBe true
+
+      patch3 = model.patches.patch x: -10, y: 11
+
+      expect(patch3.isOnEdge()).toBe false
+
+  describe "sprout", ->
     it "gets the patch", ->
       model = t.setupModel()
       patch = model.patches.patch x: -20, y: 20
 
-      expect(patch).toBe model.patches[0]
+      agent_count = model.agents.length
+      @adder = new ABM.Array
+
+      test = (object) => # keep context
+        @adder.push object.id
+
+      patch.sprout(2, model.agents, test)
+
+      expect(model.agents.length).toBe agent_count + 2
+      expect(@adder.length).toBe 2
+      expect(@adder.last()).toBe model.agents.last().id
+
+  describe "distance", ->
+    it "returns distance to the point", ->
+      model = t.setupModel()
+      patch = model.patches.patch x: 1, y: 1
+
+      expect(patch.distance({x: 3, y: 1})).toBe 2
 
   describe "neighbors", ->
     testMiddlePatch = (model) ->
@@ -973,23 +1056,6 @@ describe "Patch", ->
       neighbors = patch.neighbors(range: 1)
       expect(patch.neighborsCache['{"range":1}'].length).toBe 8
 
-  describe "sprout", ->
-    it "gets the patch", ->
-      model = t.setupModel()
-      patch = model.patches.patch x: -20, y: 20
-
-      agent_count = model.agents.length
-      @adder = new ABM.Array
-
-      test = (object) => # keep context
-        @adder.push object.id
-
-      patch.sprout(2, model.agents, test)
-
-      expect(model.agents.length).toBe agent_count + 2
-      expect(@adder.length).toBe 2
-      expect(@adder.last()).toBe model.agents.last().id
-
 if typeof window == 'undefined'
   t = require "./shared.coffee"
   eval 'var ABM = t.ABM' # because CoffeeScript sets var to null
@@ -1006,9 +1072,15 @@ describe "Patches", ->
       expect(index).toBe 840
 
   describe "patch", ->
-    it "returns the patch at the coordinate", ->
+    it "gets the patch", ->
       model = t.setupModel()
-      patch = model.patches.patch x: 0, y: 0.1
+      patch = model.patches.patch x: -20, y: 20
+
+      expect(patch).toBe model.patches[0]
+
+    it "returns the patch even if the coordinate is a float", ->
+      model = t.setupModel()
+      patch = model.patches.patch x: 0, y: 0.2
 
       expect(patch.position).toEqual x: 0, y: 0
 
@@ -1027,6 +1099,8 @@ describe "Patches", ->
 
       coordinate = model.patches.coordinate x: 50, y: 25
       expect(coordinate).toEqual x: 9, y: -16
+
+  # TODO finish
 
 if typeof window == 'undefined'
   t = require "./shared.coffee"
@@ -1070,6 +1144,8 @@ describe "Set", ->
       expect(model.agents[0].shape).toBe "square"
       expect(model.citizens[0].shape).toBe "square"
   
+  # TODO finish
+
   # All other Array methods are tested in superclass Array
   describe "flatten", ->
     it "Flattens the set, also with subsets", ->

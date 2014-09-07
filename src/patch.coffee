@@ -33,19 +33,9 @@ class ABM.Patch
   # Returns a string representation of the patch.
   #
   toString: ->
-    "{id:#{@id} position: {x: #{@position.x}, y: #{@position.y}}," +
-    "c: #{@color}}"
-
-  # Draw the patch and its text label if there is one.
-  #
-  draw: (context) ->
-    context.fillStyle = u.colorString @color
-    context.fillRect @position.x - .5, @position.y - .5, 1, 1
-    if @label? # REMIND: should be 2nd pass.
-      position = @breed.patchXYtoPixelXY @position
-      u.contextDrawText context, @label, position.x + @labelOffset.x,
-        position.y + @labelOffset.y, @labelColor
-  
+    "{id: #{@id} position: {x: #{@position.x}, y: #{@position.y}}" +
+    ", c: #{@color.join(", ")}}"
+ 
   # Returns true if the patch is empty.
   #
   empty: ->
@@ -129,3 +119,13 @@ class ABM.Patch
     diamond.remove(null)
 
     return diamond
+
+  # Draw the patch and its text label if there is one.
+  #
+  draw: (context) ->
+    context.fillStyle = u.colorString @color
+    context.fillRect @position.x - .5, @position.y - .5, 1, 1
+    if @label? # REMIND: should be 2nd pass.
+      position = @breed.patchXYtoPixelXY @position
+      u.contextDrawText context, @label, position.x + @labelOffset.x,
+        position.y + @labelOffset.y, @labelColor

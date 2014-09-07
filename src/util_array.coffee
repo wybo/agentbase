@@ -318,67 +318,54 @@ ABM.util.array =
   normalizeInt: (array, low, high) ->
     (Math.round i for i in @normalize array, low, high)
 
-  # ### Debugging
+  # ### Property & debugging
   
   # Useful in console.
   # Also see [CoffeeConsole](http://goo.gl/1i7bd) Chrome extension.
   # 
   # Similar to NetLogo ask & with operators.
-  # Allows functions as strings. Use:
+  # Use:
   #
-  #   array.getProperty("x") # [1, 8, 6, 2, 2]
-  #   array.with("o.x < 5").ask("o.x = o.x + 1")
-  #   array.getProperty("x") # [2, 8, 6, 3, 3]
+  #   array.with((object) -> object.x < 5)
+  #     .ask((object) -> object.x = object.x + 1)
+  #   myModel.agents.with((object) -> object.id < 100)
+  #     .ask(object.color = [255, 0, 0])
   #
-  #   myModel.agents.with("o.id < 100").ask("o.color = [255, 0, 0]")
-  #
-  ask: (array, functionString) ->
-    if u.isString functionString
-      eval("functionString=function(o){return " + functionString + ";}")
-    functionString(object) for object in array
+  ask: (array, call) ->
+    for object in array
+      call(object)
     array
 
   with: (array, functionString) ->
     if u.isString functionString
-      eval("f=function(o){return " + functionString + ";}")
+      eval("f=function(object){return " + functionString + ";}")
     @from (object for object in array when functionString(object))
  
-  # ### Property Utilities
-
   # Property access, also useful for debugging.
   #
   # Return an array of a property of the BreedSet.
   #
-  #   AS.getProperty "x" # [0, 8, 6, 1, 1]
+  #   array.getProperty("x") # [1, 8, 6, 2, 2]
+  #   array.getProperty("x") # [2, 8, 6, 3, 3]
   #
   getProperty: (array, property) ->
-    object[property] for object in array
+    newArray = new ABM.Array
+    for object in array
+      newArray.push object[property]
 
-  # Return an array of agents with the property equal to the given value
-  #
-  #   array.getPropertyWith "x", 1
-  #   # returns [{id: 4, x: 1, y: 3},{id: 5, x: 1, y: 1}]
-  #
-  getPropertyWith: (array, property, value) ->
-    @from (object for object in array when object[property] is value)
+    newArray
 
   # Set the property of the agents to a given value. If value is an
   # array, its values will be used, indexed by agentSet's index. This
   # is generally used via: getProperty, modify results, setProperty.
   #
-  #   # increment x for agents with x=1
-  #   set1 = ABM.Set.from array.getPropertyWith("x", 1)
-  #   set1.setProperty "x", 2
+  #   set.setProperty "x", 2
   #   # {id: 4, x: 2, y: 3}, {id: 5, x: 2, y: 1}
   #
-  # Note this changes the last two objects in the original array
-  # above.
-  #
   setProperty: (array, property, value) ->
-    if u.isArray value
-      object[property] = value[i] for object, i in array
-    else
-      object[property] = value for object in array
+    for object in array
+      object[property] = value
+
     array
  
   # Return an array without given object.
@@ -387,7 +374,12 @@ ABM.util.array =
   #   as.getProperty "id" # [1, 2, 3, 4] 
   #
   other: (array, given) ->
-    @from (object for object in array when object isnt given)
+    newArray = new ABM.Array
+    for object in array
+      if object isnt given
+        newArray.push object
+
+    newArray
 
 # ### Extensions
   

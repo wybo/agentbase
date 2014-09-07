@@ -46,11 +46,15 @@ describe "Array", ->
       expect(array.constructor.name).toBe 'Array'
       expect(array).toEqual new ABM.Array 2
 
+  describe "toString", ->
+    it "returns the array as strings", ->
+      expect(new ABM.Array(1.334, 5.445, 11.666).toString())
+        .toEqual "[1.334, 5.445, 11.666]"
+
   describe "toFixed", ->
     it "returns the array rounded, as strings", ->
       expect(new ABM.Array(1.334, 5.445, 11.666).toFixed(1))
         .toEqual new ABM.Array "1.3", "5.4", "11.7"
-
 
   describe "any", ->
     it "returns false if empty", ->
@@ -68,6 +72,10 @@ describe "Array", ->
       expect(array).toEqual ABM.Array.from array2
       array2[1] = 7
       expect(array[1]).not.toEqual array2[1]
+
+  describe "first", ->
+    it "returns the first element", ->
+      expect(new ABM.Array(1, 2, 3).first()).toEqual 1
 
   describe "last", ->
     it "returns the last element", ->
@@ -172,3 +180,35 @@ describe "Array", ->
     it "returns the array normalized", ->
       expect(new ABM.Array(4, 9, 7).normalize(5, 10))
         .toEqual new ABM.Array 5, 10, 8
+
+  describe "ask", ->
+    it "runs the function against the array", ->
+      array = new ABM.Array({}, {}, {})
+      array.ask((object) -> object.x = 3)
+
+      expect(array[2].x).toEqual 3
+
+  describe "with", ->
+    it "runs the array for which it evaluates to true", ->
+      array = new ABM.Array(4, 9, 10, 7)
+      even = array.with((object) -> object % 2 == 0)
+      expect(even).toEqual new ABM.Array 4, 10
+
+      variable = 3
+      even2 = array.with((object) -> object % variable == 0)
+      expect(even2).toEqual new ABM.Array 9
+
+  describe "getProperty", ->
+    it "returns the values for property", ->
+      expect(new ABM.Array({x: 6}, {y: 77}, {x: 11}).getProperty('x'))
+        .toEqual new ABM.Array 6, undefined, 11
+
+  describe "setProperty", ->
+    it "returns the values for property", ->
+      expect(new ABM.Array({}, {}, {}).setProperty('y', 22))
+        .toEqual new ABM.Array({y: 22}, {y: 22}, {y: 22})
+
+  describe "other", ->
+    it "returns the array without the given item", ->
+      expect(new ABM.Array(4, 9, 7).other(9))
+        .toEqual new ABM.Array 4, 7
