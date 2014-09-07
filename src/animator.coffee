@@ -1,11 +1,5 @@
-# Class Model is the control center for our Sets: Patches, Agents and Links.
-# Creating new models is done by subclassing class Model and overriding two 
-# virtual/abstract methods: `setup()` and `step()`
-
-# ### Animator
-  
-# Because not all models have the same amimator requirements, we build a class
-# for customization by the programmer.  See these URLs for more info:
+# Because not all models have the same amimator requirements, this
+# provides a class for customization. See these URLs for more info:
 #
 # * [JavaScript timers doc](https://developer.mozilla.org/en-US/docs/JavaScript/Timers)
 # * [Using timers & requestAnimFrame together](http://goo.gl/ymEEX)
@@ -18,21 +12,26 @@ class ABM.Animator
   # Create initial animator for the model, specifying default rate (fps) and multiStep.
   # If multiStep, run the draw() and step() methods separately by draw() using
   # requestAnimFrame and step() using setTimeout.
-  constructor: (@model, @rate = 30, @multiStep = model.world.isHeadless) ->
-    @isHeadless = model.world.isHeadless
+  #
+  constructor: (@model, @rate = 30, @multiStep = model.isHeadless) ->
+    @isHeadless = model.isHeadless
     @reset()
 
-  # Adjust animator.  Call before model.start()
-  # in setup() to change default settings
+  # Adjust animator. Call before model.start() in setup() to change
+  # default settings.
+  #
   setRate: (@rate, @multiStep = @isHeadless) -> @resetTimes() # Change rate while running?
 
-  # start/stop model, often used for debugging and resetting model
+  # Starts model.
+  #
   start: ->
     return unless @stopped # avoid multiple animates
     @resetTimes()
     @stopped = false
     @animate()
 
+  # Stops the model, used for debugging and resetting model.
+  #
   stop: ->
     @stopped = true
     if @animatorHandle?
@@ -43,18 +42,21 @@ class ABM.Animator
       clearInterval @intervalHandle
     @animatorHandle = @timerHandle = @intervalHandle = null
 
-  # Internal util: reset time instance variables
+  # Internal util: reset time instance variables.
+  #
   resetTimes: ->
     @startMS = @now()
     @startTick = @ticks
     @startDraw = @draws
 
   # Reset used by model.reset when resetting model.
+  #
   reset: ->
     @stop()
     @ticks = @draws = 0
 
-  # Two handlers used by animation loop
+  # Two handlers used by animation loop.
+  #
   step: ->
     @ticks++
     @model.step()
@@ -63,19 +65,23 @@ class ABM.Animator
     @draws++
     @model.draw()
 
-  # step and draw the model once, mainly debugging
+  # Step and draw the model once, mainly used for debugging.
+  #
   once: ->
     @step()
     @draw()
 
-  # Get current time, with high resolution timer if available
+  # Get current time, with high resolution timer if available.
+  #
   now: -> (performance ? Date).now()
 
-  # Time in ms since starting animator
+  # Time in ms since starting animator.
+  #
   ms: -> @now() - @startMS
 
-  # Get ticks/draws per second. They will differ if multiStep.
-  # The "if" is to avoid from ms=0
+  # Get ticks/draws per second. They will differ if multiStep. The
+  # "if" is to avoid from ms=0.
+  #
   ticksPerSec: ->
     elapsed = @ticks - @startTick
     if elapsed is 0
@@ -90,12 +96,14 @@ class ABM.Animator
     else
       Math.round elapsed * 1000 / @ms()
 
-  # Return a status string for debugging and logging performance
-  toString: -> 
+  # Return a status string for debugging and logging performance.
+  #
+  toString: ->
     "ticks: #{@ticks}, draws: #{@draws}, rate: #{@rate} " +
       "tps/dps: #{@ticksPerSec()}/#{@drawsPerSec()}"
 
-  # Animation via setTimeout and requestAnimFrame
+  # Animation via setTimeout and requestAnimFrame.
+  #
   animateSteps: =>
     @step()
     @timeoutHandle = setTimeout @animateSteps, 10 unless @stopped

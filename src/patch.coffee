@@ -1,59 +1,65 @@
-# ### Patch
-  
-# Class Patch instances represent a rectangle on a grid.  They hold variables
-# that are in the patches the agents live on. The set of all patches (@model.patches)
-# is the world on which the agents live and the model runs.
+# Patch instances represent a rectangle on a grid. They hold variables
+# that are in the patches the agents live on. The set of all patches
+# (@model.patches) is the world on which the agents live and the model
+# runs.
+#
 class ABM.Patch
-  # Constructor & Class Variables:
-  # * id:          unique identifier, promoted by agentset create() factory method
-  # * breed:       the agentset this agent belongs to
-  # * position:    position on the patch grid, .x and .y in patch coordinates
-  # * color:       the color of the patch as an RGBA array, A optional.
-  # * hidden:      whether or not to draw this patch
-  # * label:       text for the patch
-  # * labelColor:  the color of my label text
-  # * labelOffset: the x, y offset of my label from my x, y location
-
-  id: null              # unique id, promoted by agentset create factory method
-  breed: null           # set by the agentSet owning this patch
-  position: null        # The patch position in the patch grid, in .x and .y
-  color: [0, 0, 0]      # The patch color
-  hidden: false         # draw me?
-  label: null           # text for the patch
+  # Unique ID, set by BreedSet create() factory method.
+  id: null
+  # The BreedSet this agent belongs to.
+  breed: null
+  # Position on the patch grid, hash with patch coordinates {x: some
+  # float, y: float}.
+  position: null
+  # The color of the agent, defaults to randomColor.
+  color: [0, 0, 0]
+  # Whether or not to draw this agent.
+  hidden: false
+  # Text for a label.
+  label: null
+  # The color of the label.
   labelColor: [0, 0, 0] # text color
-  labelOffset: [0, 0]   # text offset from the patch center
-  agents: null          # agents on this patch
+  # The x, y offset of the label.
+  labelOffset: {x: 0, y: 0}
+  # Agents on this patch.
+  agents: null
   
-  # New Patch: Just set x, y.
-  #constructor: (@x, @y) ->
+  # New Patch: Just set position {x: some integer, y: some integer}.
+  #
   constructor: (@position) ->
     @neighborsCache = {}
     @agents = new ABM.Array
 
-  # Return a string representation of the patch.
+  # Returns a string representation of the patch.
+  #
   toString: ->
     "{id:#{@id} position: {x: #{@position.x}, y: #{@position.y}}," +
     "c: #{@color}}"
 
   # Draw the patch and its text label if there is one.
+  #
   draw: (context) ->
     context.fillStyle = u.colorString @color
     context.fillRect @position.x - .5, @position.y - .5, 1, 1
     if @label? # REMIND: should be 2nd pass.
       position = @breed.patchXYtoPixelXY @position
-      u.contextDrawText context, @label, position.x + @labelOffset[0],
-        position.y + @labelOffset[1], @labelColor
+      u.contextDrawText context, @label, position.x + @labelOffset.x,
+        position.y + @labelOffset.y, @labelColor
   
+  # Returns true if the patch is empty.
+  #
   empty: ->
     @agents.empty()
 
   # Returns true if this patch is on the edge of the grid.
+  #
   isOnEdge: ->
     @position.x is @breed.min.x or @position.x is @breed.max.x or \
     @position.y is @breed.min.y or @position.y is @breed.max.y
   
   # Factory: Create num new agents on this patch. The optional init
   # proc is called on the new agent after inserting in its agentSet.
+  #
   sprout: (number = 1, breed = @model.agents, init = ->) ->
     breed.create number, (agent) => # fat arrow so that @ = this patch
       agent.moveTo @position
@@ -61,11 +67,13 @@ class ABM.Patch
       agent
 
   # Return distance in patch coordinates from me to given agent/patch
-  # using patch topology (isTorus)
-  distance: (point) -> # o any object w/ x, y, patch or agent
+  # using patch topology (isTorus).
+  #
+  distance: (point) ->
     u.distance @position, point, @model.patches
 
-  # Get neighbors for patch
+  # Get neighbors for patch.
+  #
   neighbors: (options) ->
     options ?= 1
 
@@ -98,6 +106,7 @@ class ABM.Patch
     return neighbors
 
   # Not to be used directly, will not cache.
+  #
   diamondNeighbors: (range, meToo) ->
     neighbors = @breed.patchRectangleNullPadded @, range, range, true
     diamond = new @model.Set

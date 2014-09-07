@@ -1,36 +1,33 @@
 {
-  "name": "agentscript",
-  "version": "0.0.9",
-  "description": "Minimalist Agent Based Modeling (ABM) framework based on NetLogo",
-  "main": "lib/agentscript.js",
+  "name": "agentbase",
+  "version": "0.1.0",
+  "description": "Minimalistic Agent Based Modeling (ABM) framework written in CoffeeScript",
+  "main": "lib/agentbase.js",
   "directories": {
     "doc": "docs"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/backspaces/agentscript.git"
+    "url": "git://github.com/wybow/agentbase.git"
   },
   "keywords": [
     "agent",
     "abm",
-    "modeling"
+    "abs",
+    "modeling",
+    "agent based modelling",
+    "coffeescript"
   ],
-  "author": "Owen Densmore",
+  "author": "Wybo Wiersma",
   "license": "GPLv3",
   "bugs": {
-    "url": "https://github.com/backspaces/agentscript/issues"
+    "url": "https://github.com/wybow/agentbase/issues"
   },
   "scripts": {
     "all": "gulp all",
     "build": "gulp build",
     "docs": "gulp docs",
-    "watch": "gulp watch",
-    
-    "git-pull": "git checkout gh-pages && git pull && git checkout master && git pull",
-    "git-diff": "git status; git diff Gulpfile.js LICENSE README.md package.json src extras models sketches",
-    "git-prep": "git checkout master && gulp all && git add . && git status",
-    "git-commit": "git checkout master && git commit -v && git push origin master",
-    "git-pages": "git checkout gh-pages && git merge master && git push origin gh-pages && git checkout master"
+    "watch": "gulp watch"
   },
   "devDependencies": {
     "gulp": "^3.8.5",

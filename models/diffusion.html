@@ -1,15 +1,14 @@
 <html>
   <head>
     <title>Diffusion Model</title>
-    <script src="../lib/agentscript.js"></script>
+    <script src="../lib/agentbase.js"></script>
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
 
     u = ABM.util
 
-    class MyModel extends ABM.Model
+    class Model extends ABM.Model
       setup: ->
-
         # No optimizations: 30fps
         @patches.usePixels() # 57+fps
 
@@ -30,26 +29,28 @@
         @agents.create @population
         # @agents.create @population, (a) => # fat arrow for @patches etc
         #   a.size = 1.5
+
       step: ->
         console.log @animator.toString() if @animator.ticks % 100 is 0
-        for p in @patches
-          p.heat *= (1-@coolingRate)
-        for a in @agents
-          a.rotate u.randomCentered(u.degreesToRadians(40))
-          a.forward @speed
-          a.patch.heat = 1
-        @patches.diffuse "heat", @diffusionRate, [255,0,0]
+        for patch in @patches
+          patch.heat *= (1 - @coolingRate)
+
+        for agent in @agents
+          agent.rotate u.randomCentered(u.degreesToRadians(40))
+          agent.forward @speed
+          agent.patch.heat = 1
+
+        @patches.diffuse "heat", @diffusionRate, [255, 0, 0]
         # @stop() # debug: one step
 
-    model = new MyModel {
+    model = new Model {
       div: "layers",
       patchSize: 10,
       min: {x: -25, y: -20},
       max: {x: 25, y: 20}
       isTorus: true
     }
-    model.debug() # Debug: Put Model vars in global name space
-    model.start() # Run model immediately after startup initialization
+    model.start()
 
     </script>
   </head>

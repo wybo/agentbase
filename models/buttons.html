@@ -1,13 +1,13 @@
 <html>
   <head>
     <title>Buttons Model</title>
-    <script src="../lib/agentscript.js"></script>
+    <script src="../lib/agentbase.js"></script>
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
 
     u = ABM.util
 
-    class MyModel extends ABM.Model
+    class Model extends ABM.Model
       setup: ->
         @refreshPatches = false # for static patches
         @refreshLinks = false # for static links .. drown as created
@@ -70,12 +70,10 @@
         unMarked = (n for n in node.linkNeighbors() when not n.marked)
         @markNeighbors n for n in unMarked
 
-    model = new MyModel {
-      div: "layers",
-      hasNeighbors: false
+    model = new Model {
+      div: "layers"
     }
-    model.debug() # Debug: Put Model vars in global name space
-    model.start() # Run model immediately after startup initialization
+    model.start()
 
     </script>
   </head>

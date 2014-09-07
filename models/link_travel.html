@@ -1,13 +1,13 @@
 <html>
   <head>
     <title>Link Travel Model</title>
-    <script src="../lib/agentscript.js"></script>
+    <script src="../lib/agentbase.js"></script>
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
     
     u = ABM.util
 
-    class MyModel extends ABM.Model
+    class Model extends ABM.Model
       setup: ->
         @agentBreeds ["nodes", "drivers"]
         @nodes.setDefault "shape", "circle"
@@ -68,13 +68,11 @@
             driver.toNode = driver.toNode.linkNeighbors().sample()
         null # avoid returning "for" results above
 
-    model = new MyModel {
+    model = new Model {
       div: "layers",
-      patchSize: 13,
-      hasNeighbors: false
+      patchSize: 13
     }
-    model.debug() # Debug: Put Model vars in global name space
-    model.start() # Run model immediately after startup initialization
+    model.start()
 
     </script>
   </head>

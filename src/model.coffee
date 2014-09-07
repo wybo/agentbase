@@ -1,17 +1,14 @@
-# Class Model is the control center for our Sets: Patches, Agents and Links.
+# Model is the control center for our Sets: Patches, Agents and Links.
+#
 # Creating new models is done by subclassing class Model and overriding two 
 # virtual/abstract methods: `setup()` and `step()`
-
-# ### Class Model
-
-ABM.models = {} # user space, put your models here
-
+#
 class ABM.Model
   # Class variable for layers parameters. 
-  # Can be added to by programmer to modify/create layers, **before** starting your own model.
-  # Example:
-  # 
-  #     v.z++ for k, v of ABM.Model::contextsInit # increase each z value by one
+  #
+  # Can be added to by programmer to modify/create layers, **before**
+  # starting your own model.
+  #
   contextsInit: { # Experimental: image:   {z: 15, context: "img"} 
     patches:   {z: 10, context: "2d"}
     drawing:   {z: 20, context: "2d"}
@@ -19,13 +16,15 @@ class ABM.Model
     agents:    {z: 40, context: "2d"}
     spotlight: {z: 50, context: "2d"}
   }
+
   # Constructor: 
   #
-  # * create agentsets, install them and ourselves in ABM global namespace
-  # * create layers/contexts, install drawing layer in ABM global namespace
+  # * create agentsets, install them in the models' namespace
+  # * create layers/contexts
   # * setup patch coordinate transforms for each layer context
   # * intialize various instance variables
-  # * call `setup` abstract method
+  # * calls `setup` abstract method
+  #
   constructor: (options) ->
     div = options.div
     isHeadless = options.isHeadless = options.isHeadless or not div?
@@ -73,13 +72,13 @@ class ABM.Model
     @refreshLinks = @refreshAgents = @refreshPatches = true
 
     # Give class prototypes a 'model' attribute that references this model.
-    @Patches = @extendWithModel(@world.Patches)
-    @Patch = @extendWithModel(@world.Patch)
-    @Agents = @extendWithModel(@world.Agents)
-    @Agent = @extendWithModel(@world.Agent)
-    @Links = @extendWithModel(@world.Links)
-    @Link = @extendWithModel(@world.Link)
-    @Set = @extendWithModel(@world.Set)
+    @Patches = @extendWithModel(@Patches)
+    @Patch = @extendWithModel(@Patch)
+    @Agents = @extendWithModel(@Agents)
+    @Agent = @extendWithModel(@Agent)
+    @Links = @extendWithModel(@Links)
+    @Link = @extendWithModel(@Link)
+    @Set = @extendWithModel(@Set)
 
     # Initialize agentsets.
     @patches = new @Patches @Patch, "patches"
@@ -87,7 +86,6 @@ class ABM.Model
     @links = new @Links @Link, "links"
 
     # Initialize model global resources
-    @debugging = false
     @modelReady = false
     @globalNames = null
     @globalNames = u.ownKeys @
@@ -100,16 +98,19 @@ class ABM.Model
       @globals() unless @globalNames.set
 
   # Initialize/reset world parameters.
+  #
   setWorld: (options) ->
-    defaults = {
+    defaults = {patchSize: 13, mapSize: 32, isTorus: false, isHeadless: false}
+
+    classes = {
       Agents: ABM.Agents, Agent: ABM.Agent, Links: ABM.Links, Link: ABM.Link,
-      Patches: ABM.Patches, Patch: ABM.Patch, Set: ABM.Set,
-      patchSize: 13, mapSize: 32, isTorus: false, hasNeighbors: true,
-      isHeadless: false}
+      Patches: ABM.Patches, Patch: ABM.Patch, Set: ABM.Set}
 
     for own key, value of defaults
       options[key] ?= value
-    console.log options
+
+    for own key, value of classes
+      options[key] ?= value
 
     options.min ?= {x: -1 * options.mapSize / 2, y: -1 * options.mapSize / 2}
     options.max ?= {x: options.mapSize / 2, y: options.mapSize / 2}
@@ -118,7 +119,10 @@ class ABM.Model
     @world = {}
 
     for own key, value of options
-      @world[key] = value
+      if classes[key]?
+        @[key] = value
+      else
+        @world[key] = value
 
     @world.width = @world.max.x - @world.min.x + 1
     @world.height = @world.max.y - @world.min.y + 1
@@ -144,6 +148,7 @@ class ABM.Model
   # Add this model to a class's prototype. This is used in
   # the model constructor to create Patch/Patches, Agent/Agents,
   # and Link/Links classes with a built-in reference to their model.
+  #
   extendWithModel: (original) ->
     model = @
     class extendedClass extends original
@@ -153,50 +158,62 @@ class ABM.Model
         super
     return extendedClass
 
-#### Optimizations:
-  
-  # Modelers "tune" their model by adjusting flags:<br>
-  # `@refreshLinks, @refreshAgents, @refreshPatches`<br>
-  # and by the following helper methods:
+  # ### Optimizations
 
-  # Draw patches using scaled image of colors. Note anti-aliasing may occur
-  # if browser does not support imageSmoothingEnabled or equivalent.
+  # TODO consider whether to keep.
+  
+  # Draw patches using scaled image of colors. Note anti-aliasing may
+  # occur if browser does not support imageSmoothingEnabled or
+  # equivalent.
+  #
   setFastPatches: -> @patches.usePixels()
 
-  # Patches are all the same static default color, just "clear" entire canvas.
-  # Don't use if patch breeds have different colors.
+  # Patches are all the same static default color, just "clear" entire
+  # canvas.  Don't use if patch breeds have different colors.
+  #
   setMonochromePatches: -> @patches.monochrome = true
     
-#### User Model Creation
-# A user's model is made by subclassing Model and over-riding these
-# two abstract methods. `super` need not be called.
-  
+  # ### User Model Creation
+
+  # A user's model is made by subclassing Model and over-riding
+  # startup and setup. `super` need not be called.
+  #
   # Initialize model resources (images, files) here.  
   # Uses util.waitOn so can be be async.
+  #
   startup: -> # called by constructor
 
   # Initialize your model variables and defaults here.
-  # If async used, make sure step/draw are aware of possible missing data.
+  #
+  # If async used, make sure step/draw are aware of possible missing
+  # data.
+  #
   setup: ->
 
-  # Update/step your model here
-  step: -> # called each step of the animation
+  # Update/step your model here.
+  #
+  # Called each step of the animation.
+  #
+  step: ->
 
-#### Animation and Reset methods
+  # ### Animation and Reset methods
 
-# Convenience access to animator:
-
-  # Start/stop the animation
+  # Start the animation.
+  # 
   start: ->
     u.waitOn (=> @modelReady), (=> @animator.start())
     @isRunning = true
     @
 
+  # Stop the animation.
+  #
   stop: ->
     @animator.stop()
     @isRunning = false
     @
 
+  # Stop the animation if it is running, start it if it isn't.
+  #
   toggle: ->
     if @isRunning
       @stop()
@@ -205,13 +222,15 @@ class ABM.Model
 
   # Animate once by `step(); draw()`. For UI and debugging from console.
   # Will advance the ticks/draws counters.
+  #
   once: ->
     unless @animator.stopped
       @stop()
     @animator.once()
     @
 
-  # Stop and reset the model, restarting if restart is true
+  # Stop and reset the model, restarting if restart is true.
+  #
   reset: (restart = false) ->
     console.log "reset: animator"
     
@@ -235,14 +254,15 @@ class ABM.Model
     console.log "reset: setup"
     
     @setup()
-    @setRootVars() if @debugging
+
     @start() if restart
 
-#### Animation.
+  # ### Animation.
   
-# Call the agentset draw methods if either the first draw call or
-# their "refresh" flags are set.  The latter are simple optimizations
-# to avoid redrawing the same static scene. Called by animator.
+  # Call the agentset draw methods if either the first draw call or
+  # their "refresh" flags are set. The latter are simple optimizations
+  # to avoid redrawing the same static scene. Called by animator.
+  #
   draw: (force = @animator.stopped) ->
     if force or @refreshPatches or @animator.draws is 1
       @patches.draw @contexts.patches
@@ -251,52 +271,54 @@ class ABM.Model
     if force or @refreshAgents  or @animator.draws is 1
       @agents.draw @contexts.agents
     if @spotlightAgent?
-      @drawSpotlight @spotlightAgent, @contexts.spotlight
+      @drawSpotlight @spotlightAgent.position, @contexts.spotlight
 
-# Creates a spotlight effect on an agent, so we can follow it
-# throughout the model.
-# Use:
-#
-#     @setSpotliight breed.sample()
-#
-# to draw one of a random breed. Remove spotlight by passing `null`
+  # Creates a spotlight effect on an agent, so we can follow it
+  # throughout the model.
+  #
+  # Usage:
+  #
+  #   @setSpotliight breed.sample()
+  #
+  # To draw one of a random breed. Remove spotlight by passing `null`.
+  #
   setSpotlight: (@spotlightAgent) ->
-    u.clearContext @contexts.spotlight unless @spotlightAgent?
+    console.log @spotlightAgent
+    unless @spotlightAgent?
+      u.clearContext @contexts.spotlight
 
-  drawSpotlight: (agent, context) ->
+  # Draws the spotlight.
+  #
+  drawSpotlight: (position, context) ->
     u.clearContext context
     u.fillContext context, [0, 0, 0, 0.6]
     context.beginPath()
-    context.arc agent.x, agent.y, 3, 0, 2 * Math.PI, false
+    context.arc position.x, position.y, 3, 0, 2 * Math.PI, false
     context.fill()
 
-# ### Breeds
+  # ### Breeds
   
-# Three versions of NL's `breed` commands.
-#
-#     @patchBreeds "streets buildings"
-#     @agentBreeds "embers fires"
-#     @linkBreeds "spokes rims"
-#
-# will create 6 agentSets: 
-#
-#     @streets and @buildings
-#     @embers and @fires
-#     @spokes and @rims 
-#
-# These agentsets' `create` method create subclasses of Agent/Link.
-# Use of <breed>.setDefault methods work as for agents/links, creating default
-# values for the breed set:
-#
-#     @embers.setDefault "color", [255, 0, 0]
-#
-# ..will set the default color for just the embers. Note: patch breeds are currently
-# not usable due to the patches being prebuilt.  Stay tuned.
-  
+  # Three breed commands:
+  #
+  #  @patchBreeds ["streets", "buildings"]
+  #  @agentBreeds ["embers", "fires"]
+  #  @linkBreeds ["spokes", "rims"]
+  #
+  # will create 6 BreedSets: 
+  #
+  #  @streets and @buildings
+  #  @embers and @fires
+  #  @spokes and @rims 
+  #
+  # These BreedSets' `create` methods create subclasses of Agent/Link.
+  # Use of <breed>.setDefault methods work as for agents/links,
+  # creating default values for the breed set:
+  #
+  #  @embers.setDefault "color", [255, 0, 0]
+  #
+  # ..will set the default color for just the embers.
+  #
   createBreeds: (list, type, agentClass, breedSet) ->
-    if u.isString list
-      list = list.split(" ") # TODO remove
-
     breeds = []
     breeds.classes = {}
     breeds.sets = {}
@@ -325,28 +347,3 @@ class ABM.Model
 
   linkBreeds: (list) ->
     @createBreeds list, 'links', @Link, @Links
-  
-  # A simple debug aid which places short names in the global name space.
-  # Note we avoid using the actual name, such as "patches" because this
-  # can cause our modules to mistakenly depend on a global name.
-  # See [CoffeeConsole](http://goo.gl/1i7bd) Chrome extension too.
-  debug: (@debugging = true) ->
-    u.waitOn (=> @modelReady), (=> @setRootVars())
-    @
-
-  # TODO get rid of
-  setRootVars: ->
-    root.ps  = @patches
-    root.p0  = @patches[0]
-    root.as  = @agents
-    root.a0  = @agents[0]
-    root.ls  = @links
-    root.l0  = @links[0]
-    root.dr  = @drawing
-    root.u   = ABM.util
-    root.cx  = @contexts
-    root.an  = @animator
-    root.gl  = @globals
-    root.dv  = @div
-    root.root= root
-    root.app = @

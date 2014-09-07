@@ -1,5 +1,5 @@
 if typeof window == 'undefined'
-  code = require "../lib/agentscript.coffee"
+  code = require "../lib/agentbase.coffee"
   eval 'var ABM = this.ABM = code.ABM'
 
 u = ABM.util

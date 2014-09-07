@@ -1,13 +1,13 @@
 <html>
   <head>
     <title>TSP-GA Model</title>
-    <script src="../lib/agentscript.js"></script>
+    <script src="../lib/agentbase.js"></script>
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
     
     u = ABM.util
 
-    class MyModel extends ABM.Model
+    class Model extends ABM.Model
       setup: ->
         @agentBreeds ["nodes", "travelers"]
         
@@ -116,16 +116,12 @@
       reportNewTour: (a) ->
         console.log "new best tour at tick #{@animator.ticks}: #{a.tourLength} by traveler #{a.id}"
         
-    # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors
-    #   Defaults: 13, -16, 16, -16, 16, false, true
-    model = new MyModel {
+    model = new Model {
       div: "layers",
       patchSize: 16,
-      mapSize: 28,
-      hasNeighbors: false
+      mapSize: 28
     }
-    model.debug() # Debug: Put Model vars in global name space
-    model.start() # Run model immediately after startup initialization
+    model.start()
     
     </script>
   </head>

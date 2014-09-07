@@ -1,7 +1,7 @@
 <html>
   <head>
     <title>Template Model</title>
-    <script src="../lib/agentscript.js"></script>
+    <script src="../lib/agentbase.js"></script>
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
     # This is a general template for creating models.
@@ -30,14 +30,12 @@
       # processed by `starup`.  Useful for large files, but here just
       # for an example, not needed by simple models.
       startup: -> # called by constructor
-        u.shapes.add "bowtie", true, (c) -> u.shapes.poly c, [[-.5, -.5], [.5, .5], [-.5, .5], [.5, -.5]]
+        u.shapes.add "bowtie", true, (c) -> u.shapes.polygon c, [[-.5, -.5], [.5, .5], [-.5, .5], [.5, -.5]]
         # The following two example lines don't work when opened locally
         # in Chrome (they work fine from a webserver). Uncomment if you'd
         # like to add custom images.
         
-        # u.shapes.add "cc", true, u.importImage("data/coffee.png")
-        
-        # u.shapes.add "redfish", false, u.importImage("data/redfish64t.png")
+        # u.shapes.add "cc", true, u.importImage("images/coffee.png")
 
       # Initialize our model via the `setup` abstract method.
       # This model simply creates `population` agents with
@@ -68,7 +66,7 @@
         for patch in @patches.create()
           patch.color = u.randomGray()
           # Set x,y axes different color, use [0,0,0,0] for transparent pixel test
-          if patch.x is 0 or patch.y is 0
+          if patch.position.x is 0 or patch.position.y is 0
             patch.color = [255,0,0]
 
         # Our empty @agents Agents will have been created.  Here we
@@ -137,7 +135,7 @@
 
       updatePatches: (patch) -> # p is patch
         # Update patch colors to be a random gray.
-        if patch.x isnt 0 and patch.y isnt 0
+        if patch.position.x isnt 0 and patch.position.y isnt 0
           patch.color = u.randomGray()
 
       reportInfo: ->
@@ -156,24 +154,21 @@ average heading of agents:
     #     div: name of the div
     #     patchSize = 13: size (width & height) of each patch in pixels
     #     mapSize = 32: size (width & height) of the map in patches
-    #     torus = false: map has torus topology
-    # TODO
-    #     hasNeighbors = true
+    #     isTorus = false: map has torus topology
     #
     #     Alternatively to mapSize you can set the map-size manually:
     #     min: {x: x-coordinaye, y: y-coordinate}
     #     max: {x: x-coordinaye, y: y-coordinate}
     #
     # Defaults 13 for patchSize and 32 for mapSize
+    #
     model = new MyModel({
       div: "layers",
       patchSize: 13,
       mapSize: 32
-      isTorus: true,
-      hasNeighbors: false
+      isTorus: true
     })
-    .debug() # Debug: Put Model vars in global name space
-    .start() # Run model immediately after startup initialization
+    model.start()
     
     </script>
   </head>

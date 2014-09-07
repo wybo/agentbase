@@ -1,13 +1,13 @@
 <html>
   <head>
     <title>Pref-Attach Model</title>
-    <script src="../lib/agentscript.js"></script>
+    <script src="../lib/agentbase.js"></script>
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
     
     u = ABM.util
 
-    class MyModel extends ABM.Model
+    class Model extends ABM.Model
       setup: ->
         @refreshPatches = false # for static patches
         
@@ -50,14 +50,12 @@
       findPartner: ->
         @links.sample().bothEnds().sample()
 
-    model = new MyModel {
+    model = new Model {
       div: "layers",
       patchSize: 5,
-      mapSize: 90,
-      hasNeighbors: false
+      mapSize: 90
     }
-    model.debug() # Debug: Put Model vars in global name space
-    model.start() # Run model immediately after startup initialization
+    model.start()
 
     </script>
   </head>

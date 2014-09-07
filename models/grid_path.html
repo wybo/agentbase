@@ -1,13 +1,13 @@
 <html>
   <head>
     <title>Grid Path Model</title>
-    <script src="../lib/agentscript.js"></script>
+    <script src="../lib/agentbase.js"></script>
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
 
     u = ABM.util
 
-    class MyModel extends ABM.Model
+    class Model extends ABM.Model
       setup: ->
         @refreshAgents = false # for static agents
         
@@ -17,8 +17,7 @@
         # defaults
         @patches.setDefault "labelColor", [255, 255, 255]
         offset = Math.floor @world.size * .45
-        # @patches.setDefault "labelOffset", [12,14]
-        @patches.setDefault "labelOffset", [offset, offset]
+        @patches.setDefault "labelOffset", {x: offset, y: offset}
         u.contextTextParams @contexts.patches, "10px sans-serif", "right", "bottom"
         # u.elementTextParams @contexts.contexts.patches, "10px sans-serif", "right", "bottom"
         @agents.setDefault "shape", "circle"
@@ -112,14 +111,13 @@
               patches.push nextPatch
         null
 
-    new MyModel({
+    model = new Model({
       div: "layers",
       patchSize: 30,
       min: {x: 0, y: 0},
       max: {x: 10, y: 10}
     })
-    .start()
-    .debug()
+    model.start()
 
     </script>
   </head>

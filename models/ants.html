@@ -1,13 +1,13 @@
 <html>
   <head>
     <title>Ants Model</title>
-    <script src="../lib/agentscript.js"></script>
+    <script src="../lib/agentbase.js"></script>
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
 
     u = ABM.util
 
-    class MyModel extends ABM.Model
+    class Model extends ABM.Model
       setup: ->
         # No optimizations: 10fps
         @patches.usePixels() # 24fps
@@ -146,13 +146,13 @@
       patchRectangle: (point, dw, dh) ->
         @patches.patchRectangle @patches.patch(point), dw, dh, true
 
-    model = new MyModel {
+    model = new Model {
       div: "layers",
       patchSize: 6,
       mapSize: 80
     }
-    model.debug() # Debug: Put Model vars in global name space
-    model.start() # Run model immediately after startup initialization
+    model.start()
+
     </script>
   </head>
   <body>

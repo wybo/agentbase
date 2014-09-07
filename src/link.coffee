@@ -1,31 +1,29 @@
-# ### Link
-  
-# Class Link connects two agent endpoints for graph modeling.
+# Link connects two agent endpoints for graph modeling.
+#
 class ABM.Link
-  # Constructor initializes instance variables:
-  #
-  # * id:         unique identifier, promoted by agentset create() factory method
-  # * breed:      the agentset this agent belongs to
-  # * from:       two agents being connected
-  # * to:
-  # * color:      defaults to light gray
-  # * thickness:  thickness in pixels of the link, default 2
-  # * label:      a text label drawn on my instances
-  # * labelColor: the color of my label text
-  # * labelOffset:the x, y offset of my label from my x, y location
-  # * hidden:     whether or not to draw this link
-
-  id: null               # unique id, promoted by agentset create factory method
-  breed: null            # my agentSet, set by the agentSet owning me
-  from: null              # My two endpoints, using agents. Promoted by ctor
+  # Unique ID, set by BreedSet create() factory method.
+  id: null
+  # The BreedSet this agent belongs to.
+  breed: null
+  # My two endpoints, using agents. The first one.
+  from: null
+  # The second endpoint.
   to: null
-  color: [130, 130, 130] # my color
-  thickness: 2           # my thickness in pixels, default to 2
-  hidden: false          # draw me?
-  label: null            # my text
-  labelColor: [0, 0, 0]  # its color
-  labelOffset: [0, 0]    # its offset from my midpoint
+  # The links' color, an RGB array. Defaults to light gray.
+  color: [130, 130, 130]
+  # Thickness in pixels of the link.
+  thickness: 2
+  # Whether or not to draw this link.
+  hidden: false
+  # A text label
+  label: null
+  # The color of the label text.
+  labelColor: [0, 0, 0]
+  # The x, y offset of the label.
+  labelOffset: {x: 0, y: 0}
 
+  # Initializes instance variables.
+  #
   constructor: (@from, @to) ->
     @from.links.push @
     @to.links.push @
@@ -33,6 +31,7 @@ class ABM.Link
   # Draw a line between the two endpoints. Draws "around" the
   # torus if appropriate using two lines. As with Agent.draw,
   # is called with patch coordinate transform installed.
+  #
   draw: (context) ->
     context.save()
     context.strokeStyle = u.colorString @color
@@ -44,12 +43,12 @@ class ABM.Link
       context.lineTo @to.position.x, @to.position.y
     else
       point = u.closestTorusPoint @from.position, @to.position,
-        @model.patches.numX, @model.patches.numY
+        @model.patches.width, @model.patches.height
       context.moveTo @from.position.x, @from.position.y
       context.lineTo point.x, point.y
       if point.x isnt @to.position.x or point.y isnt @to.position.y
         point = u.closestTorusPoint @to.position, @from.position,
-          @model.patches.numX, @model.patches.numY
+          @model.patches.width, @model.patches.height
         context.moveTo @to.position.x, @to.position.y
         context.lineTo point.x, point.y
 
@@ -63,25 +62,30 @@ class ABM.Link
       [x, y] = @model.patches.patchXYtoPixelXY x0, y0
       u.contextDrawText context, @label, x + @labelOffset[0], y + @labelOffset[1], @labelColor
   
-  # Remove this link from the agent set
+  # Remove this link from the agent set.
+  #
   die: ->
     @breed.remove @
     @from.links.remove @
     @to.links.remove @
     null
   
-  # Return the two endpoints of this link
+  # Return the two endpoints of this link.
+  #
   bothEnds: ->
     new ABM.Array(@from, @to)
   
   # Return the distance between the endpoints with the current topology.
+  #
   length: ->
     @from.distance @to.position
   
   # Return the other end of the link, given an endpoint agent.
+  #
   # Assumes the given input *is* one of the link endpoint pairs!
-  otherEnd: (a) ->
-    if @from is a 
+  #
+  otherEnd: (agent) ->
+    if @from is agent
       @to
     else
       @from

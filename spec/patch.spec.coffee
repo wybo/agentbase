@@ -121,3 +121,20 @@ describe "Patch", ->
 
       neighbors = patch.neighbors(range: 1)
       expect(patch.neighborsCache['{"range":1}'].length).toBe 8
+
+  describe "sprout", ->
+    it "gets the patch", ->
+      model = t.setupModel()
+      patch = model.patches.patch x: -20, y: 20
+
+      agent_count = model.agents.length
+      @adder = new ABM.Array
+
+      test = (object) => # keep context
+        @adder.push object.id
+
+      patch.sprout(2, model.agents, test)
+
+      expect(model.agents.length).toBe agent_count + 2
+      expect(@adder.length).toBe 2
+      expect(@adder.last()).toBe model.agents.last().id

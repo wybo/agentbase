@@ -1,44 +1,38 @@
 ### AgentScript
 
-AgentScript is a minimalist Agent Based Modeling (ABM) framework based on [NetLogo](http://ccl.northwestern.edu/netlogo/) agent semantics.  Its goal is to promote the Agent Oriented Programming model in a highly deployable [CoffeeScript](http://coffeescript.org/)/JavaScript implementation. Please drop by our [Google Group](https://groups.google.com/forum/?hl=en#!forum/agentscript) to get involved. We have a gh-pages site [agentscript.org](http://agentscript.org/).
+AgentBase is a minimalist Agent Based Modeling (ABM) platform that allows you to quickly build models that run directly in the browser. It follows [NetLogo](http://ccl.northwestern.edu/netlogo/)'s Agent Oriented Programming model and is entirely implemented in [CoffeeScript](http://coffeescript.org/). Tinker with models and share them on [agentbase.org](http://agentbase.org/) or drop by our [Google Group](https://groups.google.com/forum/?hl=en#!forum/agentbase) to get involved.
+
+We think:
+- ABM models should be easy to share and run directly from a webpage. No software to install.
+- AgentBase is optimized for the rapid development of illustrative models: It values minimalism over complexity, readable and pretty code over cpu performance, and sensible defaults over configurability. It is [opinionated software](https://gettingreal.37signals.com/ch04_Make_Opinionated_Software.php).
+- [NetLogo](http://ccl.northwestern.edu/netlogo/) (the most commonly used ABM toolset) is a great inspiration. However, we don't try to copy every bit of it. The web is not the desktop. Coffeescript is not Logo.
+- AgentBase is well-tested through automated testing and thus a platform that you can trust. [See for yourself] TODO.
 
 #### Documentation
 
-Currently the documentation is hosted directly on our [GitHub Pages](http://backspaces.github.io/agentscript) or directly from [agentscript.org](http://agentscript.org/) from the docco generated html found in the doc/ directory.
+Documentation is hosted on [GitHub](http://wybo.github.io/agentbase) and on [docs.agentbase.org](http://docs.agentbase.org/). It is generated from docco in the source code.
 
-[**util.coffee**](docs/util.html): is the base module for all of the miscellaneous functions used by the rest of the project.
-
-[**shapes.coffee**](docs/shapes.html): is a simple agent shapes module containing the default shapes and a few functions for getting the named shapes and adding your own shapes.
-
-[**agentset.coffee**](docs/agentset.html) AgentSet is the core Array subclass used by patches, agents, and links.
-
-[**patches.coffee**](docs/patches.html) The Agentset subclass for class Patches and class Patch which it manages.
+[**template.html**](http://docs.agentbase.org/template.html) is a trivial subclass of Model showing the basic structure how you build your own models. In addition, the models/ directory contains 10 simple models used in teaching NetLogo. You can [run the model here](models/template.html).
 
 [**agents.coffee**](docs/agents.html) The Agentset subclass for class Agents and class Agent which it manages.
+
+[**patches.coffee**](docs/patches.html) The Agentset subclass for class Patches and class Patch which it manages.
 
 [**links.coffee**](docs/links.html) The Agentset subclass for class Links and class Link which it manages.
 
 [**model.coffee**](docs/model.html) is the top level integration for all the agentsets and is subclassed by all user models.
 
-[**template.html**](docs/template.html) is a trivial subclass of Model showing the basic structure how you build your own models.  In addition, the models/ directory contains 10 simple models used in teaching NetLogo. You can [run the model here.](models/template.html)
+[**util.coffee**](docs/util.html): is the base module for tools used by the rest of the project.
 
-#### Add-ons
+[**util_shapes.coffee**](docs/util_shapes.html): contains the default shapes and a few functions for getting named shapes and adding your own shapes.
 
-The extras/ directory contains libraries that are too specialized to be in the core AgentScript but are essential for certain applications.  They are compiled to JavaScript in the lib/ directory.
+[**util_array.coffee**](docs/util_array.html): contains array helpers. If you don't want them added to Array, you should set TODO in your model.
 
-[**data.coffee**](docs/data.html) A 2D DataSet library for data best expressed as an array of numbers.  It includes the ability to treat Images as data, to parse GIS elevation .asc files, to create datasets from patch variables etc.  It includes analytic abilities like nearest neighbor and bilinear sampling, convolution with 3x3 kernels, and resampling datasets to different resolutions.
-
-[**data.tile.js**](docs/data.tile.html) An addon to the DataSet library for creating datasets from data tiles. It includes methods for embedding a [Leaflet](http://leafletjs.com) map, and for binding a dataset to tiles loaded by a Leaflet layer. See the [tiledroplets model](models/tiledroplets.html) for an example.
-
-[**fbui.coffee**](docs/fbui.html) A simple start at a User Interface abstraction, with JSON representing buttons, sliders, switches and menus.  Each item in the JSON tree modifies the state of the model, either directly by setting Model variables or indirectly by calling a method in class Model.
-
-[**as.dat.gui.js**](docs/as.dat.gui.html) A [dat.GUI](https://code.google.com/p/dat-gui/) based UI using the JSON tree mentioned above to specify the UI. This gives AgentScript a sophisticated HTML/CSS/JavaScript as well as the distributed fbui above. See the [flock model](models/flock.html) for an example.
-
-[**mouse.coffee**](docs/mouse.html) A trivial event based interface to the mouse, mainly for direct interaction with the model's graphic layers.  It converts raw mouse coordinates into patch coordinates.
+[**agentset.coffee**](docs/breedestset.html) AgentSet is the core Array subclass used by patches, agents, and links.
 
 #### Sample Models
 
-The models/ directory contains tiny models used both as unit tests and as examples to get started with.  They usually print to the console.log, so opening the developer's JavaScript console will show model information.
+The models/ directory contains example models that you can use to get started with. They show what AgentBase can do. Some print to the console.log, so opening the developer's JavaScript console will show model information.
 
 [**ants.html**](models/ants.html) A model of ant foraging behavior incorporating a nest location and food pheromone diffusion.
 
@@ -66,7 +60,7 @@ The models/ directory contains tiny models used both as unit tests and as exampl
 
 [**tiledroplets.html**](models/tiledroplets.html) A model similar to the above droplets.html, but here the droplets move on top of a Leaflet map, and elevation data is loaded from a tileserver as the map is panned. This example uses the data.js, data.tile.js, and as.dat.gui.js extras.
 
-[**life.html**](models/life.html) An implementation of [Conway's Game of Life](http://en.wikipedia.org/wiki/Conway's_Game_of_Life) with a twist. This example demonstrates running multiple models on the same page and uses a small as.dat.gui.js interface.
+[**life.html**](models/life.html) An implementation of [Conway's Game of Life](http://en.wikipedia.org/wiki/Conway's_Game_of_Life) with a twist. This example demonstrates running multiple models on the same page.
 
 #### Sample Models Format
 
@@ -98,7 +92,7 @@ Our example models use CoffeeScript directly within the browser via `text/coffee
 
 You can see this by running a sample model, then using the browser's View Page Source.
 
-Often the models will print to the "JavaScript console" while they run.
+Many of the models print to the "JavaScript console" while they run.
 
 #### Building a Model
 
@@ -133,24 +127,22 @@ JavaScript modelers can simply replace the empty ABM.Model abstract methods:
 
 See [sketches/jsmodel.html](sketches/jsmodel.html) for a random walker in JavaScript.  We'll also have more of our models/ converted to JavaScript in the future.
 
-
 #### Files
 
-    Gulpfile.js         Gulp file for build, docs etc.
+    Gulpfile.coffee     Gulp file for build, docs etc.
     LICENSE             GPLv3 License
     README.md           This file
+    STYLEGUIDE.txt      Suggestions for coding-style 
     package.json        NPM Package file, see npm install below
     docs/               Docco documentation
-    extras/             AgentScript extensions
     lib/                All .js/min.js files
     models/             Sample models
-    sketches/           Very simple models showing gist-like hints
     src/                Component .coffee files for agentscript.coffee
     tools/              coffee-script.js and others
 
 #### Build
 
-If you are forking/pulling agentscript, install the dev dependencies with
+Install the dev dependencies with
 
     npm install
 
@@ -158,74 +150,47 @@ and build with
 
     npm run all
 
-We're currently using [gulp](http://gulpjs.com/), along with several plugins:
-
-    ls node_modules/
-
-We rely on no globally installed npm modules.  We recommend you do *not* globally install gulp ([local/global discussion]( http://goo.gl/OhdWvO)).
-
-There are two ways to run tasks:
-
-* NPM: run build commands via the npm scripts installed in package.json.  For example,
-
-        npm run docs
-
-    will create the documentation from the source files.  This is equivalent to "gulp docs".  See the "scripts" section of package.json for all "npm run" commands.
-
-* Gulp: run gulp commands directly.  If gulp is not installed globally (our default) you can easily run gulp by including "./node_modules/.bin" in your PATH or by calling it directly with `./node_modules/.bin/gulp`.  To see the available gulp tasks, simply run "gulp" which will list them.
-
-Gulp is used to compile src/ and extras/ into lib/ as .js and .min.js source. We allow both .js and .coffee in our project.  We currently do not provide sourcemaps for the .coffee files.
-
-Our primary tasks are run via `npm run <task>` where tasks are:
+Our tasks are all run via npm run <task>` and they are:
 
     watch         # Watch for source file updates, invoke build
     build         # compile and minify src/ and extras/ to lib/
     docs          # use docco on sources to create docs/
     all           # Compile coffee, minify js, create docs
 
-We also have a few git tasks:
-
-    git-diff      # git diff the core files
-    git-prep      # build all, git add ., git status
-    git-commit    # git commit, push to github
-    git-pages     # checkout gh-pages, merge master, push to gh-pages, checkout master
-
-
+Behind the scenes npm invokes [gulp](http://gulpjs.com/), whose tasks
+are defined in Gulpfile.coffee. The command "npm run all" is equivalent
+to "gulp all". The "npm run" commands are defined in package.json.
 
 #### Contribute
 
-Before any commit, please make sure all the unit tests ("cake test") and models work as expected (they are part of our test-suite for now).  We'll be adding more tests, soon.  Generally the test models will run locally with a file:// url, but http://localhost is safer.
+If you would like to contribute, please make sure all the unit tests ("cake test") and sample models work as expected before you create a pull-request. If you add new functionality, add matching tests as well.
 
-Similarly, make sure the docco files display correctly.  They can be built with `npm run docs`.  Use your browser on docs/ to test.  Note that all single line comments are converted into docs using Markdown.  Be careful not to mistakenly add a "code" comment to the docs!
-
-Pull requests will be accepted without your building your own gh-pages as long as the tests run OK locally.  However, if you want to be awesome, once your pull request is accepted, merge your changes into the gh-pages branch, update the README.md, and send another pull request!
+In addition, make sure the docco files display correctly. They can be built with `npm run docs`. Use your browser on docs/ to test. Note that all single line comments are converted into docs using Markdown. Be careful not to mistakenly add a "code" comment to the docs!
 
 The typical workflow looks like:
 
 * npm run watch - process files when they change.
 * npm run all - compile & minify all code, create docs. Done before git add to insure everything is ready for git.
 * npm run git-diff - diff all source and related files.  Good for creating complete commit comments. You may want to pipe this into your editor.
-* npm run git-prep - in master, invokes "gulp all", git add ., git status.  Used prior to commiting, stages all files.  Remember to git rm any files that are removed so that remote correctly sync'ed.
+* npm run git-prep - in master, invokes "npm run all", git add ., git status.  Used prior to commiting, stages all files. Remember to git rm any files that are removed so that remote correctly sync'ed.
 * npm run git-commit - in master, commit locally and push to github
-* npm run git-pages - checkout gh-pages branch, merge master, push to github, change back to master.
-
-The git:pages task should be run with no watch task running, otherwise unintentional compiles will occur when changing to the gh-pages branch, bummer!  Similarly, be careful your editor isn't confused by the gh-pages change .. it completely changes your working directory twice!
-
 
 #### License
 
-Copyright Owen Densmore, RedfishGroup LLC, 2012, 2013<br>
-http://agentscript.org/<br>
-AgentScript may be freely distributed under the GPLv3 license:
+Copyright (c) Wybo Wiersma, 2014, (http://agentbase.org). AgentBase
+is licensed under the [GNU General Public License, version 
+3](http://www.fsf.org/licensing/licenses/gpl-3.0.html). AgentBase 
+was derived from and inspired by [AgentScript](http://agentscript.org)
+by Owen Densmore, RedfishGroup LLC, 2012-13 (under the same license).
 
-AgentScript is free software: you can redistribute it and/or modify
+AgentBase is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License

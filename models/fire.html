@@ -1,13 +1,13 @@
 <html>
   <head>
     <title>Fire Model</title>
-    <script src="../lib/agentscript.js"></script>
+    <script src="../lib/agentbase.js"></script>
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
 
     u = ABM.util
 
-    class MyModel extends ABM.Model
+    class Model extends ABM.Model
       setup: ->
         @agentBreeds ["embers", "fires"]
         @agents.setDefault "shape", "square"
@@ -72,13 +72,12 @@
 
         @fadeEmbers()
 
-    model = new MyModel {
+    model = new Model {
       div: "layers",
       patchSize: 2,
       mapSize: 250
     }
-    model.debug() # Debug: Put Model vars in global name space
-    model.start() # Run model immediately after startup initialization
+    model.start()
     
     </script>
   </head>
