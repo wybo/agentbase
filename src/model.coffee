@@ -100,29 +100,30 @@ class ABM.Model
   # Initialize/reset world parameters.
   #
   setWorld: (options) ->
-    defaults = {patchSize: 13, mapSize: 32, isTorus: false, isHeadless: false}
-
-    classes = {
+    defaults = {
+      isHeadless: false,
       Agents: ABM.Agents, Agent: ABM.Agent, Links: ABM.Links, Link: ABM.Link,
       Patches: ABM.Patches, Patch: ABM.Patch, Set: ABM.Set}
+
+    worldDefaults = {patchSize: 13, mapSize: 32, isTorus: false}
 
     for own key, value of defaults
       options[key] ?= value
 
-    for own key, value of classes
+    for own key, value of worldDefaults
       options[key] ?= value
-
-    options.min ?= {x: -1 * options.mapSize / 2, y: -1 * options.mapSize / 2}
-    options.max ?= {x: options.mapSize / 2, y: options.mapSize / 2}
-    options.mapSize = null # not passed on, because optional
 
     @world = {}
 
     for own key, value of options
-      if classes[key]?
-        @[key] = value
-      else
+      if worldDefaults[key]?
         @world[key] = value
+      else
+        @[key] = value
+
+    @world.min ?= {x: -1 * @world.mapSize / 2, y: -1 * @world.mapSize / 2}
+    @world.max ?= {x: @world.mapSize / 2, y: @world.mapSize / 2}
+    @world.mapSize = null # not passed on, because optional
 
     @world.width = @world.max.x - @world.min.x + 1
     @world.height = @world.max.y - @world.min.y + 1
