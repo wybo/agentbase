@@ -7,7 +7,7 @@
     
     u = ABM.util
 
-    class Model extends ABM.Model
+    class ABM.NBodyModel extends ABM.Model
       setup: ->
         @refreshPatches = false # for static patches
         
@@ -59,7 +59,7 @@
             agent.vy = u.sign(-agent.position.y) * .001
         null
         
-    model = new Model {
+    model = new ABM.NBodyModel {
       div: "layers",
       patchSize: 2,
       min: {x: -120, y: -100},

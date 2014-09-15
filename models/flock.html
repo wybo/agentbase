@@ -7,7 +7,7 @@
     
     u = ABM.util
 
-    class Model extends ABM.Model
+    class ABM.FlockModel extends ABM.Model
       setVision: (@vision) ->
 
       setMaxTurn: (@maxTurn) ->
@@ -54,13 +54,6 @@
 
         for agent in @agents
           @flock agent
-
-        if @animator.draws is 2 # Show the sprite sheet if there is one after first draw
-          sheet = u.shapes.spriteSheets.last() if u.shapes.spriteSheets.length isnt 0
-          if sheet?
-            console.log sheet if @useConsole
-            document.getElementById("play").appendChild(sheet.canvas)
-        # @stop() if @animator.ticks is 400
 
       flock: (agent) ->
         flockmates = agent.neighbors(@vision)
@@ -109,7 +102,7 @@
         dy = (Math.cos a.heading for a in @agents).reduce (x, y) -> x + y
         Math.sqrt(dx * dx + dy * dy) / @population
 
-    model = new Model({
+    model = new ABM.FlockModel({
       div: "layers",
       patchSize: 15,
       isTorus: true
@@ -120,6 +113,5 @@
   </head>
   <body>
     <div id="layers"></div>
-    <div id="play" style="float:right;"></div>
   </body>
 </html>

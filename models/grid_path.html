@@ -7,7 +7,7 @@
 
     u = ABM.util
 
-    class Model extends ABM.Model
+    class ABM.GridPathModel extends ABM.Model
       setup: ->
         @refreshAgents = false # for static agents
         
@@ -111,7 +111,7 @@
               patches.push nextPatch
         null
 
-    model = new Model({
+    model = new ABM.GridPathModel({
       div: "layers",
       patchSize: 30,
       min: {x: 0, y: 0},

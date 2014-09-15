@@ -1,42 +1,45 @@
 ### AgentBase
 
-AgentBase is a minimalist Agent Based Modeling (ABM) platform that allows you to quickly build models that run directly in the browser. It follows [NetLogo](http://ccl.northwestern.edu/netlogo/)'s Agent riented Programming model and is entirely implemented in [CoffeeScript](http://coffeescript.org/). Tinker with models and share them on [agentbase.org](http://agentbase.org/) or drop by our [Google Group](https://groups.google.com/forum/?hl=en#!forum/agentbase) to get involved. Documentation [is here](http://doc.agentbase.org/).
+AgentBase is a minimalist Agent Based Modeling (ABM) platform that allows you to quickly build models that run directly in the browser. It follows [NetLogo](http://ccl.northwestern.edu/netlogo/)'s Agent oriented Programming model and is entirely implemented in [CoffeeScript](http://coffeescript.org/). Tinker with models on [agentbase.org](http://agentbase.org/) or drop by our [Google Group](https://groups.google.com/d/forum/agentbase) to get involved. Documentation [is here](http://doc.agentbase.org/).
 
-We think:
-- ABM models should be easy to share and run directly from a webpage. No software to install.
-- AgentBase is optimized for the quick development of illustrative ABM models: It values minimalism over complexity, readable and pretty code over cpu performance, and sensible defaults over choice. It is [opinionated software](https://gettingreal.37signals.com/ch04_Make_Opinionated_Software.php).
-- [NetLogo](http://ccl.northwestern.edu/netlogo/) (the most commonly used ABM toolset) is a great inspiration. However, we don't try to copy every bit of it. Minimalistic is fine. The web is not the desktop. Coffeescript is not Logo.
-- AgentBase is well-tested through automated testing and thus a platform that you can trust. [See for yourself](http://lib.agentbase.org/spec.html).
+AgentBase:
+
+* Allows you to easily share and run ABM models, directly from a webpage. No software to install.
+* Is optimized for the quick development of illustrative ABM models: It values minimalism over complexity, readable and pretty code over cpu performance, and sensible defaults over choice. It is [opinionated software](https://gettingreal.37signals.com/ch04_Make_Opinionated_Software.php).
+* [NetLogo](http://ccl.northwestern.edu/netlogo/) (the most commonly used ABM toolset), is a great inspiration for us. However, we don't try to copy every bit of it. Minimalistic is fine. The web is not the desktop. Coffeescript is not Logo.
+* AgentBase is well-tested through automated testing and thus a platform that you can trust. [See for yourself](http://lib.agentbase.org/spec.html).
 
 #### Sample models
 
-The models/ directory contains example models that show what AgentBase can do.
+Have a look at these example models.
 
-[template.html](http://lib.agentbase.org/models/template.html) shows the basic structure of a model and (if you look at the source) is a good place to get started when you are building your own. [advanced_template.html](http://lib.agentbase.org/models/advanced_template.html) is more elaborate.
+[Template.html](http://lib.agentbase.org/models/template.html) shows the basic structure of a model and ([if you look at the source](http://agentbase.org/models/template.coffee)) is a good place to get started when you are building your own. [advanced_template.html](http://lib.agentbase.org/models/advanced_template.html) is more elaborate.
 
-[ants.html](http://lib.agentbase.org/models/ants.html) A model of ant foraging behavior incorporating a nest location and food pheromone diffusion.
+[Ants.html](http://lib.agentbase.org/models/ants.html) is a model of ant foraging behavior incorporating a nest location and food pheromone diffusion.
 
-[buttons.html](http://lib.agentbase.org/models/buttons.html) Stuart Kauffman's example of randomly connecting pairs of buttons in a pile resulting in a tipping point.
+[Buttons.html](http://lib.agentbase.org/models/buttons.html) provides Stuart Kauffman's example of randomly connecting pairs of buttons in a pile resulting in a tipping point.
 
-[diffusion.html](http://lib.agentbase.org/models/diffusion.html) Agents randomly flying on a patch grid dropping a color which is diffused over the grid.
+[Diffusion.html](http://lib.agentbase.org/models/diffusion.html) has randomly flying on a patch grid dropping a color which is diffused over the grid.
 
-[fire.html](http://lib.agentbase.org/models/fire.html) A cellular automata model of fire spreading and burn behavior.
+[Fire.html](http://lib.agentbase.org/models/fire.html) is a cellular automata model of fire spreading.
 
-[flock.html](http://lib.agentbase.org/models/flock.html) The classic "boids" model where agents each follow three simple rules resulting in realistic flocking. This example uses the as.dat.gui.js extra.
+[Flock.html](http://lib.agentbase.org/models/flock.html) is the classic "boids" model where agents each follow three simple rules resulting in realistic flocking. This example uses the as.dat.gui.js extra.
 
-[grid\_path.html](http://lib.agentbase.org/models/grid_path.html) One of Knuth's great puzzles on the probability of all Manhattan traversals diagonally traversing a grid.
+[Grid\_path.html](http://lib.agentbase.org/models/grid_path.html) shows one of Knuth's great puzzles on the probability of all Manhattan traversals diagonally traversing a grid.
 
-[life.html](http://lib.agentbase.org/models/life.html) An implementation of [Conway's Game of Life](http://en.wikipedia.org/wiki/Conway's_Game_of_Life) with a twist. This example demonstrates running multiple models on the same page.
+[Life.html](http://lib.agentbase.org/models/life.html) provides an implementation of [Conway's Game of Life](http://en.wikipedia.org/wiki/Conway's_Game_of_Life) with a twist. This example demonstrates running multiple models on the same page.
 
-[link\_travel.html](http://lib.agentbase.org/models/link_travel.html) Agents traversing a graph of nodes and links.
+[Link\_travel.html](http://lib.agentbase.org/models/link_travel.html) has agents traversing a graph of nodes and links.
 
-[n\_body.html](http://lib.agentbase.org/models/n_body.html) A simulation of the nonlinear gravitation of n bodies.
+[N\_body.html](http://lib.agentbase.org/models/n_body.html) is a simulation of the nonlinear gravitation of n bodies.
 
-[preferential\_attachment.html](http://lib.agentbase.org/models/preferential_attachment.html) An example of a dynamic graph where new links preferentially attach to the nodes that have the most links.  This results in a power-law distribution.
+[Preferential\_attachment.html](http://lib.agentbase.org/models/preferential_attachment.html) is a dynamic graph where new links preferentially attach to the nodes that have the most links.  This results in a power-law distribution.
 
-[traveling\_salesman.html](http://lib.agentbase.org/models/traveling_salesman.html) A Traveling Sales Person solution via a Genetic Algorithm showing the rapid conversion of stochastic methods.
+[Traveling\_salesman.html](http://lib.agentbase.org/models/traveling_salesman.html) demonstrates a Traveling Sales Person solution via a Genetic Algorithm showing the rapid conversion of stochastic methods.
 
 #### Building a model
+
+See the source of [template.html](http://lib.agentbase.org/models/template.html) and [advanced_template.html](http://lib.agentbase.org/models/advanced_template.html) or any other example model to get started.
 
 Class ABM.Model is an "abstract class" with three abscract methods:
 
@@ -45,8 +48,6 @@ Class ABM.Model is an "abstract class" with three abscract methods:
   step()    Called by the animator to advance the model one step.
 
 Simply subclass ABM.Model to build a model, supplying the three abstract methods.
-
-See the source of [template.html](http://lib.agentbase.org/models/template.html) and [advanced_template.html](http://lib.agentbase.org/models/advanced_template.html) to get started.
 
 #### Development installation
 
@@ -64,16 +65,14 @@ and build with
 
     npm run watch
 
-Our tasks are all run via npm run <task>` and they are:
+Tasks are all run via npm run <task>` and they are:
 
     watch         # Watch for source file updates, invoke build
     build         # compile and minify src/ and extras/ to lib/
     doc           # use codo on sources to create docs/
     all           # Compile coffee, minify js, create docs
 
-Behind the scenes npm invokes [gulp](http://gulpjs.com/), whose tasks
-are defined in Gulpfile.coffee. The command "npm run all" is equivalent
-to "gulp all". All "npm run" commands are defined in package.json.
+Behind the scenes npm invokes [gulp](http://gulpjs.com/), whose tasks are defined in Gulpfile.coffee. The command "npm run all" is equivalent to "gulp all". All "npm run" commands are defined in package.json.
 
 #### Contribute
 

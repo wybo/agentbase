@@ -7,7 +7,7 @@
 
     u = ABM.util
 
-    class Model extends ABM.Model
+    class ABM.DiffusionModel extends ABM.Model
       setup: ->
         # No optimizations: 30fps
         @patches.usePixels() # 57+fps
@@ -43,7 +43,7 @@
         @patches.diffuse "heat", @diffusionRate, [255, 0, 0]
         # @stop() # debug: one step
 
-    model = new Model {
+    model = new ABM.DiffusionModel {
       div: "layers",
       patchSize: 10,
       min: {x: -25, y: -20},

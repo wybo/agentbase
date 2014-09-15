@@ -7,7 +7,7 @@
     
     u = ABM.util
 
-    class Model extends ABM.Model
+    class ABM.LinkTravelModel extends ABM.Model
       setup: ->
         @agentBreeds ["nodes", "drivers"]
         @nodes.setDefault "shape", "circle"
@@ -68,7 +68,7 @@
             driver.toNode = driver.toNode.linkNeighbors().sample()
         null # avoid returning "for" results above
 
-    model = new Model {
+    model = new ABM.LinkTravelModel {
       div: "layers",
       patchSize: 13
     }

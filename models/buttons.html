@@ -7,7 +7,7 @@
 
     u = ABM.util
 
-    class Model extends ABM.Model
+    class ABM.ButtonsModel extends ABM.Model
       setup: ->
         @refreshPatches = false # for static patches
         @refreshLinks = false # for static links .. drown as created
@@ -70,7 +70,7 @@
         unMarked = (n for n in node.linkNeighbors() when not n.marked)
         @markNeighbors n for n in unMarked
 
-    model = new Model {
+    model = new ABM.ButtonsModel {
       div: "layers"
     }
     model.start()

@@ -105,7 +105,8 @@ class ABM.Model
       Agents: ABM.Agents, Agent: ABM.Agent, Links: ABM.Links, Link: ABM.Link,
       Patches: ABM.Patches, Patch: ABM.Patch, Set: ABM.Set}
 
-    worldDefaults = {patchSize: 13, mapSize: 32, isTorus: false}
+    worldDefaults = {
+      patchSize: 13, mapSize: 32, isTorus: false, min: null, max: null}
 
     for own key, value of defaults
       options[key] ?= value
@@ -116,14 +117,21 @@ class ABM.Model
     @world = {}
 
     for own key, value of options
-      if worldDefaults[key]?
+      if typeof worldDefaults[key] isnt 'undefined'
         @world[key] = value
       else
         @[key] = value
 
-    @world.min ?= {x: -1 * @world.mapSize / 2, y: -1 * @world.mapSize / 2}
-    @world.max ?= {x: @world.mapSize / 2, y: @world.mapSize / 2}
+    halfDiameter = @world.mapSize / 2
+    shift = 0
     @world.mapSize = null # not passed on, because optional
+    if Math.floor(halfDiameter) != halfDiameter
+      halfDiameter = Math.floor(halfDiameter)
+    else
+      shift = 1
+
+    @world.min ?= {x: -1 * halfDiameter + shift, y: -1 * halfDiameter + shift}
+    @world.max ?= {x: halfDiameter, y: halfDiameter}
 
     @world.width = @world.max.x - @world.min.x + 1
     @world.height = @world.max.y - @world.min.y + 1
@@ -230,17 +238,18 @@ class ABM.Model
     @animator.once()
     @
 
-  # Stop and reset the model, restarting if restart is true.
+  # Stop and reset the model
   #
-  reset: (restart = false) ->
+  reset: ->
     console.log "reset: animator"
     
     @animator.reset() # stop & reset ticks/steps counters
+    @isRunning = false
     
     console.log "reset: contexts"
     
     # clear/resize before agentsets
-    for key, value in @contexts
+    for key, value of @contexts
       if value.canvas?
         value.restore()
         @setContextTransform value
@@ -251,12 +260,16 @@ class ABM.Model
     @agents = new @Agents @Agent, "agents"
     @links = new @Links @Link, "links"
 
-    u.s.spriteSheets.length = 0 # possibly null out entries?
+    u.shapes.spriteSheets.length = 0 # possibly null out entries?
     console.log "reset: setup"
     
     @setup()
 
-    @start() if restart
+  # Stop and reset the model, then start it again
+  #
+  restart: ->
+    @reset()
+    @start()
 
   # ### Animation.
   

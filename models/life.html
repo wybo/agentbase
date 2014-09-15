@@ -5,7 +5,7 @@
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
 
-    class Model extends ABM.Model
+    class ABM.LifeModel extends ABM.Model
       startup: ->
         @livingColor = [255, 255, 255]
         @deadColor = [0, 0, 0]
@@ -66,16 +66,18 @@
         @setup()
         @linkedModel.setup()
 
+    # Model definition done
+
     options = {
       patchSize: 8,
       mapSize: 50
     }
 
     options.div = 'model2'
-    model1 = window.model1 = new Model(options)
+    model1 = window.model1 = new ABM.LifeModel(options)
 
     options.div = 'model1'
-    model2 = window.model2 = new Model(options)
+    model2 = window.model2 = new ABM.LifeModel(options)
 
     # make the model divs display side by side
     model1.div.style.display = model2.div.style.display = 'inline-block'

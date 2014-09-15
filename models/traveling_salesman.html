@@ -7,7 +7,7 @@
     
     u = ABM.util
 
-    class Model extends ABM.Model
+    class ABM.TravelingSalesmanModel extends ABM.Model
       setup: ->
         @agentBreeds ["nodes", "travelers"]
         
@@ -116,7 +116,7 @@
       reportNewTour: (a) ->
         console.log "new best tour at tick #{@animator.ticks}: #{a.tourLength} by traveler #{a.id}"
         
-    model = new Model {
+    model = new ABM.TravelingSalesmanModel {
       div: "layers",
       patchSize: 16,
       mapSize: 28

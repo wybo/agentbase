@@ -7,7 +7,7 @@
 
     u = ABM.util
 
-    class Model extends ABM.Model
+    class ABM.AntsModel extends ABM.Model
       setup: ->
         # No optimizations: 10fps
         @patches.usePixels() # 24fps
@@ -146,7 +146,7 @@
       patchRectangle: (point, dw, dh) ->
         @patches.patchRectangle @patches.patch(point), dw, dh, true
 
-    model = new Model {
+    model = new ABM.AntsModel {
       div: "layers",
       patchSize: 6,
       mapSize: 80

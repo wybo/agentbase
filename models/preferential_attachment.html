@@ -7,7 +7,7 @@
     
     u = ABM.util
 
-    class Model extends ABM.Model
+    class ABM.PreferentialAttachmentModel extends ABM.Model
       setup: ->
         @refreshPatches = false # for static patches
         
@@ -50,7 +50,7 @@
       findPartner: ->
         @links.sample().bothEnds().sample()
 
-    model = new Model {
+    model = new ABM.PreferentialAttachmentModel {
       div: "layers",
       patchSize: 5,
       mapSize: 90

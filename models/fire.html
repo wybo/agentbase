@@ -7,7 +7,7 @@
 
     u = ABM.util
 
-    class Model extends ABM.Model
+    class ABM.FireModel extends ABM.Model
       setup: ->
         @agentBreeds ["embers", "fires"]
         @agents.setDefault "shape", "square"
@@ -72,7 +72,7 @@
 
         @fadeEmbers()
 
-    model = new Model {
+    model = new ABM.FireModel {
       div: "layers",
       patchSize: 2,
       mapSize: 250

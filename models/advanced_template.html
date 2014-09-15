@@ -19,7 +19,7 @@
     # AgentBase automatically calls `Model.constructor <args>`
     # and `setup` will be called by `Model.constructor`. See:
     #
-    #     model = new MyModel
+    #     model = new AdvancedTemplateModel
     #
     # below, which passes all its arguments to `Model`
     
@@ -27,7 +27,7 @@
 
     log = (arg) -> console.log arg # log to the browser console
 
-    class MyModel extends ABM.Model
+    class ABM.AdvancedTemplateModel extends ABM.Model
       # `startup` initializes resources used by `setup` and `step`.
       # This is called by the constructor which waits for all files
       # processed by `starup`. Not needed by simple models.
@@ -181,7 +181,7 @@
     #
     # Defaults 13 for patchSize and 32 for mapSize
     #
-    model = new MyModel({
+    model = new ABM.AdvancedTemplateModel({
       div: "layers",
       patchSize: 13,
       mapSize: 32

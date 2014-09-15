@@ -19,7 +19,7 @@
 
     log = (arg) -> console.log arg # log to the browser console
 
-    class MyModel extends ABM.Model
+    class ABM.TemplateModel extends ABM.Model
       # Initialize our model via the `setup` method. This model simply
       # creates a population of agents with arbitrary shapes on a grid
       # of patches colored in random shades of gray.
@@ -54,7 +54,7 @@
     #   div: name of the div
     #   isTorus: map curls around the edges = has torus topology.
     #
-    model = new MyModel({
+    model = new ABM.TemplateModel({
       div: "layers",
       isTorus: true
     })
