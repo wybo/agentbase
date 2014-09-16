@@ -50,7 +50,7 @@ ABM.test.setupModel = (options = {}) ->
 
   model = new options.model({
     patchSize: 20,
-    mapSize: 40,
+    mapSize: 41,
     isTorus: options.torus,
     hasNeighbors: true
   })
