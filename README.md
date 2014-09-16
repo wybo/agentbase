@@ -37,31 +37,63 @@ Have a look at these example models.
 
 [Traveling\_salesman.html](http://lib.agentbase.org/models/traveling_salesman.html) demonstrates a Traveling Sales Person solution via a Genetic Algorithm showing the rapid conversion of stochastic methods.
 
+#### The format of sample models
+
+Our example models use CoffeeScript directly within the browser via `text/coffeescript` [script tags](http://coffeescript.org/#scripts):
+
+      <html>
+        <head>
+          <title>AgentScript Model</title>
+          <script src="agentscript.js"></script>
+          <script src="coffee-script.js"></script>
+          <script type="text/coffeescript">
+          class MyModel extends ABM.Model
+                ...
+          model = new MyModel {
+            div: "layers",
+            size: 6,
+            minX: -40,
+            maxX: 40,
+            minY: -40,
+            maxY: 40
+          }
+                ...
+          </script>
+        </head>
+        <body>
+          <div id="layers"></div>
+        </body>
+      </html>
+
+You can see this by running a sample model, then using the browser's View Page Source.
+
 #### Building a model
 
-See the source of [template.html](http://lib.agentbase.org/models/template.html) and [advanced_template.html](http://lib.agentbase.org/models/advanced_template.html) or any other example model to get started.
+[Download AgentBase](https://github.com/wybo/agentbase/zipball/master), [unzip it](http://en.wikipedia.org/wiki/Zip_(file_format)), then go to the models directory and edit [template.html](http://lib.agentbase.org/models/template.html), [advanced_template.html](http://lib.agentbase.org/models/advanced_template.html) or any other example model to get started. Open it locally in your browser and reload to see changes take effect.
 
-Class ABM.Model is an "abstract class" with three abscract methods:
+Class ABM.Model has three methods that it calls automatically for you:
 
-  startup() Called from Model constructor for loading files needed by the model.
-  setup()   Called during startup and by Model.reset().
-  step()    Called by the animator to advance the model one step.
+    startup() Optional. Called only once, for pre-initializing the model.
+    setup()   Called during startup and by Model.reset().
+    step()    Called by the animator to advance the model one step.
 
-Simply subclass ABM.Model to build a model, supplying the three abstract methods.
+Simply subclass ABM.Model to build a model, supplying the three methods.
 
 #### Development installation
 
-After git cloning with
+If you want to tinker with AgentBase itself, instead of just building a model that uses it, you will need to do as follows (on Mac/Linux).
+
+Git clone with
 
     git clone git@github.com:wybo/agentbase.git
 
     cd agentbase
 
-Install the development dependencies with
+install the development dependencies with
 
     npm install
 
-and build with
+and build with.
 
     npm run watch
 
@@ -84,9 +116,17 @@ Finally, be sure to follow the [STYLEGUIDE.txt](http://lib.agentbase.org/STYLEGU
 
 The typical workflow looks like:
 
-* npm run watch - process files when they change.
-* npm run all - compile & minify all code, create docs. Done before git add to insure everything is ready for git.
-* git commit -a - in master, to commit locally
+Process files when they change
+
+    npm run watch
+
+compile & minify all code, create docs. Done before git add to insure everything is ready for git.
+
+    npm run all
+
+and commit locally.
+
+    git commit -a
 
 See [github](https://guides.github.com/activities/contributing-to-open-source/) for more information on forking and pull-requests.
 
@@ -105,17 +145,17 @@ See [github](https://guides.github.com/activities/contributing-to-open-source/) 
 
 Inside src/ the most important files are:
 
-[agent.coffee](http://doc.agentbase.org/class/ABM/Agent.html) The agents that populate your model.
+[Agent.coffee](http://doc.agentbase.org/class/ABM/Agent.html) contains the agents that populate your model.
 
-[agents.coffee](http://doc.agentbase.org/class/ABM/Agents.html) The set of @agents you see called in models.
+[Agents.coffee](http://doc.agentbase.org/class/ABM/Agents.html) is the set of @agents you see called in models.
 
-[patches.coffee](http://doc.agentbase.org/class/ABM/Patches.html) The set of @patches that each model has.
+[Patches.coffee](http://doc.agentbase.org/class/ABM/Patches.html) provides the set of @patches that each model has.
 
-[model.coffee](http://doc.agentbase.org/class/ABM/Model.html) holds the basis for your model. It is subclassed by all models.
+[Model.coffee](http://doc.agentbase.org/class/ABM/Model.html) holds the basis for your model. It is subclassed by all models.
 
-[util.coffee](http://doc.agentbase.org/mixin/ABM/util.html) is the base module for tools.
+[Util.coffee](http://doc.agentbase.org/mixin/ABM/util.html) is the base module for tools.
 
-[util_array.coffee](http://doc.agentbase.org/mixin/ABM/util.array.html) contains helpers that are included in Array.
+[Util_array.coffee](http://doc.agentbase.org/mixin/ABM/util.array.html) contains helpers that are included in Array.
 
 Full documentation can be found on [doc.agentbase.org](http://doc.agentbase.org/).
 
