@@ -1,3 +1,7 @@
+# AgentBase is Free Software, available under GPL v3 or any later version.
+# Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+# AgentBase (c) 2014, Wybo Wiersma.
+
 # Array utility functions. Are added to ABM.Array.
 #
 # TODO allow be used in user models through an ABM.noArray() function.

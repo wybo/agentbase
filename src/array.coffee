@@ -1,3 +1,7 @@
+# AgentBase is Free Software, available under GPL v3 or any later version.
+# Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+# AgentBase (c) 2014, Wybo Wiersma.
+
 # Shim for `Array.indexOf` if not implemented.
 #
 # Use [es5-shim](https://github.com/kriskowal/es5-shim) if additional

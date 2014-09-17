@@ -1,3 +1,7 @@
+# AgentBase is Free Software, available under GPL v3 or any later version.
+# Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+# AgentBase (c) 2014, Wybo Wiersma.
+
 # A Set is an array, with some agent/patch/link specific helper methods.
 #
 # It is a subclass of `ABM.Array` and is the base class for `ABM.BreedSet`.

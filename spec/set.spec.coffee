@@ -1,3 +1,5 @@
+# AgentBase is Free Software (GPL v3 & later), (c) 2014, Wybo Wiersma.
+
 if typeof window == 'undefined'
   t = require "./shared.coffee"
   eval 'var ABM = t.ABM' # because CoffeeScript sets var to null

@@ -1,3 +1,5 @@
+# AgentBase is Free Software (GPL v3 & later), (c) 2014, Wybo Wiersma.
+
 if typeof window == 'undefined'
   code = require "../lib/agentbase.coffee"
   eval 'var ABM = this.ABM = code.ABM'

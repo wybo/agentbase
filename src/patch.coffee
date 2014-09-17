@@ -1,3 +1,7 @@
+# AgentBase is Free Software, available under GPL v3 or any later version.
+# Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+# AgentBase (c) 2014, Wybo Wiersma.
+
 # Patch instances represent a rectangle on a grid. They hold variables
 # that are in the patches the agents live on. The set of all patches
 # (@model.patches) is the world on which the agents live and the model

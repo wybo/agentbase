@@ -1,3 +1,7 @@
+# AgentBase is Free Software, available under GPL v3 or any later version.
+# Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+# AgentBase (c) 2014, Wybo Wiersma.
+
 # Model is the control center for our Sets: Patches, Agents and Links.
 #
 # Creating new models is done by subclassing class Model and overriding two 

@@ -161,13 +161,13 @@ Full documentation can be found on [doc.agentbase.org](http://doc.agentbase.org/
 
 #### License
 
-Copyright (c) Wybo Wiersma, 2014, (http://agentbase.org). AgentBase
-is licensed under the [GNU General Public License, version 
-3](http://www.fsf.org/licensing/licenses/gpl-3.0.html). AgentBase 
-was derived from and inspired by [AgentScript](http://agentscript.org)
-by Owen Densmore, RedfishGroup LLC, 2012-13 (under the same license).
+AgentBase Copyright (c) Wybo Wiersma, 2014. The AgentBase library
+is Free Software, licensed under the [GNU General Public License, version
+3](http://www.fsf.org/licensing/licenses/gpl-3.0.html) or any later
+version. AgentBase was derived from [AgentScript](http://agentscript.org)
+by Owen Densmore and RedfishGroup LLC, 2012-13 (under the same license).
 
-AgentBase is free software: you can redistribute it and/or modify
+AgentBase is Free Software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.

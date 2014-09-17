@@ -1,3 +1,7 @@
+# AgentBase is Free Software, available under GPL v3 or any later version.
+# original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+# AgentBase (c) 2014, Wybo Wiersma.
+
 # Agent instances represent the dynamic, behavioral element of the ABM. Each agent
 # knows the patch it is on, and interacts with that and other patches, as well as 
 # other agents.

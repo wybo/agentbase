@@ -1,3 +1,7 @@
+# AgentBase is Free Software, available under GPL v3 or any later version.
+# Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+# AgentBase (c) 2014, Wybo Wiersma.
+
 # Patches is a singleton 2D matrix of Patch instances, each patch
 # representing a 1x1 square in patch coordinates (via 2D coordinate
 # transformations).
