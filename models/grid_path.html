@@ -4,6 +4,9 @@
     <script src="../lib/agentbase.js"></script>
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
+    # AgentBase is Free Software, available under GPL v3 or any later version.
+    # Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+    # AgentBase (c) 2014, Wybo Wiersma.
 
     u = ABM.util
 
@@ -18,8 +21,8 @@
         @patches.setDefault "labelColor", [255, 255, 255]
         offset = Math.floor @world.size * .45
         @patches.setDefault "labelOffset", {x: offset, y: offset}
-        u.contextTextParams @contexts.patches, "10px sans-serif", "right", "bottom"
-        # u.elementTextParams @contexts.contexts.patches, "10px sans-serif", "right", "bottom"
+        u.contextTextParams @contexts.patches, "10px sans-serif",
+            "right", "bottom"
         @agents.setDefault "shape", "circle"
         @agents.setDefault "color", ([210, 0, 0])
         @agents.setDefault "size", .4
@@ -49,7 +52,12 @@
 
       step: ->
         @floodFill()
-        patches = ABM.Set.from (neighbor for neighbor in @walker.patch.neighbors(diamond: 1) when neighbor.ok)
+
+        patches = new ABM.Set
+        for neighbor in @walker.patch.neighbors(diamond: 1)
+          if neighbor.ok
+            patches.push neighbor
+
         @drawNum patches.length
         @walker.moveTo patches.sample().position
         @walker.stamp()
@@ -112,7 +120,7 @@
         null
 
     model = new ABM.GridPathModel({
-      div: "layers",
+      div: "model",
       patchSize: 30,
       min: {x: 0, y: 0},
       max: {x: 10, y: 10}
@@ -122,6 +130,6 @@
     </script>
   </head>
   <body>
-    <div id="layers"></div>
+    <div id="model"></div>
   </body>
 </html>

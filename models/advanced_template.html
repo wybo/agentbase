@@ -4,6 +4,10 @@
     <script src="../lib/agentbase.js"></script>
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
+    # AgentBase is Free Software, available under GPL v3 or any later version.
+    # Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+    # AgentBase (c) 2014, Wybo Wiersma.
+
     # This is a slightly more complicated general template for 
     # creating models.
     #
@@ -11,7 +15,7 @@
     # two built in methods `setup` and `step`.
     #
     # `@foo` signifies an instance variable or method.
-    # See [CoffeeScript docs](http://jashkenas.github.com/coffee-script/#classes)
+    # See [CoffeeScript](http://jashkenas.github.com/coffee-script/#classes)
     # for explanation of context of a class and its constructor.
     #
     # We do not provide a constructor of our own. 
@@ -34,7 +38,8 @@
       #
       startup: -> # called by constructor
         u.shapes.add "bowtie", true, (context) ->
-          u.shapes.polygon context, [[-.5, -.5], [.5, .5], [-.5, .5], [.5, -.5]]
+          u.shapes.polygon context, [[-.5, -.5], [.5, .5],
+              [-.5, .5], [.5, -.5]]
 
         # The following lines don't work when opened locally in
         # Chrome (they work fine from a webserver). Uncomment if you'd
@@ -95,7 +100,7 @@
         # Print the number of agents and patches to the console.
         # Note CoffeeScript
         # [string interpolation](http://jashkenas.github.com/coffee-script/#strings)
-        log "total agents: #{@agents.length}, total patches: #{@patches.length}"
+        log "total agents: #{@agents.length}, patches: #{@patches.length}"
 
         # Print number of agents with each shape
         for shape in u.shapes.names()
@@ -125,16 +130,10 @@
         else
           @refreshPatches = false
 
-        if @animator.draws is 2 # Show the sprite sheet if there is one after first draw
-          sheet = u.shapes.spriteSheets.last() if u.shapes.spriteSheets.length isnt 0
-
-          if sheet?
-            log sheet
-            document.getElementById("play").appendChild(sheet.canvas)
-
         log @animator.toString() if @animator.ticks % 100 is 0
 
-        # Stop the animation at 1000. Restart by `ABM.model.start()` in console.
+        # Stop the animation at 1000.
+        # Restart by `ABM.model.start()` in console.
         if @animator.ticks is 1000
           log "..stopping, restart by ABM.model.start()"
           @stop()
@@ -182,7 +181,7 @@
     # Defaults 13 for patchSize and 32 for mapSize
     #
     model = new ABM.AdvancedTemplateModel({
-      div: "layers",
+      div: "model",
       patchSize: 13,
       mapSize: 32
       isTorus: true
@@ -192,7 +191,6 @@
     </script>
   </head>
   <body>
-    <div id="layers"></div>
-    <div id="play" style="float:right;"></div>
+    <div id="model"></div>
   </body>
 </html>

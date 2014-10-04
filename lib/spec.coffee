@@ -1,3 +1,5 @@
+# AgentBase is Free Software (GPL v3 & later), (c) 2014, Wybo Wiersma.
+
 if typeof window == 'undefined'
   code = require "../lib/agentbase.coffee"
   eval 'var ABM = this.ABM = code.ABM'
@@ -55,6 +57,8 @@ ABM.test.setupModel = (options = {}) ->
     hasNeighbors: true
   })
   return model
+
+# AgentBase is Free Software (GPL v3 & later), (c) 2014, Wybo Wiersma.
 
 if typeof window == 'undefined'
   t = require "./shared.coffee"
@@ -355,6 +359,8 @@ describe "Agent", ->
       expect(linkedAgents[0]).toBe agents[2]
       expect(linkedAgents[1]).toBe agents[3]
 
+# AgentBase is Free Software (GPL v3 & later), (c) 2014, Wybo Wiersma.
+
 if typeof window == 'undefined'
   t = require "./shared.coffee"
   eval 'var ABM = t.ABM' # because CoffeeScript sets var to null
@@ -438,6 +444,8 @@ describe "Agents", ->
       expect(model.agents[10].position.y).toBeCloseTo 3.32
       expect(model.agents[41].position.x).toBeCloseTo -9.43
       expect(model.agents[41].position.y).toBeCloseTo 3.32
+
+# AgentBase is Free Software (GPL v3 & later), (c) 2014, Wybo Wiersma.
 
 if typeof window == 'undefined'
   t = require "./shared.coffee"
@@ -654,6 +662,8 @@ describe "Array", ->
       expect(new ABM.Array(4, 9, 7).other(9))
         .toEqual new ABM.Array 4, 7
 
+# AgentBase is Free Software (GPL v3 & later), (c) 2014, Wybo Wiersma.
+
 if typeof window == 'undefined'
   t = require "./shared.coffee"
   eval 'var ABM = t.ABM' # because CoffeeScript sets var to null
@@ -752,6 +762,8 @@ describe "Set", ->
       expect(citizen.breed.name).toBe "agents"
       expect(citizen.id).toBe citizensOldId
 
+# AgentBase is Free Software (GPL v3 & later), (c) 2014, Wybo Wiersma.
+
 if typeof window == 'undefined'
   t = require "./shared.coffee"
   eval 'var ABM = t.ABM' # because CoffeeScript sets var to null
@@ -804,6 +816,8 @@ describe "Link", ->
 
       expect(link.otherEnd(link.from)).toBe link.to
       expect(link.otherEnd(link.to)).toBe link.from
+
+# AgentBase is Free Software (GPL v3 & later), (c) 2014, Wybo Wiersma.
 
 if typeof window == 'undefined'
   t = require "./shared.coffee"
@@ -863,6 +877,8 @@ describe "Links", ->
       expect(nodes.length).toBe 6
       expect(nodes[5]).toBe agents[10]
 
+# AgentBase is Free Software (GPL v3 & later), (c) 2014, Wybo Wiersma.
+
 if typeof window == 'undefined'
   t = require "./shared.coffee"
   eval 'var ABM = t.ABM' # because CoffeeScript sets var to null
@@ -879,6 +895,8 @@ describe "Model", ->
       # has method
 
 # TODO finish
+
+# AgentBase is Free Software (GPL v3 & later), (c) 2014, Wybo Wiersma.
 
 if typeof window == 'undefined'
   t = require "./shared.coffee"
@@ -1056,6 +1074,8 @@ describe "Patch", ->
       neighbors = patch.neighbors(range: 1)
       expect(patch.neighborsCache['{"range":1}'].length).toBe 8
 
+# AgentBase is Free Software (GPL v3 & later), (c) 2014, Wybo Wiersma.
+
 if typeof window == 'undefined'
   t = require "./shared.coffee"
   eval 'var ABM = t.ABM' # because CoffeeScript sets var to null
@@ -1101,6 +1121,8 @@ describe "Patches", ->
       expect(coordinate).toEqual x: 9, y: -16
 
   # TODO finish
+
+# AgentBase is Free Software (GPL v3 & later), (c) 2014, Wybo Wiersma.
 
 if typeof window == 'undefined'
   t = require "./shared.coffee"
@@ -1176,6 +1198,8 @@ describe "Set", ->
 
       expect(set.flatten()).toEqual new ABM.Set patches[3], patches[1], patches[4],
         patches[2], patches[8], patches[9]
+
+# AgentBase is Free Software (GPL v3 & later), (c) 2014, Wybo Wiersma.
 
 if typeof window == 'undefined'
   t = require "./shared.coffee"

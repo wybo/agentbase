@@ -4,6 +4,9 @@
     <script src="../lib/agentbase.js"></script>
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
+    # AgentBase is Free Software, available under GPL v3 or any later version.
+    # Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+    # AgentBase (c) 2014, Wybo Wiersma.
 
     u = ABM.util
 
@@ -14,8 +17,7 @@
         # two: 27fps, now static colors larger percent of faster patches.
         @agents.setUseSprites() # 24->46-48fps!
         
-        # @animator.setRate 25, true # normal: let agents step faster than drawing
-        @animator.setRate 60, false # speed test
+        @animator.setRate 25, false
         
         # globals
         @nestColor = [255, 255, 0]  # yellow
@@ -23,7 +25,8 @@
 
         # defaults
         @agents.setDefault "shape", "bug"
-        @agents.setDefault "color", @foodColor # so default sprite not random color
+        # so default sprite not random color
+        @agents.setDefault "color", @foodColor
         @agents.setDefault "size", 3
         
         # UI globals:
@@ -34,8 +37,10 @@
         @wiggleAngle = u.degreesToRadians(30) # radians
 
         if @agents.useSprites
-          @nestSprite = u.shapes.shapeToSprite "bug", @nestColor, @patches.toBits 18
-          @foodSprite = u.shapes.shapeToSprite "bug", @foodColor, @patches.toBits 18
+          @nestSprite = u.shapes.shapeToSprite "bug", @nestColor,
+              @patches.toBits 18
+          @foodSprite = u.shapes.shapeToSprite "bug", @foodColor,
+              @patches.toBits 18
         
         @setupPatches()
         @setupAgents()
@@ -85,7 +90,8 @@
         agent.pheromone = @maxPheromone
 
       updateAgents: ->
-        for agent in @agents when agent.id < @animator.ticks # gradually leave nest
+        # gradually leave nest
+        for agent in @agents when agent.id < @animator.ticks
           @wiggleUphill agent
           @dropPheromone agent
 
@@ -113,7 +119,8 @@
           patch.foodPheromone
 
       dropPheromone: (agent) ->
-        if (not agent.carryingFood and agent.patch.isFood) or (agent.carryingFood and agent.patch.isNest)
+        if (not agent.carryingFood and agent.patch.isFood) or
+            (agent.carryingFood and agent.patch.isNest)
           @resetAgent agent, not agent.carryingFood
 
         if agent.carryingFood
@@ -147,7 +154,7 @@
         @patches.patchRectangle @patches.patch(point), dw, dh, true
 
     model = new ABM.AntsModel {
-      div: "layers",
+      div: "world",
       patchSize: 6,
       mapSize: 80
     }
@@ -156,6 +163,6 @@
     </script>
   </head>
   <body>
-    <div id="layers"></div>
+    <div id="world"></div>
   </body>
 </html>

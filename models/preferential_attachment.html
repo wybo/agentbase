@@ -4,6 +4,9 @@
     <script src="../lib/agentbase.js"></script>
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
+    # AgentBase is Free Software, available under GPL v3 or any later version.
+    # Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+    # AgentBase (c) 2014, Wybo Wiersma.
     
     u = ABM.util
 
@@ -51,7 +54,7 @@
         @links.sample().bothEnds().sample()
 
     model = new ABM.PreferentialAttachmentModel {
-      div: "layers",
+      div: "model",
       patchSize: 5,
       mapSize: 90
     }
@@ -60,6 +63,6 @@
     </script>
   </head>
   <body>
-    <div id="layers"></div>
+    <div id="model"></div>
   </body>
 </html>

@@ -4,6 +4,9 @@
     <script src="../lib/agentbase.js"></script>
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
+    # AgentBase is Free Software, available under GPL v3 or any later version.
+    # Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+    # AgentBase (c) 2014, Wybo Wiersma.
 
     u = ABM.util
 
@@ -14,7 +17,7 @@
         @agents.setDefault "color", [255, 0, 0]
         @agents.setDefault "heading", 0 # override promotion to random angle
         
-        @refreshPatches = false # <1fps->50-55fps, no surprise, app optimized for this 
+        @refreshPatches = false
         # No optimizations: 50-55fps
         # @patches.usePixels() # 50-55fps .. not used, refresh off
         # None of the optimizations particularly useful, other than refresh
@@ -36,7 +39,13 @@
           if patch.position.x is @patches.min.x
             @ignite patch
 
-        @initialTrees = (p for p in @patches when u.colorsEqual p.color, [0, 255, 0]).length
+        trees = []
+
+        for patch in @patches
+          if u.colorsEqual patch.color, [0, 255, 0]
+            trees.push patch
+
+        @initialTrees = trees.length
 
         console.log "burnedTrees #{@burnedTrees}"
 
@@ -44,13 +53,15 @@
 
       ignite: (patch) ->
         patch.sprout 1, @fires
-        patch.color = [0, 0, 0] # in original model but apparently not needed, refresh off?
+        # in original model but apparently not needed, refresh off?
+        patch.color = [0, 0, 0]
         @burnedTrees++
 
       fadeEmbers: ->
         for ember in @embers by -1 # -1: allow die() in loop
           ember.color = u.fractionOfColor ember.color, .8
-          if 100 > Math.max ember.color... # or (Math.max a.color...) < 100 , needs parens
+          # or (Math.max a.color...) < 100 , needs parens
+          if 100 > Math.max ember.color...
             ember.patch.color = ember.color
             ember.patch.draw @contexts.patches
             ember.die()
@@ -73,7 +84,7 @@
         @fadeEmbers()
 
     model = new ABM.FireModel {
-      div: "layers",
+      div: "model",
       patchSize: 2,
       mapSize: 250
     }
@@ -82,6 +93,6 @@
     </script>
   </head>
   <body>
-    <div id="layers"></div>
+    <div id="model"></div>
   </body>
 </html>

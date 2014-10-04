@@ -4,6 +4,9 @@
     <script src="../lib/agentbase.js"></script>
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
+    # AgentBase is Free Software, available under GPL v3 or any later version.
+    # Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+    # AgentBase (c) 2014, Wybo Wiersma.
     
     u = ABM.util
 
@@ -49,8 +52,10 @@
         for agent in @agents when not (@sun and agent.id is 0)
           # unless (@sun and a.id is 0)
           agent.moveTo(
-            x: u.clamp(agent.position.x + agent.vx, @patches.min.x, @patches.max.x),
-            y: u.clamp(agent.position.y + agent.vy, @patches.min.y, @patches.max.y))
+            x: u.clamp(agent.position.x + agent.vx,
+                @patches.min.x, @patches.max.x),
+            y: u.clamp(agent.position.y + agent.vy,
+                @patches.min.y, @patches.max.y))
 
           if Math.abs(agent.position.x) is @patches.max.x
             agent.vx = u.sign(-agent.position.x) * .001
@@ -60,7 +65,7 @@
         null
         
     model = new ABM.NBodyModel {
-      div: "layers",
+      div: "model",
       patchSize: 2,
       min: {x: -120, y: -100},
       max: {x: 120, y: 100}
@@ -70,6 +75,6 @@
     </script>
   </head>
   <body>
-    <div id="layers"></div>
+    <div id="model"></div>
   </body>
 </html>

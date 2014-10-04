@@ -1,3 +1,7 @@
+# AgentBase is Free Software, available under GPL v3 or any later version.
+# Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+# AgentBase (c) 2014, Wybo Wiersma.
+
 # Creates the namespace ABM.
 #
 # Note here `this` or `@` == window due to coffeescript wrapper call.
@@ -734,6 +738,10 @@ u = ABM.util
 # @include ABM.util
 class ABM.Util
 
+# AgentBase is Free Software, available under GPL v3 or any later version.
+# Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+# AgentBase (c) 2014, Wybo Wiersma.
+
 # Array utility functions. Are added to ABM.Array.
 #
 # TODO allow be used in user models through an ABM.noArray() function.
@@ -1146,6 +1154,10 @@ ABM.util.array.extender =
 # @include ABM.util.array
 class ABM.Util.Array
 
+# AgentBase is Free Software, available under GPL v3 or any later version.
+# Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+# AgentBase (c) 2014, Wybo Wiersma.
+
 # Shim for `Array.indexOf` if not implemented.
 #
 # Use [es5-shim](https://github.com/kriskowal/es5-shim) if additional
@@ -1199,6 +1211,10 @@ class ABM.Array extends Array
 # All methods are added by this call.
 #
 ABM.util.array.extender.extendArray('ABM.Array')
+
+# AgentBase is Free Software, available under GPL v3 or any later version.
+# Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+# AgentBase (c) 2014, Wybo Wiersma.
 
 # A *very* simple shapes module for drawing
 # [NetLogo-like](http://ccl.northwestern.edu/netlogo/docs/) agents.
@@ -1511,6 +1527,10 @@ ABM.util.shapes =
 # @include ABM.util.shapes
 class ABM.Util.Shapes
 
+# AgentBase is Free Software, available under GPL v3 or any later version.
+# Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+# AgentBase (c) 2014, Wybo Wiersma.
+
 # A Set is an array, with some agent/patch/link specific helper methods.
 #
 # It is a subclass of `ABM.Array` and is the base class for `ABM.BreedSet`.
@@ -1619,6 +1639,10 @@ class ABM.Set extends ABM.Array
         inner.push entity
     return inner
 
+# AgentBase is Free Software, available under GPL v3 or any later version.
+# Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+# AgentBase (c) 2014, Wybo Wiersma.
+
 # Instances of the agentClass are created by the `create` factory
 # method of the BreedSet.
 #
@@ -1716,6 +1740,10 @@ class ABM.BreedSet extends ABM.Set
     proto = agent.__proto__ = @agentClass.prototype
     delete agent[key] for own key, value of agent when proto[key]?
     agent
+
+# AgentBase is Free Software, available under GPL v3 or any later version.
+# original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+# AgentBase (c) 2014, Wybo Wiersma.
 
 # Agent instances represent the dynamic, behavioral element of the ABM. Each agent
 # knows the patch it is on, and interacts with that and other patches, as well as 
@@ -1968,6 +1996,10 @@ class ABM.Agent
   stamp: ->
     @draw @model.drawing
 
+# AgentBase is Free Software, available under GPL v3 or any later version.
+# Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+# AgentBase (c) 2014, Wybo Wiersma.
+
 # Agents is a subclass of BreedSet which creates and stores instances
 # of Agent.
 #
@@ -2039,6 +2071,10 @@ class ABM.Agents extends ABM.BreedSet
       agent.forward radius
 
     null
+
+# AgentBase is Free Software, available under GPL v3 or any later version.
+# Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+# AgentBase (c) 2014, Wybo Wiersma.
 
 # Because not all models have the same amimator requirements, this
 # provides a class for customization. See these URLs for more info:
@@ -2167,6 +2203,10 @@ class ABM.Animator
     @animateSteps() if @multiStep
     @animateDraws() unless @isHeadless and @multiStep
 
+# AgentBase is Free Software, available under GPL v3 or any later version.
+# Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+# AgentBase (c) 2014, Wybo Wiersma.
+
 # Link connects two agent endpoints for graph modeling.
 #
 class ABM.Link
@@ -2259,6 +2299,10 @@ class ABM.Link
       [x, y] = @model.patches.patchXYtoPixelXY x0, y0
       u.contextDrawText context, @label, x + @labelOffset[0], y + @labelOffset[1], @labelColor
 
+# AgentBase is Free Software, available under GPL v3 or any later version.
+# Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+# AgentBase (c) 2014, Wybo Wiersma.
+
 # Links is a subclass of BreedSet which stores instances of Link.
 #
 class ABM.Links extends ABM.BreedSet
@@ -2313,6 +2357,10 @@ class ABM.Links extends ABM.BreedSet
   #
   nodes: ->
     @nodesWithDups().uniq()
+
+# AgentBase is Free Software, available under GPL v3 or any later version.
+# Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+# AgentBase (c) 2014, Wybo Wiersma.
 
 # Model is the control center for our Sets: Patches, Agents and Links.
 #
@@ -2372,7 +2420,9 @@ class ABM.Model
 
       # One of the layers is used for drawing only, not an agentset:
       @drawing = @contexts.drawing
-      @drawing.clear = => u.clearContext @drawing
+      @drawing.clear = =>
+        u.clearContext @drawing
+
       # Setup spotlight layer, also not an agentset:
       @contexts.spotlight.globalCompositeOperation = "xor"
 
@@ -2498,7 +2548,7 @@ class ABM.Model
   #
   setMonochromePatches: -> @patches.monochrome = true
     
-  # ### User Model Creation
+  # ### User model creation
 
   # A user's model is made by subclassing Model and over-riding
   # startup and setup. `super` need not be called.
@@ -2521,7 +2571,7 @@ class ABM.Model
   #
   step: ->
 
-  # ### Animation and Reset methods
+  # ### Animation and reset methods
 
   # Start the animation.
   # 
@@ -2554,30 +2604,20 @@ class ABM.Model
     @animator.once()
     @
 
-  # Stop and reset the model
+  # Stop and reset the model.
   #
   reset: ->
-    console.log "reset: animator"
-    
     @animator.reset() # stop & reset ticks/steps counters
     @isRunning = false
     
-    console.log "reset: contexts"
-    
-    # clear/resize before agentsets
-    for key, value of @contexts
-      if value.canvas?
-        value.restore()
-        @setContextTransform value
-    
-    console.log "reset: patches, agents, links"
-    
+    @resetContexts()
+
     @patches = new @Patches @Patch, "patches"
     @agents = new @Agents @Agent, "agents"
     @links = new @Links @Link, "links"
 
-    u.shapes.spriteSheets.length = 0 # possibly null out entries?
-    console.log "reset: setup"
+    # setup reset, possibly null out entries?
+    u.shapes.spriteSheets.length = 0
     
     @setup()
 
@@ -2587,7 +2627,22 @@ class ABM.Model
     @reset()
     @start()
 
-  # ### Animation.
+  # Destroys the model.
+  #
+  destroy: ->
+    # can be improved
+    @stop()
+    @agents = @patches = @links = null
+    @resetContexts()
+
+  # ### Reset helper methods.
+
+  resetContexts: ->
+    # clear/resize before agentsets
+    for key, value of @contexts
+      if value.canvas?
+        value.restore()
+        @setContextTransform value
   
   # Call the agentset draw methods if either the first draw call or
   # their "refresh" flags are set. The latter are simple optimizations
@@ -2677,6 +2732,10 @@ class ABM.Model
 
   linkBreeds: (list) ->
     @createBreeds list, 'links', @Link, @Links
+
+# AgentBase is Free Software, available under GPL v3 or any later version.
+# Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+# AgentBase (c) 2014, Wybo Wiersma.
 
 # Patch instances represent a rectangle on a grid. They hold variables
 # that are in the patches the agents live on. The set of all patches
@@ -2809,6 +2868,10 @@ class ABM.Patch
       position = @breed.patchXYtoPixelXY @position
       u.contextDrawText context, @label, position.x + @labelOffset.x,
         position.y + @labelOffset.y, @labelColor
+
+# AgentBase is Free Software, available under GPL v3 or any later version.
+# Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+# AgentBase (c) 2014, Wybo Wiersma.
 
 # Patches is a singleton 2D matrix of Patch instances, each patch
 # representing a 1x1 square in patch coordinates (via 2D coordinate

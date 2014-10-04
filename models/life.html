@@ -4,6 +4,9 @@
     <script src="../lib/agentbase.js"></script>
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
+    # AgentBase is Free Software, available under GPL v3 or any later version.
+    # Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+    # AgentBase (c) 2014, Wybo Wiersma.
 
     class ABM.LifeModel extends ABM.Model
       startup: ->
@@ -21,7 +24,8 @@
         # Alternate between updating each patch's living neighbor count,
         # and changing the `living` state variable of each patch.
         # Since both models are triggered by a requestAnimationFrame callback
-        # in an ABM.Animator, the models should be guaranteed to run in lock-step.
+        # in an ABM.Animator, the models should be guaranteed to run in
+        # lock-step.
         if @animator.ticks % 2 is 1
           @countLivingNeighbors()
         else
@@ -36,7 +40,8 @@
           else
             linkedPatch = patch
 
-          patch.liveNeighbors = linkedPatch.neighbors().with((patch) -> patch.living).length
+          patch.liveNeighbors = linkedPatch.neighbors().with((patch) ->
+              patch.living).length
 
       enactBirthsAndDeaths: () ->
         for patch in @patches

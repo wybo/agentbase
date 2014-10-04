@@ -4,6 +4,10 @@
     <script src="../lib/agentbase.js"></script>
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
+    # AgentBase is Free Software, available under GPL v3 or any later version.
+    # Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+    # AgentBase (c) 2014, Wybo Wiersma.
+
     # This is a simple template for creating models.
     #
     # To build your own model, extend class ABM.Model supplying the 
@@ -55,13 +59,13 @@
     #   isTorus: map curls around the edges = has torus topology.
     #
     model = new ABM.TemplateModel({
-      div: "layers",
+      div: "model",
       isTorus: true
     })
     model.start()
     </script>
   </head>
   <body>
-    <div id="layers"></div>
+    <div id="model"></div>
   </body>
 </html>

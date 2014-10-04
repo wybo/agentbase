@@ -60,7 +60,9 @@ class ABM.Model
 
       # One of the layers is used for drawing only, not an agentset:
       @drawing = @contexts.drawing
-      @drawing.clear = => u.clearContext @drawing
+      @drawing.clear = =>
+        u.clearContext @drawing
+
       # Setup spotlight layer, also not an agentset:
       @contexts.spotlight.globalCompositeOperation = "xor"
 
@@ -186,7 +188,7 @@ class ABM.Model
   #
   setMonochromePatches: -> @patches.monochrome = true
     
-  # ### User Model Creation
+  # ### User model creation
 
   # A user's model is made by subclassing Model and over-riding
   # startup and setup. `super` need not be called.
@@ -209,7 +211,7 @@ class ABM.Model
   #
   step: ->
 
-  # ### Animation and Reset methods
+  # ### Animation and reset methods
 
   # Start the animation.
   # 
@@ -242,30 +244,20 @@ class ABM.Model
     @animator.once()
     @
 
-  # Stop and reset the model
+  # Stop and reset the model.
   #
   reset: ->
-    console.log "reset: animator"
-    
     @animator.reset() # stop & reset ticks/steps counters
     @isRunning = false
     
-    console.log "reset: contexts"
-    
-    # clear/resize before agentsets
-    for key, value of @contexts
-      if value.canvas?
-        value.restore()
-        @setContextTransform value
-    
-    console.log "reset: patches, agents, links"
-    
+    @resetContexts()
+
     @patches = new @Patches @Patch, "patches"
     @agents = new @Agents @Agent, "agents"
     @links = new @Links @Link, "links"
 
-    u.shapes.spriteSheets.length = 0 # possibly null out entries?
-    console.log "reset: setup"
+    # setup reset, possibly null out entries?
+    u.shapes.spriteSheets.length = 0
     
     @setup()
 
@@ -275,7 +267,22 @@ class ABM.Model
     @reset()
     @start()
 
-  # ### Animation.
+  # Destroys the model.
+  #
+  destroy: ->
+    # can be improved
+    @stop()
+    @agents = @patches = @links = null
+    @resetContexts()
+
+  # ### Reset helper methods.
+
+  resetContexts: ->
+    # clear/resize before agentsets
+    for key, value of @contexts
+      if value.canvas?
+        value.restore()
+        @setContextTransform value
   
   # Call the agentset draw methods if either the first draw call or
   # their "refresh" flags are set. The latter are simple optimizations

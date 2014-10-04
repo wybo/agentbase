@@ -4,6 +4,9 @@
     <script src="../lib/agentbase.js"></script>
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
+    # AgentBase is Free Software, available under GPL v3 or any later version.
+    # Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+    # AgentBase (c) 2014, Wybo Wiersma.
     
     u = ABM.util
 
@@ -39,7 +42,7 @@
         for patch in @patches.sample @numNodes
           patch.sprout 1, @nodes, (agent) =>
             if @nodes.length > 1 # if @nodes().length > 1
-              @links.create agent, @nodes.other(agent).sample() # @links.create a, @nodes().other(a).sample()
+              @links.create agent, @nodes.other(agent).sample()
         
         if @layoutCircle
           @nodes.formCircle @patches.max.x - 1
@@ -52,7 +55,7 @@
         for i in [1..@numDrivers]
           node = @nodes.sample() # n = @nodes().sample()
           node.hatch 1, @drivers, (agent) =>
-            agent.fromNode = agent.toNode = node.linkNeighbors().sample() #.sample()
+            agent.fromNode = agent.toNode = node.linkNeighbors().sample()
             agent.face agent.toNode.position
             agent.v = @baseVelocity + u.randomFloat @velocityDelta
         null # avoid returning "for" results above
@@ -69,7 +72,7 @@
         null # avoid returning "for" results above
 
     model = new ABM.LinkTravelModel {
-      div: "layers",
+      div: "model",
       patchSize: 13
     }
     model.start()
@@ -77,6 +80,6 @@
     </script>
   </head>
   <body>
-    <div id="layers"></div>
+    <div id="model"></div>
   </body>
 </html>

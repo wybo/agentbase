@@ -4,6 +4,9 @@
     <script src="../lib/agentbase.js"></script>
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
+    # AgentBase is Free Software, available under GPL v3 or any later version.
+    # Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+    # AgentBase (c) 2014, Wybo Wiersma.
     
     u = ABM.util
 
@@ -50,7 +53,8 @@
   
       step: ->
         if @useConsole and @animator.ticks % 25 is 0
-          console.log @animator.toString(), "flock alignment: #{@reportFlockVectorSize()}"
+          console.log @animator.toString(),
+              "flock alignment: #{@reportFlockVectorSize()}"
 
         for agent in @agents
           @flock agent
@@ -90,12 +94,15 @@
         @safeAtan dy, dx
 
       averageHeadingTowards: (agent, flockmates) ->
-        dx = (Math.sin u.angle(f.position, agent.position, @patches) for f in flockmates).reduce (x, y) -> x + y
-        dy = (Math.cos u.angle(f.position, agent.position, @patches) for f in flockmates).reduce (x, y) -> x + y
+        dx = (Math.sin u.angle(f.position, agent.position,
+            @patches) for f in flockmates).reduce (x, y) -> x + y
+        dy = (Math.cos u.angle(f.position, agent.position,
+            @patches) for f in flockmates).reduce (x, y) -> x + y
         @safeAtan dy, dx
 
       safeAtan: (x, y) ->
-        Math.atan2 y, x # if x is 0 and y is 0 then 0 else Math.atan2 y, x # atan ok if x 0
+        # if x is 0 and y is 0 then 0 else Math.atan2 y, x # atan ok if x 0
+        Math.atan2 y, x
       
       reportFlockVectorSize: ->
         dx = (Math.sin a.heading for a in @agents).reduce (x, y) -> x + y
@@ -103,7 +110,7 @@
         Math.sqrt(dx * dx + dy * dy) / @population
 
     model = new ABM.FlockModel({
-      div: "layers",
+      div: "model",
       patchSize: 15,
       isTorus: true
     })
@@ -112,6 +119,6 @@
     </script>
   </head>
   <body>
-    <div id="layers"></div>
+    <div id="model"></div>
   </body>
 </html>

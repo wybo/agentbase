@@ -1,13 +1,13 @@
 ### AgentBase
 
-AgentBase is a minimalist Agent Based Modeling (ABM) platform that allows you to quickly build models that run directly in the browser. It follows [NetLogo](http://ccl.northwestern.edu/netlogo/)'s Agent oriented Programming model and is entirely implemented in [CoffeeScript](http://coffeescript.org/). Tinker with models on [agentbase.org](http://agentbase.org/) or drop by our [Google Group](https://groups.google.com/d/forum/agentbase) to get involved. Documentation [is here](http://doc.agentbase.org/).
+AgentBase is a minimalistic Agent Based Modeling (ABM) software library that allows you to build models that run directly in the browser. It follows [NetLogo](http://ccl.northwestern.edu/netlogo/)'s Agent oriented Programming model and is entirely implemented in [CoffeeScript](http://coffeescript.org/). Tinker with models on [AgentBase.org](http://agentbase.org/) or drop by our [Google Group](https://groups.google.com/d/forum/agentbase) to get involved. Documentation [is here](http://doc.agentbase.org/).
 
 AgentBase:
 
 * Allows you to easily share and run ABM models, directly from a webpage. No software to install.
 * Is optimized for the quick development of illustrative ABM models: It values minimalism over complexity, readable and pretty code over cpu performance, and sensible defaults over choice. It is [opinionated software](https://gettingreal.37signals.com/ch04_Make_Opinionated_Software.php).
-* [NetLogo](http://ccl.northwestern.edu/netlogo/) (the most commonly used ABM toolset), is a great inspiration for us. However, we don't try to copy every bit of it. Minimalistic is fine. The web is not the desktop. Coffeescript is not Logo.
-* AgentBase is well-tested through automated testing and thus a platform that you can trust. [See for yourself](http://lib.agentbase.org/spec.html).
+* While [NetLogo](http://ccl.northwestern.edu/netlogo/) is a great inspiration for us (the most commonly used ABM toolset), we don't try to copy every bit of it. Minimalistic is fine. The web is not the desktop. Coffeescript is not Logo.
+* AgentBase is well-tested through automated testing and thus a library that you can trust. [See for yourself](http://lib.agentbase.org/spec.html).
 
 #### Sample models
 

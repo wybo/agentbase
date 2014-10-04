@@ -4,6 +4,9 @@
     <script src="../lib/agentbase.js"></script>
     <script src="../tools/coffee-script.js"></script>
     <script type="text/coffeescript">
+    # AgentBase is Free Software, available under GPL v3 or any later version.
+    # Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
+    # AgentBase (c) 2014, Wybo Wiersma.
     
     u = ABM.util
 
@@ -61,15 +64,16 @@
         @installBestTour()
 
         if (@animator.ticks - @bestTourTick) is @stopTickDifference
-          console.log "Stopping at tick #{@animator.ticks} after no change in" +
-            " #{@stopTickDifference} ticks"
+          console.log "Stopping at tick #{@animator.ticks} after no change " +
+            "in #{@stopTickDifference} ticks"
           console.log "Best tour: #{@bestTourLength} at tick #{@bestTourTick}"
           @stop()
       
       createTourLinks: (nodeList) ->
         @links.clear()
         @links.create nodeList[0], nodeList.last()
-        @links.create nodeList[i], nodeList[i - 1] for i in [1...nodeList.length]
+        for i in [1...nodeList.length]
+          @links.create nodeList[i], nodeList[i - 1]
         # @links.setProperty "color", [255,0,0]
         
       lengthFromNodes: (nodeList) ->
@@ -81,9 +85,9 @@
         len
 
       installBestTour: ->
-        # @travelers().max("tourLength").die() while @travelers().length>@travelersCount
-        # a = @travelers().min("tourLength")
-        @travelers.max("tourLength").die() while @travelers.length>@travelersCount
+        while @travelers.length > @travelersCount
+          @travelers.max("tourLength").die()
+
         a = @travelers.min("tourLength")
         if a.tourLength < @bestTourLength
           @reportNewTour a
@@ -92,12 +96,22 @@
           @bestTourTick = @animator.ticks
           @createTourLinks @bestTourNodes
 
-      makeTour: (a) ->
-        nlist = if @useInversion then @inversionStrategy a else @randomStrategy a
+      makeTour: (agent) ->
+        if @useInversion
+          nlist = @inversionStrategy agent
+        else
+          nlist = @randomStrategy agent
+
         len = @lengthFromNodes nlist
+
         if @growPopulation
-        then a.hatch 1, @travelers, (a) => a.tourNodes = nlist; a.tourLength = len
-        else (a.tourNodes = nlist; a.tourLength = len) if len < a.tourLength
+          agent.hatch 1, @travelers, (agent) =>
+            agent.tourNodes = nlist
+            agent.tourLength = len
+        else
+          if len < a.tourLength
+            a.tourNodes = nlist
+            a.tourLength = len
 
       randomStrategy: (a) ->
         a.tourNodes.clone().shuffle()
@@ -113,11 +127,12 @@
                   (nlist.slice i, i + len).reverse(),
                   (nlist.slice i + len)
 
-      reportNewTour: (a) ->
-        console.log "new best tour at tick #{@animator.ticks}: #{a.tourLength} by traveler #{a.id}"
+      reportNewTour: (agent) ->
+        console.log "new best tour at tick #{@animator.ticks}: " +
+            "#{agent.tourLength} by traveler #{agent.id}"
         
     model = new ABM.TravelingSalesmanModel {
-      div: "layers",
+      div: "model",
       patchSize: 16,
       mapSize: 28
     }
@@ -126,6 +141,6 @@
     </script>
   </head>
   <body>
-    <div id="layers"></div>
+    <div id="model"></div>
   </body>
 </html>
