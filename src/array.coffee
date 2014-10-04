@@ -30,7 +30,7 @@ Array::_sort = Array::sort
 # @include ABM.util.array
 class ABM.Array extends Array
   # ### Static members
-  
+
   # A static wrapper function converting an array into an `ABM.Array`.
   #
   # It gains access to all the methods below. Ex:
@@ -42,14 +42,14 @@ class ABM.Array extends Array
   @from: (array, arrayType = ABM.Array) ->
     array.__proto__ = arrayType.prototype ? arrayType.constructor.prototype
     array
- 
+
   # Constructs the ABM.Array.
   #
   # WARNING: Needs constructor or subclassing Array won't work
   #
   constructor: (options...) ->
     return @constructor.from(options)
- 
+
 # ### Extending
 
 # All methods are added by this call.

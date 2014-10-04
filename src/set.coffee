@@ -24,7 +24,7 @@ class ABM.Set extends ABM.Array
 
     array.__proto__ = setType.prototype ? setType.constructor.prototype
     array
-  
+
   # The static `@model.Set.from` as a method.
   #
   # Used by methods creating new sets.
@@ -58,7 +58,7 @@ class ABM.Set extends ABM.Array
     @from (o for o in @ when o.breed.name not in breeds)
 
   # ### Drawing
-  
+
   # For agentsets whose agents have a `draw` method. Clears the
   # graphics context (transparent), then calls each agent's
   # draw(context) method.
@@ -71,7 +71,7 @@ class ABM.Set extends ABM.Array
         object.draw(context)
 
     null
-  
+
   # Show/Hide all of an agentset or breed.
   #
   # To show/hide an individual object, set its prototype: o.hidden = bool
@@ -89,7 +89,7 @@ class ABM.Set extends ABM.Array
     @draw(@model.contexts[@name])
 
   # ### Location/radius
-  
+
   # Return all agents within d distance from given object.
   #
   inRadius: (point, options) -> # for any objects w / x, y
@@ -98,7 +98,7 @@ class ABM.Set extends ABM.Array
       if entity.distance(point) <= options.radius
         inner.push entity
     return inner
-      
+
   # As above, but returns agents also limited to the angle `cone`
   # around a `heading` from point.
   #

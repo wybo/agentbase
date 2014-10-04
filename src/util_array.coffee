@@ -130,7 +130,7 @@ ABM.util.array =
   # If f is a string, return element with max value of that property.
   # If "valueToo" then return a 2-array of the element and the value;
   # used for cases where f is costly function.
-  # 
+  #
   #     array = [{x: 1, y: 2}, {x: 3, y: 4}]
   #     array.min()
   #     # returns {x: 1, y: 2} 5
@@ -208,14 +208,14 @@ ABM.util.array =
     (array[Math.floor(middle)] + array[Math.ceil(middle)]) / 2
 
   # Return histogram of o when f(o) is a numeric value in array.
-  # Histogram interval is bin. Error if array empty. If call 
+  # Histogram interval is bin. Error if array empty. If call
   # is a string, return histogram of that property.
   #
   # In examples below, histogram returns [3, 1, 1, 0, 0, 1]
   #
   #     array = [1, 3, 4, 1, 1, 10]
   #     histogram = histogram array, 2, (i) -> i
-  #     
+  #
   #     hash = ({id:i} for i in array)
   #     histogram = histogram hash, 2, (o) -> o.id
   #     histogram = histogram hash, 2, "id"
@@ -280,7 +280,7 @@ ABM.util.array =
       i += 1
 
     array
-  
+
   # Return a new array composed of the rows of a matrix.
   #
   #     array = [[1, 2, 3], [4, 5, 6]]
@@ -307,7 +307,7 @@ ABM.util.array =
       newArray.push addArray
 
     newArray
-  
+
   # Return an array with values in [low, high], defaults to [0, 1].
   # Note: to have a half-open interval, [low, high), try high = high - .00009
   #
@@ -324,10 +324,10 @@ ABM.util.array =
     (Math.round i for i in @normalize array, low, high)
 
   # ### Property & debugging
-  
+
   # Useful in console.
   # Also see [CoffeeConsole](http://goo.gl/1i7bd) Chrome extension.
-  # 
+  #
   # Similar to NetLogo ask & with operators.
   # Use:
   #
@@ -345,7 +345,7 @@ ABM.util.array =
     if u.isString functionString
       eval("f=function(object){return " + functionString + ";}")
     @from (object for object in array when functionString(object))
- 
+
   # Property access, also useful for debugging.
   #
   # Return an array of a property of the BreedSet.
@@ -372,11 +372,11 @@ ABM.util.array =
       object[property] = value
 
     array
- 
+
   # Return an array without given object.
   #
   #     as = AS.clone().other(AS[0])
-  #     as.getProperty "id" # [1, 2, 3, 4] 
+  #     as.getProperty "id" # [1, 2, 3, 4]
   #
   other: (array, given) ->
     newArray = new ABM.Array
@@ -387,9 +387,9 @@ ABM.util.array =
     newArray
 
 # ### Extensions
-  
+
 # Extends ABM.Array and util
-  
+
 ABM.util.array.extender =
   methods: ->
     (key for key, value of ABM.util.array when typeof value is 'function')

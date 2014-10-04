@@ -17,7 +17,7 @@ class ABM.Links extends ABM.BreedSet
   # the agentSet.
   #
   # Returns array of new links.
-  # 
+  #
   create: (from, toAgentOrAgents, initialize = ->) ->
     if u.isArray(toAgentOrAgents)
       toAgents = toAgentOrAgents
@@ -30,7 +30,7 @@ class ABM.Links extends ABM.BreedSet
       initialize(object)
 
     @
-  
+
   # Remove all links from set via link.die()
   #
   clear: ->

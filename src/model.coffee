@@ -4,16 +4,16 @@
 
 # Model is the control center for our Sets: Patches, Agents and Links.
 #
-# Creating new models is done by subclassing class Model and overriding two 
+# Creating new models is done by subclassing class Model and overriding two
 # virtual/abstract methods: `setup()` and `step()`
 #
 class ABM.Model
-  # Class variable for layers parameters. 
+  # Class variable for layers parameters.
   #
   # Can be added to by programmer to modify/create layers, **before**
   # starting your own model.
   #
-  contextsInit: { # Experimental: image:   {z: 15, context: "img"} 
+  contextsInit: { # Experimental: image:   {z: 15, context: "img"}
     patches:   {z: 10, context: "2d"}
     drawing:   {z: 20, context: "2d"}
     links:     {z: 30, context: "2d"}
@@ -21,7 +21,7 @@ class ABM.Model
     spotlight: {z: 50, context: "2d"}
   }
 
-  # Constructor: 
+  # Constructor:
   #
   # * create agentsets, install them in the models' namespace
   # * create layers/contexts
@@ -42,7 +42,7 @@ class ABM.Model
 
       # Create 2D canvas contexts layered on top of each other.
       # Initialize a patch coordinate transform for each layer.
-      # 
+      #
       # Note: this transform is permanent .. there isn't the usual context.restore().
       # To use the original canvas 2D transform temporarily:
       #
@@ -67,10 +67,10 @@ class ABM.Model
       @contexts.spotlight.globalCompositeOperation = "xor"
 
     # if isHeadless
-    # # Initialize animator to headless default: 30fps, async  
+    # # Initialize animator to headless default: 30fps, async
     # then @animator = new ABM.Animator @, null, true
     # # Initialize animator to default: 30fps, not async
-    # else 
+    # else
     @animator = new ABM.Animator @
     # Set drawing controls.  Default to drawing each agentset.
     # Optimization: If any of these is set to false, the associated
@@ -176,7 +176,7 @@ class ABM.Model
   # ### Optimizations
 
   # TODO consider whether to keep.
-  
+
   # Draw patches using scaled image of colors. Note anti-aliasing may
   # occur if browser does not support imageSmoothingEnabled or
   # equivalent.
@@ -187,13 +187,13 @@ class ABM.Model
   # canvas.  Don't use if patch breeds have different colors.
   #
   setMonochromePatches: -> @patches.monochrome = true
-    
+
   # ### User model creation
 
   # A user's model is made by subclassing Model and over-riding
   # startup and setup. `super` need not be called.
   #
-  # Initialize model resources (images, files) here.  
+  # Initialize model resources (images, files) here.
   # Uses util.waitOn so can be be async.
   #
   startup: -> # called by constructor
@@ -214,7 +214,7 @@ class ABM.Model
   # ### Animation and reset methods
 
   # Start the animation.
-  # 
+  #
   start: ->
     u.waitOn (=> @modelReady), (=> @animator.start())
     @isRunning = true
@@ -249,7 +249,7 @@ class ABM.Model
   reset: ->
     @animator.reset() # stop & reset ticks/steps counters
     @isRunning = false
-    
+
     @resetContexts()
 
     @patches = new @Patches @Patch, "patches"
@@ -258,7 +258,7 @@ class ABM.Model
 
     # setup reset, possibly null out entries?
     u.shapes.spriteSheets.length = 0
-    
+
     @setup()
 
   # Stop and reset the model, then start it again
@@ -283,7 +283,7 @@ class ABM.Model
       if value.canvas?
         value.restore()
         @setContextTransform value
-  
+
   # Call the agentset draw methods if either the first draw call or
   # their "refresh" flags are set. The latter are simple optimizations
   # to avoid redrawing the same static scene. Called by animator.
@@ -322,18 +322,18 @@ class ABM.Model
     context.fill()
 
   # ### Breeds
-  
+
   # Three breed commands:
   #
   #     @patchBreeds ["streets", "buildings"]
   #     @agentBreeds ["embers", "fires"]
   #     @linkBreeds ["spokes", "rims"]
   #
-  # will create 6 BreedSets: 
+  # will create 6 BreedSets:
   #
   #     @streets and @buildings
   #     @embers and @fires
-  #     @spokes and @rims 
+  #     @spokes and @rims
   #
   # These BreedSets' `create` methods create subclasses of Agent/Link.
   # Use of <breed>.setDefault methods work as for agents/links,

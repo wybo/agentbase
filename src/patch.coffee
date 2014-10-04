@@ -27,7 +27,7 @@ class ABM.Patch
   labelOffset: {x: 0, y: 0}
   # Agents on this patch.
   agents: null
-  
+
   # New Patch: Just set position {x: some integer, y: some integer}.
   #
   constructor: (@position) ->
@@ -39,7 +39,7 @@ class ABM.Patch
   toString: ->
     "{id: #{@id} position: {x: #{@position.x}, y: #{@position.y}}" +
     ", c: #{@color.join(", ")}}"
- 
+
   # Returns true if the patch is empty.
   #
   empty: ->
@@ -50,7 +50,7 @@ class ABM.Patch
   isOnEdge: ->
     @position.x is @breed.min.x or @position.x is @breed.max.x or \
     @position.y is @breed.min.y or @position.y is @breed.max.y
-  
+
   # Factory: Create num new agents on this patch. The optional init
   # proc is called on the new agent after inserting in its agentSet.
   #
@@ -93,7 +93,7 @@ class ABM.Patch
         neighbors = @diamondNeighbors(options.diamond, options.meToo)
       else
         neighbors = @breed.patchRectangle(@, options.range, options.range, options.meToo)
-  
+
       if cacheKey?
         @neighborsCache[cacheKey] = neighbors
 

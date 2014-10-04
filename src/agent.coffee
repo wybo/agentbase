@@ -3,7 +3,7 @@
 # AgentBase (c) 2014, Wybo Wiersma.
 
 # Agent instances represent the dynamic, behavioral element of the ABM. Each agent
-# knows the patch it is on, and interacts with that and other patches, as well as 
+# knows the patch it is on, and interacts with that and other patches, as well as
 # other agents.
 #
 class ABM.Agent
@@ -63,7 +63,7 @@ class ABM.Agent
       " y: #{@position.y.toFixed 2}}, c: #{@color}, h: #{@heading.toFixed 2}}"
 
   # ### Movement and space
-  
+
   # Place the agent at the given patch/agent location.
   #
   # Place the agent at the given point (floats) in patch coordinates using
@@ -104,12 +104,12 @@ class ABM.Agent
     @moveTo(
       x: @position.x + distance * Math.cos(@heading),
       y: @position.y + distance * Math.sin(@heading))
-  
+
   # Change current heading by radians which can be + (left) or - (right)
   #
   rotate: (radians) ->
     @heading = u.wrap @heading + radians, 0, Math.PI * 2 # returns new h
-  
+
   # Set heading towards given agent/patch using patch topology.
   #
   face: (point) ->
@@ -175,12 +175,12 @@ class ABM.Agent
       link.to
     else
       link.from
- 
+
   # Return links where I am the "from" agent in links.create.
   #
   outLinks: ->
     link for link in @links when link.from is @
- 
+
   # Return links where I am the "to" agent in links.create.
   #
   inLinks: ->
@@ -193,7 +193,7 @@ class ABM.Agent
     for link in @links
       array.push @otherEnd(link)
     array.uniq()
- 
+
   # The other end of myInLinks.
   #
   inLinkNeighbors: ->
@@ -201,7 +201,7 @@ class ABM.Agent
     for link in @inLinks()
       array.push link.from
     array.uniq()
- 
+
   # The other end of myOutinks.
   #
   outLinkNeighbors: ->
@@ -233,7 +233,7 @@ class ABM.Agent
     if @label?
       [x, y] = @model.patches.patchXYtoPixelXY @position.x, @position.y
       u.contextDrawText context, @label, x + @labelOffset.x, y + @labelOffset.y, @labelColor
-  
+
   # Set an individual agent's sprite, synching its color, shape, size.
   #
   setSprite: (sprite) ->
@@ -247,7 +247,7 @@ class ABM.Agent
       @color = u.randomColor unless @color?
       @sprite = u.shapes.shapeToSprite @shape, @color,
         @model.patches.toBits(@size), @strokeColor
-    
+
   # Draw the agent on the drawing layer, leaving permanent image.
   #
   stamp: ->

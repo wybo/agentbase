@@ -17,7 +17,7 @@ class ABM.Agents extends ABM.BreedSet
   #
   setUseSprites: (@useSprites = true) ->
     # TODO make default
-  
+
   # Filter to return all instances of this breed. Note: if used by
   # the mainSet, returns just the agents that are not subclassed breeds.
   #
@@ -50,7 +50,7 @@ class ABM.Agents extends ABM.BreedSet
     # Called in reverse order to optimize list restructuring.
 
     null # tricky, each die modifies list
-  
+
   # Return the members of this agentset that are neighbors of agent
   # using patch topology.
   #

@@ -24,7 +24,7 @@
 
 class ABM.BreedSet extends ABM.Set
   # ### Constructor and add/remove agents.
-  
+
   # Create an empty `Set` and initialize the `ID` counter for push().
   # If mainSet is supplied, the new agentset is a sub-array of mainSet.
   # This sub-array feature is how breeds are managed, see class `Model`.
@@ -45,7 +45,7 @@ class ABM.BreedSet extends ABM.Set
   create: ->
 
   # Keeps a copy of push for our use.
-  # 
+  #
   _push: @::push
 
   # Pushes an agent to the list. Only used by agentset factory
@@ -76,10 +76,10 @@ class ABM.BreedSet extends ABM.Set
 
   # Remove an agent from the agentset, returning the agentset.
   # Note this does not change delete id or change the set's ID, thus
-  # an agentset can have gaps in terms of their id's. 
+  # an agentset can have gaps in terms of their id's.
   #
   #     AS.remove(AS[3]) # [{id: 0, x: 0, y: 1}, {id: 1, x: 8, y: 0},
-  #                         {id: 2, x: 6, y: 4}, {id: 4, x: 1, y: 1}] 
+  #                         {id: 2, x: 6, y: 4}, {id: 4, x: 1, y: 1}]
   remove: (object) ->
     if @mainSet?
       @mainSet.remove object

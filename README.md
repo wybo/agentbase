@@ -79,6 +79,8 @@ Class ABM.Model has three methods that it calls automatically for you:
 
 Simply subclass ABM.Model to build a model, supplying the three methods.
 
+We'd be grateful if you cite/link to AgentBase when you use it for a model or publication.
+
 #### Development installation
 
 If you want to tinker with AgentBase itself, instead of just building a model that uses it, you will need to do as follows (on Mac/Linux).
@@ -155,7 +157,7 @@ Inside src/ the most important files are:
 
 [Util.coffee](http://doc.agentbase.org/mixin/ABM/util.html) is the base module for tools.
 
-[Util_array.coffee](http://doc.agentbase.org/mixin/ABM/util.array.html) contains helpers that are included in Array.
+[Util_array.coffee](http://doc.agentbase.org/mixin/ABM/util.array.html) contains helpers that are included in ABM.Array. You will be using these.
 
 Full documentation can be found on [doc.agentbase.org](http://doc.agentbase.org/).
 

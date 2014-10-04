@@ -44,7 +44,7 @@ class ABM.Patches extends ABM.BreedSet
     # add world items to patches
     for own key, value of @model.world
       @[key] = value
-  
+
   # Setup patch world from world parameters.
   # Note that this is done as separate method so like other agentsets,
   # patches are started up empty and filled by "create" calls.
@@ -56,9 +56,9 @@ class ABM.Patches extends ABM.BreedSet
 
     @setPixels() unless @isHeadless # setup off-page canvas for pixel ops
     @
-    
+
   # ### Patch grid coordinate system utilities:
-  
+
   # Return patch at x, y float values according to topology.
   #
   patch: (point) ->
@@ -89,7 +89,7 @@ class ABM.Patches extends ABM.BreedSet
       x: u.clamp(point.x, minPoint.x, maxPoint.x),
       y: u.clamp(point.y, minPoint.y, maxPoint.y)
     }
-  
+
   # Return x, y float values to be modulo min/max patch coordinate
   # values.
   #
@@ -98,7 +98,7 @@ class ABM.Patches extends ABM.BreedSet
       x: u.wrap(point.x, minPoint.x, maxPoint.x),
       y: u.wrap(point.y, minPoint.y, maxPoint.y)
     }
-  
+
   # Returns true if the points x, y float values are between min/max
   # patch values.
   #
@@ -122,7 +122,7 @@ class ABM.Patches extends ABM.BreedSet
     {x: u.randomFloat(@minCoordinate.x, @maxCoordinate.x), y: u.randomFloat(@minCoordinate.y, @maxCoordinate.y)}
 
   # ### Patch metrics
-  
+
   # Convert patch measure to pixels.
   #
   toBits: (patch) ->
@@ -134,9 +134,9 @@ class ABM.Patches extends ABM.BreedSet
     bit / @patchSize
 
   # ### Patch utilities
-  
-  # Return an array of patches in a rectangle centered on the given 
-  # patch `patch`, dx, dy units to the right/left and up/down. 
+
+  # Return an array of patches in a rectangle centered on the given
+  # patch `patch`, dx, dy units to the right/left and up/down.
   # Exclude `patch` unless meToo is true, default false.
   #
   patchRectangle: (patch, dx, dy, meToo = false) ->
@@ -188,8 +188,8 @@ class ABM.Patches extends ABM.BreedSet
     u.setIdentity context
     context.drawImage image, 0, 0, context.canvas.width, context.canvas.height
     context.restore() # restore patch transform
-  
-  # Utility function for pixel manipulation. Given a patch, returns the 
+
+  # Utility function for pixel manipulation. Given a patch, returns the
   # native canvas index i into the pixel data.
   #
   # The top-left order simplifies finding pixels in data sets.
@@ -212,12 +212,12 @@ class ABM.Patches extends ABM.BreedSet
   #
   patchXYtoPixelXY: (x, y) ->
     [(x - @minCoordinate.x) * @patchSize, (@maxCoordinate.y - y) * @patchSize]
-    
+
   # Draw the patches via pixel manipulation rather than 2D drawRect.
   # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq)
   #
   drawScaledPixels: (context) ->
-    # u.setIdentity context & context.restore() only needed if patchSize 
+    # u.setIdentity context & context.restore() only needed if patchSize
     # not 1, pixel ops don't use transform but @patchSize > 1 uses
     # a drawimage
     if @patchSize isnt 1
@@ -324,7 +324,7 @@ class ABM.Patches extends ABM.BreedSet
     u.setContextSmoothing context, not @drawWithPixels
 
   # Setup pixels used for `drawScaledPixels` and `importColors`.
-  # 
+  #
   setPixels: ->
     if @patchSize is 1
       @usePixels()
@@ -338,7 +338,7 @@ class ABM.Patches extends ABM.BreedSet
     if @pixelsData instanceof Uint8Array # Check for typed arrays
       @pixelsData32 = new Uint32Array @pixelsData.buffer
       @pixelsAreLittleEndian = u.isLittleEndian()
-  
+
   # Draw patches. Three cases:
   #
   # * Pixels: use pixel manipulation rather than canvas draws

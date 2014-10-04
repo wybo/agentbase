@@ -6,16 +6,16 @@
 # provides a class for customization. See these URLs for more info:
 #
 # * [JavaScript timers doc](https://developer.mozilla.org/en-US/docs/JavaScript/Timers)
-# * [Using timers & requestAnimFrame together](http://goo.gl/ymEEX)
+# * [Using timers & requestAnimationFrame together](http://goo.gl/ymEEX)
 # * [John Resig on timers](http://goo.gl/9Q3q)
 # * [jsFiddle setTimeout vs rAF](http://jsfiddle.net/calpo/H7EEE/)
 # * [Timeout tutorial](http://javascript.info/tutorial/settimeout-setinterval)
 # * [Events and timing in depth](http://javascript.info/tutorial/events-and-timing-depth)
-  
+
 class ABM.Animator
   # Create initial animator for the model, specifying default rate (fps) and multiStep.
   # If multiStep, run the draw() and step() methods separately by draw() using
-  # requestAnimFrame and step() using setTimeout.
+  # requestAnimationFrame and step() using setTimeout.
   #
   constructor: (@model, @rate = 30, @multiStep = model.isHeadless) ->
     @isHeadless = model.isHeadless
@@ -111,7 +111,7 @@ class ABM.Animator
     "ticks: #{@ticks}, draws: #{@draws}, rate: #{@rate} " +
       "tps/dps: #{@ticksPerSec()}/#{@drawsPerSec()}"
 
-  # Animation via setTimeout and requestAnimFrame.
+  # Animation via setTimeout and requestAnimationFrame.
   #
   animateSteps: =>
     @step()
@@ -123,7 +123,7 @@ class ABM.Animator
     else if @drawsPerSec() < @rate # throttle drawing to @rate
       @step() unless @multiStep
       @draw()
-    @animatorHandle = requestAnimFrame @animateDraws unless @stopped
+    @animatorHandle = requestAnimationFrame @animateDraws unless @stopped
 
   animate: ->
     @animateSteps() if @multiStep

@@ -5,7 +5,7 @@
 # A *very* simple shapes module for drawing
 # [NetLogo-like](http://ccl.northwestern.edu/netlogo/docs/) agents.
 
-# Each shape is a named object with two members: 
+# Each shape is a named object with two members:
 # a boolean rotate and a draw procedure and two optional
 # properties: image for images, and shortcut for a transform-less version of draw.
 # The shape is used in the following context with a color set
@@ -21,9 +21,9 @@
 #
 # The list of current shapes, via `u.shapes.names()` below, is:
 #
-#     ["default", "triangle", "arrow", "bug", "pyramid", 
+#     ["default", "triangle", "arrow", "bug", "pyramid",
 #       "circle", "square", "pentagon", "ring", "cup", "person"]
-# 
+#
 # @mixin # for codo doc generator
 ABM.util.shapes =
   # A simple polygon utility: c is the 2D context, and a is an array
@@ -63,7 +63,7 @@ ABM.util.shapes =
   #
   centered_square: (context, x, y, size) ->
     context.fillRect x - size / 2, y - size / 2, size, size
-  
+
   # An async util for delayed drawing of images into sprite slots.
   #
   fillSlot: (slot, image) ->
@@ -75,7 +75,7 @@ ABM.util.shapes =
   # The spritesheet data, indexed by spriteSize.
   #
   spriteSheets: new ABM.Array
-  
+
   # The module returns the following object:
   #
   default:
@@ -176,7 +176,7 @@ ABM.util.shapes =
   #     u.shapes.add "test", true, (c) -> # bowtie/hourglass
   #       u.shapes.polygon c, [[-.5, -.5], [.5, .5], [-.5, .5], [.5, -.5]]
   #
-  # Note: an image that is not rotated automatically gets a shortcut. 
+  # Note: an image that is not rotated automatically gets a shortcut.
   #
   add: (name, rotate, draw, shortcut) -> # draw can be an image, shortcut defaults to null
     if u.isFunction draw
@@ -303,7 +303,7 @@ ABM.util.shapes =
         context.stroke()
 
       context.restore()
-    
+
     context.nextX++
 
     slot

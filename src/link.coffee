@@ -31,7 +31,7 @@ class ABM.Link
   constructor: (@from, @to) ->
     @from.links.push @
     @to.links.push @
-      
+
   # Remove this link from the agent set.
   #
   die: ->
@@ -39,17 +39,17 @@ class ABM.Link
     @from.links.remove @
     @to.links.remove @
     null
-  
+
   # Return the two endpoints of this link.
   #
   bothEnds: ->
     new ABM.Array(@from, @to)
-  
+
   # Return the distance between the endpoints with the current topology.
   #
   length: ->
     @from.distance @to.position
-  
+
   # Return the other end of the link, given an endpoint agent.
   #
   # Assumes the given input *is* one of the link endpoint pairs!

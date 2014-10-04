@@ -43,14 +43,14 @@ do ->
 # @mixin # for codo doc generator
 ABM.util =
   # ### Language extensions
-  
+
   # Shortcut for throwing an error.  Good for debugging:
   #
   #     error("wtf? foo=#{foo}") if fooProblem
   #
   error: (string) ->
     throw new Error string
-  
+
   # Two max/min int numbers. One for 2^53, largest int in float64,
   # other for bitwise ops which are 32 bit. See
   # [discussion](http://goo.gl/WpAzT)
@@ -64,7 +64,7 @@ ABM.util =
     red: [255, 0, 0], yellow: [255, 255, 0], green: [0, 128, 0],
     blue: [0, 0 ,255], purple: [128, 0, 128], brown: [165, 42, 42]
   }
-  
+
   # Good replacements for Javascript's badly broken`typeof` and
   # `instanceof` See [underscore.coffee](http://goo.gl/L0umK)
   #
@@ -81,7 +81,7 @@ ABM.util =
 
   isNumber: (object) ->
     !!(typeof object is "number")
-  
+
   # ### Numeric operations
 
   # Replace Math.random with a simple seedable generator.
@@ -228,7 +228,7 @@ ABM.util =
   colorsEqual: (color1, color2) ->
     color1.toString() is color2.toString()
 
-  # Return little/big endian-ness of hardware. 
+  # Return little/big endian-ness of hardware.
   #
   # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq).
   #
@@ -259,9 +259,9 @@ ABM.util =
     if angle > PI
       angle -= 2 * PI
     angle
-  
+
   # ### Object operations
-  
+
   # Return object's own key or variable values.
   #
   ownKeys: (object) ->
@@ -274,7 +274,7 @@ ABM.util =
     ABM.Array.from(value for own key, value of object)
 
   # ### Topology operations
-  
+
   # Return angle in [-pi, pi] radians from point1 to point2
   # [See: Math.atan2](http://goo.gl/JS8DF).
   #
@@ -338,7 +338,7 @@ ABM.util =
     distanceX = point1.x - point2.x
     distanceY = point1.y - point2.y
     Math.sqrt distanceX * distanceX + distanceY * distanceY
-  
+
   # Return the [torus distance](http://goo.gl/PgJ5N) between two
   # points point1 (A) and point2 (B):
   #
@@ -438,7 +438,7 @@ ABM.util =
       image.src = name
       @fileIndex[name] = image
     image
-    
+
   # Use XMLHttpRequest to fetch data of several types. Data Types:
   # text, arraybuffer, blob, json, document, [See
   # specification](http://goo.gl/y3r3h).
@@ -462,7 +462,7 @@ ABM.util =
       @fileIndex[name] = xhr
       xhr.send()
     xhr
-  
+
   # Return true if all files are loaded.
   #
   filesLoaded: (files = @fileIndex) ->
@@ -586,7 +586,7 @@ ABM.util =
   setIdentity: (context) ->
     context.save() # revert to native 2D transform
     context.setTransform 1, 0, 0, 1, 0, 0
-  
+
   # Clear the 2D/3D layer to be transparent.
   #
   # Note: this [discussion](http://goo.gl/qekXS).
@@ -673,7 +673,7 @@ ABM.util =
     context.translate x, y # translate to center
     context.rotate radians
     context.drawImage image, -dx / 2, -dy / 2
-  
+
   # Duplicate a context's image. Returns the new context, use
   # context.canvas for canvas.
   #
@@ -691,7 +691,7 @@ ABM.util =
     context.drawImage newContext.canvas, 0, 0
 
   # ### Misc / helpers
-  
+
   # Return a linear interpolation between low and high.
   # Scale is in [0 - 1], and the result is in [low, high].
   #
