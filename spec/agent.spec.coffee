@@ -17,7 +17,7 @@ describe "Agent", ->
       agent.color = u.colorFromString("red")
 
       expect(agent.toString()).toEqual(
-        "{id: 0, position: {x: -20.00, y: -20.00}, c: 255,0,0, h: 2.25}")
+        "{id: 0, position: {x: -20.00, y: -20.00}, c: 255,0,0, h: 2.25/129}")
 
   describe "moveTo", ->
     it "moves to the given location", ->

@@ -3,6 +3,7 @@
 if typeof window == 'undefined'
   code = require "../lib/agentbase.coffee"
   eval 'var ABM = this.ABM = code.ABM'
+  isHeadless = true
 
 u = ABM.util
 
@@ -49,11 +50,13 @@ ABM.test.Model = class Model extends ABM.Model
 ABM.test.setupModel = (options = {}) ->
   options.torus ?= false
   options.model ?= Model
+  options.isHeadless = isHeadless
 
   model = new options.model({
-    patchSize: 20,
-    mapSize: 41,
-    isTorus: options.torus,
+    patchSize: 20
+    mapSize: 41
+    isTorus: options.torus
     hasNeighbors: true
+    isHeadless: options.isHeadless
   })
   return model

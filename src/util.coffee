@@ -12,21 +12,6 @@
 #
 @ABM = ABM = {}
 
-root = @ # Keep a private copy of global object
-
-# Global shim for not-yet-standard requestAnimationFrame.
-# See: [Paul Irish Shim](https://gist.github.com/paulirish/1579671)
-#
-do ->
-  window.requestAnimFrame = window.requestAnimationFrame or null
-  window.cancelAnimFrame = window.cancelAnimationFrame or null
-  for vendor in ['ms', 'moz', 'webkit', 'o'] when not window.requestAnimFrame
-    window.requestAnimFrame or= window[vendor + 'RequestAnimationFrame']
-    window.cancelAnimFrame or= window[vendor + 'CancelAnimationFrame']
-    window.cancelAnimFrame or= window[vendor + 'CancelRequestAnimationFrame']
-  window.requestAnimFrame or= (callback) -> window.setTimeout(callback, 1000 / 60)
-  window.cancelAnimFrame or= (id) -> window.clearTimeout(id)
-
 # ABM.util contains the general utilities for the project.
 #
 # Note: Within util `@` referrs to ABM.util, *not* the global name

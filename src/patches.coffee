@@ -9,27 +9,27 @@
 # All the instance variables are from ABM.world, set by Model.
 #
 class ABM.Patches extends ABM.BreedSet
-  # Pixel height & width of each patch. Set by Model.
+  # The model this object belongs to. Set by Model.
+  model: null
+  # Pixel height & width of each patch. From Model world.
   patchSize: null
-  # True if coordinate system wraps around at edges. Set by Model.
+  # True if coordinate system wraps around at edges. From Model world.
   isTorus: null
-  # Whether the model is rendered on a canvas. Set by Model.
-  isHeadless: null
-  # .x & .y, minimum patch coordinate, integer. Set by Model.
+  # .x & .y, minimum patch coordinate, integer. From Model world.
   min: null
-  # .x & .y, maximum patch coordinate, integer. Set by Model.
+  # .x & .y, maximum patch coordinate, integer. From Model world.
   max: null
-  # Width of grid in patches, integer. Set by Model.
+  # Width of grid in patches, integer. From Model world.
   width: null
-  # Height of grid in patches, integer. Set by Model.
+  # Height of grid in patches, integer. From Model world.
   height: null
-  # Width of grid in pixels, integer. Set by Model.
+  # Width of grid in pixels, integer. From Model world.
   pxWidth: null
-  # Height of grid in pixels, integer. Set by Model.
+  # Height of grid in pixels, integer. From Model world.
   pxHeight: null
-  # .x & .y, maximum float coordinate (calculated). Set by Model.
+  # .x & .y, maximum float coordinate (calculated). From Model world.
   minCoordinate: null
-  # .x & .y, maximum float coordinate (calculated). Set by Model.
+  # .x & .y, maximum float coordinate (calculated). From Model world.
   maxCoordinate: null
 
   # Constructor: super creates the empty BreedSet instance and sets
@@ -54,7 +54,7 @@ class ABM.Patches extends ABM.BreedSet
       for x in [@min.x..@max.x] by 1
         @push new @agentClass x: x, y: y
 
-    @setPixels() unless @isHeadless # setup off-page canvas for pixel ops
+    @setPixels() unless @model.isHeadless # setup off-page canvas for pixel ops
     @
 
   # ### Patch grid coordinate system utilities:

@@ -60,7 +60,8 @@ class ABM.Agent
   #
   toString: ->
     "{id: #{@id}, position: {x: #{@position.x.toFixed 2}," +
-      " y: #{@position.y.toFixed 2}}, c: #{@color}, h: #{@heading.toFixed 2}}"
+      " y: #{@position.y.toFixed 2}}, c: #{@color}," +
+      " h: #{@heading.toFixed 2}/#{Math.round(u.radiansToDegrees(@heading))}}"
 
   # ### Movement and space
 
@@ -105,10 +106,20 @@ class ABM.Agent
       x: @position.x + distance * Math.cos(@heading),
       y: @position.y + distance * Math.sin(@heading))
 
-  # Change current heading by radians which can be + (left) or - (right)
+  # Change current heading by radians.
   #
-  rotate: (radians) ->
-    @heading = u.wrap @heading + radians, 0, Math.PI * 2 # returns new h
+  # Pass a number which can be + (left) or - (right).
+  #
+  # Or pass {left: <number>} or {right: <number>} to specify a
+  # direction in a more legible way.
+  #
+  rotate: (options) ->
+    if u.isNumber options
+      @heading = u.wrap @heading + options, 0, Math.PI * 2 # returns new h
+    else if options['right']
+      @rotate options['right'] * -1
+    else
+      @rotate options['left']
 
   # Set heading towards given agent/patch using patch topology.
   #

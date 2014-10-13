@@ -12,21 +12,6 @@
 #
 @ABM = ABM = {}
 
-root = @ # Keep a private copy of global object
-
-# Global shim for not-yet-standard requestAnimationFrame.
-# See: [Paul Irish Shim](https://gist.github.com/paulirish/1579671)
-#
-do ->
-  @requestAnimFrame = @requestAnimationFrame or null
-  @cancelAnimFrame = @cancelAnimationFrame or null
-  for vendor in ['ms', 'moz', 'webkit', 'o'] when not @requestAnimFrame
-    @requestAnimFrame or= @[vendor + 'RequestAnimationFrame']
-    @cancelAnimFrame or= @[vendor + 'CancelAnimationFrame']
-    @cancelAnimFrame or= @[vendor + 'CancelRequestAnimationFrame']
-  @requestAnimFrame or= (callback) -> @setTimeout(callback, 1000 / 60)
-  @cancelAnimFrame or= (id) -> @clearTimeout(id)
-
 # ABM.util contains the general utilities for the project.
 #
 # Note: Within util `@` referrs to ABM.util, *not* the global name
@@ -43,14 +28,14 @@ do ->
 # @mixin # for codo doc generator
 ABM.util =
   # ### Language extensions
-  
+
   # Shortcut for throwing an error.  Good for debugging:
   #
   #     error("wtf? foo=#{foo}") if fooProblem
   #
   error: (string) ->
     throw new Error string
-  
+
   # Two max/min int numbers. One for 2^53, largest int in float64,
   # other for bitwise ops which are 32 bit. See
   # [discussion](http://goo.gl/WpAzT)
@@ -64,7 +49,7 @@ ABM.util =
     red: [255, 0, 0], yellow: [255, 255, 0], green: [0, 128, 0],
     blue: [0, 0 ,255], purple: [128, 0, 128], brown: [165, 42, 42]
   }
-  
+
   # Good replacements for Javascript's badly broken`typeof` and
   # `instanceof` See [underscore.coffee](http://goo.gl/L0umK)
   #
@@ -81,7 +66,7 @@ ABM.util =
 
   isNumber: (object) ->
     !!(typeof object is "number")
-  
+
   # ### Numeric operations
 
   # Replace Math.random with a simple seedable generator.
@@ -228,7 +213,7 @@ ABM.util =
   colorsEqual: (color1, color2) ->
     color1.toString() is color2.toString()
 
-  # Return little/big endian-ness of hardware. 
+  # Return little/big endian-ness of hardware.
   #
   # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq).
   #
@@ -259,9 +244,9 @@ ABM.util =
     if angle > PI
       angle -= 2 * PI
     angle
-  
+
   # ### Object operations
-  
+
   # Return object's own key or variable values.
   #
   ownKeys: (object) ->
@@ -274,7 +259,7 @@ ABM.util =
     ABM.Array.from(value for own key, value of object)
 
   # ### Topology operations
-  
+
   # Return angle in [-pi, pi] radians from point1 to point2
   # [See: Math.atan2](http://goo.gl/JS8DF).
   #
@@ -338,7 +323,7 @@ ABM.util =
     distanceX = point1.x - point2.x
     distanceY = point1.y - point2.y
     Math.sqrt distanceX * distanceX + distanceY * distanceY
-  
+
   # Return the [torus distance](http://goo.gl/PgJ5N) between two
   # points point1 (A) and point2 (B):
   #
@@ -438,7 +423,7 @@ ABM.util =
       image.src = name
       @fileIndex[name] = image
     image
-    
+
   # Use XMLHttpRequest to fetch data of several types. Data Types:
   # text, arraybuffer, blob, json, document, [See
   # specification](http://goo.gl/y3r3h).
@@ -462,7 +447,7 @@ ABM.util =
       @fileIndex[name] = xhr
       xhr.send()
     xhr
-  
+
   # Return true if all files are loaded.
   #
   filesLoaded: (files = @fileIndex) ->
@@ -586,7 +571,7 @@ ABM.util =
   setIdentity: (context) ->
     context.save() # revert to native 2D transform
     context.setTransform 1, 0, 0, 1, 0, 0
-  
+
   # Clear the 2D/3D layer to be transparent.
   #
   # Note: this [discussion](http://goo.gl/qekXS).
@@ -673,7 +658,7 @@ ABM.util =
     context.translate x, y # translate to center
     context.rotate radians
     context.drawImage image, -dx / 2, -dy / 2
-  
+
   # Duplicate a context's image. Returns the new context, use
   # context.canvas for canvas.
   #
@@ -691,7 +676,7 @@ ABM.util =
     context.drawImage newContext.canvas, 0, 0
 
   # ### Misc / helpers
-  
+
   # Return a linear interpolation between low and high.
   # Scale is in [0 - 1], and the result is in [low, high].
   #
@@ -870,7 +855,7 @@ ABM.util.array =
   # If f is a string, return element with max value of that property.
   # If "valueToo" then return a 2-array of the element and the value;
   # used for cases where f is costly function.
-  # 
+  #
   #     array = [{x: 1, y: 2}, {x: 3, y: 4}]
   #     array.min()
   #     # returns {x: 1, y: 2} 5
@@ -948,14 +933,14 @@ ABM.util.array =
     (array[Math.floor(middle)] + array[Math.ceil(middle)]) / 2
 
   # Return histogram of o when f(o) is a numeric value in array.
-  # Histogram interval is bin. Error if array empty. If call 
+  # Histogram interval is bin. Error if array empty. If call
   # is a string, return histogram of that property.
   #
   # In examples below, histogram returns [3, 1, 1, 0, 0, 1]
   #
   #     array = [1, 3, 4, 1, 1, 10]
   #     histogram = histogram array, 2, (i) -> i
-  #     
+  #
   #     hash = ({id:i} for i in array)
   #     histogram = histogram hash, 2, (o) -> o.id
   #     histogram = histogram hash, 2, "id"
@@ -1020,7 +1005,7 @@ ABM.util.array =
       i += 1
 
     array
-  
+
   # Return a new array composed of the rows of a matrix.
   #
   #     array = [[1, 2, 3], [4, 5, 6]]
@@ -1047,7 +1032,7 @@ ABM.util.array =
       newArray.push addArray
 
     newArray
-  
+
   # Return an array with values in [low, high], defaults to [0, 1].
   # Note: to have a half-open interval, [low, high), try high = high - .00009
   #
@@ -1064,10 +1049,10 @@ ABM.util.array =
     (Math.round i for i in @normalize array, low, high)
 
   # ### Property & debugging
-  
+
   # Useful in console.
   # Also see [CoffeeConsole](http://goo.gl/1i7bd) Chrome extension.
-  # 
+  #
   # Similar to NetLogo ask & with operators.
   # Use:
   #
@@ -1085,7 +1070,7 @@ ABM.util.array =
     if u.isString functionString
       eval("f=function(object){return " + functionString + ";}")
     @from (object for object in array when functionString(object))
- 
+
   # Property access, also useful for debugging.
   #
   # Return an array of a property of the BreedSet.
@@ -1112,11 +1097,11 @@ ABM.util.array =
       object[property] = value
 
     array
- 
+
   # Return an array without given object.
   #
   #     as = AS.clone().other(AS[0])
-  #     as.getProperty "id" # [1, 2, 3, 4] 
+  #     as.getProperty "id" # [1, 2, 3, 4]
   #
   other: (array, given) ->
     newArray = new ABM.Array
@@ -1127,9 +1112,9 @@ ABM.util.array =
     newArray
 
 # ### Extensions
-  
+
 # Extends ABM.Array and util
-  
+
 ABM.util.array.extender =
   methods: ->
     (key for key, value of ABM.util.array when typeof value is 'function')
@@ -1186,7 +1171,7 @@ Array::_sort = Array::sort
 # @include ABM.util.array
 class ABM.Array extends Array
   # ### Static members
-  
+
   # A static wrapper function converting an array into an `ABM.Array`.
   #
   # It gains access to all the methods below. Ex:
@@ -1198,14 +1183,14 @@ class ABM.Array extends Array
   @from: (array, arrayType = ABM.Array) ->
     array.__proto__ = arrayType.prototype ? arrayType.constructor.prototype
     array
- 
+
   # Constructs the ABM.Array.
   #
   # WARNING: Needs constructor or subclassing Array won't work
   #
   constructor: (options...) ->
     return @constructor.from(options)
- 
+
 # ### Extending
 
 # All methods are added by this call.
@@ -1219,7 +1204,7 @@ ABM.util.array.extender.extendArray('ABM.Array')
 # A *very* simple shapes module for drawing
 # [NetLogo-like](http://ccl.northwestern.edu/netlogo/docs/) agents.
 
-# Each shape is a named object with two members: 
+# Each shape is a named object with two members:
 # a boolean rotate and a draw procedure and two optional
 # properties: image for images, and shortcut for a transform-less version of draw.
 # The shape is used in the following context with a color set
@@ -1235,9 +1220,9 @@ ABM.util.array.extender.extendArray('ABM.Array')
 #
 # The list of current shapes, via `u.shapes.names()` below, is:
 #
-#     ["default", "triangle", "arrow", "bug", "pyramid", 
+#     ["default", "triangle", "arrow", "bug", "pyramid",
 #       "circle", "square", "pentagon", "ring", "cup", "person"]
-# 
+#
 # @mixin # for codo doc generator
 ABM.util.shapes =
   # A simple polygon utility: c is the 2D context, and a is an array
@@ -1277,7 +1262,7 @@ ABM.util.shapes =
   #
   centered_square: (context, x, y, size) ->
     context.fillRect x - size / 2, y - size / 2, size, size
-  
+
   # An async util for delayed drawing of images into sprite slots.
   #
   fillSlot: (slot, image) ->
@@ -1289,7 +1274,7 @@ ABM.util.shapes =
   # The spritesheet data, indexed by spriteSize.
   #
   spriteSheets: new ABM.Array
-  
+
   # The module returns the following object:
   #
   default:
@@ -1390,7 +1375,7 @@ ABM.util.shapes =
   #     u.shapes.add "test", true, (c) -> # bowtie/hourglass
   #       u.shapes.polygon c, [[-.5, -.5], [.5, .5], [-.5, .5], [.5, -.5]]
   #
-  # Note: an image that is not rotated automatically gets a shortcut. 
+  # Note: an image that is not rotated automatically gets a shortcut.
   #
   add: (name, rotate, draw, shortcut) -> # draw can be an image, shortcut defaults to null
     if u.isFunction draw
@@ -1517,7 +1502,7 @@ ABM.util.shapes =
         context.stroke()
 
       context.restore()
-    
+
     context.nextX++
 
     slot
@@ -1553,7 +1538,7 @@ class ABM.Set extends ABM.Array
 
     array.__proto__ = setType.prototype ? setType.constructor.prototype
     array
-  
+
   # The static `@model.Set.from` as a method.
   #
   # Used by methods creating new sets.
@@ -1587,7 +1572,7 @@ class ABM.Set extends ABM.Array
     @from (o for o in @ when o.breed.name not in breeds)
 
   # ### Drawing
-  
+
   # For agentsets whose agents have a `draw` method. Clears the
   # graphics context (transparent), then calls each agent's
   # draw(context) method.
@@ -1600,7 +1585,7 @@ class ABM.Set extends ABM.Array
         object.draw(context)
 
     null
-  
+
   # Show/Hide all of an agentset or breed.
   #
   # To show/hide an individual object, set its prototype: o.hidden = bool
@@ -1618,7 +1603,7 @@ class ABM.Set extends ABM.Array
     @draw(@model.contexts[@name])
 
   # ### Location/radius
-  
+
   # Return all agents within d distance from given object.
   #
   inRadius: (point, options) -> # for any objects w / x, y
@@ -1627,7 +1612,7 @@ class ABM.Set extends ABM.Array
       if entity.distance(point) <= options.radius
         inner.push entity
     return inner
-      
+
   # As above, but returns agents also limited to the angle `cone`
   # around a `heading` from point.
   #
@@ -1665,7 +1650,7 @@ class ABM.Set extends ABM.Array
 
 class ABM.BreedSet extends ABM.Set
   # ### Constructor and add/remove agents.
-  
+
   # Create an empty `Set` and initialize the `ID` counter for push().
   # If mainSet is supplied, the new agentset is a sub-array of mainSet.
   # This sub-array feature is how breeds are managed, see class `Model`.
@@ -1686,7 +1671,7 @@ class ABM.BreedSet extends ABM.Set
   create: ->
 
   # Keeps a copy of push for our use.
-  # 
+  #
   _push: @::push
 
   # Pushes an agent to the list. Only used by agentset factory
@@ -1717,10 +1702,10 @@ class ABM.BreedSet extends ABM.Set
 
   # Remove an agent from the agentset, returning the agentset.
   # Note this does not change delete id or change the set's ID, thus
-  # an agentset can have gaps in terms of their id's. 
+  # an agentset can have gaps in terms of their id's.
   #
   #     AS.remove(AS[3]) # [{id: 0, x: 0, y: 1}, {id: 1, x: 8, y: 0},
-  #                         {id: 2, x: 6, y: 4}, {id: 4, x: 1, y: 1}] 
+  #                         {id: 2, x: 6, y: 4}, {id: 4, x: 1, y: 1}]
   remove: (object) ->
     if @mainSet?
       @mainSet.remove object
@@ -1746,7 +1731,7 @@ class ABM.BreedSet extends ABM.Set
 # AgentBase (c) 2014, Wybo Wiersma.
 
 # Agent instances represent the dynamic, behavioral element of the ABM. Each agent
-# knows the patch it is on, and interacts with that and other patches, as well as 
+# knows the patch it is on, and interacts with that and other patches, as well as
 # other agents.
 #
 class ABM.Agent
@@ -1803,10 +1788,11 @@ class ABM.Agent
   #
   toString: ->
     "{id: #{@id}, position: {x: #{@position.x.toFixed 2}," +
-      " y: #{@position.y.toFixed 2}}, c: #{@color}, h: #{@heading.toFixed 2}}"
+      " y: #{@position.y.toFixed 2}}, c: #{@color}," +
+      " h: #{@heading.toFixed 2}/#{Math.round(u.radiansToDegrees(@heading))}}"
 
   # ### Movement and space
-  
+
   # Place the agent at the given patch/agent location.
   #
   # Place the agent at the given point (floats) in patch coordinates using
@@ -1847,12 +1833,22 @@ class ABM.Agent
     @moveTo(
       x: @position.x + distance * Math.cos(@heading),
       y: @position.y + distance * Math.sin(@heading))
-  
-  # Change current heading by radians which can be + (left) or - (right)
+
+  # Change current heading by radians.
   #
-  rotate: (radians) ->
-    @heading = u.wrap @heading + radians, 0, Math.PI * 2 # returns new h
-  
+  # Pass a number which can be + (left) or - (right).
+  #
+  # Or pass {left: <number>} or {right: <number>} to specify a
+  # direction in a more legible way.
+  #
+  rotate: (options) ->
+    if u.isNumber options
+      @heading = u.wrap @heading + options, 0, Math.PI * 2 # returns new h
+    else if options['right']
+      @rotate options['right'] * -1
+    else
+      @rotate options['left']
+
   # Set heading towards given agent/patch using patch topology.
   #
   face: (point) ->
@@ -1918,12 +1914,12 @@ class ABM.Agent
       link.to
     else
       link.from
- 
+
   # Return links where I am the "from" agent in links.create.
   #
   outLinks: ->
     link for link in @links when link.from is @
- 
+
   # Return links where I am the "to" agent in links.create.
   #
   inLinks: ->
@@ -1936,7 +1932,7 @@ class ABM.Agent
     for link in @links
       array.push @otherEnd(link)
     array.uniq()
- 
+
   # The other end of myInLinks.
   #
   inLinkNeighbors: ->
@@ -1944,7 +1940,7 @@ class ABM.Agent
     for link in @inLinks()
       array.push link.from
     array.uniq()
- 
+
   # The other end of myOutinks.
   #
   outLinkNeighbors: ->
@@ -1976,7 +1972,7 @@ class ABM.Agent
     if @label?
       [x, y] = @model.patches.patchXYtoPixelXY @position.x, @position.y
       u.contextDrawText context, @label, x + @labelOffset.x, y + @labelOffset.y, @labelColor
-  
+
   # Set an individual agent's sprite, synching its color, shape, size.
   #
   setSprite: (sprite) ->
@@ -1990,7 +1986,7 @@ class ABM.Agent
       @color = u.randomColor unless @color?
       @sprite = u.shapes.shapeToSprite @shape, @color,
         @model.patches.toBits(@size), @strokeColor
-    
+
   # Draw the agent on the drawing layer, leaving permanent image.
   #
   stamp: ->
@@ -2015,7 +2011,7 @@ class ABM.Agents extends ABM.BreedSet
   #
   setUseSprites: (@useSprites = true) ->
     # TODO make default
-  
+
   # Filter to return all instances of this breed. Note: if used by
   # the mainSet, returns just the agents that are not subclassed breeds.
   #
@@ -2048,7 +2044,7 @@ class ABM.Agents extends ABM.BreedSet
     # Called in reverse order to optimize list restructuring.
 
     null # tricky, each die modifies list
-  
+
   # Return the members of this agentset that are neighbors of agent
   # using patch topology.
   #
@@ -2080,25 +2076,24 @@ class ABM.Agents extends ABM.BreedSet
 # provides a class for customization. See these URLs for more info:
 #
 # * [JavaScript timers doc](https://developer.mozilla.org/en-US/docs/JavaScript/Timers)
-# * [Using timers & requestAnimFrame together](http://goo.gl/ymEEX)
+# * [Using timers & requestAnimationFrame together](http://goo.gl/ymEEX)
 # * [John Resig on timers](http://goo.gl/9Q3q)
 # * [jsFiddle setTimeout vs rAF](http://jsfiddle.net/calpo/H7EEE/)
 # * [Timeout tutorial](http://javascript.info/tutorial/settimeout-setinterval)
 # * [Events and timing in depth](http://javascript.info/tutorial/events-and-timing-depth)
-  
+
 class ABM.Animator
   # Create initial animator for the model, specifying default rate (fps) and multiStep.
   # If multiStep, run the draw() and step() methods separately by draw() using
-  # requestAnimFrame and step() using setTimeout.
+  # requestAnimationFrame and step() using setTimeout.
   #
-  constructor: (@model, @rate = 30, @multiStep = model.isHeadless) ->
-    @isHeadless = model.isHeadless
+  constructor: (@rate = 30, @multiStep = @model.isHeadless) ->
     @reset()
 
   # Adjust animator. Call before model.start() in setup() to change
   # default settings.
   #
-  setRate: (@rate, @multiStep = @isHeadless) ->
+  setRate: (@rate, @multiStep = @model.isHeadless) ->
     @resetTimes() # Change rate while running?
 
   # Starts model.
@@ -2116,7 +2111,7 @@ class ABM.Animator
   stop: ->
     @stopped = true
     if @animatorHandle?
-      cancelAnimFrame @animatorHandle
+      cancelAnimationFrame @animatorHandle
     if @timeoutHandle?
       clearTimeout @timeoutHandle
     if @intervalHandle?
@@ -2185,23 +2180,23 @@ class ABM.Animator
     "ticks: #{@ticks}, draws: #{@draws}, rate: #{@rate} " +
       "tps/dps: #{@ticksPerSec()}/#{@drawsPerSec()}"
 
-  # Animation via setTimeout and requestAnimFrame.
+  # Animation via setTimeout and requestAnimationFrame.
   #
   animateSteps: =>
     @step()
     @timeoutHandle = setTimeout @animateSteps, 10 unless @stopped
 
   animateDraws: =>
-    if @isHeadless # Use rAF when headless wants to be throttled.
+    if @model.isHeadless # Use rAF when headless wants to be throttled.
       @step() if @ticksPerSec() < @rate
     else if @drawsPerSec() < @rate # throttle drawing to @rate
       @step() unless @multiStep
       @draw()
-    @animatorHandle = requestAnimFrame @animateDraws unless @stopped
+    @animatorHandle = requestAnimationFrame @animateDraws unless @stopped
 
   animate: ->
     @animateSteps() if @multiStep
-    @animateDraws() unless @isHeadless and @multiStep
+    @animateDraws() unless @model.isHeadless and @multiStep
 
 # AgentBase is Free Software, available under GPL v3 or any later version.
 # Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
@@ -2236,7 +2231,7 @@ class ABM.Link
   constructor: (@from, @to) ->
     @from.links.push @
     @to.links.push @
-      
+
   # Remove this link from the agent set.
   #
   die: ->
@@ -2244,17 +2239,17 @@ class ABM.Link
     @from.links.remove @
     @to.links.remove @
     null
-  
+
   # Return the two endpoints of this link.
   #
   bothEnds: ->
     new ABM.Array(@from, @to)
-  
+
   # Return the distance between the endpoints with the current topology.
   #
   length: ->
     @from.distance @to.position
-  
+
   # Return the other end of the link, given an endpoint agent.
   #
   # Assumes the given input *is* one of the link endpoint pairs!
@@ -2318,7 +2313,7 @@ class ABM.Links extends ABM.BreedSet
   # the agentSet.
   #
   # Returns array of new links.
-  # 
+  #
   create: (from, toAgentOrAgents, initialize = ->) ->
     if u.isArray(toAgentOrAgents)
       toAgents = toAgentOrAgents
@@ -2331,7 +2326,7 @@ class ABM.Links extends ABM.BreedSet
       initialize(object)
 
     @
-  
+
   # Remove all links from set via link.die()
   #
   clear: ->
@@ -2364,16 +2359,16 @@ class ABM.Links extends ABM.BreedSet
 
 # Model is the control center for our Sets: Patches, Agents and Links.
 #
-# Creating new models is done by subclassing class Model and overriding two 
+# Creating new models is done by subclassing class Model and overriding two
 # virtual/abstract methods: `setup()` and `step()`
 #
 class ABM.Model
-  # Class variable for layers parameters. 
+  # Class variable for layers parameters.
   #
   # Can be added to by programmer to modify/create layers, **before**
   # starting your own model.
   #
-  contextsInit: { # Experimental: image:   {z: 15, context: "img"} 
+  contextsInit: { # Experimental: image:   {z: 15, context: "img"}
     patches:   {z: 10, context: "2d"}
     drawing:   {z: 20, context: "2d"}
     links:     {z: 30, context: "2d"}
@@ -2381,7 +2376,7 @@ class ABM.Model
     spotlight: {z: 50, context: "2d"}
   }
 
-  # Constructor: 
+  # Constructor:
   #
   # * create agentsets, install them in the models' namespace
   # * create layers/contexts
@@ -2402,7 +2397,7 @@ class ABM.Model
 
       # Create 2D canvas contexts layered on top of each other.
       # Initialize a patch coordinate transform for each layer.
-      # 
+      #
       # Note: this transform is permanent .. there isn't the usual context.restore().
       # To use the original canvas 2D transform temporarily:
       #
@@ -2426,17 +2421,6 @@ class ABM.Model
       # Setup spotlight layer, also not an agentset:
       @contexts.spotlight.globalCompositeOperation = "xor"
 
-    # if isHeadless
-    # # Initialize animator to headless default: 30fps, async  
-    # then @animator = new ABM.Animator @, null, true
-    # # Initialize animator to default: 30fps, not async
-    # else 
-    @animator = new ABM.Animator @
-    # Set drawing controls.  Default to drawing each agentset.
-    # Optimization: If any of these is set to false, the associated
-    # agentset is drawn only once, remaining static after that.
-    @refreshLinks = @refreshAgents = @refreshPatches = true
-
     # Give class prototypes a 'model' attribute that references this model.
     @Patches = @extendWithModel(@Patches)
     @Patch = @extendWithModel(@Patch)
@@ -2445,6 +2429,13 @@ class ABM.Model
     @Links = @extendWithModel(@Links)
     @Link = @extendWithModel(@Link)
     @Set = @extendWithModel(@Set)
+    @Animator = @extendWithModel(@Animator)
+
+    @animator = new @Animator
+    # Set drawing controls.  Default to drawing each agentset.
+    # Optimization: If any of these is set to false, the associated
+    # agentset is drawn only once, remaining static after that.
+    @refreshLinks = @refreshAgents = @refreshPatches = true
 
     # Initialize agentsets.
     @patches = new @Patches @Patch, "patches"
@@ -2467,9 +2458,10 @@ class ABM.Model
   #
   setWorld: (options) ->
     defaults = {
-      isHeadless: false,
+      isHeadless: false, # Part of model because also excludes UI
       Agents: ABM.Agents, Agent: ABM.Agent, Links: ABM.Links, Link: ABM.Link,
-      Patches: ABM.Patches, Patch: ABM.Patch, Set: ABM.Set}
+      Patches: ABM.Patches, Patch: ABM.Patch, Set: ABM.Set,
+      Animator: ABM.Animator}
 
     worldDefaults = {
       patchSize: 13, mapSize: 32, isTorus: false, min: null, max: null}
@@ -2536,7 +2528,7 @@ class ABM.Model
   # ### Optimizations
 
   # TODO consider whether to keep.
-  
+
   # Draw patches using scaled image of colors. Note anti-aliasing may
   # occur if browser does not support imageSmoothingEnabled or
   # equivalent.
@@ -2547,13 +2539,13 @@ class ABM.Model
   # canvas.  Don't use if patch breeds have different colors.
   #
   setMonochromePatches: -> @patches.monochrome = true
-    
+
   # ### User model creation
 
   # A user's model is made by subclassing Model and over-riding
   # startup and setup. `super` need not be called.
   #
-  # Initialize model resources (images, files) here.  
+  # Initialize model resources (images, files) here.
   # Uses util.waitOn so can be be async.
   #
   startup: -> # called by constructor
@@ -2574,7 +2566,7 @@ class ABM.Model
   # ### Animation and reset methods
 
   # Start the animation.
-  # 
+  #
   start: ->
     u.waitOn (=> @modelReady), (=> @animator.start())
     @isRunning = true
@@ -2609,7 +2601,7 @@ class ABM.Model
   reset: ->
     @animator.reset() # stop & reset ticks/steps counters
     @isRunning = false
-    
+
     @resetContexts()
 
     @patches = new @Patches @Patch, "patches"
@@ -2618,7 +2610,7 @@ class ABM.Model
 
     # setup reset, possibly null out entries?
     u.shapes.spriteSheets.length = 0
-    
+
     @setup()
 
   # Stop and reset the model, then start it again
@@ -2643,7 +2635,7 @@ class ABM.Model
       if value.canvas?
         value.restore()
         @setContextTransform value
-  
+
   # Call the agentset draw methods if either the first draw call or
   # their "refresh" flags are set. The latter are simple optimizations
   # to avoid redrawing the same static scene. Called by animator.
@@ -2682,18 +2674,18 @@ class ABM.Model
     context.fill()
 
   # ### Breeds
-  
+
   # Three breed commands:
   #
   #     @patchBreeds ["streets", "buildings"]
   #     @agentBreeds ["embers", "fires"]
   #     @linkBreeds ["spokes", "rims"]
   #
-  # will create 6 BreedSets: 
+  # will create 6 BreedSets:
   #
   #     @streets and @buildings
   #     @embers and @fires
-  #     @spokes and @rims 
+  #     @spokes and @rims
   #
   # These BreedSets' `create` methods create subclasses of Agent/Link.
   # Use of <breed>.setDefault methods work as for agents/links,
@@ -2762,7 +2754,7 @@ class ABM.Patch
   labelOffset: {x: 0, y: 0}
   # Agents on this patch.
   agents: null
-  
+
   # New Patch: Just set position {x: some integer, y: some integer}.
   #
   constructor: (@position) ->
@@ -2774,7 +2766,7 @@ class ABM.Patch
   toString: ->
     "{id: #{@id} position: {x: #{@position.x}, y: #{@position.y}}" +
     ", c: #{@color.join(", ")}}"
- 
+
   # Returns true if the patch is empty.
   #
   empty: ->
@@ -2785,7 +2777,7 @@ class ABM.Patch
   isOnEdge: ->
     @position.x is @breed.min.x or @position.x is @breed.max.x or \
     @position.y is @breed.min.y or @position.y is @breed.max.y
-  
+
   # Factory: Create num new agents on this patch. The optional init
   # proc is called on the new agent after inserting in its agentSet.
   #
@@ -2828,7 +2820,7 @@ class ABM.Patch
         neighbors = @diamondNeighbors(options.diamond, options.meToo)
       else
         neighbors = @breed.patchRectangle(@, options.range, options.range, options.meToo)
-  
+
       if cacheKey?
         @neighborsCache[cacheKey] = neighbors
 
@@ -2880,27 +2872,27 @@ class ABM.Patch
 # All the instance variables are from ABM.world, set by Model.
 #
 class ABM.Patches extends ABM.BreedSet
-  # Pixel height & width of each patch. Set by Model.
+  # The model this object belongs to. Set by Model.
+  model: null
+  # Pixel height & width of each patch. From Model world.
   patchSize: null
-  # True if coordinate system wraps around at edges. Set by Model.
+  # True if coordinate system wraps around at edges. From Model world.
   isTorus: null
-  # Whether the model is rendered on a canvas. Set by Model.
-  isHeadless: null
-  # .x & .y, minimum patch coordinate, integer. Set by Model.
+  # .x & .y, minimum patch coordinate, integer. From Model world.
   min: null
-  # .x & .y, maximum patch coordinate, integer. Set by Model.
+  # .x & .y, maximum patch coordinate, integer. From Model world.
   max: null
-  # Width of grid in patches, integer. Set by Model.
+  # Width of grid in patches, integer. From Model world.
   width: null
-  # Height of grid in patches, integer. Set by Model.
+  # Height of grid in patches, integer. From Model world.
   height: null
-  # Width of grid in pixels, integer. Set by Model.
+  # Width of grid in pixels, integer. From Model world.
   pxWidth: null
-  # Height of grid in pixels, integer. Set by Model.
+  # Height of grid in pixels, integer. From Model world.
   pxHeight: null
-  # .x & .y, maximum float coordinate (calculated). Set by Model.
+  # .x & .y, maximum float coordinate (calculated). From Model world.
   minCoordinate: null
-  # .x & .y, maximum float coordinate (calculated). Set by Model.
+  # .x & .y, maximum float coordinate (calculated). From Model world.
   maxCoordinate: null
 
   # Constructor: super creates the empty BreedSet instance and sets
@@ -2915,7 +2907,7 @@ class ABM.Patches extends ABM.BreedSet
     # add world items to patches
     for own key, value of @model.world
       @[key] = value
-  
+
   # Setup patch world from world parameters.
   # Note that this is done as separate method so like other agentsets,
   # patches are started up empty and filled by "create" calls.
@@ -2925,11 +2917,11 @@ class ABM.Patches extends ABM.BreedSet
       for x in [@min.x..@max.x] by 1
         @push new @agentClass x: x, y: y
 
-    @setPixels() unless @isHeadless # setup off-page canvas for pixel ops
+    @setPixels() unless @model.isHeadless # setup off-page canvas for pixel ops
     @
-    
+
   # ### Patch grid coordinate system utilities:
-  
+
   # Return patch at x, y float values according to topology.
   #
   patch: (point) ->
@@ -2960,7 +2952,7 @@ class ABM.Patches extends ABM.BreedSet
       x: u.clamp(point.x, minPoint.x, maxPoint.x),
       y: u.clamp(point.y, minPoint.y, maxPoint.y)
     }
-  
+
   # Return x, y float values to be modulo min/max patch coordinate
   # values.
   #
@@ -2969,7 +2961,7 @@ class ABM.Patches extends ABM.BreedSet
       x: u.wrap(point.x, minPoint.x, maxPoint.x),
       y: u.wrap(point.y, minPoint.y, maxPoint.y)
     }
-  
+
   # Returns true if the points x, y float values are between min/max
   # patch values.
   #
@@ -2993,7 +2985,7 @@ class ABM.Patches extends ABM.BreedSet
     {x: u.randomFloat(@minCoordinate.x, @maxCoordinate.x), y: u.randomFloat(@minCoordinate.y, @maxCoordinate.y)}
 
   # ### Patch metrics
-  
+
   # Convert patch measure to pixels.
   #
   toBits: (patch) ->
@@ -3005,9 +2997,9 @@ class ABM.Patches extends ABM.BreedSet
     bit / @patchSize
 
   # ### Patch utilities
-  
-  # Return an array of patches in a rectangle centered on the given 
-  # patch `patch`, dx, dy units to the right/left and up/down. 
+
+  # Return an array of patches in a rectangle centered on the given
+  # patch `patch`, dx, dy units to the right/left and up/down.
   # Exclude `patch` unless meToo is true, default false.
   #
   patchRectangle: (patch, dx, dy, meToo = false) ->
@@ -3059,8 +3051,8 @@ class ABM.Patches extends ABM.BreedSet
     u.setIdentity context
     context.drawImage image, 0, 0, context.canvas.width, context.canvas.height
     context.restore() # restore patch transform
-  
-  # Utility function for pixel manipulation. Given a patch, returns the 
+
+  # Utility function for pixel manipulation. Given a patch, returns the
   # native canvas index i into the pixel data.
   #
   # The top-left order simplifies finding pixels in data sets.
@@ -3083,12 +3075,12 @@ class ABM.Patches extends ABM.BreedSet
   #
   patchXYtoPixelXY: (x, y) ->
     [(x - @minCoordinate.x) * @patchSize, (@maxCoordinate.y - y) * @patchSize]
-    
+
   # Draw the patches via pixel manipulation rather than 2D drawRect.
   # See Mozilla pixel [manipulation article](http://goo.gl/Lxliq)
   #
   drawScaledPixels: (context) ->
-    # u.setIdentity context & context.restore() only needed if patchSize 
+    # u.setIdentity context & context.restore() only needed if patchSize
     # not 1, pixel ops don't use transform but @patchSize > 1 uses
     # a drawimage
     if @patchSize isnt 1
@@ -3195,7 +3187,7 @@ class ABM.Patches extends ABM.BreedSet
     u.setContextSmoothing context, not @drawWithPixels
 
   # Setup pixels used for `drawScaledPixels` and `importColors`.
-  # 
+  #
   setPixels: ->
     if @patchSize is 1
       @usePixels()
@@ -3209,7 +3201,7 @@ class ABM.Patches extends ABM.BreedSet
     if @pixelsData instanceof Uint8Array # Check for typed arrays
       @pixelsData32 = new Uint32Array @pixelsData.buffer
       @pixelsAreLittleEndian = u.isLittleEndian()
-  
+
   # Draw patches. Three cases:
   #
   # * Pixels: use pixel manipulation rather than canvas draws

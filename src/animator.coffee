@@ -17,14 +17,13 @@ class ABM.Animator
   # If multiStep, run the draw() and step() methods separately by draw() using
   # requestAnimationFrame and step() using setTimeout.
   #
-  constructor: (@model, @rate = 30, @multiStep = model.isHeadless) ->
-    @isHeadless = model.isHeadless
+  constructor: (@rate = 30, @multiStep = @model.isHeadless) ->
     @reset()
 
   # Adjust animator. Call before model.start() in setup() to change
   # default settings.
   #
-  setRate: (@rate, @multiStep = @isHeadless) ->
+  setRate: (@rate, @multiStep = @model.isHeadless) ->
     @resetTimes() # Change rate while running?
 
   # Starts model.
@@ -42,7 +41,7 @@ class ABM.Animator
   stop: ->
     @stopped = true
     if @animatorHandle?
-      cancelAnimFrame @animatorHandle
+      cancelAnimationFrame @animatorHandle
     if @timeoutHandle?
       clearTimeout @timeoutHandle
     if @intervalHandle?
@@ -118,7 +117,7 @@ class ABM.Animator
     @timeoutHandle = setTimeout @animateSteps, 10 unless @stopped
 
   animateDraws: =>
-    if @isHeadless # Use rAF when headless wants to be throttled.
+    if @model.isHeadless # Use rAF when headless wants to be throttled.
       @step() if @ticksPerSec() < @rate
     else if @drawsPerSec() < @rate # throttle drawing to @rate
       @step() unless @multiStep
@@ -127,4 +126,4 @@ class ABM.Animator
 
   animate: ->
     @animateSteps() if @multiStep
-    @animateDraws() unless @isHeadless and @multiStep
+    @animateDraws() unless @model.isHeadless and @multiStep

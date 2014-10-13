@@ -66,17 +66,6 @@ class ABM.Model
       # Setup spotlight layer, also not an agentset:
       @contexts.spotlight.globalCompositeOperation = "xor"
 
-    # if isHeadless
-    # # Initialize animator to headless default: 30fps, async
-    # then @animator = new ABM.Animator @, null, true
-    # # Initialize animator to default: 30fps, not async
-    # else
-    @animator = new ABM.Animator @
-    # Set drawing controls.  Default to drawing each agentset.
-    # Optimization: If any of these is set to false, the associated
-    # agentset is drawn only once, remaining static after that.
-    @refreshLinks = @refreshAgents = @refreshPatches = true
-
     # Give class prototypes a 'model' attribute that references this model.
     @Patches = @extendWithModel(@Patches)
     @Patch = @extendWithModel(@Patch)
@@ -85,6 +74,13 @@ class ABM.Model
     @Links = @extendWithModel(@Links)
     @Link = @extendWithModel(@Link)
     @Set = @extendWithModel(@Set)
+    @Animator = @extendWithModel(@Animator)
+
+    @animator = new @Animator
+    # Set drawing controls.  Default to drawing each agentset.
+    # Optimization: If any of these is set to false, the associated
+    # agentset is drawn only once, remaining static after that.
+    @refreshLinks = @refreshAgents = @refreshPatches = true
 
     # Initialize agentsets.
     @patches = new @Patches @Patch, "patches"
@@ -107,9 +103,10 @@ class ABM.Model
   #
   setWorld: (options) ->
     defaults = {
-      isHeadless: false,
+      isHeadless: false, # Part of model because also excludes UI
       Agents: ABM.Agents, Agent: ABM.Agent, Links: ABM.Links, Link: ABM.Link,
-      Patches: ABM.Patches, Patch: ABM.Patch, Set: ABM.Set}
+      Patches: ABM.Patches, Patch: ABM.Patch, Set: ABM.Set,
+      Animator: ABM.Animator}
 
     worldDefaults = {
       patchSize: 13, mapSize: 32, isTorus: false, min: null, max: null}

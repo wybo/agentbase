@@ -3,6 +3,7 @@
 if typeof window == 'undefined'
   code = require "../lib/agentbase.coffee"
   eval 'var ABM = this.ABM = code.ABM'
+  isHeadless = true
 
 u = ABM.util
 
@@ -49,12 +50,14 @@ ABM.test.Model = class Model extends ABM.Model
 ABM.test.setupModel = (options = {}) ->
   options.torus ?= false
   options.model ?= Model
+  options.isHeadless = isHeadless
 
   model = new options.model({
-    patchSize: 20,
-    mapSize: 41,
-    isTorus: options.torus,
+    patchSize: 20
+    mapSize: 41
+    isTorus: options.torus
     hasNeighbors: true
+    isHeadless: options.isHeadless
   })
   return model
 
@@ -77,7 +80,7 @@ describe "Agent", ->
       agent.color = u.colorFromString("red")
 
       expect(agent.toString()).toEqual(
-        "{id: 0, position: {x: -20.00, y: -20.00}, c: 255,0,0, h: 2.25}")
+        "{id: 0, position: {x: -20.00, y: -20.00}, c: 255,0,0, h: 2.25/129}")
 
   describe "moveTo", ->
     it "moves to the given location", ->
