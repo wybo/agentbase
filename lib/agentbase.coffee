@@ -1719,7 +1719,7 @@ class ABM.BreedSet extends ABM.Set
 
   # Move an agent from its BreedSet to be in this BreedSet.
   #
-  setBreed: (agent) ->
+  reBreed: (agent) ->
     agent.breed.remove agent
     @push agent
     proto = agent.__proto__ = @agentClass.prototype
@@ -2421,7 +2421,12 @@ class ABM.Model
       # Setup spotlight layer, also not an agentset:
       @contexts.spotlight.globalCompositeOperation = "xor"
 
-    # Give class prototypes a 'model' attribute that references this model.
+    # Subclasses the classes so they can be modified for this model if needed.
+    # Also gives the classes a 'model' attribute that references this model.
+    #
+    # Going this route rather than class cloning because cloning does not
+    # work well for Array subclasses, and because conceptually they
+    # are subclasses for this model, not clones.
     @Patches = @extendWithModel(@Patches)
     @Patch = @extendWithModel(@Patch)
     @Agents = @extendWithModel(@Agents)
@@ -2706,7 +2711,8 @@ class ABM.Model
       if string is type
         @[type] = new breedSet agentClass, string
       else
-        breedClass = class Breed extends agentClass
+        className = string.charAt(0).toUpperCase() + string.substr(1)
+        breedClass = class @[className] extends agentClass
         breed = @[string] = # add @<breed> to local scope
           new breedSet breedClass, string, agentClass::breed # create subset agentSet
 

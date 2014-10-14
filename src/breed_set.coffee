@@ -93,7 +93,7 @@ class ABM.BreedSet extends ABM.Set
 
   # Move an agent from its BreedSet to be in this BreedSet.
   #
-  setBreed: (agent) ->
+  reBreed: (agent) ->
     agent.breed.remove agent
     @push agent
     proto = agent.__proto__ = @agentClass.prototype

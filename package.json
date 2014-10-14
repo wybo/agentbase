@@ -27,7 +27,11 @@
     "all": "gulp all",
     "build": "gulp build",
     "doc": "codo src",
-    "watch": "gulp watch"
+    "watch": "gulp watch",
+    "git-pull": "git checkout master && git pull",
+    "git-diff": "git diff Gulpfile.js LICENSE README.md package.json src models",
+    "git-prep": "git checkout master && gulp all && git add . && git status",
+    "git-commit": "git checkout master && git commit -v && git push origin master"
   },
   "devDependencies": {
     "codo": "^2.0.9",
