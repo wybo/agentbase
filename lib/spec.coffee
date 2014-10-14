@@ -746,7 +746,7 @@ describe "Set", ->
       expect(returned).toBe agent
       expect(model.agents.contains(agent)).not.toBe true
 
-  describe "setBreed", ->
+  describe "reBreed", ->
     it "Sets the breed", ->
       model = t.setupModel()
 
@@ -755,12 +755,12 @@ describe "Set", ->
       agentsOldId = agent.id
       citizensOldId = citizen.id
 
-      model.citizens.setBreed(agent)
+      model.citizens.reBreed(agent)
 
       expect(agent.breed.name).toBe "citizens"
       expect(agent.id).toBe agentsOldId
 
-      model.agents.setBreed(citizen)
+      model.agents.reBreed(citizen)
 
       expect(citizen.breed.name).toBe "agents"
       expect(citizen.id).toBe citizensOldId
