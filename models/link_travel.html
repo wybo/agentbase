@@ -72,7 +72,7 @@
         null # avoid returning "for" results above
 
     model = new ABM.LinkTravelModel {
-      div: "model",
+      div: "world",
       patchSize: 13
     }
     model.start()
@@ -80,6 +80,6 @@
     </script>
   </head>
   <body>
-    <div id="model"></div>
+    <div id="world"></div>
   </body>
 </html>

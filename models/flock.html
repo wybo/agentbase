@@ -110,7 +110,7 @@
         Math.sqrt(dx * dx + dy * dy) / @population
 
     model = new ABM.FlockModel({
-      div: "model",
+      div: "world",
       patchSize: 15,
       isTorus: true
     })
@@ -119,6 +119,6 @@
     </script>
   </head>
   <body>
-    <div id="model"></div>
+    <div id="world"></div>
   </body>
 </html>

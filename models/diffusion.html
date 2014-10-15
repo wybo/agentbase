@@ -47,7 +47,7 @@
         # @stop() # debug: one step
 
     model = new ABM.DiffusionModel {
-      div: "model",
+      div: "world",
       patchSize: 10,
       min: {x: -25, y: -20},
       max: {x: 25, y: 20}
@@ -58,6 +58,6 @@
     </script>
   </head>
   <body>
-    <div id="model"></div>
+    <div id="world"></div>
   </body>
 </html>
