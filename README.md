@@ -17,7 +17,7 @@ Have a look at these example models.
 
 [Ants](http://agentbase.org/model.html?b24f11b263d0de2610f1) is a model of ant foraging behavior incorporating a nest location and food pheromone diffusion.
 
-[Buttons](http://agentbase.org/model.html?f4c4388138450bdf9732) provides Stuart Kauffman's example of randomly connecting pairs of buttons in a pile resulting in a tipping point.
+[Buttons](http://agentbase.org/model.html?f4c4388138450bdf9732) provides [Stuart Kauffman's example](http://www.msci.memphis.edu/~franklin/kauffman.html) of randomly connecting pairs of buttons in a pile resulting in a tipping point.
 
 [Diffusion](http://agentbase.org/model.html?5a0c13a0e385074a060f) has randomly flying agents on a patch grid dropping a color which is diffused over the grid.
 
@@ -35,7 +35,7 @@ Have a look at these example models.
 
 [Preferential Attachment](http://agentbase.org/model.html?beba752ebfce2daaaa0e) models a dynamic graph where new links preferentially attach to the nodes that have the most links. This results in a power-law distribution.
 
-[Traveling Salesman](http://agentbase.org/model.html?6f0e70c8dd0fabdf7621) demonstrates a Traveling Sales Person solution via a Genetic Algorithm showing the rapid conversion of stochastic methods.
+[Traveling Salesman](http://agentbase.org/model.html?6f0e70c8dd0fabdf7621) demonstrates a [Traveling Sales Person](http://en.wikipedia.org/wiki/Travelling_salesman_problem) solution via a [Genetic Algorithm](http://en.wikipedia.org/wiki/Genetic_algorithm) showing the rapid conversion of stochastic methods.
 
 #### The format of sample models
 
