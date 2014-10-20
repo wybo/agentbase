@@ -8,6 +8,10 @@
     # Original AgentScript code @ 2013, 2014 Owen Densmore and RedfishGroup LLC.
     # AgentBase (c) 2014, Wybo Wiersma.
     
+    # Preferential Attachment models a dynamic graph where new links
+    # preferentially attach to the nodes that have the most links. This
+    # results in a power-law distribution.
+
     u = ABM.util
 
     class ABM.PreferentialAttachmentModel extends ABM.Model

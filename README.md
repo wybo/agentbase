@@ -13,29 +13,29 @@ AgentBase:
 
 Have a look at these example models.
 
-[Template.html](http://lib.agentbase.org/models/template.html) shows the basic structure of a model and ([if you look at the source](http://agentbase.org/models/template.coffee)) is a good place to get started when you are building your own. [advanced_template.html](http://lib.agentbase.org/models/advanced_template.html) is more elaborate.
+[Template](http://agentbase.org/model.html?9d54597f7aafc995d227) shows the basic structure of a model and is a good place to get started when you want to try building your own. [Advanced Template](http://agentbase.org/model.html?95eddda521dfaf11c015) is more elaborate.
 
-[Ants.html](http://lib.agentbase.org/models/ants.html) is a model of ant foraging behavior incorporating a nest location and food pheromone diffusion.
+[Ants](http://agentbase.org/model.html?b24f11b263d0de2610f1) is a model of ant foraging behavior incorporating a nest location and food pheromone diffusion.
 
-[Buttons.html](http://lib.agentbase.org/models/buttons.html) provides Stuart Kauffman's example of randomly connecting pairs of buttons in a pile resulting in a tipping point.
+[Buttons](http://agentbase.org/model.html?f4c4388138450bdf9732) provides Stuart Kauffman's example of randomly connecting pairs of buttons in a pile resulting in a tipping point.
 
-[Diffusion.html](http://lib.agentbase.org/models/diffusion.html) has randomly flying on a patch grid dropping a color which is diffused over the grid.
+[Diffusion](http://agentbase.org/model.html?5a0c13a0e385074a060f) has randomly flying agents on a patch grid dropping a color which is diffused over the grid.
 
-[Fire.html](http://lib.agentbase.org/models/fire.html) is a cellular automata model of fire spreading.
+[Fire](http://agentbase.org/model.html?36f24ba1b335aea212eb) is a cellular automata model of fire spreading.
 
-[Flock.html](http://lib.agentbase.org/models/flock.html) is the classic "boids" model where agents each follow three simple rules resulting in realistic flocking. This example uses the as.dat.gui.js extra.
+[Flock](http://agentbase.org/model.html?82ef4f46d2a05838dc5f) is the classic "boids" model where agents each follow three simple rules resulting in realistic flocking. This example uses the as.dat.gui.js extra.
 
-[Grid\_path.html](http://lib.agentbase.org/models/grid_path.html) shows one of Knuth's great puzzles on the probability of all Manhattan traversals diagonally traversing a grid.
+[Grid Path](http://agentbase.org/model.html?aabffc060db58fb7032a) shows one of Knuth's great puzzles on the probability of all Manhattan traversals diagonally traversing a grid.
 
-[Life.html](http://lib.agentbase.org/models/life.html) provides an implementation of [Conway's Game of Life](http://en.wikipedia.org/wiki/Conway's_Game_of_Life) with a twist. This example demonstrates running multiple models on the same page.
+[Life](http://agentbase.org/model.html?d10d06e31f41874b982c) provides an implementation of [Conway's Game of Life](http://en.wikipedia.org/wiki/Conway's_Game_of_Life) with a twist. This example demonstrates running multiple models on the same page.
 
-[Link\_travel.html](http://lib.agentbase.org/models/link_travel.html) has agents traversing a graph of nodes and links.
+[Link Travel](http://agentbase.org/model.html?96c36a9b3a1760f3c55f) has agents traversing a graph of nodes and links.
 
-[N\_body.html](http://lib.agentbase.org/models/n_body.html) is a simulation of the nonlinear gravitation of n bodies.
+[N body](http://agentbase.org/model.html?78e4557ef610be9abf04) is a simulation of the nonlinear gravitation of n bodies.
 
-[Preferential\_attachment.html](http://lib.agentbase.org/models/preferential_attachment.html) is a dynamic graph where new links preferentially attach to the nodes that have the most links.  This results in a power-law distribution.
+[Preferential Attachment](http://agentbase.org/model.html?beba752ebfce2daaaa0e) models a dynamic graph where new links preferentially attach to the nodes that have the most links. This results in a power-law distribution.
 
-[Traveling\_salesman.html](http://lib.agentbase.org/models/traveling_salesman.html) demonstrates a Traveling Sales Person solution via a Genetic Algorithm showing the rapid conversion of stochastic methods.
+[Traveling Salesman](http://agentbase.org/model.html?6f0e70c8dd0fabdf7621) demonstrates a Traveling Sales Person solution via a Genetic Algorithm showing the rapid conversion of stochastic methods.
 
 #### The format of sample models
 
@@ -69,7 +69,7 @@ You can see this by running a sample model, then using the browser's View Page S
 
 #### Building a model
 
-[Download AgentBase](https://github.com/wybo/agentbase/zipball/master), [unzip it](http://en.wikipedia.org/wiki/Zip_(file_format)), then go to the models directory and edit [template.html](http://lib.agentbase.org/models/template.html), [advanced_template.html](http://lib.agentbase.org/models/advanced_template.html) or any other example model to get started. Open it locally in your browser and reload to see changes take effect.
+Visit [agentbase.org](http://agentbase.org) and tinker with the [Template](http://agentbase.org/model.html?9d54597f7aafc995d227), the [Advanced Template](http://agentbase.org/model.html?95eddda521dfaf11c015) or any other example model to get started.
 
 Class ABM.Model has three methods that it calls automatically for you:
 
@@ -77,7 +77,7 @@ Class ABM.Model has three methods that it calls automatically for you:
     setup()   Called during startup and by Model.reset().
     step()    Called by the animator to advance the model one step.
 
-Simply subclass ABM.Model to build a model, supplying the three methods.
+To build a model from scratch, simply subclass ABM.Model to build a model, supplying the three methods. You can also edit models locally: [Download AgentBase](https://github.com/wybo/agentbase/zipball/master), [unzip it](http://en.wikipedia.org/wiki/Zip_(file_format)), then go to the models directory and edit the [template.html](http://lib.agentbase.org/models/template.html) model you find there.
 
 We'd be grateful if you cite/link to AgentBase when you use it for a model or publication.
 
