@@ -5,10 +5,11 @@
 gulp = require 'gulp'
 concat = require 'gulp-concat'
 coffee = require 'gulp-coffee'
-sourcemaps = require 'gulp-sourcemaps'
 docco = require 'gulp-docco'
-uglify = require 'gulp-uglify'
 rename = require 'gulp-rename'
+shell = require 'gulp-shell'
+sourcemaps = require 'gulp-sourcemaps'
+uglify = require 'gulp-uglify'
 lazypipe = require 'lazypipe'
 taskList = require 'gulp-task-listing'
 fs = require 'fs'
@@ -41,7 +42,7 @@ coffeeTasks = lazypipe()
 #  .pipe sourcemaps.write, '.'
   .pipe jsTasks
 
-gulp.task 'all', ['build']
+gulp.task 'all', ['build', 'docs']
 
 # Build tasks:
 gulp.task 'build-agentbase', ->
@@ -66,9 +67,8 @@ gulp.task 'watch', ['build'], ->
     ['build-specs']
 
 gulp.task 'docs', ->
-  return gulp.src ["src/*coffee"]
-  .pipe docco()
-  .pipe gulp.dest('docs/')
+  return gulp.src('')
+  .pipe shell("./node_modules/codo/bin/codo src")
 
 # Default: list out tasks
 gulp.task 'default', taskList
