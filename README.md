@@ -1,6 +1,6 @@
 ### AgentBase
 
-The AgentBase software library allows you to build Agent Based Models (ABMs) that run in the browser. It follows [NetLogo](http://ccl.northwestern.edu/netlogo/)'s Agent oriented Programming model and is entirely implemented in [CoffeeScript](http://coffeescript.org/). Tinker with models on [AgentBase.org](http://www.agentbase.org/) or drop by our [Google Group](https://groups.google.com/d/forum/agentbase) to get involved. Documentation [is here](http://doc.agentbase.org/).
+The AgentBase software library allows you to build Agent Based Models (ABMs) that run in the browser. It follows [NetLogo](http://ccl.northwestern.edu/netlogo/)'s Agent oriented Programming model and is entirely implemented in [CoffeeScript](http://coffeescript.org/). Tinker with models on [AgentBase.org](http://agentbase.org/) or drop by our [Google Group](https://groups.google.com/d/forum/agentbase) to get involved. Documentation [is here](http://doc.agentbase.org/).
 
 AgentBase:
 
@@ -13,29 +13,29 @@ AgentBase:
 
 Have a look at these example models.
 
-[Template](http://www.agentbase.org/model.html?9d54597f7aafc995d227) shows the basic structure of a model and is a good place to get started when you want to try building your own. [Advanced Template](http://www.agentbase.org/model.html?95eddda521dfaf11c015) is more elaborate.
+[Template](http://agentbase.org/model.html?9d54597f7aafc995d227) shows the basic structure of a model and is a good place to get started when you want to try building your own. [Advanced Template](http://agentbase.org/model.html?95eddda521dfaf11c015) is more elaborate.
 
-[Ants](http://www.agentbase.org/model.html?b24f11b263d0de2610f1) is a model of ant foraging behavior incorporating a nest location and food pheromone diffusion.
+[Ants](http://agentbase.org/model.html?b24f11b263d0de2610f1) is a model of ant foraging behavior incorporating a nest location and food pheromone diffusion.
 
-[Buttons](http://www.agentbase.org/model.html?f4c4388138450bdf9732) provides [Stuart Kauffman's example](http://www.msci.memphis.edu/~franklin/kauffman.html) of randomly connecting pairs of buttons in a pile resulting in a tipping point.
+[Buttons](http://agentbase.org/model.html?f4c4388138450bdf9732) provides [Stuart Kauffman's example](http://www.msci.memphis.edu/~franklin/kauffman.html) of randomly connecting pairs of buttons in a pile resulting in a tipping point.
 
-[Diffusion](http://www.agentbase.org/model.html?5a0c13a0e385074a060f) has randomly flying agents on a patch grid dropping a color which is diffused over the grid.
+[Diffusion](http://agentbase.org/model.html?5a0c13a0e385074a060f) has randomly flying agents on a patch grid dropping a color which is diffused over the grid.
 
-[Fire](http://www.agentbase.org/model.html?36f24ba1b335aea212eb) is a cellular automata model of fire spreading.
+[Fire](http://agentbase.org/model.html?36f24ba1b335aea212eb) is a cellular automata model of fire spreading.
 
-[Flock](http://www.agentbase.org/model.html?82ef4f46d2a05838dc5f) is the classic "boids" model where agents each follow three simple rules resulting in realistic flocking. This example uses the as.dat.gui.js extra.
+[Flock](http://agentbase.org/model.html?82ef4f46d2a05838dc5f) is the classic "boids" model where agents each follow three simple rules resulting in realistic flocking. This example uses the as.dat.gui.js extra.
 
-[Grid Path](http://www.agentbase.org/model.html?aabffc060db58fb7032a) shows one of Knuth's great puzzles on the probability of all Manhattan traversals diagonally traversing a grid.
+[Grid Path](http://agentbase.org/model.html?aabffc060db58fb7032a) shows one of Knuth's great puzzles on the probability of all Manhattan traversals diagonally traversing a grid.
 
-[Life](http://www.agentbase.org/model.html?d10d06e31f41874b982c) provides an implementation of [Conway's Game of Life](http://en.wikipedia.org/wiki/Conway's_Game_of_Life) with a twist. This example demonstrates running multiple models on the same page.
+[Life](http://agentbase.org/model.html?d10d06e31f41874b982c) provides an implementation of [Conway's Game of Life](http://en.wikipedia.org/wiki/Conway's_Game_of_Life) with a twist. This example demonstrates running multiple models on the same page.
 
-[Link Travel](http://www.agentbase.org/model.html?96c36a9b3a1760f3c55f) has agents traversing a graph of nodes and links.
+[Link Travel](http://agentbase.org/model.html?96c36a9b3a1760f3c55f) has agents traversing a graph of nodes and links.
 
-[N body](http://www.agentbase.org/model.html?78e4557ef610be9abf04) is a simulation of the nonlinear gravitation of n bodies.
+[N body](http://agentbase.org/model.html?78e4557ef610be9abf04) is a simulation of the nonlinear gravitation of n bodies.
 
-[Preferential Attachment](http://www.agentbase.org/model.html?beba752ebfce2daaaa0e) models a dynamic graph where new links preferentially attach to the nodes that have the most links. This results in a power-law distribution.
+[Preferential Attachment](http://agentbase.org/model.html?beba752ebfce2daaaa0e) models a dynamic graph where new links preferentially attach to the nodes that have the most links. This results in a power-law distribution.
 
-[Traveling Salesman](http://www.agentbase.org/model.html?6f0e70c8dd0fabdf7621) demonstrates a [Traveling Sales Person](http://en.wikipedia.org/wiki/Travelling_salesman_problem) solution via a [Genetic Algorithm](http://en.wikipedia.org/wiki/Genetic_algorithm) showing the rapid conversion of stochastic methods.
+[Traveling Salesman](http://agentbase.org/model.html?6f0e70c8dd0fabdf7621) demonstrates a [Traveling Sales Person](http://en.wikipedia.org/wiki/Travelling_salesman_problem) solution via a [Genetic Algorithm](http://en.wikipedia.org/wiki/Genetic_algorithm) showing the rapid conversion of stochastic methods.
 
 #### The format of sample models
 
@@ -69,7 +69,7 @@ You can see this by running a sample model, then using the browser's View Page S
 
 #### Building a model
 
-Visit [agentbase.org](http://www.agentbase.org) and tinker with the [Template](http://www.agentbase.org/model.html?9d54597f7aafc995d227), the [Advanced Template](http://www.agentbase.org/model.html?95eddda521dfaf11c015) or any other example model to get started.
+Visit [agentbase.org](http://agentbase.org) and tinker with the [Template](http://agentbase.org/model.html?9d54597f7aafc995d227), the [Advanced Template](http://agentbase.org/model.html?95eddda521dfaf11c015) or any other example model to get started.
 
 Class ABM.Model has three methods that it calls automatically for you:
 
