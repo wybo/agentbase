@@ -21,13 +21,13 @@
         @prob = 1
         
         # defaults
-        @patches.setDefault "labelColor", [255, 255, 255]
+        @patches.setDefault "labelColor", u.color.white
         offset = Math.floor @world.size * .45
         @patches.setDefault "labelOffset", {x: offset, y: offset}
         u.contextTextParams @contexts.patches, "10px sans-serif",
             "right", "bottom"
         @agents.setDefault "shape", "circle"
-        @agents.setDefault "color", ([210, 0, 0])
+        @agents.setDefault "color", u.color.from [210, 0, 0]
         @agents.setDefault "size", .4
         @agents.setDefault "hidden", 2.5
         @agents.setDefault "heading",  0 # override promotion to random angle
@@ -35,23 +35,16 @@
         @animator.setRate 10
 
         for patch in @patches.create()
-          patch.color = u.randomGray 160, 190
+          patch.color = u.color.random type: "gray", min: 160, max: 190
           patch.occupied = false
 
-        @drawGrid [0, 0, 0]
+        @drawGrid u.color.black
         @walker = @agents.create(1)[0]
         patch0 = @patches[0]
         @walker.moveTo patch0.position
         @walker.penDown = true
-        # @walker.color = [210,0,0]
-        # @walker.shape = "circle"
-        # @walker.size = .4
         @walker.stamp()
         @walker.patch.occupied = true
-        # @walker.penDown = true
-        # @walker.penSize *= 2.5
-        # @setTextParams @patches, "9px sans-serif", "right", "bottom"
-        # @setLabelParams @patches, [255, 255, 255], [12, 12]
 
       step: ->
         @floodFill()

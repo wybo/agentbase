@@ -15,14 +15,14 @@ class ABM.Patch
   # Position on the patch grid, hash with patch coordinates {x: some
   # float, y: float}.
   position: null
-  # The color of the agent, defaults to randomColor.
-  color: [0, 0, 0]
+  # The color of the agent patch.
+  color: u.color.black
   # Whether or not to draw this agent.
   hidden: false
   # Text for a label.
   label: null
   # The color of the label.
-  labelColor: [0, 0, 0] # text color
+  labelColor: u.color.black # text color
   # The x, y offset of the label.
   labelOffset: {x: 0, y: 0}
   # Agents on this patch.
@@ -127,7 +127,7 @@ class ABM.Patch
   # Draw the patch and its text label if there is one.
   #
   draw: (context) ->
-    context.fillStyle = u.colorString @color
+    context.fillStyle = @color.rgbString()
     context.fillRect @position.x - .5, @position.y - .5, 1, 1
     if @label? # REMIND: should be 2nd pass.
       position = @breed.patchXYtoPixelXY @position

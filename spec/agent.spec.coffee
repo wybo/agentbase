@@ -14,10 +14,10 @@ describe "Agent", ->
       agent = model.agents[0]
       agent.heading = 2.25
       # TODO make from string
-      agent.color = u.colorFromString("red")
+      agent.color = u.color.red
 
       expect(agent.toString()).toEqual(
-        "{id: 0, position: {x: -20.00, y: -20.00}, c: 255,0,0, h: 2.25/129}")
+        "{id: 0, position: {x: -20.00, y: -20.00}, c: [255, 0, 0], h: 2.25/129}")
 
   describe "moveTo", ->
     it "moves to the given location", ->

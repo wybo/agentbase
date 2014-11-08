@@ -35,12 +35,12 @@
         @animator.setRate 10, true
         
         # defaults
-        @patches.setDefault "color", [250, 250, 0]
+        @patches.setDefault "color", u.color.yellow
         @nodes.setDefault "shape", "circle"
-        @nodes.setDefault "color", [255, 0, 0]
+        @nodes.setDefault "color", u.color.red
         @nodes.setDefault "heading", 0 # override promotion to random angle
         @travelers.setDefault "hidden", true
-        @links.setDefault "color", [255, 0, 0]
+        @links.setDefault "color", u.color.red
 
         @patches.create()
         @setupNode n for n in @nodes.create @nodeCount
@@ -78,7 +78,6 @@
         @links.create nodeList[0], nodeList.last()
         for i in [1...nodeList.length]
           @links.create nodeList[i], nodeList[i - 1]
-        # @links.setProperty "color", [255,0,0]
         
       lengthFromNodes: (nodeList) ->
         len = nodeList[0].distance(nodeList.last().position)

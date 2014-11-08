@@ -22,7 +22,7 @@ readFilePaths = (sourceDir, firstFiles) ->
     sourceDir + name
 
 FilePaths = readFilePaths 'src/',
-  'util util_array array util_shapes set breed_set'
+  'util util_array array util_shapes color util_color set breed_set'
     .split(' ').map (n) -> n + '.coffee'
 
 SpecFilePaths = readFilePaths 'spec/', ['shared.coffee']

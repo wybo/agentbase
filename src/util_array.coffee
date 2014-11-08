@@ -334,7 +334,7 @@ ABM.util.array =
   #     array.with((object) -> object.x < 5)
   #       .ask((object) -> object.x = object.x + 1)
   #     myModel.agents.with((object) -> object.id < 100)
-  #       .ask(object.color = [255, 0, 0])
+  #       .ask(object.color = u.color.red)
   #
   ask: (array, call) ->
     for object in array

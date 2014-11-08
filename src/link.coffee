@@ -14,7 +14,7 @@ class ABM.Link
   # The second endpoint.
   to: null
   # The links' color, an RGB array. Defaults to light gray.
-  color: [130, 130, 130]
+  color: u.color.lightgray
   # Thickness in pixels of the link.
   thickness: 2
   # Whether or not to draw this link.
@@ -22,7 +22,7 @@ class ABM.Link
   # A text label
   label: null
   # The color of the label text.
-  labelColor: [0, 0, 0]
+  labelColor: u.color.black
   # The x, y offset of the label.
   labelOffset: {x: 0, y: 0}
 
@@ -66,7 +66,7 @@ class ABM.Link
   #
   draw: (context) ->
     context.save()
-    context.strokeStyle = u.colorString @color
+    context.strokeStyle = @color.rgbString()
     context.lineWidth = @model.patches.fromBits @thickness
     context.beginPath()
 

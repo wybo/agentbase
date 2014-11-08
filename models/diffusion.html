@@ -46,7 +46,7 @@
           agent.forward @speed
           agent.patch.heat = 1
 
-        @patches.diffuse "heat", @diffusionRate, [255, 0, 0]
+        @patches.diffuse "heat", @diffusionRate, u.color.red
         # @stop() # debug: one step
 
     model = new ABM.DiffusionModel {

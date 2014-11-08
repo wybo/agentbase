@@ -318,7 +318,7 @@ class ABM.Model
   #
   drawSpotlight: (position, context) ->
     u.clearContext context
-    u.fillContext context, [0, 0, 0, 0.6]
+    u.fillContext context, u.color.from [0, 0, 0, 0.6]
     context.beginPath()
     context.arc position.x, position.y, 3, 0, 2 * Math.PI, false
     context.fill()
@@ -341,7 +341,7 @@ class ABM.Model
   # Use of <breed>.setDefault methods work as for agents/links,
   # creating default values for the breed set:
   #
-  #     @embers.setDefault "color", [255, 0, 0]
+  #     @embers.setDefault "color", u.color.red
   #
   # ..will set the default color for just the embers.
   #

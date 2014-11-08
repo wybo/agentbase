@@ -44,11 +44,6 @@ ABM.util =
   MinINT: -Math.pow(2, 53) # -@MaxINT fails, @ not defined yet
   MaxINT32: 0 | 0x7fffffff
   MinINT32: 0 | 0x80000000
-  Colors: {
-    black: [0, 0, 0], white: [255, 255, 255], gray: [128, 128, 128],
-    red: [255, 0, 0], yellow: [255, 255, 0], green: [0, 128, 0],
-    blue: [0, 0 ,255], purple: [128, 0, 128], brown: [165, 42, 42]
-  }
 
   # Good replacements for Javascript's badly broken`typeof` and
   # `instanceof` See [underscore.coffee](http://goo.gl/L0umK)
@@ -66,6 +61,9 @@ ABM.util =
 
   isNumber: (object) ->
     !!(typeof object is "number")
+
+  isBoolean: (object) ->
+    !!(typeof object is "boolean")
 
   # ### Numeric operations
 
@@ -143,75 +141,7 @@ ABM.util =
     else
       1
 
-  # ### Color and angle operations
-
-  # Basic colors from string # TODO make better, so accepts arrays.
-  #
-  colorFromString: (colorName) ->
-    color = @Colors[colorName]
-    if !@isArray color
-      @error "unless you're using basic colors, specify an rgb array [nr, nr, nr]"
-    color
-
-  # Return a random RGB or gray color. Array passed to minimize
-  # garbage collection.
-  #
-  randomColor: () ->
-    color = []
-    for i in [0..2]
-      color[i] = @randomInt(256)
-    color
-
-  # Note: if 2 args passed, assume they're min, max w/ default c.
-  #
-  randomGray: (min = 64, max = 192) ->
-    color = []
-    random = @randomInt min, max
-    for i in [0..2]
-      color[i] = random
-    color
-
-  # Random color from a colormap set of r, g, b values.
-  # Default is one of 125 (5^3) colors.
-  #
-  randomMapColor: (set = [0, 63, 127, 191, 255]) ->
-    [@array.sample(set), @array.sample(set), @array.sample(set)]
-
-  randomBrightColor: () ->
-    @randomMapColor [0, 127, 255]
-
-  # Return new color, c, by scaling each value of the rgb color max.
-  #
-  fractionOfColor: (maxColor, fraction) ->
-    color = []
-    for value, i in maxColor
-      color[i] = @clamp(Math.round(value * fraction), 0, 255)
-    color
-
-  # lightens color with float fraction of 0..255.
-  #
-  brightenColor: (color, fraction) ->
-    newColor = []
-    for value in color
-      newColor.push @clamp(Math.round(value + fraction * 255), 0, 255)
-    newColor
-
-  # Return HTML color as used by canvas element. Can include Alpha.
-  #
-  colorString: (color) ->
-    if not color.string?
-      if color.length is 4 and color[3] > 1
-        @error "alpha > 1"
-      if color.length is 3
-        color.string = "rgb(#{color})"
-      else
-        color.string = "rgba(#{color})"
-    color.string
-
-  # Compare two colors. Alas, there is no array.Equal operator.
-  #
-  colorsEqual: (color1, color2) ->
-    color1.toString() is color2.toString()
+  # ### Angle operations
 
   # Return little/big endian-ness of hardware.
   #
@@ -592,7 +522,7 @@ ABM.util =
   fillContext: (context, color) ->
     if context.fillStyle? # test for 2D context
       @setIdentity context
-      context.fillStyle = @colorString color
+      context.fillStyle = color.rgbString()
       context.fillRect 0, 0, context.canvas.width, context.canvas.height
       context.restore()
     else # 3D
@@ -603,9 +533,10 @@ ABM.util =
   # pixel coordinates. Use setIdentity .. reset if a transform is
   # being used by caller.
   #
-  contextDrawText: (context, string, x, y, color = [0, 0, 0], setIdentity = true) ->
+  contextDrawText: (context, string, x, y, color = u.color.black,
+      setIdentity = true) ->
     @setIdentity(context) if setIdentity
-    context.fillStyle = @colorString color
+    context.fillStyle = color.rgbString()
     context.fillText(string, x, y)
     if setIdentity
       context.restore()

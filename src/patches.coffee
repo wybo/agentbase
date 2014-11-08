@@ -49,12 +49,17 @@ class ABM.Patches extends ABM.BreedSet
   # Note that this is done as separate method so like other agentsets,
   # patches are started up empty and filled by "create" calls.
   #
-  create: -> # TopLeft to BottomRight, exactly as canvas imagedata
-    for y in [@max.y..@min.y] by -1
-      for x in [@min.x..@max.x] by 1
-        @push new @agentClass x: x, y: y
+  create: (position) -> # TopLeft to BottomRight, exactly as canvas imagedata
+    if position?
+      @push new @agentClass position
+    else
+      for y in [@max.y..@min.y] by -1
+        for x in [@min.x..@max.x] by 1
+          @create x: x, y: y
 
-    @setPixels() unless @model.isHeadless # setup off-page canvas for pixel ops
+    if !@pixelsSet?
+      @setPixels() unless @model.isHeadless # setup off-page canvas for pixel ops
+      @pixelsSet = true
     @
 
   # ### Patch grid coordinate system utilities:
@@ -310,7 +315,7 @@ class ABM.Patches extends ABM.BreedSet
       patch[variable] = patch._diffuseNext
       patch._diffuseNext = 0
       if color
-        patch.color = u.fractionOfColor color, patch[variable]
+        patch.color = color.fraction(patch[variable])
 
     null # avoid returning copy of @
 

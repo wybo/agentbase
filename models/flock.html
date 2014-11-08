@@ -42,18 +42,17 @@
       
         # defaults
         @agents.setDefault "size", 1.5
-        # @agents.setDefault "color", [255,0,0] # slightly faster! ->38/39 ??
 
         @patches.create()
 
         for patch in @patches
-          patch.color = u.randomGray 0, 100
+          patch.color = u.color.random type: "gray", min: 0, max: 100
 
         for patch in @patches.sample(@population)
           patch.sprout 1
 
         for agent in @agents
-          agent.color = u.randomMapColor()
+          agent.color = u.color.random "map"
   
       step: ->
         if @useConsole and @animator.ticks % 25 is 0

@@ -75,14 +75,14 @@
         # our model needs. In this case, we set the built-in color to a
         # random gray value.
         for patch in @patches.create()
-          patch.color = u.randomGray()
+          patch.color = u.color.random "gray"
 
           # Set x & y axes to a different color
           if patch.position.x is 0
-            patch.color = u.colorFromString('yellow')
+            patch.color = u.color.yellow
 
           if patch.position.y is 0
-            patch.color = u.colorFromString('red')
+            patch.color = u.color.red
 
         # Our empty @agents Agents will have been created. Here we
         # add `population` Agents we use in our model.
@@ -152,7 +152,7 @@
       #
       updatePatches: (patch) -> # p is patch
         if patch.position.x isnt 0 and patch.position.y isnt 0
-          patch.color = u.randomGray()
+          patch.color = u.color.random "gray"
 
       # Report the average heading, in radians and degrees
       #

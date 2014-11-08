@@ -142,32 +142,7 @@ describe "Util", ->
     it "returns the sign of the number", ->
       expect(u.sign(-30)).toEqual -1
 
-  # ### Color and angle operations
-
-  describe "colorFromString", ->
-    it "returns the color as an array", ->
-      expect(u.colorFromString("green")).toEqual [0, 128, 0]
-
-    it "throws an error if not supported", ->
-      expect(u.colorFromString, "ultrasonicviolet").toThrow()
-
-  describe "fractionOfColor", ->
-    it "reduces the color towards white with fraction", ->
-      expect(u.fractionOfColor([128, 0, 32], 0.5)).toEqual [64, 0, 16]
-
-  describe "brightenColor", ->
-    it "brightens the color by fraction", ->
-      expect(u.brightenColor([0, 255, 128], 0.1)).toEqual [26, 255, 154]
-
-  describe "colorString", ->
-    it "returns the color as a string", ->
-      expect(u.colorString([0, 255, 128])).toEqual "rgb(0,255,128)"
-      expect(u.colorString([11, 25, 12, 0.4])).toEqual "rgba(11,25,12,0.4)"
-
-  describe "colorsEqual", ->
-    it "returns true if the colors are equal", ->
-      expect(u.colorsEqual([0, 255, 128], [0, 255, 128])).toBe true
-      expect(u.colorsEqual([0, 255, 128], [1, 255, 128])).toBe false
+  # ### Angle operations
 
   describe "isLittleEndian", ->
     it "returns true on littleEndian systems", ->

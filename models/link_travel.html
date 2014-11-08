@@ -36,10 +36,10 @@
         @baseVelocity = 0.1 # patchs
         @velocityDelta = 0.1 # patches
         
-        @links.setDefault "labelColor", [255, 0, 0]
+        @links.setDefault "labelColor", u.color.red
         
         for patch in @patches.create()
-          patch.color = u.randomGray 10, 50
+          patch.color = u.color.random type: "gray", min: 10, max: 50
 
         for patch in @patches.sample @numNodes
           patch.sprout 1, @nodes, (agent) =>

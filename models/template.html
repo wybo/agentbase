@@ -36,7 +36,7 @@
         @wiggle = u.degreesToRadians(30)
 
         for patch in @patches.create()
-          patch.color = u.randomGray()
+          patch.color = u.color.random "gray"
 
         for agent in @agents.create 25
           agent.size = 3
@@ -51,7 +51,6 @@
         for agent in @agents
           agent.rotate u.randomCentered @wiggle
           agent.forward 1
-
 
     # Now that we've build our class, we call it with Model's
     # constructor arguments:

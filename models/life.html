@@ -11,10 +11,12 @@
     # Life provides an implementation of Conway's Game of Life with a twist.
     # This example demonstrates running multiple models on the same page.
 
+    u = ABM.util
+
     class ABM.LifeModel extends ABM.Model
       startup: ->
-        @livingColor = [255, 255, 255]
-        @deadColor = [0, 0, 0]
+        @livingColor = u.color.white
+        @deadColor = u.color.black
 
       setup: ->
         for patch in @patches.create()

@@ -18,7 +18,7 @@ class ABM.Agent
   patch: null
   # Agents' size in patch coordinates.
   size: 1
-  # The color of the agent, defaults to randomColor.
+  # The color of the agent, defaults to ABM.Color.random().
   color: null
   # Color of the border of the agent.
   strokeColor: null
@@ -29,7 +29,7 @@ class ABM.Agent
   # Text for a label.
   label: null
   # The color of the label.
-  labelColor: [0, 0, 0]
+  labelColor: u.color.black
   # The x, y offset of the label.
   labelOffset: {x: 0, y: 0}
   # If my pen is down, I draw my path between changes in x, y.
@@ -49,7 +49,7 @@ class ABM.Agent
   #
   constructor: ->
     @position = {x: 0, y: 0}
-    @color = u.randomColor() unless @color? # promote color if default not set
+    @color = ABM.Color.random() unless @color? # promote color if default not set
     @heading = u.randomFloat(Math.PI * 2) unless @heading?
     @links = new ABM.Array
     @moveTo @position
@@ -80,11 +80,13 @@ class ABM.Agent
 
     if oldPatch and oldPatch isnt @patch
       oldPatch.agents.remove @
-    @patch.agents.push @
+
+    if @patch
+      @patch.agents.push @
 
     if @penDown
       drawing = @model.drawing
-      drawing.strokeStyle = u.colorString @color
+      drawing.strokeStyle = @color.rgbString()
       drawing.lineWidth = @model.patches.fromBits @penSize
       drawing.beginPath()
       drawing.moveTo x0, y0
@@ -255,7 +257,7 @@ class ABM.Agent
       @shape = sprite.shape
       @size = sprite.size
     else
-      @color = u.randomColor unless @color?
+      @color = ABM.Color.random() unless @color?
       @sprite = u.shapes.shapeToSprite @shape, @color,
         @model.patches.toBits(@size), @strokeColor
 

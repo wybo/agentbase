@@ -23,8 +23,8 @@
         @animator.setRate 25, false
         
         # globals
-        @nestColor = [255, 255, 0]  # yellow
-        @foodColor = [0, 0, 255]    # blue
+        @nestColor = u.color.yellow
+        @foodColor = u.color.blue
 
         # defaults
         @agents.setDefault "shape", "bug"
@@ -146,9 +146,9 @@
 
           unless (patch.isNest or patch.isFood) #  or patch.isOnEdge()
             if patch.foodPheromone > patch.nestPheromone
-              patch.color = u.fractionOfColor @foodColor, patch.foodPheromone
+              patch.color = @foodColor.fraction(patch.foodPheromone)
             else
-              patch.color = u.fractionOfColor @nestColor, patch.nestPheromone
+              patch.color = @nestColor.fraction(patch.nestPheromone)
 
         null
 

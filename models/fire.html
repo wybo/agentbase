@@ -16,7 +16,7 @@
       setup: ->
         @agentBreeds ["embers", "fires"]
         @agents.setDefault "shape", "square"
-        @agents.setDefault "color", [255, 0, 0]
+        @agents.setDefault "color", u.color.red
         @agents.setDefault "heading", 0 # override promotion to random angle
         
         @refreshPatches = false
@@ -34,8 +34,7 @@
         @animator.setRate 60, false
         
         for patch in @patches.create() when u.randomInt(100) < @density
-          # u.setColor p.color, 0, 255, 0
-          patch.color = [0, 255, 0] # override default, set per patch color
+          patch.color = u.color.green # override default, set per patch color
 
         for patch in @patches
           if patch.position.x is @patches.min.x
@@ -44,7 +43,7 @@
         trees = []
 
         for patch in @patches
-          if u.colorsEqual patch.color, [0, 255, 0]
+          if patch.color.equals [0, 255, 0]
             trees.push patch
 
         @initialTrees = trees.length
@@ -56,12 +55,12 @@
       ignite: (patch) ->
         patch.sprout 1, @fires
         # in original model but apparently not needed, refresh off?
-        patch.color = [0, 0, 0]
+        patch.color = u.color.black
         @burnedTrees++
 
       fadeEmbers: ->
         for ember in @embers by -1 # -1: allow die() in loop
-          ember.color = u.fractionOfColor ember.color, .8
+          ember.color = ember.color.fraction(0.8)
           # or (Math.max a.color...) < 100 , needs parens
           if 100 > Math.max ember.color...
             ember.patch.color = ember.color
@@ -78,7 +77,7 @@
 
         for fire in @fires by -1 # -1: allow changeBreed() in loop
           for patch in fire.patch.neighbors(diamond: 1)
-            if u.colorsEqual patch.color, [0, 255, 0]
+            if patch.color.equals u.color.green
               @ignite patch
 
           @embers.reBreed fire

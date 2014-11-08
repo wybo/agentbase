@@ -12,7 +12,7 @@
 # and a transform such that the shape should be drawn in a -.5 to .5 square
 #
 #     context.save()
-#     context.fillStyle = u.colorString color
+#     context.fillStyle = color.rgbString()
 #     context.translate x, y; context.scale size, size;
 #     context.rotate heading if shape.rotate
 #     context.beginPath(); shape.draw(context); context.closePath()
@@ -182,7 +182,7 @@ ABM.util.shapes =
     if u.isFunction draw
       shape = {rotate, draw}
     else
-      shape = {rotate, image:draw, draw:(context) ->
+      shape = {rotate, image: draw, draw: (context) ->
         @centered_image context, .5, .5, 1, @image}
 
     @[name] = shape
@@ -199,7 +199,7 @@ ABM.util.shapes =
   draw: (context, shape, x, y, size, rad, color, strokeColor) ->
     if shape.shortcut?
       unless shape.image?
-        context.fillStyle = u.colorString color
+        context.fillStyle = color.rgbString()
       shape.shortcut context, x, y, size
     else
       context.save()
@@ -209,9 +209,9 @@ ABM.util.shapes =
       if shape.image? # is an image, not a path function
         shape.draw context
       else
-        context.fillStyle = u.colorString color
+        context.fillStyle = color.rgbString()
         if strokeColor
-          context.strokeStyle = u.colorStr strokeColor
+          context.strokeStyle = strokeColor.rgbString()
           context.lineWidth = 0.05
         context.save()
         context.beginPath()
@@ -249,7 +249,7 @@ ABM.util.shapes =
     if shape.image?
       index = name
     else
-      index = "#{name}-#{u.colorString(color)}"
+      index = "#{name}-#{color.rgbString()}"
     context = @spriteSheets[slotSize]
 
     # Create sheet for this bit size if it does not yet exist
@@ -286,10 +286,10 @@ ABM.util.shapes =
       context.translate (context.nextX + 0.5) * (slotSize),
         (context.nextY + 0.5) * (slotSize)
       context.scale spriteSize, spriteSize
-      context.fillStyle = u.colorString color
+      context.fillStyle = color.rgbString()
 
       if strokeColor
-        context.strokeStyle = u.colorString strokeColor
+        context.strokeStyle = strokeColor.rgbString()
         context.lineWidth = 0.05
 
       context.save()
