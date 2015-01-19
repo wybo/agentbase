@@ -103,11 +103,25 @@ describe "Agent", ->
       expect(agent.position).toEqual x: 11, y: 12
       expect(patch.agents[0]).toBe agent
 
+      oldPatch = patch
       agent.moveTo x: 8.5, y: 7.4
       patch = model.patches.patch x: 9, y: 7
+      expect(oldPatch.agents).toEqual new ABM.Array
 
       expect(agent.position).toEqual x: 8.5, y: 7.4
       expect(patch.agents[0]).toBe agent
+
+    it "does not duplicate in agents if it moves twice", ->
+      model = t.setupModel()
+      agent = model.agents[0]
+
+      position = x: 17, y: 15
+
+      agent.moveTo position
+      agent.moveTo position
+      patch = model.patches.patch position
+
+      expect(patch.agents.length).toEqual 1
 
   describe "moveOff", ->
     it "moves the agent off the grid", ->
@@ -1476,6 +1490,14 @@ describe "Util", ->
       object.bull = "pen"
       object.fly = -> 1 + 1
       expect(u.ownValues(object)).toEqual new ABM.Array "pen", object.fly
+
+  # ### Hash operators
+
+  describe "merge", ->
+    it "returns the merged hashes", ->
+      expect(u.merge({a: 1}, {b: 7})).toEqual {a: 1, b: 7}
+      expect(u.merge({a: 1, b: 4}, {b: 7})).toEqual {a: 1, b: 7}
+      expect(u.merge({a: 1, b: 4}, {b: 7, d: 11})).toEqual {a: 1, b: 7, d: 11}
 
   # ### Topology operations
 

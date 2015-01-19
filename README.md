@@ -50,22 +50,19 @@ Our example models use CoffeeScript directly within the browser via `text/coffee
           class MyModel extends ABM.Model
                 ...
           model = new MyModel {
-            div: "layers",
-            size: 6,
-            minX: -40,
-            maxX: 40,
-            minY: -40,
-            maxY: 40
+            div: "model"
+            patchSize: 6
+            mapSize: 32
           }
                 ...
           </script>
         </head>
         <body>
-          <div id="layers"></div>
+          <div id="model"></div>
         </body>
       </html>
 
-You can see this by running a sample model, then using the browser's View Page Source.
+You can see this by running a sample model from the 'models/' directory, then using the browser's View Page Source.
 
 #### Building a model
 

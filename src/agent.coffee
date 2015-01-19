@@ -78,7 +78,7 @@ class ABM.Agent
     oldPatch = @patch
     @patch = @model.patches.patch @position
 
-    if oldPatch and oldPatch isnt @patch
+    if oldPatch
       oldPatch.agents.remove @
 
     if @patch
@@ -103,10 +103,14 @@ class ABM.Agent
   # Move forward (along heading) by distance units (patch coordinates),
   # using patch topology (isTorus).
   #
-  forward: (distance) ->
-    @moveTo(
-      x: @position.x + distance * Math.cos(@heading),
-      y: @position.y + distance * Math.sin(@heading))
+  forward: (distance = 1, options = {}) ->
+    x = @position.x + distance * Math.cos(@heading)
+    y = @position.y + distance * Math.sin(@heading)
+
+    if options.snap
+      @moveTo(x: Math.round(x), y: Math.round(y))
+    else
+      @moveTo(x: x, y: y)
 
   # Change current heading by radians.
   #

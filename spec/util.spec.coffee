@@ -183,6 +183,14 @@ describe "Util", ->
       object.fly = -> 1 + 1
       expect(u.ownValues(object)).toEqual new ABM.Array "pen", object.fly
 
+  # ### Hash operators
+
+  describe "merge", ->
+    it "returns the merged hashes", ->
+      expect(u.merge({a: 1}, {b: 7})).toEqual {a: 1, b: 7}
+      expect(u.merge({a: 1, b: 4}, {b: 7})).toEqual {a: 1, b: 7}
+      expect(u.merge({a: 1, b: 4}, {b: 7, d: 11})).toEqual {a: 1, b: 7, d: 11}
+
   # ### Topology operations
 
   describe "angle", ->

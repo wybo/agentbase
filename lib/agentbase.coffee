@@ -169,10 +169,13 @@ ABM.util =
   substractRadians: (radians1, radians2) ->
     angle = radians1 - radians2
     PI = Math.PI
+
     if angle <= -PI
       angle += 2 * PI
+
     if angle > PI
       angle -= 2 * PI
+
     angle
 
   # ### Object operations
@@ -187,6 +190,23 @@ ABM.util =
 
   ownValues: (object) ->
     ABM.Array.from(value for own key, value of object)
+
+  # ### Hash operations
+
+  # Returns a new hash that merges two hashes. Second object overrides first.
+  #
+  # Shallow. So does not deal with nested hashes.
+  #
+  merge: (first, second) ->
+    hash = {}
+
+    for own key, value of first
+      hash[key] = value
+
+    for own key, value of second
+      hash[key] = value
+
+    hash
 
   # ### Topology operations
 
@@ -1987,7 +2007,7 @@ class ABM.Agent
     oldPatch = @patch
     @patch = @model.patches.patch @position
 
-    if oldPatch and oldPatch isnt @patch
+    if oldPatch
       oldPatch.agents.remove @
 
     if @patch
@@ -2012,10 +2032,14 @@ class ABM.Agent
   # Move forward (along heading) by distance units (patch coordinates),
   # using patch topology (isTorus).
   #
-  forward: (distance) ->
-    @moveTo(
-      x: @position.x + distance * Math.cos(@heading),
-      y: @position.y + distance * Math.sin(@heading))
+  forward: (distance = 1, options = {}) ->
+    x = @position.x + distance * Math.cos(@heading)
+    y = @position.y + distance * Math.sin(@heading)
+
+    if options.snap
+      @moveTo(x: Math.round(x), y: Math.round(y))
+    else
+      @moveTo(x: x, y: y)
 
   # Change current heading by radians.
   #
@@ -2654,11 +2678,8 @@ class ABM.Model
     worldDefaults = {
       patchSize: 13, mapSize: 32, isTorus: false, min: null, max: null}
 
-    for own key, value of defaults
-      options[key] ?= value
-
-    for own key, value of worldDefaults
-      options[key] ?= value
+    options = u.merge(defaults, options)
+    options = u.merge(worldDefaults, options)
 
     @world = {}
 

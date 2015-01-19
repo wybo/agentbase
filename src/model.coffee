@@ -116,11 +116,8 @@ class ABM.Model
     worldDefaults = {
       patchSize: 13, mapSize: 32, isTorus: false, min: null, max: null}
 
-    for own key, value of defaults
-      options[key] ?= value
-
-    for own key, value of worldDefaults
-      options[key] ?= value
+    options = u.merge(defaults, options)
+    options = u.merge(worldDefaults, options)
 
     @world = {}
 

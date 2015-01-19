@@ -169,10 +169,13 @@ ABM.util =
   substractRadians: (radians1, radians2) ->
     angle = radians1 - radians2
     PI = Math.PI
+
     if angle <= -PI
       angle += 2 * PI
+
     if angle > PI
       angle -= 2 * PI
+
     angle
 
   # ### Object operations
@@ -187,6 +190,23 @@ ABM.util =
 
   ownValues: (object) ->
     ABM.Array.from(value for own key, value of object)
+
+  # ### Hash operations
+
+  # Returns a new hash that merges two hashes. Second object overrides first.
+  #
+  # Shallow. So does not deal with nested hashes.
+  #
+  merge: (first, second) ->
+    hash = {}
+
+    for own key, value of first
+      hash[key] = value
+
+    for own key, value of second
+      hash[key] = value
+
+    hash
 
   # ### Topology operations
 
