@@ -2352,7 +2352,8 @@ class ABM.Animator
   #
   once: ->
     @step()
-    @draw()
+    unless @model.isHeadless
+      @draw()
 
   # Get current time, with high resolution timer if available.
   #
@@ -2670,7 +2671,7 @@ class ABM.Model
   #
   setWorld: (options) ->
     defaults = {
-      isHeadless: false, # Part of model because also excludes UI
+      isHeadless: false, # Applies globally & excludes UI
       Agents: ABM.Agents, Agent: ABM.Agent, Links: ABM.Links, Link: ABM.Link,
       Patches: ABM.Patches, Patch: ABM.Patch, Set: ABM.Set,
       Animator: ABM.Animator}

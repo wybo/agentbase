@@ -75,7 +75,8 @@ class ABM.Animator
   #
   once: ->
     @step()
-    @draw()
+    unless @model.isHeadless
+      @draw()
 
   # Get current time, with high resolution timer if available.
   #
