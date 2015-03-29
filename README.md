@@ -6,7 +6,7 @@ AgentBase:
 
 * Allows you to easily share and run ABM models, directly from a webpage. No software to install.
 * Is optimized for the quick development of illustrative ABM models: It values minimalism over complexity, readable and pretty code over CPU performance, and sensible defaults over choice. It is [opinionated software](https://gettingreal.37signals.com/ch04_Make_Opinionated_Software.php).
-* While [NetLogo](http://ccl.northwestern.edu/netlogo/) formed a great inspiration (the most commonly used ABM toolset), AgentBase does not try to copy it (unlike "AgentScript":http://agentscript.org/, from which the AgentBase library is derived). The web is not the desktop. Coffeescript is not Logo.
+* While [NetLogo](http://ccl.northwestern.edu/netlogo/) formed a great inspiration (the most commonly used ABM toolset), AgentBase does not try to copy it (unlike [AgentScript](http://agentscript.org/), from which the AgentBase library is derived). The web is not the desktop. Coffeescript is not Logo.
 * AgentBase is well-tested through automated testing and thus a library that you can trust. [See for yourself](http://lib.agentbase.org/spec.html).
 
 #### Sample models
@@ -47,14 +47,24 @@ Our example models use CoffeeScript directly within the browser via `text/coffee
           <script src="agentscript.js"></script>
           <script src="coffee-script.js"></script>
           <script type="text/coffeescript">
-          class MyModel extends ABM.Model
-                ...
-          model = new MyModel {
-            div: "model"
-            patchSize: 6
-            mapSize: 32
-          }
-                ...
+            class MyModel extends ABM.Model
+              setup: ->
+                @patches.create()
+
+                for agent in @agents.create 25
+                  agent.shape = u.shapes.names().sample()
+
+              step: ->
+                for agent in @agents
+                  agent.forward()
+
+            model = new MyModel {
+              div: "model"
+              patchSize: 6
+              mapSize: 32
+            }
+
+            model.start()
           </script>
         </head>
         <body>
@@ -70,9 +80,9 @@ Visit [agentbase.org](http://agentbase.org) and tinker with the [Template](http:
 
 Class ABM.Model has three methods that it calls automatically for you:
 
-    startup() Optional. Called only once, for pre-initializing the model.
-    setup()   Called during startup and by Model.reset().
-    step()    Called by the animator to advance the model one step.
+    startup()   # Optional. Called only once, for pre-initializing the model.
+    setup()     # Called during startup and by Model.reset().
+    step()      # Called by the animator to advance the model one step.
 
 To build a model from scratch, simply subclass ABM.Model to build a model, supplying the three methods. You can also edit models locally: [Download AgentBase](https://github.com/wybo/agentbase/zipball/master), [unzip it](http://en.wikipedia.org/wiki/Zip_(file_format)), then go to the models directory and edit the [template.html](http://lib.agentbase.org/models/template.html) model you find there.
 
@@ -98,10 +108,10 @@ and build with.
 
 Tasks are all run via npm run <task>` and they are:
 
-    watch         # Watch for source file updates, invoke build
-    build         # compile and minify src/ and extras/ to lib/
-    doc           # use codo on sources to create docs/
-    all           # Compile coffee, minify js, create docs
+    watch       # Watch for source file updates, invoke build
+    build       # compile and minify src/ and extras/ to lib/
+    doc         # use codo on sources to create docs/
+    all         # Compile coffee, minify js, create docs
 
 Behind the scenes npm invokes [gulp](http://gulpjs.com/), whose tasks are defined in Gulpfile.coffee. The command "npm run all" is equivalent to "gulp all". All "npm run" commands are defined in package.json.
 
@@ -131,16 +141,16 @@ See [github](https://guides.github.com/activities/contributing-to-open-source/) 
 
 #### Files
 
-    Gulpfile.coffee     Gulp file for build, docs etc.
-    LICENSE             GPLv3 License
-    README.md           This file
-    STYLEGUIDE.txt      Suggestions for coding-style 
-    package.json        NPM Package file, see npm install below
-    doc/                Documentation
-    lib/                All .js/min.js files
-    models/             Sample models
-    src/                Component .coffee files for agentscript.coffee
-    tools/              coffee-script.js and others
+    Gulpfile.coffee   # Gulp file for build, docs etc.
+    LICENSE           # GPLv3 License
+    README.md         # This file
+    STYLEGUIDE.txt    # Suggestions for coding-style 
+    package.json      # NPM Package file, see npm install below
+    doc/              # Documentation
+    lib/              # All .js/min.js files
+    models/           # Sample models
+    src/              # Component .coffee files for agentscript.coffee
+    tools/            # coffee-script.js and others
 
 Inside src/ the most important files are:
 
