@@ -8,13 +8,6 @@ t = ABM.test
 u = ABM.util
 
 describe "Patches", ->
-  describe "patchIndex", ->
-    it "returns the index for the patch", ->
-      model = t.setupModel()
-      index = model.patches.patchIndex x: 0, y: 0
-
-      expect(index).toBe 840
-
   describe "patch", ->
     it "gets the patch", ->
       model = t.setupModel()
@@ -39,9 +32,62 @@ describe "Patches", ->
       expect(coordinate).toEqual x: 20.5, y: 15
 
     it "returns the position as a coordinate also for torus", ->
-      model = t.setupModel(torus: true)
+      model = t.setupModel(isTorus: true)
 
       coordinate = model.patches.coordinate x: 50, y: 25
       expect(coordinate).toEqual x: 9, y: -16
+
+  describe "patchIndex", ->
+    it "returns the index for the patch", ->
+      model = t.setupModel()
+      index = model.patches.patchIndex x: 0, y: 0
+
+      expect(index).toBe 840
+
+
+  describe "patchRectangle", ->
+    it "returns the rectangle", ->
+      model = t.setupModel()
+
+      patch = model.patches.patch x: 5, y: 10
+      rectangle = model.patches.patchRectangle patch, 2, 2
+      expect(rectangle.length).toEqual 24
+      expect(rectangle[0].position).toEqual x: 3, y: 8
+      expect(rectangle[23].position).toEqual x: 7, y: 12
+
+    it "returns the rectangle with meToo", ->
+      model = t.setupModel()
+
+      patch = model.patches.patch x: 5, y: 10
+      rectangle = model.patches.patchRectangle patch, 2, 2, true
+      expect(rectangle.length).toEqual 25
+      expect(rectangle[24].position).toEqual x: 7, y: 12
+
+    it "returns the rectangle if it goes over the edge when it isn't a torus", ->
+      model = t.setupModel(mapSize: 5)
+
+      patch = model.patches.patch x: 2, y: 2
+      rectangle = model.patches.patchRectangle patch, 2, 2
+      expect(rectangle.length).toEqual 8
+      expect(rectangle[7].position).toEqual x: 1, y: 2
+
+    it "returns the rectangle if it goes over the edge when it is a torus", ->
+      model = t.setupModel(mapSize: 5, isTorus: true)
+
+      patch = model.patches.patch x: 2, y: 2
+      rectangle = model.patches.patchRectangle patch, 2, 2
+
+      expect(rectangle.length).toEqual 24
+      expect(rectangle[17].position).toEqual x: -2, y: -2
+      expect(rectangle[23].position).toEqual x: -1, y: -1
+
+    it "returns the rectangle if it goes over the edge when it is a torus", ->
+      model = t.setupModel(mapSize: 4, isTorus: true)
+
+      patch = model.patches.patch x: 2, y: 2
+      rectangle = model.patches.patchRectangle patch, 2, 2
+
+      expect(rectangle.length).toEqual 15
+      expect(rectangle[14].position).toEqual x: -1, y: -1
 
   # TODO finish

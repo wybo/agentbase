@@ -142,12 +142,12 @@ describe "Patch", ->
       expect(neighbors[64].position).toEqual x: -18, y: -11
 
     it "returns the neighbors requested if the world is a torus", ->
-      model = t.setupModel(torus: true)
+      model = t.setupModel(isTorus: true)
 
       testMiddlePatch(model)
 
     it "returns the diamond neighbors if the world is a torus", ->
-      model = t.setupModel(torus: true)
+      model = t.setupModel(isTorus: true)
 
       testMiddlePatchDiamond(model)
 

@@ -144,6 +144,8 @@ class ABM.Patches extends ABM.BreedSet
   # patch `patch`, dx, dy units to the right/left and up/down.
   # Exclude `patch` unless meToo is true, default false.
   #
+  # Will contain no duplicates if torus and larger than the world.
+  #
   patchRectangle: (patch, dx, dy, meToo = false) ->
     rectangle = @patchRectangleNullPadded(patch, dx, dy, meToo)
 
@@ -171,6 +173,9 @@ class ABM.Patches extends ABM.BreedSet
 
         if (meToo or patch isnt nextPatch)
           rectangle.push nextPatch
+
+    if @isTorus and (dx * 2 + 1 > @width or dy * 2 + 1 > @height)
+      rectangle.uniq() # Remove duplicates if wider or higher than world
 
     return rectangle
 

@@ -28,35 +28,41 @@ ABM.test.Model = class Model extends ABM.Model
     @patches.create()
 
   setupAgents: ->
-    i = -20
-    for agent in @agents.create(41)
+    # Diagonal line of agents, left top to right bottom.
+    i = @world.min.x
+    max = @world.max.x - @world.min.x + 1
+    for agent in @agents.create(max)
       agent.moveTo x: i, y: i
       i += 1
 
   setupCitizens: ->
-    i = 10
-    j = 10
-    for citizen in @citizens.create(10)
-      citizen.moveTo x: i, y: j
-      i += 1
-      if i > 14
-        i = 10
-        j += 1
+    if @world.max.x > 15
+      i = 10
+      j = 10
+      for citizen in @citizens.create(10)
+        citizen.moveTo x: i, y: j
+        i += 1
+        if i > 14
+          i = 10
+          j += 1
 
   setupLinks: ->
-    for [i, j] in [[0, 1], [2, 1], [1, 2], [1, 3], [4, 10]]
-      @links.create(@agents[i], @agents[j])
+    if @world.max.x > 15
+      for [i, j] in [[0, 1], [2, 1], [1, 2], [1, 3], [4, 10]]
+        @links.create(@agents[i], @agents[j])
 
 ABM.test.setupModel = (options = {}) ->
-  options.torus ?= false
   options.model ?= Model
-  options.isHeadless = isHeadless
+  options.patchSize ?= 20
+  options.mapSize ?= 41
+  options.isTorus ?= false
+  options.isHeadless ?= isHeadless
 
   model = new options.model({
-    patchSize: 20
-    mapSize: 41
-    isTorus: options.torus
-    hasNeighbors: true
+    patchSize: options.patchSize
+    mapSize: options.mapSize
+    isTorus: options.isTorus
+    hasNeighbors: true # TODO see if needed
     isHeadless: options.isHeadless
   })
   return model
@@ -216,7 +222,7 @@ describe "Agent", ->
       expect(neighbors.length).toBe 4
 
     it "returns the neighbors requested if the world is a torus", ->
-      agents = t.setupModel(torus: true).agents
+      agents = t.setupModel(isTorus: true).agents
 
       neighbors = agents[40].neighbors(2)
       expect(neighbors.length).toBe 4
@@ -227,9 +233,9 @@ describe "Agent", ->
       expect(neighbors[3]).toBe agents[1]
 
     it "returns the diamond neighbors if the world is a torus", ->
-      model = t.setupModel(torus: true)
+      model = t.setupModel(isTorus: true)
 
-      agents = t.setupModel(torus: true).agents
+      agents = model.agents
 
       neighbors = agents[40].neighbors(diamond: 3)
       expect(neighbors.length).toBe 2
@@ -1147,12 +1153,12 @@ describe "Patch", ->
       expect(neighbors[64].position).toEqual x: -18, y: -11
 
     it "returns the neighbors requested if the world is a torus", ->
-      model = t.setupModel(torus: true)
+      model = t.setupModel(isTorus: true)
 
       testMiddlePatch(model)
 
     it "returns the diamond neighbors if the world is a torus", ->
-      model = t.setupModel(torus: true)
+      model = t.setupModel(isTorus: true)
 
       testMiddlePatchDiamond(model)
 
@@ -1191,13 +1197,6 @@ t = ABM.test
 u = ABM.util
 
 describe "Patches", ->
-  describe "patchIndex", ->
-    it "returns the index for the patch", ->
-      model = t.setupModel()
-      index = model.patches.patchIndex x: 0, y: 0
-
-      expect(index).toBe 840
-
   describe "patch", ->
     it "gets the patch", ->
       model = t.setupModel()
@@ -1222,10 +1221,73 @@ describe "Patches", ->
       expect(coordinate).toEqual x: 20.5, y: 15
 
     it "returns the position as a coordinate also for torus", ->
-      model = t.setupModel(torus: true)
+      model = t.setupModel(isTorus: true)
 
       coordinate = model.patches.coordinate x: 50, y: 25
       expect(coordinate).toEqual x: 9, y: -16
+
+  describe "patchIndex", ->
+    it "returns the index for the patch", ->
+      model = t.setupModel()
+      index = model.patches.patchIndex x: 0, y: 0
+
+      expect(index).toBe 840
+
+
+  describe "patchRectangle", ->
+    it "returns the rectangle", ->
+      model = t.setupModel()
+
+      patch = model.patches.patch x: 5, y: 10
+      rectangle = model.patches.patchRectangle patch, 2, 2
+      expect(rectangle.length).toEqual 24
+      expect(rectangle[0].position).toEqual x: 3, y: 8
+      expect(rectangle[23].position).toEqual x: 7, y: 12
+
+    it "returns the rectangle with meToo", ->
+      model = t.setupModel()
+
+      patch = model.patches.patch x: 5, y: 10
+      rectangle = model.patches.patchRectangle patch, 2, 2, true
+      expect(rectangle.length).toEqual 25
+      expect(rectangle[24].position).toEqual x: 7, y: 12
+
+    it "returns the rectangle if it goes over the edge when it isn't a torus", ->
+      model = t.setupModel(mapSize: 5)
+
+      patch = model.patches.patch x: 2, y: 2
+      rectangle = model.patches.patchRectangle patch, 2, 2
+      expect(rectangle.length).toEqual 8
+      expect(rectangle[7].position).toEqual x: 1, y: 2
+
+    it "returns the rectangle if it goes over the edge when it is a torus", ->
+      model = t.setupModel(mapSize: 5, isTorus: true)
+
+      patch = model.patches.patch x: 2, y: 2
+      rectangle = model.patches.patchRectangle patch, 2, 2
+
+      expect(rectangle.length).toEqual 24
+      expect(rectangle[17].position).toEqual x: -2, y: -2
+      expect(rectangle[23].position).toEqual x: -1, y: -1
+
+    it "returns the rectangle if it goes over the edge when it is a torus", ->
+      model = t.setupModel(mapSize: 4, isTorus: true)
+      console.log 'Min and max'
+      console.log model.world.min
+      console.log model.world.max
+      console.log 'Min and max /\\'
+
+      patch = model.patches.patch x: 2, y: 2
+      rectangle = model.patches.patchRectangle patch, 2, 2
+
+      for patch in rectangle
+        console.log patch
+
+      expect(rectangle).toEqual 24
+
+      expect(rectangle.length).toEqual 24
+      expect(rectangle[7].position).toEqual x: 1, y: 2
+
 
   # TODO finish
 

@@ -253,7 +253,7 @@ ABM.util.array =
     array._sort call
 
   # Mutator. Removes dups, by reference, in place from array. Note
-  # "by reference" means litteraly same object, not copy. Returns
+  # "by reference" means literally same object, not copy. Returns
   # array. Clone first if you want to preserve the original array.
   #
   #     ids = ({id: i} for i in [0..10])

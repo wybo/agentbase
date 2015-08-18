@@ -153,7 +153,7 @@ describe "Agent", ->
       expect(neighbors.length).toBe 4
 
     it "returns the neighbors requested if the world is a torus", ->
-      agents = t.setupModel(torus: true).agents
+      agents = t.setupModel(isTorus: true).agents
 
       neighbors = agents[40].neighbors(2)
       expect(neighbors.length).toBe 4
@@ -164,9 +164,9 @@ describe "Agent", ->
       expect(neighbors[3]).toBe agents[1]
 
     it "returns the diamond neighbors if the world is a torus", ->
-      model = t.setupModel(torus: true)
+      model = t.setupModel(isTorus: true)
 
-      agents = t.setupModel(torus: true).agents
+      agents = model.agents
 
       neighbors = agents[40].neighbors(diamond: 3)
       expect(neighbors.length).toBe 2
