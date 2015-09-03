@@ -49,7 +49,10 @@ ABM.util =
   # `instanceof` See [underscore.coffee](http://goo.gl/L0umK)
   #
   # TODO fix: Array.isArray or (object) ->
-  #
+  
+  isObject: (object) ->
+    return !!(object && (typeof object == "object"))
+
   isArray: (object) ->
     !!(object and object.concat and object.unshift and not object.callee)
 

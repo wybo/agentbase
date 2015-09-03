@@ -33,8 +33,15 @@ ABM.util.array =
   any: (array) ->
     not @empty(array)
 
+  # Checks for emptyness.
+  #
   empty: (array) ->
     array.length is 0
+
+  # Clears the array.
+  #
+  clear: (array) ->
+    array.length = 0
 
   # Make a copy of the array. Needed when you don't want to modify the
   # given array with mutator methods like sort, splice or your own
@@ -65,10 +72,34 @@ ABM.util.array =
     else
       array[array.length - 1]
 
+  # Return all elements of array that match condition.
+  #
+  select: (array, condition = null) ->
+    newArray = new ABM.Array
+
+    for object in array
+      if condition(object)
+        newArray.push object
+
+    return newArray
+
+  # Return all elements of array that don't match condition.
+  #
+  reject: (array, condition = null) ->
+    newArray = new ABM.Array
+
+    for object in array
+      if !condition(object)
+        newArray.push object
+
+    return newArray
+
   # Return random element of array or number random elements of array.
-  # Note: array elements presumed unique, i.e. objects or distinct
-  # primitives Note: clone, shuffle then first number has poor
-  # performance.
+  #
+  # Note: Objects are presumed unique, and the same object will never
+  # be included twice if more than one random object is requested.
+  #
+  # Note: clone, shuffle then first number has poor performance.
   #
   sample: (array, numberOrCondition = null, condition = null) ->
     if u.isFunction numberOrCondition
@@ -76,25 +107,20 @@ ABM.util.array =
     else if numberOrCondition?
       number = Math.floor(numberOrCondition)
 
-    if number?
+    if @empty array
+      return null
+
+    if condition?
+      @sample(@select(array, condition), number)
+    else if number?
       newArray = new ABM.Array
       object = true
       while newArray.length < number and object?
-        object = @sample(array, condition)
+        object = @sample(array)
         if object and object not in newArray
           newArray.push object
       return newArray
-    else if condition?
-      checked = new ABM.Array
-      while checked.length < array.length
-        object = @sample(array)
-        if object and object not in checked
-          checked.push object
-          if condition(object)
-            return object
     else
-      if @empty array
-        return null
       return array[u.randomInt array.length]
 
   # True if object is in array.

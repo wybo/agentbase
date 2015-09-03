@@ -83,6 +83,12 @@ describe "Array", ->
     it "returns the last element", ->
       expect(new ABM.Array(1, 2, 3).last()).toEqual 3
 
+  describe "select", ->
+    it "returns if a condition is given", ->
+      array = new ABM.Array 1, 2, 3, 4, 5, 6
+        .select((number) -> number % 2 is 0)
+      expect(array).toEqual new ABM.Array 2, 4, 6
+
   describe "sample", ->
     it "returns one object if no number given", ->
       u.randomSeed(2)
@@ -98,7 +104,7 @@ describe "Array", ->
       u.randomSeed(10)
       number = new ABM.Array 1, 2, 3, 4, 5, 6
         .sample((number) -> number % 2 is 0)
-      expect(number).toEqual 2
+      expect(number).toEqual 6
 
     it "returns sample for which true if condition and number is given", ->
       u.randomSeed(2)

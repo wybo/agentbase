@@ -142,23 +142,28 @@ class ABM.Agent
   #
   neighbors: (options) ->
     options ?= 1
-    if options.radius
-      square = @neighbors(options.radius)
-      if options.cone
-        options.heading ?= @heading
-        # adopt heading unless explicitly given
-        neighbors = square.inCone(@position, options)
-      else
-        neighbors = square.inRadius(@position, options)
-    else
-      neighbors = @breed.from []
-      if @patch
-        for patch in @patch.neighbors(options)
-          for agent in patch.agents
-            if agent isnt @
-              neighbors.push agent
 
-    neighbors
+    if u.isNumber(options)
+      options = {range: options}
+
+    if !options.meToo
+      options = u.merge(options, {meToo: true, not: @})
+
+    if !@patch # not on the map
+      return new @model.Set
+    else
+      if options.radius
+        square = @patch.neighborAgents(options.radius)
+        if options.cone
+          options.heading ?= @heading
+          # adopt heading unless explicitly given
+          neighbors = square.inCone(@position, options)
+        else
+          neighbors = square.inRadius(@position, options)
+      else
+        neighbors = @patch.neighborAgents(options)
+
+      return neighbors
 
   # ### Life and death
 

@@ -553,6 +553,12 @@ describe "Array", ->
     it "returns the last element", ->
       expect(new ABM.Array(1, 2, 3).last()).toEqual 3
 
+  describe "select", ->
+    it "returns if a condition is given", ->
+      array = new ABM.Array 1, 2, 3, 4, 5, 6
+        .select((number) -> number % 2 is 0)
+      expect(array).toEqual new ABM.Array 2, 4, 6
+
   describe "sample", ->
     it "returns one object if no number given", ->
       u.randomSeed(2)
@@ -568,7 +574,7 @@ describe "Array", ->
       u.randomSeed(10)
       number = new ABM.Array 1, 2, 3, 4, 5, 6
         .sample((number) -> number % 2 is 0)
-      expect(number).toEqual 2
+      expect(number).toEqual 6
 
     it "returns sample for which true if condition and number is given", ->
       u.randomSeed(2)
@@ -1272,22 +1278,12 @@ describe "Patches", ->
 
     it "returns the rectangle if it goes over the edge when it is a torus", ->
       model = t.setupModel(mapSize: 4, isTorus: true)
-      console.log 'Min and max'
-      console.log model.world.min
-      console.log model.world.max
-      console.log 'Min and max /\\'
 
       patch = model.patches.patch x: 2, y: 2
       rectangle = model.patches.patchRectangle patch, 2, 2
 
-      for patch in rectangle
-        console.log patch
-
-      expect(rectangle).toEqual 24
-
-      expect(rectangle.length).toEqual 24
-      expect(rectangle[7].position).toEqual x: 1, y: 2
-
+      expect(rectangle.length).toEqual 15
+      expect(rectangle[14].position).toEqual x: -1, y: -1
 
   # TODO finish
 

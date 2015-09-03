@@ -99,6 +99,19 @@ class ABM.Patch
 
     return neighbors
 
+  # Get agents on neigboring patches.
+  #
+  neighborAgents: (options) ->
+    neighbors = new @model.Set
+    notAgent = options.not
+    delete options.not
+    for patch in @neighbors(options)
+      for agent in patch.agents
+        if agent isnt notAgent
+          neighbors.push agent
+
+    return neighbors
+
   # Not to be used directly, will not cache.
   #
   diamondNeighbors: (range, meToo) ->
