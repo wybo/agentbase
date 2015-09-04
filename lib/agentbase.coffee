@@ -786,18 +786,20 @@ ABM.util.array =
     else if numberOrCondition?
       number = Math.floor(numberOrCondition)
 
-    if @empty array
+    if @empty array and !number?
       return null
 
     if condition?
-      @sample(@select(array, condition), number)
+      return @sample(@select(array, condition), number)
     else if number?
       newArray = new ABM.Array
       object = true
+
       while newArray.length < number and object?
         object = @sample(array)
         if object and object not in newArray
           newArray.push object
+
       return newArray
     else
       return array[u.randomInt array.length]

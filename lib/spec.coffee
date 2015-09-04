@@ -582,6 +582,12 @@ describe "Array", ->
         .sample(2, (number) -> number % 2 is 0)
       expect(array).toEqual new ABM.Array 6, 2
 
+    it "returns an empty array if none are found", ->
+      u.randomSeed(2)
+      array = new ABM.Array 1, 2, 3, 4, 5, 6
+        .sample(3, (number) -> number > 10)
+      expect(array).toEqual new ABM.Array
+
   describe "contains", ->
     it "returns true if it contains the element", ->
       expect(new ABM.Array(1, 2, 3).contains(2)).toBe true
