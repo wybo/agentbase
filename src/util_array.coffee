@@ -113,11 +113,15 @@ ABM.util.array =
     if condition?
       return @sample(@select(array, condition), number)
     else if number?
+      unique = array.clone().uniq()
+      if number > unique.length
+        number = unique.length
+
       newArray = new ABM.Array
       object = true
 
       while newArray.length < number and object?
-        object = @sample(array)
+        object = @sample(array) # array, not unique to preserve odds
         if object and object not in newArray
           newArray.push object
 
@@ -334,7 +338,7 @@ ABM.util.array =
     else
       newArray.push addArray
 
-    newArray
+    return newArray
 
   # Return an array with values in [low, high], defaults to [0, 1].
   # Note: to have a half-open interval, [low, high), try high = high - .00009
@@ -344,9 +348,11 @@ ABM.util.array =
     max = @max array
     scale = 1 / (max - min)
     newArray = []
+
     for number in array
       newArray.push u.linearInterpolate(low, high, scale * (number - min))
-    newArray
+
+    return newArray
 
   normalizeInt: (array, low, high) ->
     (Math.round i for i in @normalize array, low, high)

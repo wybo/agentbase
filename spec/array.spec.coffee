@@ -118,6 +118,18 @@ describe "Array", ->
         .sample(3, (number) -> number > 10)
       expect(array).toEqual new ABM.Array
 
+    it "returns a sample without duplicates", ->
+      u.randomSeed(2)
+      array = new ABM.Array 1, 2, 2, 3, 4, 5, 6, 6, 5
+        .sample(5, (number) -> number > 1)
+      expect(array).toEqual new ABM.Array 5, 2, 6, 3, 4
+
+    it "returns a sample even if there are too few elements", ->
+      u.randomSeed(2)
+      array = new ABM.Array 1, 2, 2, 3, 4, 5, 6, 6, 5
+        .sample(10, (number) -> number > 1)
+      expect(array).toEqual new ABM.Array 5, 2, 6, 3, 4
+
   describe "contains", ->
     it "returns true if it contains the element", ->
       expect(new ABM.Array(1, 2, 3).contains(2)).toBe true
