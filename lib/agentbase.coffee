@@ -691,12 +691,12 @@ ABM.util.array =
   # new arrays.
   #
   from: (array, arrayType) ->
-    ABM.Array.from array, arrayType
+    return ABM.Array.from array, arrayType
 
   # Return string representative of agentset.
   #
   toString: (array) ->
-    "[" + (object.toString() for object in array).join(", ") + "]"
+    return "[" + (object.toString() for object in array).join(", ") + "]"
 
   # Return an array of floating pt numbers as strings at given
   # precision; useful for printing.
@@ -705,22 +705,25 @@ ABM.util.array =
     newArray = []
     for number in array
       newArray.push number.toFixed precision
-    newArray
+
+    return newArray
 
   # Does the array have any elements? Is the array empty?
   #
   any: (array) ->
-    not @empty(array)
+    return not @empty(array)
 
   # Checks for emptyness.
   #
   empty: (array) ->
-    array.length is 0
+    return array.length is 0
 
   # Clears the array.
   #
   clear: (array) ->
     array.length = 0
+
+    return array
 
   # Make a copy of the array. Needed when you don't want to modify the
   # given array with mutator methods like sort, splice or your own
@@ -734,26 +737,26 @@ ABM.util.array =
       method = "subarray"
 
     if begin?
-      array[method] begin, end
+      return array[method] begin, end
     else
-      array[method] 0
+      return array[method] 0
 
   # Return first element of array.
   #
   first: (array) ->
-    array[0]
+    return array[0]
 
   # Return last element of array.
   #
   last: (array) ->
     if @empty array
-      undefined
+      return undefined
     else
-      array[array.length - 1]
+      return array[array.length - 1]
 
   # Return all elements of array that match condition.
   #
-  select: (array, condition = null) ->
+  select: (array, condition) ->
     newArray = new ABM.Array
 
     for object in array
@@ -764,7 +767,7 @@ ABM.util.array =
 
   # Return all elements of array that don't match condition.
   #
-  reject: (array, condition = null) ->
+  reject: (array, condition) ->
     newArray = new ABM.Array
 
     for object in array
@@ -780,38 +783,49 @@ ABM.util.array =
   #
   # Note: clone, shuffle then first number has poor performance.
   #
-  sample: (array, numberOrCondition = null, condition = null) ->
-    if u.isFunction numberOrCondition
-      condition = numberOrCondition
-    else if numberOrCondition?
-      number = Math.floor(numberOrCondition)
+  # Options:
+  #   size: Size of the requested sample (defaults to one if null).
+  #   condition: Function that elements should return true for
+  #     elements.
+  #
+  sample: (array, options) ->
+    if !options? or u.isNumber(options)
+      options = {size: options}
 
-    if @empty array and !number?
+    if @empty array and !options.size?
       return null
 
-    if condition?
-      return @sample(@select(array, condition), number)
-    else if number?
-      unique = array.clone().uniq()
-      if number > unique.length
-        number = unique.length
+    options.size = Math.floor(options.size)
 
-      newArray = new ABM.Array
-      object = true
+    if options.condition?
+      return @sample(@select(array, options.condition), size: options.size)
+    else if options.size
+      options.uniqueArray ?= array.clone().uniq()
+      if options.size > options.uniqueArray.length
+        options.size = options.uniqueArray.length
 
-      while newArray.length < number and object?
-        object = @sample(array) # array, not unique to preserve odds
-        if object and object not in newArray
-          newArray.push object
+      if options.size * 1.8 > options.uniqueArray.length
+        # sampling way more than half, faster to sample those rejected
+        rejects = @sample(array, u.merge(options, {size: options.uniqueArray.length - options.size}))
+        return @shuffle(@removeItems(options.uniqueArray, rejects))
+      else
+        newArray = new ABM.Array
+        object = true
 
-      return newArray
+        while newArray.length < options.size and object?
+          # array, not unique to preserve odds
+          object = array[u.randomInt array.length]
+          if object and object not in newArray
+            newArray.push object
+
+        return newArray
     else
       return array[u.randomInt array.length]
 
   # True if object is in array.
   #
   contains: (array, object) ->
-    array.indexOf(object) >= 0
+    return array.indexOf(object) >= 0
 
   # Remove an object from an array.
   #
@@ -822,20 +836,26 @@ ABM.util.array =
       index = array.indexOf object
       break if index is -1
       array.splice index, 1
-    array
+
+    return array
 
   # Remove elements in objects from an array. Binary search if f isnt
   # null. Error if an object not in array.
   #
+  # TODO: Make part of remove above.
+  #
   removeItems: (array, objects) ->
     for object in objects
       @remove array, object
-    array
+
+    return array
 
   # Randomize the elements of this array.
   #
   shuffle: (array) ->
     array.sort -> 0.5 - Math.random()
+
+    return array
 
   # Return object when call(object) min/max in array. Error if array empty.
   # If f is a string, return element with max value of that property.
@@ -863,9 +883,9 @@ ABM.util.array =
         minObject = object
 
     if valueToo
-      [minObject, minValue]
+      return [minObject, minValue]
     else
-      minObject
+      return minObject
 
   # See min.
   #
@@ -883,9 +903,9 @@ ABM.util.array =
         maxObject = object
 
     if valueToo
-      [maxObject, maxValue]
+      return [maxObject, maxValue]
     else
-      maxObject
+      return maxObject
 
   # Sums up the contents of the array.
   #
@@ -897,12 +917,12 @@ ABM.util.array =
     for object in array
       value += call(object)
 
-    value
+    return value
 
   # Calculates the average of the array.
   #
   average: (array, call = u.identityFunction) ->
-    @sum(array, call) / array.length
+    return @sum(array, call) / array.length
 
   # Returns the median for the array.
   #
@@ -916,7 +936,7 @@ ABM.util.array =
 
     @sort array
 
-    (array[Math.floor(middle)] + array[Math.ceil(middle)]) / 2
+    return (array[Math.floor(middle)] + array[Math.ceil(middle)]) / 2
 
   # Return histogram of o when f(o) is a numeric value in array.
   # Histogram interval is bin. Error if array empty. If call
@@ -944,7 +964,7 @@ ABM.util.array =
     for value, integer in histogram when not value?
       histogram[integer] = 0
 
-    histogram
+    return histogram
 
   # Mutator. Sort array of objects in place by the function f. If f
   # is string, f returns property of object.
@@ -962,6 +982,8 @@ ABM.util.array =
       call = u.propertySortFunction call
 
     array._sort call
+
+    return array
 
   # Mutator. Removes dups, by reference, in place from array. Note
   # "by reference" means literally same object, not copy. Returns
@@ -990,7 +1012,7 @@ ABM.util.array =
         hash[array[i]] = true
       i += 1
 
-    array
+    return array
 
   # Return a new array composed of the rows of a matrix.
   #
@@ -999,7 +1021,7 @@ ABM.util.array =
   #     # returns [1, 2, 3, 4, 5, 6]
   #
   flatten: (array) ->
-    array.reduce((arrayA, arrayB) ->
+    return array.reduce((arrayA, arrayB) ->
       if not u.isArray arrayA
         arrayA = new ABM.Array arrayA
       arrayA.concat arrayB)
@@ -1034,7 +1056,7 @@ ABM.util.array =
     return newArray
 
   normalizeInt: (array, low, high) ->
-    (Math.round i for i in @normalize array, low, high)
+    return (Math.round i for i in @normalize array, low, high)
 
   # ### Property & debugging
 
@@ -1052,12 +1074,14 @@ ABM.util.array =
   ask: (array, call) ->
     for object in array
       call(object)
-    array
+
+    return array
 
   with: (array, functionString) ->
     if u.isString functionString
       eval("f=function(object){return " + functionString + ";}")
-    @from (object for object in array when functionString(object))
+
+    return @from (object for object in array when functionString(object))
 
   # Property access, also useful for debugging.
   #
@@ -1071,7 +1095,7 @@ ABM.util.array =
     for object in array
       newArray.push object[property]
 
-    newArray
+    return newArray
 
   # Set the property of the agents to a given value. If value is an
   # array, its values will be used, indexed by agentSet's index. This
@@ -1084,7 +1108,7 @@ ABM.util.array =
     for object in array
       object[property] = value
 
-    array
+    return array
 
   # Return an array without given object.
   #
@@ -1097,7 +1121,7 @@ ABM.util.array =
       if object isnt given
         newArray.push object
 
-    newArray
+    return newArray
 
 # ### Extensions
 

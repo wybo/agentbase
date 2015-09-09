@@ -560,6 +560,10 @@ describe "Array", ->
       expect(array).toEqual new ABM.Array 2, 4, 6
 
   describe "sample", ->
+    it "returns nothing if nothing to match", ->
+      number = new ABM.Array().sample()
+      expect(number).toEqual null
+ 
     it "returns one object if no number given", ->
       u.randomSeed(2)
       number = new ABM.Array(1, 2, 3, 4).sample()
@@ -570,35 +574,39 @@ describe "Array", ->
       array = new ABM.Array(1, 2, 3, 4).sample(2)
       expect(array).toEqual new ABM.Array 4, 1
 
+    it "returns an empty array if nothing to match and a number is given", ->
+      number = new ABM.Array().sample(1)
+      expect(number).toEqual new ABM.Array
+ 
     it "returns sample for which true if condition given", ->
       u.randomSeed(10)
       number = new ABM.Array 1, 2, 3, 4, 5, 6
-        .sample((number) -> number % 2 is 0)
+        .sample(condition: (number) -> number % 2 is 0)
       expect(number).toEqual 6
 
-    it "returns sample for which true if condition and number is given", ->
+    it "returns sample for which true if condition and size is given", ->
       u.randomSeed(2)
       array = new ABM.Array 1, 2, 3, 4, 5, 6
-        .sample(2, (number) -> number % 2 is 0)
-      expect(array).toEqual new ABM.Array 6, 2
+        .sample(size: 2, condition: (number) -> number % 2 is 0)
+      expect(array).toEqual new ABM.Array 4, 2
 
     it "returns an empty array if none are found", ->
       u.randomSeed(2)
       array = new ABM.Array 1, 2, 3, 4, 5, 6
-        .sample(3, (number) -> number > 10)
+        .sample(size: 3, condition: (number) -> number > 10)
       expect(array).toEqual new ABM.Array
 
     it "returns a sample without duplicates", ->
       u.randomSeed(2)
       array = new ABM.Array 1, 2, 2, 3, 4, 5, 6, 6, 5
-        .sample(5, (number) -> number > 1)
-      expect(array).toEqual new ABM.Array 5, 2, 6, 3, 4
+        .sample(size: 5, condition: (number) -> number > 1)
+      expect(array).toEqual new ABM.Array 3, 2, 4, 5, 6
 
     it "returns a sample even if there are too few elements", ->
       u.randomSeed(2)
       array = new ABM.Array 1, 2, 2, 3, 4, 5, 6, 6, 5
-        .sample(10, (number) -> number > 1)
-      expect(array).toEqual new ABM.Array 5, 2, 6, 3, 4
+        .sample(size: 10, condition: (number) -> number > 1)
+      expect(array).toEqual new ABM.Array 3, 2, 4, 5, 6
 
   describe "contains", ->
     it "returns true if it contains the element", ->
