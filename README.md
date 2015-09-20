@@ -6,7 +6,7 @@ AgentBase:
 
 * Allows you to easily share and run ABM models, directly from a webpage. No software to install.
 * Is optimized for the quick development of illustrative ABM models: It values minimalism over complexity, readable and pretty code over CPU performance, and sensible defaults over choice. It is [opinionated software](https://gettingreal.37signals.com/ch04_Make_Opinionated_Software.php).
-* While [NetLogo](http://ccl.northwestern.edu/netlogo/) formed a great inspiration (the most commonly used ABM toolset), AgentBase does not try to copy it (unlike [AgentScript](http://agentscript.org/), from which the AgentBase library is derived). The web is not the desktop. Coffeescript is not Logo.
+* While [NetLogo](http://ccl.northwestern.edu/netlogo/) formed a great inspiration (the most commonly used ABM toolset), AgentBase does not try to copy it (unlike [AgentScript](http://agentscript.org/)). The web is not the desktop. Coffeescript is not Logo.
 * AgentBase is well-tested through automated testing and thus a library that you can trust. [See for yourself](http://lib.agentbase.org/spec.html).
 
 #### Sample models

@@ -113,7 +113,7 @@ ABM.util.array =
     if !options? or u.isNumber(options)
       options = {size: options}
 
-    if @empty array and !options.size?
+    if @empty(array) and !options.size?
       return null
 
     options.size = Math.floor(options.size)
