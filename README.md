@@ -78,11 +78,10 @@ You can see this by running a sample model from the 'models/' directory, then us
 
 Visit [agentbase.org](http://agentbase.org) and tinker with the [Template](http://agentbase.org/model.html?9d54597f7aafc995d227), the [Advanced Template](http://agentbase.org/model.html?95eddda521dfaf11c015) or any other example model to get started.
 
-Class ABM.Model has three methods that it calls automatically for you:
+Class ABM.Model has two methods that it calls automatically for you:
 
-    startup()   # Optional. Called only once, for pre-initializing the model.
-    setup()     # Called during startup and by Model.reset().
-    step()      # Called by the animator to advance the model one step.
+    setup()     # Initializes the model. Called during startup and by Model.reset().
+    step()      # A time step. Called by the animator to advance the model one step.
 
 To build a model from scratch, simply subclass ABM.Model to build a model, supplying the three methods. You can also edit models locally: [Download AgentBase](https://github.com/wybo/agentbase/zipball/master), [unzip it](http://en.wikipedia.org/wiki/Zip_(file_format)), then go to the models directory and edit the [template.html](http://lib.agentbase.org/models/template.html) model you find there.
 
