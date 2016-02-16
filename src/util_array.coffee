@@ -113,7 +113,7 @@ ABM.util.array =
     if !options? or u.isNumber(options)
       options = {size: options}
 
-    if @empty array and !options.size?
+    if @empty(array) and !options.size?
       return null
 
     options.size = Math.floor(options.size)
@@ -458,14 +458,27 @@ ABM.util.array.extender =
       eval("""
         #{className}.prototype.#{method} = function() {
           var options, _ref, _ret;
-          options = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-          _ret = (_ref = u.array).#{method}.apply(_ref, [this].concat(__slice.call(options)));
+          options = 1 <= arguments.length ? Array.prototype.slice.call(arguments, 0) : [];
+          _ret = (_ref = u.array).#{method}.apply(_ref, [this].concat(Array.prototype.slice.call(options)));
           if (ABM.util.isArray(_ret)) {
             return this.constructor.from(_ret);
           } else {
             return _ret;
           }
         };""")
+
+#      eval("""
+#        #{className}.prototype.#{method} = function() {
+#          var options, _ref, _ret;
+#          options = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+#          _ret = (_ref = u.array).#{method}.apply(_ref, [this].concat(__slice.call(options)));
+#          if (ABM.util.isArray(_ret)) {
+#            return this.constructor.from(_ret);
+#          } else {
+#            return _ret;
+#          }
+#        };""")
+
 
 # Dummy class for codo doc generator.
 #

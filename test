@@ -4,3 +4,4 @@ if [ $# -ne 0 ]; then
   file="$1.spec.coffee"
 fi
 ./node_modules/jasmine-node/bin/jasmine-node --coffee --verbose --captureExceptions spec/$file
+# TODO switch to jasmine / less ancient node

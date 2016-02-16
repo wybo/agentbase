@@ -65,6 +65,9 @@ ABM.util =
   isNumber: (object) ->
     !!(typeof object is "number")
 
+  isInteger: (object) ->
+    !!(@isNumber(object) and object % 1 == 0)
+
   isBoolean: (object) ->
     !!(typeof object is "boolean")
 

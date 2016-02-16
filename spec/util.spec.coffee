@@ -64,7 +64,17 @@ describe "Util", ->
       expect(u.isNumber(2)).toBe true
 
     it "rejects non-numbers", ->
-      expect(u.isString(-> 3)).toBe false
+      expect(u.isNumber(-> 3)).toBe false
+
+  describe "isInteger", ->
+    it "detects integers", ->
+      expect(u.isInteger(2)).toBe true
+
+    it "rejects non-integers", ->
+      expect(u.isInteger(2.1231)).toBe false
+
+    it "rejects non-numbers too", ->
+      expect(u.isInteger("Someshit")).toBe false
 
   # ### Numeric operations
 

@@ -45,6 +45,7 @@
     "gulp-task-listing": "^0.3.0",
     "gulp-uglify": "^0.3.1",
     "lazypipe": "^0.2.1",
+    "pretty-hrtime": "^1.0.1",
     "shelljs": "^0.2.6",
     "jasmine-core": "^2.0.4",
     "jasmine-node": "^1.14.5",
