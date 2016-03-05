@@ -192,9 +192,19 @@ describe "Array", ->
   describe "sort", ->
     it "sorts the array", ->
       array = new ABM.Array 2.4, 8, 2
+      array.sort()
+      expect(array).toEqual new ABM.Array 2, 2.4, 8
+
+    it "sorts the array with function", ->
+      array = new ABM.Array 2.4, 8, 2
       array.sort((objectA, objectB) ->
         Math.floor(objectA) > Math.floor(objectB))
       expect(array).toEqual new ABM.Array 2.4, 2, 8
+
+    it "sorts an array of hashes", ->
+      array = new ABM.Array {some: 2.4}, {some: 8}, {some: 2}
+      array.sort("some")
+      expect(array).toEqual new ABM.Array {some: 2}, {some: 2.4}, {some: 8}
 
   describe "uniq", ->
     it "returns the array with only unique items", ->
