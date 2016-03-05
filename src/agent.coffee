@@ -139,8 +139,11 @@ class ABM.Agent
   # Return distance in patch coordinates from me to given agent/patch
   # using patch topology (isTorus).
   #
-  distance: (point) -> # o any object w/ x, y, patch or agent
-    u.distance @position, point, @model.patches
+  # Pass {euclidian: true} for always euclidian distance, and 
+  # {dimension: true} for max distance along one dimension.
+  #
+  distance: (point, options) -> # o any object w/ x, y, patch or agent
+    u.distance @position, point, @model.patches, options
 
   # Returns the neighbors (agents) of this agent.
   #

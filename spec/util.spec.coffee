@@ -236,11 +236,23 @@ describe "Util", ->
       expect(u.distance({x: 1, y: 1}, {x: 4, y: 9},
         {isTorus: false})).toBeCloseTo 8.54
 
+    it "returns max dimension distance between the points", ->
+      expect(u.distance({x: 1, y: 1}, {x: 3, y: 1},
+        {isTorus: false}, {dimension: true})).toBe 2
+      expect(u.distance({x: 1, y: 1}, {x: 4, y: 9},
+        {isTorus: false}, {dimension: true})).toBeCloseTo 8
+
     it "returns distance between the closest points on the torus", ->
       expect(u.distance({x: 1, y: 1}, {x: 4, y: 9},
         {isTorus: true, width: 20, height: 20})).toBeCloseTo 8.54
       expect(u.distance({x: 1, y: 1}, {x: 4, y: 9},
         {isTorus: true, width: 10, height: 10})).toBeCloseTo 3.61
+
+    it "returns max dimension distance between the closest points on the torus", ->
+      expect(u.distance({x: 1, y: 1}, {x: 4, y: 9},
+        {isTorus: true, width: 20, height: 20}, {dimension: true})).toBeCloseTo 8
+      expect(u.distance({x: 1, y: 1}, {x: 4, y: 9},
+        {isTorus: true, width: 10, height: 10}, {dimension: true})).toBeCloseTo 3
 
   describe "torus4Points", ->
     it "returns the 4 reflected points", ->

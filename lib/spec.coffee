@@ -179,6 +179,12 @@ describe "Agent", ->
       expect(agents[0].distance(
         agents[1].position)).toBeCloseTo Math.sqrt(2)
 
+    it "returns the max dimension distance to the given point", ->
+      model = t.setupModel()
+      agents = model.agents
+
+      expect(agents[0].distance({x: 29, y: 15}, dimension: true)).toBe 49
+
   describe "neighbors", ->
     it "returns the neighbors in euclidian space", ->
       agents = t.setupModel().agents
@@ -1110,6 +1116,30 @@ describe "Patch", ->
 
       expect(patch.distance({x: 3, y: 1})).toBe 2
 
+    it "returns torus distance to the point", ->
+      model = t.setupModel(isTorus: true)
+      patch = model.patches.patch x: 1, y: 1
+
+      expect(patch.distance({x: 29, y: 1})).toBe 13
+
+    it "returns euclidian distance to the point", ->
+      model = t.setupModel(isTorus: true)
+      patch = model.patches.patch x: 1, y: 1
+
+      expect(patch.distance({x: 29, y: 1}, euclidian: true)).toBe 28
+
+    it "returns max dimension distance to the point", ->
+      model = t.setupModel(isTorus: true)
+      patch = model.patches.patch x: 1, y: 1
+
+      expect(patch.distance({x: 29, y: 15}, dimension: true)).toBe 14 # for y
+
+    it "returns euclidian max dimension distance to the point", ->
+      model = t.setupModel(isTorus: true)
+      patch = model.patches.patch x: 1, y: 1
+
+      expect(patch.distance({x: 29, y: 15}, euclidian: true, dimension: true)).toBe 28
+
   describe "neighbors", ->
     testMiddlePatch = (model) ->
       patch = model.patches.patch(x: 10, y: 10)
@@ -1628,11 +1658,23 @@ describe "Util", ->
       expect(u.distance({x: 1, y: 1}, {x: 4, y: 9},
         {isTorus: false})).toBeCloseTo 8.54
 
+    it "returns max dimension distance between the points", ->
+      expect(u.distance({x: 1, y: 1}, {x: 3, y: 1},
+        {isTorus: false}, {dimension: true})).toBe 2
+      expect(u.distance({x: 1, y: 1}, {x: 4, y: 9},
+        {isTorus: false}, {dimension: true})).toBeCloseTo 8
+
     it "returns distance between the closest points on the torus", ->
       expect(u.distance({x: 1, y: 1}, {x: 4, y: 9},
         {isTorus: true, width: 20, height: 20})).toBeCloseTo 8.54
       expect(u.distance({x: 1, y: 1}, {x: 4, y: 9},
         {isTorus: true, width: 10, height: 10})).toBeCloseTo 3.61
+
+    it "returns max dimension distance between the closest points on the torus", ->
+      expect(u.distance({x: 1, y: 1}, {x: 4, y: 9},
+        {isTorus: true, width: 20, height: 20}, {dimension: true})).toBeCloseTo 8
+      expect(u.distance({x: 1, y: 1}, {x: 4, y: 9},
+        {isTorus: true, width: 10, height: 10}, {dimension: true})).toBeCloseTo 3
 
   describe "torus4Points", ->
     it "returns the 4 reflected points", ->

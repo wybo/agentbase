@@ -110,6 +110,12 @@ describe "Agent", ->
       expect(agents[0].distance(
         agents[1].position)).toBeCloseTo Math.sqrt(2)
 
+    it "returns the max dimension distance to the given point", ->
+      model = t.setupModel()
+      agents = model.agents
+
+      expect(agents[0].distance({x: 29, y: 15}, dimension: true)).toBe 49
+
   describe "neighbors", ->
     it "returns the neighbors in euclidian space", ->
       agents = t.setupModel().agents

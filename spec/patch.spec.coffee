@@ -67,6 +67,30 @@ describe "Patch", ->
 
       expect(patch.distance({x: 3, y: 1})).toBe 2
 
+    it "returns torus distance to the point", ->
+      model = t.setupModel(isTorus: true)
+      patch = model.patches.patch x: 1, y: 1
+
+      expect(patch.distance({x: 29, y: 1})).toBe 13
+
+    it "returns euclidian distance to the point", ->
+      model = t.setupModel(isTorus: true)
+      patch = model.patches.patch x: 1, y: 1
+
+      expect(patch.distance({x: 29, y: 1}, euclidian: true)).toBe 28
+
+    it "returns max dimension distance to the point", ->
+      model = t.setupModel(isTorus: true)
+      patch = model.patches.patch x: 1, y: 1
+
+      expect(patch.distance({x: 29, y: 15}, dimension: true)).toBe 14 # for y
+
+    it "returns euclidian max dimension distance to the point", ->
+      model = t.setupModel(isTorus: true)
+      patch = model.patches.patch x: 1, y: 1
+
+      expect(patch.distance({x: 29, y: 15}, euclidian: true, dimension: true)).toBe 28
+
   describe "neighbors", ->
     testMiddlePatch = (model) ->
       patch = model.patches.patch(x: 10, y: 10)

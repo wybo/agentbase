@@ -267,9 +267,19 @@ ABM.util =
 
   # Return the distance between point1 and 2.
   #
-  distance: (point1, point2, patches) ->
-    if patches.isTorus
-      @distanceTorus(point1, point2, patches)
+  # Not to be used directly. Run from agent or patch instead.
+  #
+  distance: (point1, point2, patches, options = {}) ->
+    if patches.isTorus and !options.euclidian
+      options.torus = true
+
+    if options.torus
+      if options.dimension
+        @distanceMaxDimensionTorus(point1, point2, patches)
+      else
+        @distanceTorus(point1, point2, patches)
+    else if options.dimension
+      @distanceMaxDimension(point1, point2)
     else
       @distanceEuclidian(point1, point2)
 
@@ -280,7 +290,7 @@ ABM.util =
     distanceY = point1.y - point2.y
     Math.sqrt distanceX * distanceX + distanceY * distanceY
 
-  # Return the [torus distance](http://goo.gl/PgJ5N) between two
+    # Return the [torus distance](http://goo.gl/PgJ5N) between two
   # points point1 (A) and point2 (B):
   #
   #     dx = |point2.x - point1.x|
@@ -314,6 +324,34 @@ ABM.util =
     minX = Math.min xDistance, patches.width - xDistance
     minY = Math.min yDistance, patches.height - yDistance
     Math.sqrt minX * minX + minY * minY
+
+# Return the Max Dimension distance between point1 and 2.
+  #
+  # Max dimension only looks for distance along the X and Y axis, 
+  # and returns the biggest distance of the two.
+  #
+  distanceMaxDimension: (point1, point2) ->
+    distanceX = Math.abs point1.x - point2.x
+    distanceY = Math.abs point1.y - point2.y
+    if distanceX > distanceY
+      return distanceX
+    else
+      return distanceY
+
+  # Return the Max Dimension distance between point1 and 2.
+  #
+  # Max dimension only looks for distance along the X and Y axis, 
+  # and returns the biggest distance of the two.
+  #
+  distanceMaxDimensionTorus: (point1, point2, patches) ->
+    xDistance = Math.abs point2.x - point1.x
+    yDistance = Math.abs point2.y - point1.y
+    minX = Math.min xDistance, patches.width - xDistance
+    minY = Math.min yDistance, patches.height - yDistance
+    if minX > minY
+      return minX
+    else
+      return minY
 
   # Return 4 torus point reflections of point2 around point1.
   #
@@ -2132,8 +2170,11 @@ class ABM.Agent
   # Return distance in patch coordinates from me to given agent/patch
   # using patch topology (isTorus).
   #
-  distance: (point) -> # o any object w/ x, y, patch or agent
-    u.distance @position, point, @model.patches
+  # Pass {euclidian: true} for always euclidian distance, and 
+  # {dimension: true} for max distance along one dimension.
+  #
+  distance: (point, options) -> # o any object w/ x, y, patch or agent
+    u.distance @position, point, @model.patches, options
 
   # Returns the neighbors (agents) of this agent.
   #
@@ -3074,8 +3115,11 @@ class ABM.Patch
   # Return distance in patch coordinates from me to given agent/patch
   # using patch topology (isTorus).
   #
-  distance: (point) ->
-    u.distance @position, point, @model.patches
+  # Pass {euclidian: true} for always euclidian distance, and 
+  # {dimension: true} for max distance along one dimension.
+  #
+  distance: (point, options) ->
+    u.distance @position, point, @model.patches, options
 
   # Get neighbors for patch.
   #
