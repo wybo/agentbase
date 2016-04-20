@@ -100,9 +100,8 @@ ABM.util =
   # Return float Gaussian normal with given mean, std deviation.
   #
   randomNormal: (mean = 0.0, standardDeviation = 1.0) -> # Box-Muller
-    u1 = 1.0 - Math.random()
-    u2 = Math.random() # u1 in (0, 1]
-    normal = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2)
+    # Both random numbers are in the (0, 1] range (is why there's 1.0 - random)
+    normal = Math.sqrt(-2.0 * Math.log(1.0 - Math.random())) * Math.cos(2.0 * Math.PI * Math.random())
     normal * standardDeviation + mean
 
   randomCentered: (r) ->
@@ -212,7 +211,31 @@ ABM.util =
     for own key, value of second
       hash[key] = value
 
-    hash
+    return hash
+
+  # Turns an array, into a hash with the array values as keys, and
+  # numbers as values. So ["first", "second"] -> {"first": 1, "second": 2}
+  #
+  # Usefull for settings.
+  #
+  indexHash: (array) ->
+    hash = {}
+    i = 0
+
+    for key in array
+      hash[key] = i++
+
+    return hash
+
+  # Transforms an index hash, created with the function above, back
+  # into a correctly sorted array.
+  #
+  deIndexHash: (hash) ->
+    array = []
+    for key, value of hash
+      array[value] = key
+
+    return array
 
   # ### Topology operations
 
@@ -325,7 +348,7 @@ ABM.util =
     minY = Math.min yDistance, patches.height - yDistance
     Math.sqrt minX * minX + minY * minY
 
-# Return the Max Dimension distance between point1 and 2.
+  # Return the Max Dimension distance between point1 and 2.
   #
   # Max dimension only looks for distance along the X and Y axis, 
   # and returns the biggest distance of the two.
@@ -838,6 +861,9 @@ ABM.util.array =
 
     options.size = Math.floor(options.size)
 
+    if options.size == 0
+      return new ABM.Array
+
     if options.condition?
       return @sample(@select(array, options.condition), size: options.size)
     else if options.size
@@ -848,7 +874,7 @@ ABM.util.array =
       if options.size * 1.8 > options.uniqueArray.length
         # sampling way more than half, faster to sample those rejected
         rejects = @sample(array, u.merge(options, {size: options.uniqueArray.length - options.size}))
-        return @shuffle(@removeItems(options.uniqueArray, rejects))
+        return @shuffle(@remove(options.uniqueArray, rejects))
       else
         newArray = new ABM.Array
         object = true
@@ -868,26 +894,30 @@ ABM.util.array =
   contains: (array, object) ->
     return array.indexOf(object) >= 0
 
-  # Remove an object from an array.
+  # Remove one or more objects from an array. Error if an object not
+  # in array.
   #
   # Error if object not in array.
   #
-  remove: (array, object) ->
+  remove: (array, objects) ->
+    if u.isArray(objects)
+      for object in objects
+        @removeItem array, object
+    else
+      @removeItem array, objects
+
+    return array
+
+  # Removes a single object from an array. Even if it is an array
+  # itself.
+  #
+  # Error if object not in array.
+  #
+  removeItem: (array, object) ->
     while true
       index = array.indexOf object
       break if index is -1
       array.splice index, 1
-
-    return array
-
-  # Remove elements in objects from an array. Binary search if f isnt
-  # null. Error if an object not in array.
-  #
-  # TODO: Make part of remove above.
-  #
-  removeItems: (array, objects) ->
-    for object in objects
-      @remove array, object
 
     return array
 
@@ -2834,7 +2864,7 @@ class ABM.Model
       @globalNames = globalNames
       @globalNames.set = true
     else
-      @globalNames = u.ownKeys(@).removeItems @globalNames
+      @globalNames = u.ownKeys(@).remove @globalNames
 
   # Add this model to a class's prototype. This is used in
   # the model constructor to create Patch/Patches, Agent/Agents,

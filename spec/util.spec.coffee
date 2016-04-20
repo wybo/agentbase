@@ -201,6 +201,15 @@ describe "Util", ->
       expect(u.merge({a: 1, b: 4}, {b: 7})).toEqual {a: 1, b: 7}
       expect(u.merge({a: 1, b: 4}, {b: 7, d: 11})).toEqual {a: 1, b: 7, d: 11}
 
+  describe "indexHash", ->
+    it "returns the hash", ->
+      expect(u.indexHash(["a", "b"])).toEqual {a: 0, b: 1}
+
+  describe "deIndexHash", ->
+    it "returns the array", ->
+      expect(u.deIndexHash({a: 0, b: 1})).toEqual ["a", "b"]
+      expect(u.deIndexHash({b: 1, a: 0})).toEqual ["a", "b"]
+
   # ### Topology operations
 
   describe "angle", ->

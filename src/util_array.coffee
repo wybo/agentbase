@@ -118,6 +118,9 @@ ABM.util.array =
 
     options.size = Math.floor(options.size)
 
+    if options.size == 0
+      return new ABM.Array
+
     if options.condition?
       return @sample(@select(array, options.condition), size: options.size)
     else if options.size
@@ -128,7 +131,7 @@ ABM.util.array =
       if options.size * 1.8 > options.uniqueArray.length
         # sampling way more than half, faster to sample those rejected
         rejects = @sample(array, u.merge(options, {size: options.uniqueArray.length - options.size}))
-        return @shuffle(@removeItems(options.uniqueArray, rejects))
+        return @shuffle(@remove(options.uniqueArray, rejects))
       else
         newArray = new ABM.Array
         object = true
@@ -148,26 +151,30 @@ ABM.util.array =
   contains: (array, object) ->
     return array.indexOf(object) >= 0
 
-  # Remove an object from an array.
+  # Remove one or more objects from an array. Error if an object not
+  # in array.
   #
   # Error if object not in array.
   #
-  remove: (array, object) ->
+  remove: (array, objects) ->
+    if u.isArray(objects)
+      for object in objects
+        @removeItem array, object
+    else
+      @removeItem array, objects
+
+    return array
+
+  # Removes a single object from an array. Even if it is an array
+  # itself.
+  #
+  # Error if object not in array.
+  #
+  removeItem: (array, object) ->
     while true
       index = array.indexOf object
       break if index is -1
       array.splice index, 1
-
-    return array
-
-  # Remove elements in objects from an array. Binary search if f isnt
-  # null. Error if an object not in array.
-  #
-  # TODO: Make part of remove above.
-  #
-  removeItems: (array, objects) ->
-    for object in objects
-      @remove array, object
 
     return array
 

@@ -120,6 +120,12 @@ describe "Array", ->
         .sample(size: 2, condition: (number) -> number % 2 is 0)
       expect(array).toEqual new ABM.Array 4, 2
 
+    it "returns an empty array if size is 0", ->
+      u.randomSeed(2)
+      array = new ABM.Array 1, 2, 3, 4, 5, 6
+        .sample(size: 0)
+      expect(array).toEqual new ABM.Array
+
     it "returns an empty array if none are found", ->
       u.randomSeed(2)
       array = new ABM.Array 1, 2, 3, 4, 5, 6
@@ -130,13 +136,13 @@ describe "Array", ->
       u.randomSeed(2)
       array = new ABM.Array 1, 2, 2, 3, 4, 5, 6, 6, 5
         .sample(size: 5, condition: (number) -> number > 1)
-      expect(array).toEqual new ABM.Array 3, 2, 4, 5, 6
+      expect(array).toEqual new ABM.Array 2, 4, 3, 5, 6
 
     it "returns a sample even if there are too few elements", ->
       u.randomSeed(2)
       array = new ABM.Array 1, 2, 2, 3, 4, 5, 6, 6, 5
         .sample(size: 10, condition: (number) -> number > 1)
-      expect(array).toEqual new ABM.Array 3, 2, 4, 5, 6
+      expect(array).toEqual new ABM.Array 2, 4, 3, 5, 6
 
   describe "contains", ->
     it "returns true if it contains the element", ->
@@ -144,18 +150,18 @@ describe "Array", ->
       expect(new ABM.Array(1, 2, 3).contains(5)).toBe false
 
   describe "remove", ->
-    it "removes the item", ->
-      expect(new ABM.Array(1, 2, 3)
-        .remove(2)).toEqual new ABM.Array 1, 3
-
+    it "removes the items", ->
       array = new ABM.Array(1, 'z', 7, 7)
       array.remove(7)
       expect(array).toEqual new ABM.Array 1, 'z'
 
-  describe "removeItems", ->
-    it "removes the items", ->
       expect(new ABM.Array(1, 2, 3, 4, 5)
-        .removeItems([2, 4])).toEqual new ABM.Array 1, 3, 5
+        .remove([2, 4])).toEqual new ABM.Array 1, 3, 5
+
+  describe "removeItem", ->
+    it "removes the item", ->
+      expect(new ABM.Array(1, 2, 3)
+        .removeItem(2)).toEqual new ABM.Array 1, 3
 
   describe "shuffle", ->
     it "shuffles the array", ->

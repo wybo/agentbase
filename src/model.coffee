@@ -157,7 +157,7 @@ class ABM.Model
       @globalNames = globalNames
       @globalNames.set = true
     else
-      @globalNames = u.ownKeys(@).removeItems @globalNames
+      @globalNames = u.ownKeys(@).remove @globalNames
 
   # Add this model to a class's prototype. This is used in
   # the model constructor to create Patch/Patches, Agent/Agents,

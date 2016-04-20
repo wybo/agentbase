@@ -596,6 +596,12 @@ describe "Array", ->
         .sample(size: 2, condition: (number) -> number % 2 is 0)
       expect(array).toEqual new ABM.Array 4, 2
 
+    it "returns an empty array if size is 0", ->
+      u.randomSeed(2)
+      array = new ABM.Array 1, 2, 3, 4, 5, 6
+        .sample(size: 0)
+      expect(array).toEqual new ABM.Array
+
     it "returns an empty array if none are found", ->
       u.randomSeed(2)
       array = new ABM.Array 1, 2, 3, 4, 5, 6
@@ -620,18 +626,18 @@ describe "Array", ->
       expect(new ABM.Array(1, 2, 3).contains(5)).toBe false
 
   describe "remove", ->
-    it "removes the item", ->
-      expect(new ABM.Array(1, 2, 3)
-        .remove(2)).toEqual new ABM.Array 1, 3
-
+    it "removes the items", ->
       array = new ABM.Array(1, 'z', 7, 7)
       array.remove(7)
       expect(array).toEqual new ABM.Array 1, 'z'
 
-  describe "removeItems", ->
-    it "removes the items", ->
       expect(new ABM.Array(1, 2, 3, 4, 5)
-        .removeItems([2, 4])).toEqual new ABM.Array 1, 3, 5
+        .remove([2, 4])).toEqual new ABM.Array 1, 3, 5
+
+  describe "removeItem", ->
+    it "removes the item", ->
+      expect(new ABM.Array(1, 2, 3)
+        .removeItem(2)).toEqual new ABM.Array 1, 3
 
   describe "shuffle", ->
     it "shuffles the array", ->
@@ -668,9 +674,19 @@ describe "Array", ->
   describe "sort", ->
     it "sorts the array", ->
       array = new ABM.Array 2.4, 8, 2
+      array.sort()
+      expect(array).toEqual new ABM.Array 2, 2.4, 8
+
+    it "sorts the array with function", ->
+      array = new ABM.Array 2.4, 8, 2
       array.sort((objectA, objectB) ->
         Math.floor(objectA) > Math.floor(objectB))
       expect(array).toEqual new ABM.Array 2.4, 2, 8
+
+    it "sorts an array of hashes", ->
+      array = new ABM.Array {some: 2.4}, {some: 8}, {some: 2}
+      array.sort("some")
+      expect(array).toEqual new ABM.Array {some: 2}, {some: 2.4}, {some: 8}
 
   describe "uniq", ->
     it "returns the array with only unique items", ->
@@ -1622,6 +1638,15 @@ describe "Util", ->
       expect(u.merge({a: 1}, {b: 7})).toEqual {a: 1, b: 7}
       expect(u.merge({a: 1, b: 4}, {b: 7})).toEqual {a: 1, b: 7}
       expect(u.merge({a: 1, b: 4}, {b: 7, d: 11})).toEqual {a: 1, b: 7, d: 11}
+
+  describe "indexHash", ->
+    it "returns the hash", ->
+      expect(u.indexHash(["a", "b"])).toEqual {a: 0, b: 1}
+
+  describe "deIndexHash", ->
+    it "returns the array", ->
+      expect(u.deIndexHash({a: 0, b: 1})).toEqual ["a", "b"]
+      expect(u.deIndexHash({b: 1, a: 0})).toEqual ["a", "b"]
 
   # ### Topology operations
 
