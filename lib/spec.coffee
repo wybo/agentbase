@@ -612,13 +612,13 @@ describe "Array", ->
       u.randomSeed(2)
       array = new ABM.Array 1, 2, 2, 3, 4, 5, 6, 6, 5
         .sample(size: 5, condition: (number) -> number > 1)
-      expect(array).toEqual new ABM.Array 3, 2, 4, 5, 6
+      expect(array).toEqual new ABM.Array 2, 4, 3, 5, 6
 
     it "returns a sample even if there are too few elements", ->
       u.randomSeed(2)
       array = new ABM.Array 1, 2, 2, 3, 4, 5, 6, 6, 5
         .sample(size: 10, condition: (number) -> number > 1)
-      expect(array).toEqual new ABM.Array 3, 2, 4, 5, 6
+      expect(array).toEqual new ABM.Array 2, 4, 3, 5, 6
 
   describe "contains", ->
     it "returns true if it contains the element", ->

@@ -207,8 +207,8 @@ describe "Util", ->
 
   describe "deIndexHash", ->
     it "returns the array", ->
-      expect(u.deIndexHash({a: 0, b: 1})).toEqual ["a", "b"]
-      expect(u.deIndexHash({b: 1, a: 0})).toEqual ["a", "b"]
+      expect(u.deIndexHash({a: 0, b: 1})).toEqual new ABM.Array "a", "b"
+      expect(u.deIndexHash({b: 1, a: 0})).toEqual new ABM.Array "a", "b"
 
   # ### Topology operations
 

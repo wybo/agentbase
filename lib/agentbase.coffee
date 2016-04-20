@@ -231,7 +231,7 @@ ABM.util =
   # into a correctly sorted array.
   #
   deIndexHash: (hash) ->
-    array = []
+    array = new ABM.Array
     for key, value of hash
       array[value] = key
 
