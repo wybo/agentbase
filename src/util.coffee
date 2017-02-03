@@ -213,6 +213,24 @@ ABM.util =
 
     return hash
 
+  # Adds up integers set as hash elements
+  #
+  # Shallow, and needs only integers.
+  #
+  addUp: (first, second) ->
+    hash = {}
+
+    for own key, value of first
+      hash[key] = value
+
+    for own key, value of second
+      if hash[key] != undefined
+        hash[key] += value
+      else
+        hash[key] = value
+
+    return hash
+
   # Turns an array, into a hash with the array values as keys, and
   # numbers as values. So ["first", "second"] -> {"first": 1, "second": 2}
   #

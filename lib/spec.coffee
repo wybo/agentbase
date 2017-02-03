@@ -566,7 +566,7 @@ describe "Array", ->
       expect(array).toEqual new ABM.Array 2, 4, 6
 
   describe "sample", ->
-    it "returns nothing if nothing to match", ->
+    it "returns null if nothing to match", ->
       number = new ABM.Array().sample()
       expect(number).toEqual null
  
@@ -602,7 +602,7 @@ describe "Array", ->
         .sample(size: 0)
       expect(array).toEqual new ABM.Array
 
-    it "returns an empty array if none are found", ->
+    it "returns an empty array if none are found and size is set", ->
       u.randomSeed(2)
       array = new ABM.Array 1, 2, 3, 4, 5, 6
         .sample(size: 3, condition: (number) -> number > 10)
@@ -644,6 +644,13 @@ describe "Array", ->
       u.randomSeed(2)
       expect(new ABM.Array(1, 2, 3)
         .shuffle()).toEqual new ABM.Array 1, 3, 2
+
+    it "after shuffle, returns the same array", ->
+      u.randomSeed(2)
+      array = new ABM.Array(1, 2, 3)
+      array.booble = true
+      shuffled = array.shuffle()
+      expect(shuffled.booble).toEqual true # Will still not exactly be equal
 
   describe "min", ->
     it "returns the smallest element", ->
@@ -1639,14 +1646,19 @@ describe "Util", ->
       expect(u.merge({a: 1, b: 4}, {b: 7})).toEqual {a: 1, b: 7}
       expect(u.merge({a: 1, b: 4}, {b: 7, d: 11})).toEqual {a: 1, b: 7, d: 11}
 
+  describe "addUp", ->
+    it "returns the added up hashes", ->
+      expect(u.addUp({a: 1}, {b: 7})).toEqual {a: 1, b: 7}
+      expect(u.addUp({a: 1, b: 4}, {b: 7, c: -5})).toEqual {a: 1, b: 11, c: -5}
+
   describe "indexHash", ->
     it "returns the hash", ->
       expect(u.indexHash(["a", "b"])).toEqual {a: 0, b: 1}
 
   describe "deIndexHash", ->
     it "returns the array", ->
-      expect(u.deIndexHash({a: 0, b: 1})).toEqual ["a", "b"]
-      expect(u.deIndexHash({b: 1, a: 0})).toEqual ["a", "b"]
+      expect(u.deIndexHash({a: 0, b: 1})).toEqual new ABM.Array "a", "b"
+      expect(u.deIndexHash({b: 1, a: 0})).toEqual new ABM.Array "a", "b"
 
   # ### Topology operations
 
